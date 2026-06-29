@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Share, Alert, Image } from "react-native";
 import { router } from "expo-router";
 import { supabase } from "../../lib/supabase";
+import { registerForPushNotifications, scheduleTrickNudge } from "../../lib/notifications";
 import { Eyebrow, Card } from "../../components/ui";
+import QRModal from "../../components/QRModal";
 import { colors, computeAge, pinAttemptLabel } from "@quirksandall/shared";
 import type { Pet, ShareLink } from "@quirksandall/shared";
 
@@ -18,6 +20,7 @@ export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [qrVisible, setQrVisible] = useState(false);
 
   useEffect(() => {
     loadDashboard();
@@ -91,6 +94,15 @@ export default function Dashboard() {
       ],
     });
     setLoading(false);
+
+    // Paid tier: register for push and schedule a trick-nudge if they have commands
+    if (isPaid) {
+      registerForPushNotifications();
+      const firstCommand = behavior?.commands?.[0]?.word;
+      if (firstCommand && pet.name) {
+        scheduleTrickNudge(pet.name, firstCommand);
+      }
+    }
   };
 
   const revokeLink = async () => {
@@ -187,6 +199,12 @@ export default function Dashboard() {
               <Text style={{ color: "#F7E9C9", fontSize: 13, fontWeight: "600" }}>{copied ? "Copied ✓" : "Share"}</Text>
             </TouchableOpacity>
             <TouchableOpacity
+              onPress={() => setQrVisible(true)}
+              style={{ height: 38, paddingHorizontal: 14, borderRadius: 8, backgroundColor: "rgba(247,233,201,0.1)", alignItems: "center", justifyContent: "center" }}
+            >
+              <Text style={{ color: "#F7E9C9", fontSize: 13, fontWeight: "600" }}>QR</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
               onPress={revokeLink}
               style={{ height: 38, paddingHorizontal: 14, borderRadius: 8, backgroundColor: "rgba(201,143,143,0.2)", alignItems: "center", justifyContent: "center" }}
             >
@@ -194,6 +212,15 @@ export default function Dashboard() {
             </TouchableOpacity>
           </View>
         </View>
+      )}
+
+      {shareUrl && data && (
+        <QRModal
+          visible={qrVisible}
+          url={shareUrl}
+          petName={data.pet.name}
+          onClose={() => setQrVisible(false)}
+        />
       )}
 
       {/* Profile sections */}

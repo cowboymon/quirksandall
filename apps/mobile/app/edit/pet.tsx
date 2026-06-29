@@ -8,6 +8,7 @@ import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
 import { Input, Eyebrow, Card } from "../../components/ui";
 import { computeAge, colors } from "@quirksandall/shared";
+import { uploadPetPhoto } from "../../lib/uploadPhoto";
 
 export default function EditPet() {
   const { pet, petId, loading } = useActivePet();
@@ -57,7 +58,12 @@ export default function EditPet() {
     if (!petId) return;
     setSaving(true);
     try {
-      // TODO: if photoUri is a local file:// uri, upload to Supabase Storage first
+      // Upload new photo if user picked a local file
+      let finalPhotoUrl = pet?.photo_url ?? null;
+      if (photoUri && photoUri.startsWith("file://")) {
+        finalPhotoUrl = await uploadPetPhoto(petId, photoUri);
+      }
+
       const { error } = await supabase
         .from("pets")
         .update({
@@ -70,6 +76,7 @@ export default function EditPet() {
           weight: weight || null,
           color_markings: colorMarkings || null,
           microchip_number: microchip || null,
+          photo_url: finalPhotoUrl,
         })
         .eq("id", petId);
       if (error) throw error;

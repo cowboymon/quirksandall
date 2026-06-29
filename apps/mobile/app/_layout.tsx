@@ -3,6 +3,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts, Spectral_700BoldItalic } from "@expo-google-fonts/spectral";
 import { initRevenueCat } from "../lib/purchases";
+import { configureNotifications, registerForPushNotifications } from "../lib/notifications";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -13,6 +14,7 @@ export default function RootLayout() {
     if (fontsLoaded) {
       SplashScreen.hideAsync();
       initRevenueCat();
+      configureNotifications();
     }
   }, [fontsLoaded]);
 

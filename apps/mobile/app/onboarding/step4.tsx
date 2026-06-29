@@ -4,6 +4,7 @@ import { router } from "expo-router";
 import { Headline, Input, PrimaryButton, SkipButton, ProgressDots, Eyebrow, Card } from "../../components/ui";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { supabase } from "../../lib/supabase";
+import { uploadPetPhoto } from "../../lib/uploadPhoto";
 import { colors } from "@quirksandall/shared";
 import { useState } from "react";
 
@@ -38,12 +39,18 @@ export default function Step4() {
           weight: pet.weight,
           color_markings: pet.colorMarkings,
           microchip_number: pet.microchipNumber,
-          photo_url: null, // TODO: upload photo_uri to Supabase storage first
+          photo_url: null, // uploaded below after we have the pet id
         })
         .select("id")
         .single();
 
       if (!newPet) throw new Error("Failed to create pet");
+
+      // Upload photo now that we have a petId
+      if (pet.photoUri?.startsWith("file://")) {
+        const photoUrl = await uploadPetPhoto(newPet.id, pet.photoUri);
+        await supabase.from("pets").update({ photo_url: photoUrl }).eq("id", newPet.id);
+      }
 
       // Vet info
       await supabase.from("pet_vet_info").insert({
