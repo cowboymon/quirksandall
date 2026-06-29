@@ -5,6 +5,8 @@ import { supabase } from "../../lib/supabase";
 import { registerForPushNotifications, scheduleTrickNudge } from "../../lib/notifications";
 import { Eyebrow, Card } from "../../components/ui";
 import QRModal from "../../components/QRModal";
+import PetSwitcher from "../../components/PetSwitcher";
+import { useActivePetStore } from "../../stores/activePet";
 import { colors, computeAge, pinAttemptLabel } from "@quirksandall/shared";
 import type { Pet, ShareLink } from "@quirksandall/shared";
 
@@ -21,10 +23,11 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [qrVisible, setQrVisible] = useState(false);
+  const { petId: selectedPetId } = useActivePetStore();
 
   useEffect(() => {
     loadDashboard();
-  }, []);
+  }, [selectedPetId]); // reload when user switches pet
 
   const loadDashboard = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -36,14 +39,13 @@ export default function Dashboard() {
       .eq("id", user.id)
       .single();
 
-    const { data: pet } = await supabase
-      .from("pets")
-      .select("*")
-      .eq("owner_id", user.id)
-      .eq("status", "active")
-      .order("created_at")
-      .limit(1)
-      .single();
+    let petQuery = supabase.from("pets").select("*").eq("owner_id", user.id).eq("status", "active");
+    if (selectedPetId) {
+      petQuery = petQuery.eq("id", selectedPetId);
+    } else {
+      petQuery = petQuery.order("created_at").limit(1);
+    }
+    const { data: pet } = await petQuery.single();
 
     if (!pet) {
       // No pet yet — go to onboarding
@@ -105,6 +107,28 @@ export default function Dashboard() {
     }
   };
 
+  const rotateLink = async () => {
+    Alert.alert("Rotate link?", "The current link stops working and a new one is generated.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Rotate",
+        onPress: async () => {
+          const { data: { session } } = await supabase.auth.getSession();
+          const res = await fetch(
+            `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/rotate-link`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+              body: JSON.stringify({ pet_id: data!.pet.id }),
+            }
+          );
+          if (res.ok) loadDashboard();
+          else Alert.alert("Couldn't rotate", "Try again.");
+        },
+      },
+    ]);
+  };
+
   const revokeLink = async () => {
     Alert.alert("Revoke link?", "The current link will stop working immediately.", [
       { text: "Cancel", style: "cancel" },
@@ -138,7 +162,8 @@ export default function Dashboard() {
   const statusDot = { done: colors.success, saved: colors.caution, empty: colors.border };
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerStyle={{ padding: 24, paddingTop: 60 }}>
+    <ScrollView className="flex-1 bg-background" contentContainerStyle={{ paddingTop: 60, paddingBottom: 40 }}>
+      <View style={{ paddingHorizontal: 24 }}>
       {/* Header */}
       <View style={{ flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 20 }}>
         {pet.photoUrl ? (
@@ -155,7 +180,12 @@ export default function Dashboard() {
           <Text style={{ color: colors.textMuted, fontSize: 13 }}>{pet.breed} · {pet.age}</Text>
         </View>
       </View>
+      </View>
 
+      {/* Pet switcher — only renders if 2+ pets or paid (shows Add button) */}
+      <PetSwitcher isPaid={isPaid} />
+
+      <View style={{ paddingHorizontal: 24 }}>
       {/* Link card — dark plum surface */}
       {shareUrl && (
         <View style={{ backgroundColor: colors.primary, borderRadius: 12, padding: 20, marginBottom: 16 }}>
@@ -204,6 +234,14 @@ export default function Dashboard() {
             >
               <Text style={{ color: "#F7E9C9", fontSize: 13, fontWeight: "600" }}>QR</Text>
             </TouchableOpacity>
+            {isPaid && (
+              <TouchableOpacity
+                onPress={rotateLink}
+                style={{ height: 38, paddingHorizontal: 14, borderRadius: 8, backgroundColor: "rgba(247,233,201,0.1)", alignItems: "center", justifyContent: "center" }}
+              >
+                <Text style={{ color: "#F7E9C9", fontSize: 13, fontWeight: "600" }}>Rotate</Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               onPress={revokeLink}
               style={{ height: 38, paddingHorizontal: 14, borderRadius: 8, backgroundColor: "rgba(201,143,143,0.2)", alignItems: "center", justifyContent: "center" }}
@@ -239,19 +277,22 @@ export default function Dashboard() {
         ))}
       </View>
 
-      {/* Add pet — paid feature */}
-      <TouchableOpacity
-        onPress={() => isPaid ? router.push("/onboarding/step1") : router.push("/upgrade")}
-        style={{
-          marginTop: 16, height: 44, borderRadius: 10, borderWidth: 1.5,
-          borderColor: colors.dashedBorder, borderStyle: "dashed",
-          alignItems: "center", justifyContent: "center",
-        }}
-      >
-        <Text style={{ color: isPaid ? colors.textMuted : colors.caution, fontSize: 14 }}>
-          {isPaid ? "+ Add another pet" : "🔒 Add another pet — unlock"}
-        </Text>
-      </TouchableOpacity>
+      {/* Add pet — only show as a footer row on free tier (paid uses the switcher) */}
+      {!isPaid && (
+        <TouchableOpacity
+          onPress={() => router.push("/upgrade")}
+          style={{
+            marginTop: 16, height: 44, borderRadius: 10, borderWidth: 1.5,
+            borderColor: colors.dashedBorder, borderStyle: "dashed",
+            alignItems: "center", justifyContent: "center",
+          }}
+        >
+          <Text style={{ color: colors.caution, fontSize: 14 }}>
+            🔒 Add another pet — unlock
+          </Text>
+        </TouchableOpacity>
+      )}
+      </View>
     </ScrollView>
   );
 }

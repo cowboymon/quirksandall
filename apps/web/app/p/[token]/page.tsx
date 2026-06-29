@@ -76,7 +76,7 @@ async function fetchProfile(token: string): Promise<RecipientProfile | null> {
     },
     allergies: medical.allergies ?? [],
     // emergencyContacts only populated after PIN unlock (handled client-side via edge function)
-    lastUpdatedAt: pet.dob, // TODO: track updated_at on pets table
+    lastUpdatedAt: pet.updated_at ?? pet.dob,
     mode: link.mode,
     isPaid,
     // routine/medical only for paid

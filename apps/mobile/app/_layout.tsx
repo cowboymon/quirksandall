@@ -24,6 +24,7 @@ export default function RootLayout() {
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#FBF4E8" } }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="auth" />
+      <Stack.Screen name="auth-callback" options={{ animation: "none" }} />
       <Stack.Screen name="onboarding" options={{ presentation: "card" }} />
       <Stack.Screen name="(tabs)" />
     </Stack>

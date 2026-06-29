@@ -209,7 +209,8 @@ export default function RecipientView({ profile, token }: Props) {
 
         <footer className="mt-4 pb-8">
           <p className="eyebrow text-text-muted text-center">
-            Last updated by owner
+            Last updated by owner{" "}
+            {new Date(lastUpdatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
           </p>
         </footer>
       </div>
@@ -248,7 +249,7 @@ function RoutineCard({ label, text }: { label: string; text: string }) {
   );
 }
 
-function formatFeeding(feeding: RecipientProfile["routine"]["feeding"]): string {
+function formatFeeding(feeding: NonNullable<RecipientProfile["routine"]>["feeding"]): string {
   const slots = [
     feeding.breakfast?.time && `Breakfast ${feeding.breakfast.time}: ${feeding.breakfast.amount}`,
     feeding.lunch?.time && `Lunch ${feeding.lunch.time}: ${feeding.lunch.amount}`,
