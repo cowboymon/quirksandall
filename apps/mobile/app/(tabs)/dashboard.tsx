@@ -82,9 +82,10 @@ export default function Dashboard() {
       wrongPinCount: wrongPinCount ?? 0,
       isPaid,
       sections: [
+        { label: "Pet basics", detail: `${pet.breed ?? ""}${pet.breed && pet.sex ? " · " : ""}${pet.sex ?? ""}`.trim() || "Name, breed, photo", status: pet.breed ? "done" : "empty", route: "/edit/pet" },
         { label: "Emergency contacts", detail: "Vet, emergency vet, backup", status: "done", route: "/edit/emergency" },
         { label: "Commands", detail: `${behavior?.commands?.length ?? 0} commands logged`, status: behavior?.commands?.length ? "done" : "empty", route: "/edit/behavior" },
-        { label: "Quirks & triggers", detail: "Flight risk flagged", status: "done", route: "/edit/behavior" },
+        { label: "Quirks & triggers", detail: "Escape risk, fears, off-limits zones", status: "done", route: "/edit/behavior" },
         { label: "Routine", detail: isPaid ? "Shown to sitters" : "Saved — not shown to sitters yet", status: "saved", route: "/edit/routine" },
         { label: "Medical", detail: isPaid ? "Shown to sitters" : "Saved — not shown to sitters yet", status: "saved", route: "/edit/routine" },
       ],
