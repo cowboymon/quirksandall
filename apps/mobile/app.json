@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "Quirks & All",
+    "slug": "quirksandall",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "quirksandall",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FBF4E8"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.loudandfine.quirksandall",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Choose a photo for your pet's profile.",
+        "NSCameraUsageDescription": "Take a photo for your pet's profile."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FBF4E8"
+      },
+      "package": "com.loudandfine.quirksandall"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#4A2E3D"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

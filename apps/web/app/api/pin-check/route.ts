@@ -1,0 +1,83 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import { PIN_MAX_ATTEMPTS, PIN_WINDOW_MINUTES } from "@quirksandall/shared";
+import { createHash } from "crypto";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_KEY!
+);
+
+export async function POST(req: NextRequest) {
+  const { token, pin } = await req.json();
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
+
+  if (!token || !pin || pin.length !== 4) {
+    return NextResponse.json({ success: false }, { status: 400 });
+  }
+
+  // Resolve link
+  const { data: link } = await supabase
+    .from("share_links")
+    .select("id, pin_hash, revoked, pet_id")
+    .eq("token", token)
+    .single();
+
+  if (!link || link.revoked) {
+    return NextResponse.json({ success: false }, { status: 404 });
+  }
+
+  // Rate limit check: count recent attempts for this link+ip in the window
+  const windowStart = new Date(Date.now() - PIN_WINDOW_MINUTES * 60 * 1000).toISOString();
+  const { count } = await supabase
+    .from("pin_attempts")
+    .select("id", { count: "exact", head: true })
+    .eq("link_id", link.id)
+    .eq("ip", ip)
+    .gte("attempted_at", windowStart);
+
+  if ((count ?? 0) >= PIN_MAX_ATTEMPTS) {
+    return NextResponse.json({ success: false, cooldown: true });
+  }
+
+  // Check PIN
+  const pinHash = createHash("sha256").update(pin).digest("hex");
+  const correct = link.pin_hash === pinHash;
+
+  // Log attempt
+  await supabase.from("pin_attempts").insert({
+    link_id: link.id,
+    ip,
+    success: correct,
+    attempted_at: new Date().toISOString(),
+  });
+
+  if (!correct) {
+    return NextResponse.json({ success: false });
+  }
+
+  // Fetch emergency contacts
+  const { data: pet } = await supabase
+    .from("pets")
+    .select(`
+      owners!inner(name, primary_phone),
+      pet_vet_info(primary_vet, emergency_vet, insurance),
+      owners_backup_contacts:owners!inner(backup_contacts)
+    `)
+    .eq("id", link.pet_id)
+    .single();
+
+  const vetInfo = (pet as any)?.pet_vet_info?.[0] ?? {};
+  const owner = (pet as any)?.owners ?? {};
+
+  return NextResponse.json({
+    success: true,
+    contacts: {
+      primaryVet: vetInfo.primary_vet ?? {},
+      emergencyVet: vetInfo.emergency_vet ?? {},
+      insurance: vetInfo.insurance ?? {},
+      ownerContact: { name: owner.name ?? "", phone: owner.primary_phone ?? "" },
+      backupContacts: owner.backup_contacts ?? [],
+    },
+  });
+}

@@ -1,0 +1,13 @@
+{
+  "name": "quirksandall",
+  "private": true,
+  "scripts": {
+    "web": "pnpm --filter web dev",
+    "mobile": "pnpm --filter mobile start",
+    "build:web": "pnpm --filter web build",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

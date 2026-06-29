@@ -1,0 +1,29 @@
+import { useEffect } from "react";
+import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { useFonts, Spectral_700BoldItalic } from "@expo-google-fonts/spectral";
+import { initRevenueCat } from "../lib/purchases";
+
+SplashScreen.preventAutoHideAsync();
+
+export default function RootLayout() {
+  const [fontsLoaded] = useFonts({ Spectral_700BoldItalic });
+
+  useEffect(() => {
+    if (fontsLoaded) {
+      SplashScreen.hideAsync();
+      initRevenueCat();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) return null;
+
+  return (
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#FBF4E8" } }}>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="auth" />
+      <Stack.Screen name="onboarding" options={{ presentation: "card" }} />
+      <Stack.Screen name="(tabs)" />
+    </Stack>
+  );
+}
