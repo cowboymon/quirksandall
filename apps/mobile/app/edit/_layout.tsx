@@ -5,7 +5,7 @@ export default function EditLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: "#FBF4E8" },
+        contentStyle: { backgroundColor: "#F8ECEE" },
         animation: "slide_from_right",
       }}
     />

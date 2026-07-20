@@ -147,12 +147,12 @@ export default function EditPet() {
             <View
               style={{
                 width: 18, height: 18, borderRadius: 3, borderWidth: 1.5,
-                borderColor: dobIsEstimated ? colors.primary : colors.border,
-                backgroundColor: dobIsEstimated ? colors.primary : "#FFFFFF",
+                borderColor: dobIsEstimated ? colors.button : colors.border,
+                backgroundColor: dobIsEstimated ? colors.button : colors.cardBg,
                 alignItems: "center", justifyContent: "center",
               }}
             >
-              {dobIsEstimated && <Text style={{ color: "#F7E9C9", fontSize: 11, fontWeight: "700" }}>✓</Text>}
+              {dobIsEstimated && <Text style={{ color: "#F8ECEE", fontSize: 11, fontWeight: "700" }}>✓</Text>}
             </View>
             <Text style={{ color: colors.textMuted, fontSize: 13 }}>
               Don't know exactly — best guess

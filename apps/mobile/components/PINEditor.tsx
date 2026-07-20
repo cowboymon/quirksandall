@@ -109,14 +109,14 @@ export default function PINEditor({ petId }: Props) {
                   alignItems: "center", justifyContent: "center",
                   borderColor: mismatch
                     ? colors.danger
-                    : i < current.length ? colors.primary
-                    : i === current.length ? colors.accent
+                    : i < current.length ? colors.button
+                    : i === current.length ? colors.primary
                     : colors.border,
-                  backgroundColor: mismatch ? "rgba(201,143,143,0.1)" : i < current.length ? colors.primary : "#FFFFFF",
+                  backgroundColor: mismatch ? "rgba(184,112,112,0.1)" : i < current.length ? colors.button : colors.cardBg,
                 }}
               >
                 {i < current.length && (
-                  <View style={{ width: 9, height: 9, borderRadius: 5, backgroundColor: "#F7E9C9" }} />
+                  <View style={{ width: 9, height: 9, borderRadius: 5, backgroundColor: "#F8ECEE" }} />
                 )}
               </View>
             ))}

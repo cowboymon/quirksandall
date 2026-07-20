@@ -25,11 +25,11 @@ export default function RecipientView({ profile, token }: Props) {
               src={pet.photoUrl}
               alt={pet.name}
               className="w-16 h-16 rounded-full object-cover border-2"
-              style={{ borderColor: "#E8DCC8" }}
+              style={{ borderColor: "#E5BEC4" }}
             />
           )}
           <div>
-            <h1 className="font-spectral text-3xl font-bold italic leading-none text-primary">
+            <h1 className="font-tanker text-3xl leading-none text-foreground">
               {pet.name}'s Cheat Sheet
             </h1>
             <p className="text-text-muted text-sm mt-1">
@@ -50,7 +50,7 @@ export default function RecipientView({ profile, token }: Props) {
               <div
                 key={label}
                 className="bg-white border rounded-card px-3 py-2.5"
-                style={{ borderColor: "#E8DCC8" }}
+                style={{ borderColor: "#E5BEC4" }}
               >
                 <p className="eyebrow text-text-muted">{label}</p>
                 <p className="text-primary text-xs font-medium mt-0.5 truncate">{val}</p>
@@ -70,8 +70,8 @@ export default function RecipientView({ profile, token }: Props) {
               className="flex-1 h-9 rounded-button text-sm font-medium transition-all"
               style={
                 view === v
-                  ? { backgroundColor: "#4A2E3D", color: "#F7E9C9" }
-                  : { color: "#8A7A72" }
+                  ? { backgroundColor: "#510000", color: "#F8ECEE" }
+                  : { color: "#987080" }
               }
             >
               {v === "quick" ? "Quick view" : "Full view"}
@@ -92,7 +92,7 @@ export default function RecipientView({ profile, token }: Props) {
           />
         ) : (
           emergencyContacts && (
-            <section className="border rounded-card p-4" style={{ borderColor: "#E8DCC8" }}>
+            <section className="border rounded-card p-4" style={{ borderColor: "#E5BEC4" }}>
               <p className="eyebrow text-text-muted mb-3">Emergency contacts</p>
               <div className="flex flex-col gap-3">
                 <ContactRow label="Vet" name={emergencyContacts.primaryVet.clinic} phone={emergencyContacts.primaryVet.phone} />
@@ -111,10 +111,10 @@ export default function RecipientView({ profile, token }: Props) {
         {behavior.commands.length > 0 && (
           <section>
             <p className="eyebrow text-text-muted mb-2">Commands</p>
-            <div className="border rounded-card overflow-hidden" style={{ borderColor: "#E8DCC8" }}>
+            <div className="border rounded-card overflow-hidden" style={{ borderColor: "#E5BEC4" }}>
               <table className="w-full text-sm">
                 <thead>
-                  <tr style={{ backgroundColor: "#4A2E3D", color: "#F7E9C9" }}>
+                  <tr style={{ backgroundColor: "#510000", color: "#F8ECEE" }}>
                     <th className="text-left px-3 py-2 eyebrow font-medium">Word</th>
                     <th className="text-left px-3 py-2 eyebrow font-medium">Means</th>
                     <th className="text-left px-3 py-2 eyebrow font-medium">Reward</th>
@@ -125,7 +125,7 @@ export default function RecipientView({ profile, token }: Props) {
                     <tr
                       key={cmd.id}
                       className="border-t"
-                      style={{ borderColor: "#E8DCC8", backgroundColor: i % 2 === 0 ? "#FFFFFF" : "#FBF4E8" }}
+                      style={{ borderColor: "#E5BEC4", backgroundColor: i % 2 === 0 ? "#FFFFFF" : "#F8ECEE" }}
                     >
                       <td className="px-3 py-2 font-semibold text-primary">{cmd.word}</td>
                       <td className="px-3 py-2 text-text-muted">{cmd.meaning}</td>
@@ -160,7 +160,7 @@ export default function RecipientView({ profile, token }: Props) {
         {allergies.length > 0 && (
           <section>
             <p className="eyebrow text-text-muted mb-2">Allergies</p>
-            <div className="bg-white border rounded-card px-4 py-3" style={{ borderColor: "#E8DCC8" }}>
+            <div className="bg-white border rounded-card px-4 py-3" style={{ borderColor: "#E5BEC4" }}>
               <p className="text-primary text-sm">{allergies.join(", ")}</p>
             </div>
           </section>
@@ -187,7 +187,7 @@ export default function RecipientView({ profile, token }: Props) {
             {medical.conditions?.length > 0 && (
               <>
                 <p className="eyebrow text-text-muted mb-2">Medical conditions</p>
-                <div className="bg-white border rounded-card px-4 py-3 mb-2" style={{ borderColor: "#E8DCC8" }}>
+                <div className="bg-white border rounded-card px-4 py-3 mb-2" style={{ borderColor: "#E5BEC4" }}>
                   <p className="text-primary text-sm">{medical.conditions.join(", ")}</p>
                 </div>
               </>
@@ -196,7 +196,7 @@ export default function RecipientView({ profile, token }: Props) {
               <>
                 <p className="eyebrow text-text-muted mb-2 mt-4">Medications</p>
                 {medical.medications.map((med, i) => (
-                  <div key={i} className="bg-white border rounded-card px-4 py-3 mb-2" style={{ borderColor: "#E8DCC8" }}>
+                  <div key={i} className="bg-white border rounded-card px-4 py-3 mb-2" style={{ borderColor: "#E5BEC4" }}>
                     <p className="text-primary text-sm font-semibold">{med.name} — {med.dose}</p>
                     <p className="text-text-muted text-xs mt-0.5">{med.frequency} · Stored: {med.locationStored}</p>
                     {med.notes && <p className="text-text-muted text-xs mt-0.5">{med.notes}</p>}
@@ -232,9 +232,9 @@ function QuirkCard({ label, text, highlight }: { label: string; text: string; hi
   return (
     <div
       className="bg-white border rounded-card px-4 py-3"
-      style={{ borderColor: highlight ? "#C9A24A" : "#E8DCC8" }}
+      style={{ borderColor: highlight ? "#A07848" : "#E5BEC4" }}
     >
-      <p className="eyebrow mb-1" style={{ color: highlight ? "#C9A24A" : "#8A7A72" }}>{label}</p>
+      <p className="eyebrow mb-1" style={{ color: highlight ? "#A07848" : "#987080" }}>{label}</p>
       <p className="text-primary text-sm">{text}</p>
     </div>
   );
@@ -242,7 +242,7 @@ function QuirkCard({ label, text, highlight }: { label: string; text: string; hi
 
 function RoutineCard({ label, text }: { label: string; text: string }) {
   return (
-    <div className="bg-white border rounded-card px-4 py-3" style={{ borderColor: "#E8DCC8" }}>
+    <div className="bg-white border rounded-card px-4 py-3" style={{ borderColor: "#E5BEC4" }}>
       <p className="eyebrow text-text-muted mb-1">{label}</p>
       <p className="text-primary text-sm">{text}</p>
     </div>

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import type { RecipientProfile } from "@quirksandall/shared";
 import RecipientView from "./RecipientView";
 
-async function fetchProfile(token: string): Promise<RecipientProfile | null> {
+async function fetchProfile(token: string, logView = true): Promise<RecipientProfile | null> {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_KEY!
@@ -24,7 +24,7 @@ async function fetchProfile(token: string): Promise<RecipientProfile | null> {
     .from("pets")
     .select(`
       id, name, species, breed, dob, dob_is_estimated, sex, weight,
-      color_markings, photo_url, microchip_number,
+      color_markings, photo_url, microchip_number, updated_at,
       owners!inner(purchase_status),
       pet_behavior(commands, quirks_triggers, escape_risk, scared, no_go, flight_risk, temperament_summary),
       pet_medical(allergies, conditions, medications),
@@ -43,11 +43,13 @@ async function fetchProfile(token: string): Promise<RecipientProfile | null> {
   const vetInfo = (pet as any).pet_vet_info?.[0] ?? null;
 
   // Log view (fire and forget)
-  supabase
-    .from("share_links")
-    .update({ last_viewed_at: new Date().toISOString() })
-    .eq("id", link.id)
-    .then(() => {});
+  if (logView) {
+    supabase
+      .from("share_links")
+      .update({ last_viewed_at: new Date().toISOString() })
+      .eq("id", link.id)
+      .then(() => {});
+  }
 
   // Compute age
   const { computeAge } = await import("@quirksandall/shared");
@@ -87,13 +89,29 @@ async function fetchProfile(token: string): Promise<RecipientProfile | null> {
   return profile;
 }
 
+export async function generateMetadata({ params }: { params: { token: string } }) {
+  const profile = await fetchProfile(params.token, false);
+  if (!profile) return { title: "Quirks & All" };
+  const title = `${profile.pet.name} — Quirks & All`;
+  const description = "Away, but known.";
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      ...(profile.pet.photoUrl ? { images: [{ url: profile.pet.photoUrl }] } : {}),
+    },
+  };
+}
+
 export default async function RecipientPage({ params }: { params: { token: string } }) {
   const profile = await fetchProfile(params.token);
   if (!profile) {
     return (
       <main className="flex min-h-screen items-center justify-center px-6">
         <div className="text-center">
-          <p className="text-[#4A2E3D] font-medium">This link's done its job. Ask for a new one.</p>
+          <p className="text-[#510000] font-medium">This link's done its job. Ask for a new one.</p>
         </div>
       </main>
     );

@@ -16,7 +16,7 @@ export default function Index() {
 
   return (
     <View className="flex-1 items-center justify-center bg-background">
-      <ActivityIndicator color="#4A2E3D" />
+      <ActivityIndicator color="#510000" />
     </View>
   );
 }

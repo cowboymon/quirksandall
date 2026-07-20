@@ -14,7 +14,7 @@ type Props = {
 
 export default function EditShell({ title, children, onSave, saving, saveLabel = "Save", loading }: Props) {
   return (
-    <View style={{ flex: 1, backgroundColor: "#FBF4E8" }}>
+    <View style={{ flex: 1, backgroundColor: "#F8ECEE" }}>
       {/* Header */}
       <View
         style={{
@@ -24,7 +24,7 @@ export default function EditShell({ title, children, onSave, saving, saveLabel =
           paddingHorizontal: 24,
           paddingTop: 60,
           paddingBottom: 12,
-          backgroundColor: "#FBF4E8",
+          backgroundColor: "#F8ECEE",
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
         }}
@@ -32,7 +32,7 @@ export default function EditShell({ title, children, onSave, saving, saveLabel =
         <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
           <Text style={{ color: colors.textMuted, fontSize: 15 }}>‹ Back</Text>
         </TouchableOpacity>
-        <Text style={{ fontFamily: "Spectral_700BoldItalic", fontSize: 18, color: colors.primary }}>{title}</Text>
+        <Text style={{ fontFamily: "Tanker", fontSize: 18, color: colors.textDark }}>{title}</Text>
         <TouchableOpacity
           onPress={onSave}
           disabled={saving}

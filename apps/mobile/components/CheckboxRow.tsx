@@ -14,14 +14,14 @@ export default function CheckboxRow({ label, checked, onToggle }: Props) {
         style={{
           width: 20, height: 20, borderRadius: 4,
           borderWidth: 1.5,
-          borderColor: checked ? colors.primary : colors.border,
-          backgroundColor: checked ? colors.primary : "#FFFFFF",
+          borderColor: checked ? colors.button : colors.border,
+          backgroundColor: checked ? colors.button : colors.cardBg,
           alignItems: "center", justifyContent: "center",
           marginTop: 1,
         }}
       >
         {checked && (
-          <Text style={{ color: "#F7E9C9", fontSize: 12, fontWeight: "700" }}>✓</Text>
+          <Text style={{ color: "#F8ECEE", fontSize: 12, fontWeight: "700" }}>✓</Text>
         )}
       </View>
       <Text style={{ flex: 1, color: colors.textMuted, fontSize: 13, lineHeight: 18 }}>{label}</Text>

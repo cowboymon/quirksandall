@@ -35,7 +35,7 @@ export default function AuthCallback() {
   }, []);
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#FBF4E8", alignItems: "center", justifyContent: "center", gap: 12 }}>
+    <View style={{ flex: 1, backgroundColor: "#F8ECEE", alignItems: "center", justifyContent: "center", gap: 12 }}>
       <ActivityIndicator color={colors.primary} />
       <Text style={{ color: colors.textMuted, fontSize: 13 }}>Signing you in…</Text>
     </View>

@@ -55,13 +55,13 @@ export default function Upgrade() {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: "#FBF4E8" }} contentContainerStyle={{ padding: 24, paddingTop: 60 }}>
+    <ScrollView style={{ flex: 1, backgroundColor: "#F8ECEE" }} contentContainerStyle={{ padding: 24, paddingTop: 60 }}>
       <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 24 }}>
         <Text style={{ color: colors.textMuted, fontSize: 15 }}>‹ Back</Text>
       </TouchableOpacity>
 
       <Text
-        style={{ fontFamily: "Spectral_700BoldItalic", fontSize: 30, color: colors.primary, lineHeight: 36, marginBottom: 8 }}
+        style={{ fontFamily: "Tanker", fontSize: 30, color: colors.textDark, lineHeight: 36, marginBottom: 8 }}
       >
         Routine's saved.{"\n"}Unlock it so sitters{"\n"}get the full day.
       </Text>
@@ -89,13 +89,13 @@ export default function Upgrade() {
         style={{
           height: 52,
           borderRadius: 10,
-          backgroundColor: loading ? colors.textMuted : colors.primary,
+          backgroundColor: loading ? colors.dashedBorder : colors.button,
           alignItems: "center",
           justifyContent: "center",
           marginBottom: 12,
         }}
       >
-        <Text style={{ color: "#F7E9C9", fontWeight: "700", fontSize: 16 }}>
+        <Text style={{ color: "#F8ECEE", fontWeight: "700", fontSize: 16 }}>
           {loading ? "Working…" : "Unlock for $7.99"}
         </Text>
       </TouchableOpacity>

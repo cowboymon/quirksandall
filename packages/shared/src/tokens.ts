@@ -1,24 +1,33 @@
 // Design tokens — consumed by both apps/web (as CSS vars / Tailwind config)
 // and apps/mobile (as NativeWind theme extension / RN StyleSheet constants)
+// Source of truth: Figma export src/styles/theme.css
 
 export const colors = {
-  primary: "#4A2E3D",       // deep plum — buttons, CTAs, nav
-  accent: "#D9A24A",        // honey ochre — highlights, commands table
-  background: "#FBF4E8",    // warm cream — never pure white
-  textDark: "#4A2E3D",
-  textMuted: "#8A7A72",
-  border: "#E8DCC8",
-  success: "#7A9E6A",
-  caution: "#C9A24A",       // not started
-  danger: "#C98F8F",        // revoke
-  dashedBorder: "#C9B896",  // add/skip affordances
-  // Link card (dark surface)
-  cardDark: "#4A2E3D",
-  cardDarkText: "#F7E9C9",
-  cardDarkLabel: "#D9A24A",
+  primary: "#B83A52",       // rose — accents, active states, inline CTAs
+  primaryForeground: "#F8ECEE",
+  accent: "#B83A52",
+  background: "#F8ECEE",    // warm blush — app background, never pure white
+  foreground: "#510000",    // deep crimson — primary text
+  textDark: "#510000",
+  textMuted: "#987080",
+  secondary: "#F2E4E6",     // light blush — secondary surfaces
+  border: "#E5BEC4",        // hairline borders
+  success: "#5A8A60",       // done green
+  caution: "#A07848",       // amber — saved/caution state
+  danger: "#B87070",        // revoke, danger states
+  dashedBorder: "#D8B0B8",  // add/skip affordances
+  // Buttons — Figma primary button is deep crimson, hover #3E0000
+  button: "#510000",
+  buttonPressed: "#3E0000",
+  buttonText: "#F8ECEE",
+  // Dark surface (link card, dashboard header, poster bands)
+  cardDark: "#510000",
+  cardDarkDeep: "#3E0000",
+  cardDarkText: "#F8ECEE",
+  cardDarkLabel: "#F0A0B0",
   // Neutral surfaces
-  cardBg: "#FFFFFF",
-  inputBg: "#F7F2EA",
+  cardBg: "#FFFBFB",
+  inputBg: "#FFFBFB",
 } as const;
 
 export const radius = {
@@ -33,7 +42,12 @@ export const spacing = {
 } as const;
 
 export const typography = {
-  headlineFont: "Spectral_700Bold_Italic",
+  // Tanker — display/headlines. Satoshi — body/UI.
+  headlineFont: "Tanker",
+  bodyFont: "Satoshi",
+  bodyFontMedium: "Satoshi-Medium",
+  bodyFontBold: "Satoshi-Bold",
+  headlineTracking: -0.01, // em
   labelSize: 11,
   labelTracking: 0.5,
 } as const;

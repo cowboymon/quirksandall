@@ -1,17 +1,34 @@
-@import url("https://fonts.googleapis.com/css2?family=Spectral:ital,wght@1,700&display=swap");
+@import url("https://api.fontshare.com/v2/css?f[]=tanker@400&f[]=satoshi@300,400,500,700&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #FBF4E8;
+  --background: #F8ECEE;
+  --foreground: #510000;
+  --card: #FFFBFB;
+  --primary: #B83A52;
+  --primary-foreground: #F8ECEE;
+  --secondary: #F2E4E6;
+  --muted-foreground: #987080;
+  --border: #E5BEC4;
+  --destructive: #B87070;
+  --sidebar: #510000;
+  --sidebar-foreground: #F8ECEE;
+  --radius: 0.75rem;
 }
 
 body {
   background-color: var(--background);
-  color: #4A2E3D;
-  font-family: system-ui, -apple-system, sans-serif;
+  color: var(--foreground);
+  font-family: "Satoshi", system-ui, -apple-system, sans-serif;
+}
+
+.font-tanker {
+  font-family: "Tanker", serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
 
 .eyebrow {

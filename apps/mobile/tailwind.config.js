@@ -11,6 +11,8 @@ module.exports = {
         accent: colors.accent,
         background: colors.background,
         "text-muted": colors.textMuted,
+        foreground: colors.foreground,
+        secondary: colors.secondary,
         border: colors.border,
         success: colors.success,
         caution: colors.caution,
