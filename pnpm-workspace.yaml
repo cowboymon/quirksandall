@@ -1,3 +1,11 @@
 packages:
   - "apps/*"
   - "packages/*"
+
+# pnpm 10 reads overrides here, not from package.json's "pnpm" field.
+# Pin two transitive deps to versions old enough to pass supply-chain
+# minimum-release-age policies (their latest patches were published within
+# a day and get rejected).
+overrides:
+  react-is@^19.0.0: "19.2.7"
+  tar@^7.0.0: "7.5.20"
