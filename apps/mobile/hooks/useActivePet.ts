@@ -14,6 +14,7 @@ export type ActivePet = {
   weight: string | null;
   color_markings: string | null;
   photo_url: string | null;
+  description_for_id: string | null;
   microchip_number: string | null;
 };
 

@@ -41,7 +41,7 @@ export default function EditShell({ title, children, onSave, saving, saveLabel =
           {saving ? (
             <ActivityIndicator size="small" color={colors.primary} />
           ) : (
-            <Text style={{ color: colors.primary, fontSize: 15, fontWeight: "700" }}>{saveLabel}</Text>
+            <Text style={{ color: colors.primary, fontSize: 15, fontFamily: "Satoshi-Bold" }}>{saveLabel}</Text>
           )}
         </TouchableOpacity>
       </View>

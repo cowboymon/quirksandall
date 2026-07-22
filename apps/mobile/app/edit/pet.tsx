@@ -22,6 +22,7 @@ export default function EditPet() {
   const [weight, setWeight] = useState("");
   const [colorMarkings, setColorMarkings] = useState("");
   const [microchip, setMicrochip] = useState("");
+  const [descriptionForId, setDescriptionForId] = useState("");
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -36,6 +37,7 @@ export default function EditPet() {
     setWeight(pet.weight ?? "");
     setColorMarkings(pet.color_markings ?? "");
     setMicrochip(pet.microchip_number ?? "");
+    setDescriptionForId(pet.description_for_id ?? "");
     setPhotoUri(pet.photo_url ?? null);
   }, [pet]);
 
@@ -76,6 +78,7 @@ export default function EditPet() {
           weight: weight || null,
           color_markings: colorMarkings || null,
           microchip_number: microchip || null,
+          description_for_id: descriptionForId || null,
           photo_url: finalPhotoUrl,
         })
         .eq("id", petId);
@@ -180,6 +183,21 @@ export default function EditPet() {
           <Input className="mt-1" placeholder="985141002345678" value={microchip} onChangeText={setMicrochip} keyboardType="numeric" />
           <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4 }}>
             Always shown to recipients — safety override.
+          </Text>
+        </Card>
+
+        <Card>
+          <Eyebrow>What to look for</Eyebrow>
+          <Input
+            className="mt-1"
+            placeholder="Walks with a limp, answers to 'Biscuit', shy with strangers"
+            value={descriptionForId}
+            onChangeText={setDescriptionForId}
+            multiline
+            style={{ height: 80, paddingTop: 12, textAlignVertical: "top" }}
+          />
+          <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4 }}>
+            Missing poster only — never shown on the shared profile.
           </Text>
         </Card>
       </View>

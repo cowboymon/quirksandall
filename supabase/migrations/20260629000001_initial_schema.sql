@@ -84,7 +84,7 @@ create table share_links (
   id uuid primary key default gen_random_uuid(),
   pet_id uuid not null references pets(id) on delete cascade,
   token text not null unique,
-  pin_hash text,                              -- sha256 of the PIN
+  pin_hash text,                              -- bcrypt hash of the PIN
   mode text not null default 'full' check (mode in ('quick','full')),
   expires_at timestamptz,
   revoked boolean not null default false,

@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Image, TextInput, Share, Alert, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
 import * as FileSystem from "expo-file-system";
+import * as ImagePicker from "expo-image-picker";
 import { supabase } from "../lib/supabase";
 import { Eyebrow, Input } from "../components/ui";
 import { useActivePetStore } from "../stores/activePet";
@@ -46,6 +47,11 @@ export default function MissingPoster() {
   const [lastSeenArea, setLastSeenArea] = useState("");
   const [lastSeenDate, setLastSeenDate] = useState(new Date().toISOString().split("T")[0]);
   const [saving, setSaving] = useState<string | null>(null);
+  // Per-format photo override: format key → data URI; previews hold the
+  // locally cached PNG generated with that override.
+  const [overrides, setOverrides] = useState<Record<string, string>>({});
+  const [previews, setPreviews] = useState<Record<string, string>>({});
+  const [regenerating, setRegenerating] = useState<string | null>(null);
 
   useEffect(() => {
     load();
@@ -98,13 +104,86 @@ export default function MissingPoster() {
     return `${WEB_URL}/api/generate-poster?${params.toString()}`;
   };
 
+  // Generate a format server-side with an overridden photo (POST + data URI),
+  // cache the PNG locally, and return its file URI.
+  const generateWithOverride = async (key: string, photoDataUri: string): Promise<string> => {
+    const res = await fetch(`${WEB_URL}/api/generate-poster`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        token: profile!.token,
+        format: key,
+        lastSeenArea,
+        lastSeenDate,
+        lookFor: whatToLookFor,
+        photoDataUri,
+      }),
+    });
+    if (!res.ok) throw new Error("Generation failed");
+    const blob = await res.blob();
+    const base64 = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve((reader.result as string).split(",")[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+    const fileUri = `${FileSystem.cacheDirectory}${profile!.name.toLowerCase()}-missing-${key}-${Date.now()}.png`;
+    await FileSystem.writeAsStringAsync(fileUri, base64, { encoding: FileSystem.EncodingType.Base64 });
+    return fileUri;
+  };
+
+  const pickPhotoFor = async (key: string) => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission needed", "Allow photo access to change the photo.");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+      base64: true,
+    });
+    if (result.canceled || !result.assets[0].base64) return;
+    const dataUri = `data:image/jpeg;base64,${result.assets[0].base64}`;
+    setRegenerating(key);
+    try {
+      const fileUri = await generateWithOverride(key, dataUri);
+      setOverrides((o) => ({ ...o, [key]: dataUri }));
+      setPreviews((p) => ({ ...p, [key]: fileUri }));
+    } catch {
+      Alert.alert("Couldn't generate", "Check your connection and try again.");
+    } finally {
+      setRegenerating(null);
+    }
+  };
+
+  // Entering the output view: previews built with overridden photos need a
+  // rebuild in case the ephemeral form fields changed since last time.
+  const openOutput = async () => {
+    setView("output");
+    for (const key of Object.keys(overrides)) {
+      setRegenerating(key);
+      try {
+        const uri = await generateWithOverride(key, overrides[key]);
+        setPreviews((p) => ({ ...p, [key]: uri }));
+      } catch {
+        // keep the stale preview rather than blocking the view
+      }
+    }
+    setRegenerating(null);
+  };
+
   const saveOutput = async (key: string) => {
     if (!profile) return;
     setSaving(key);
     try {
-      const fileUri = `${FileSystem.cacheDirectory}${profile.name.toLowerCase()}-missing-${key}.png`;
-      const { status, uri } = await FileSystem.downloadAsync(outputUrl(key), fileUri);
-      if (status !== 200) throw new Error("Generation failed");
+      let uri = previews[key];
+      if (!uri) {
+        const fileUri = `${FileSystem.cacheDirectory}${profile.name.toLowerCase()}-missing-${key}.png`;
+        const dl = await FileSystem.downloadAsync(outputUrl(key), fileUri);
+        if (dl.status !== 200) throw new Error("Generation failed");
+        uri = dl.uri;
+      }
       await Share.share({ url: uri, message: `${profile.name} is missing.` });
     } catch {
       Alert.alert("Couldn't save", "Check your connection and try again.");
@@ -171,28 +250,42 @@ export default function MissingPoster() {
                   {f.label}
                 </Text>
               )}
-              <Image
-                source={{ uri: outputUrl(f.key) }}
-                style={{ width: "100%", aspectRatio: f.aspect, borderRadius: 8, backgroundColor: colors.secondary }}
-                resizeMode="contain"
-              />
-              <TouchableOpacity
-                onPress={() => saveOutput(f.key)}
-                disabled={saving !== null}
-                style={{
-                  marginTop: 12, height: 40, borderRadius: 10, backgroundColor: colors.button,
-                  alignItems: "center", justifyContent: "center", alignSelf: "flex-end", paddingHorizontal: 18,
-                  opacity: saving && saving !== f.key ? 0.5 : 1,
-                }}
-              >
-                {saving === f.key ? (
-                  <ActivityIndicator size="small" color={colors.buttonText} />
-                ) : (
-                  <Text style={{ color: colors.buttonText, fontSize: 13, fontWeight: "600" }}>
-                    Save {f.key === "poster" ? "poster" : f.key.replace("x", ":")}
-                  </Text>
+              <View>
+                <Image
+                  source={{ uri: previews[f.key] ?? outputUrl(f.key) }}
+                  style={{ width: "100%", aspectRatio: f.aspect, borderRadius: 8, backgroundColor: colors.secondary }}
+                  resizeMode="contain"
+                />
+                {regenerating === f.key && (
+                  <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(248,236,238,0.6)", borderRadius: 8 }}>
+                    <ActivityIndicator color={colors.textDark} />
+                  </View>
                 )}
-              </TouchableOpacity>
+              </View>
+              <View style={{ marginTop: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                <TouchableOpacity onPress={() => pickPhotoFor(f.key)} disabled={regenerating !== null}>
+                  <Text style={{ color: colors.textMuted, fontSize: 12, fontWeight: "500" }}>
+                    📷 Change photo
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => saveOutput(f.key)}
+                  disabled={saving !== null || regenerating !== null}
+                  style={{
+                    height: 40, borderRadius: 10, backgroundColor: colors.button,
+                    alignItems: "center", justifyContent: "center", paddingHorizontal: 18,
+                    opacity: saving && saving !== f.key ? 0.5 : 1,
+                  }}
+                >
+                  {saving === f.key ? (
+                    <ActivityIndicator size="small" color={colors.buttonText} />
+                  ) : (
+                    <Text style={{ color: colors.buttonText, fontSize: 13, fontWeight: "600" }}>
+                      Save {f.key === "poster" ? "poster" : f.key.replace("x", ":")}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
           ))}
         </View>
@@ -285,7 +378,7 @@ export default function MissingPoster() {
       </View>
 
       <TouchableOpacity
-        onPress={() => setView("output")}
+        onPress={openOutput}
         disabled={!hasPhoto || !profile.token}
         style={{
           height: 48, borderRadius: 10, backgroundColor: colors.button,
