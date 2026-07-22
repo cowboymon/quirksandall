@@ -4,10 +4,10 @@ import { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Image, Alert } from "react-native";
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { Headline, Input, Select, PrimaryButton, ProgressDots, Eyebrow } from "../../components/ui";
+import { Headline, Input, Select, DateInput, PrimaryButton, ProgressDots, Eyebrow } from "../../components/ui";
 import { RollingAnimal } from "../../components/Underlined";
 import { useOnboardingStore } from "../../stores/onboarding";
-import { colors, computeAge } from "@quirksandall/shared";
+import { colors, computeAge, displayDateToISO } from "@quirksandall/shared";
 
 const SEX_OPTIONS = ["Male", "Male, desexed", "Female", "Female, desexed"];
 
@@ -35,8 +35,8 @@ export default function Step1() {
   };
 
   const canContinue = !!pet.name?.trim();
-  const dobValid = !!pet.dob && !isNaN(new Date(pet.dob).getTime());
-  const ageLabel = dobValid ? computeAge(pet.dob!, pet.dobIsEstimated ?? false) : null;
+  const dobISO = displayDateToISO(pet.dob);
+  const ageLabel = dobISO ? computeAge(dobISO, pet.dobIsEstimated ?? false) : null;
 
   return (
     <ScrollView className="flex-1 bg-background" contentContainerStyle={{ padding: 24, paddingTop: 60, paddingBottom: 48 }}>
@@ -110,13 +110,9 @@ export default function Step1() {
 
         <View>
           <Eyebrow>Date of birth</Eyebrow>
-          <Input
-            className="mt-1"
-            placeholder="YYYY-MM-DD"
-            value={pet.dob ?? ""}
-            onChangeText={(v) => setPet({ dob: v })}
-            keyboardType="numbers-and-punctuation"
-          />
+          <View style={{ marginTop: 4 }}>
+            <DateInput value={pet.dob ?? ""} onChangeText={(v) => setPet({ dob: v })} />
+          </View>
           {ageLabel && (
             <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.primary, marginTop: 6 }}>
               {ageLabel}{pet.dobIsEstimated ? " (estimated)" : ""}

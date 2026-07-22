@@ -24,6 +24,31 @@ export function computeAge(dob: string, isEstimated: boolean): string {
   return `${prefix}${adjustedMonths} month${adjustedMonths !== 1 ? "s" : ""} old`;
 }
 
+/**
+ * Convert a stored ISO date (YYYY-MM-DD) to the AU display format DD/MM/YYYY.
+ * Returns "" for empty/invalid input.
+ */
+export function isoToDisplayDate(iso?: string | null): string {
+  if (!iso) return "";
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  if (!m) return "";
+  return `${m[3]}/${m[2]}/${m[1]}`;
+}
+
+/**
+ * Parse a DD/MM/YYYY string to an ISO date (YYYY-MM-DD). Returns null when the
+ * string is incomplete or not a real calendar date.
+ */
+export function displayDateToISO(s?: string | null): string | null {
+  if (!s) return null;
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(s.trim());
+  if (!m) return null;
+  const dd = +m[1], mm = +m[2], yyyy = +m[3];
+  const d = new Date(yyyy, mm - 1, dd);
+  if (d.getFullYear() !== yyyy || d.getMonth() !== mm - 1 || d.getDate() !== dd) return null;
+  return `${yyyy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
+}
+
 // PIN rate-limiting constants (enforced server-side in edge function)
 export const PIN_MAX_ATTEMPTS = 20;
 export const PIN_WINDOW_MINUTES = 15;

@@ -15,14 +15,84 @@ export function Headline({ children, className }: { children: React.ReactNode; c
   );
 }
 
-export function Eyebrow({ children, ochre }: { children: React.ReactNode; ochre?: boolean }) {
+// Three roles from the prototype:
+//  • default  → step / group label: 11px medium, muted (#987080)
+//  • ochre    → rose section eyebrow (#B83A52)
+//  • bold     → card section header: 11px bold, crimson (#510000)
+export function Eyebrow({ children, ochre, bold }: { children: React.ReactNode; ochre?: boolean; bold?: boolean }) {
   return (
     <Text
-      className={`text-[11px] uppercase tracking-[0.5px] ${ochre ? "text-primary" : "text-text-muted"}`}
-      style={{ fontFamily: "Satoshi-Medium" }}
+      className={`text-[11px] uppercase tracking-[0.5px] ${ochre ? "text-primary" : bold ? "text-foreground" : "text-text-muted"}`}
+      style={{ fontFamily: bold ? "Satoshi-Bold" : "Satoshi-Medium" }}
     >
       {children}
     </Text>
+  );
+}
+
+// 10px medium uppercase micro-label sitting above an individual input,
+// matching the prototype's field labels inside emergency cards.
+export function FieldLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <Text
+      style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.textMuted, marginBottom: 3 }}
+    >
+      {children}
+    </Text>
+  );
+}
+
+// A micro-labelled blush input — the standard field inside emergency-contact
+// cards (Screen 2). 14px value on #F8ECEE, rose focus border.
+export function LabeledInput({
+  label,
+  style,
+  ...props
+}: TextInputProps & { label: string }) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <View>
+      <FieldLabel>{label}</FieldLabel>
+      <TextInput
+        style={[
+          {
+            minHeight: 40, borderRadius: 8, borderWidth: 1,
+            borderColor: focused ? colors.primary : colors.border,
+            backgroundColor: colors.background,
+            paddingHorizontal: 12, paddingVertical: 8,
+            fontSize: 14, fontFamily: "Satoshi", color: colors.textDark,
+          },
+          style,
+        ]}
+        placeholderTextColor={colors.dashedBorder}
+        onFocus={(e) => { setFocused(true); props.onFocus?.(e); }}
+        onBlur={(e) => { setFocused(false); props.onBlur?.(e); }}
+        {...props}
+      />
+    </View>
+  );
+}
+
+// Masked DD/MM/YYYY (AU) text field. Operates on the display string; callers
+// convert to/from ISO with displayDateToISO / isoToDisplayDate.
+export function DateInput({ value, onChangeText, style, ...props }: TextInputProps & { onChangeText: (v: string) => void }) {
+  const handle = (raw: string) => {
+    const digits = raw.replace(/\D/g, "").slice(0, 8);
+    let f = digits;
+    if (digits.length > 4) f = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+    else if (digits.length > 2) f = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+    onChangeText(f);
+  };
+  return (
+    <Input
+      value={value}
+      onChangeText={handle}
+      placeholder="DD/MM/YYYY"
+      keyboardType="number-pad"
+      maxLength={10}
+      style={style}
+      {...props}
+    />
   );
 }
 

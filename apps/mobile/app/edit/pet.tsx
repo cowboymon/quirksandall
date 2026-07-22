@@ -7,8 +7,8 @@ import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import { useActivePetStore } from "../../stores/activePet";
 import EditShell from "../../components/EditShell";
-import { Input, Eyebrow, Card, Select } from "../../components/ui";
-import { computeAge, colors } from "@quirksandall/shared";
+import { Input, Eyebrow, Card, Select, DateInput } from "../../components/ui";
+import { computeAge, colors, isoToDisplayDate, displayDateToISO } from "@quirksandall/shared";
 import { uploadPetPhoto } from "../../lib/uploadPhoto";
 
 export default function EditPet() {
@@ -35,7 +35,7 @@ export default function EditPet() {
     setName(pet.name ?? "");
     setBreed(pet.breed ?? "");
     setSpecies(pet.species ?? "dog");
-    setDob(pet.dob ?? "");
+    setDob(isoToDisplayDate(pet.dob));
     setDobIsEstimated(pet.dob_is_estimated ?? false);
     setSex(pet.sex ?? "");
     setWeight(pet.weight ?? "");
@@ -76,7 +76,8 @@ export default function EditPet() {
           name,
           breed: breed || null,
           species,
-          dob,
+          // dob is NOT NULL — keep the stored value if the field is cleared/invalid
+          dob: displayDateToISO(dob) ?? pet?.dob,
           dob_is_estimated: dobIsEstimated,
           sex: sex || null,
           weight: weight || null,
@@ -147,7 +148,8 @@ export default function EditPet() {
     router.replace(next ? "/dashboard" : "/onboarding/step1");
   };
 
-  const age = dob ? computeAge(dob, dobIsEstimated) : null;
+  const dobISO = displayDateToISO(dob);
+  const age = dobISO ? computeAge(dobISO, dobIsEstimated) : null;
 
   return (
     <EditShell title="Pet basics" onSave={save} saving={saving} loading={loading}>
@@ -192,13 +194,9 @@ export default function EditPet() {
             <Eyebrow>Date of birth</Eyebrow>
             {age && <Text style={{ color: colors.textMuted, fontSize: 12 }}>{age}</Text>}
           </View>
-          <Input
-            className="mt-1"
-            placeholder="2021-03-15"
-            value={dob}
-            onChangeText={setDob}
-            keyboardType="numbers-and-punctuation"
-          />
+          <View style={{ marginTop: 4 }}>
+            <DateInput value={dob} onChangeText={setDob} />
+          </View>
           <TouchableOpacity
             onPress={() => setDobIsEstimated(!dobIsEstimated)}
             style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 8 }}
@@ -241,21 +239,6 @@ export default function EditPet() {
           <Input className="mt-1" placeholder="985141002345678" value={microchip} onChangeText={setMicrochip} keyboardType="numeric" />
           <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4 }}>
             Always shown to recipients — safety override.
-          </Text>
-        </Card>
-
-        <Card>
-          <Eyebrow>What to look for</Eyebrow>
-          <Input
-            className="mt-1"
-            placeholder="Walks with a limp, answers to 'Biscuit', shy with strangers"
-            value={descriptionForId}
-            onChangeText={setDescriptionForId}
-            multiline
-            style={{ height: 80, paddingTop: 12, textAlignVertical: "top" }}
-          />
-          <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4 }}>
-            Missing poster only — never shown on the shared profile.
           </Text>
         </Card>
 

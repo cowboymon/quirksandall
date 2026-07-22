@@ -7,7 +7,7 @@ import { Underlined } from "../../components/Underlined";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { supabase } from "../../lib/supabase";
 import { uploadPetPhoto } from "../../lib/uploadPhoto";
-import { colors } from "@quirksandall/shared";
+import { colors, displayDateToISO } from "@quirksandall/shared";
 import { useState } from "react";
 
 const mealInput = {
@@ -52,7 +52,7 @@ export default function Step4() {
         .from("pets")
         .insert({
           owner_id: user.id, name: pet.name, breed: pet.breed, species: pet.species ?? "dog",
-          dob: pet.dob ?? new Date().toISOString().slice(0, 10), dob_is_estimated: pet.dobIsEstimated ?? false,
+          dob: displayDateToISO(pet.dob) ?? new Date().toISOString().slice(0, 10), dob_is_estimated: pet.dobIsEstimated ?? false,
           sex: pet.sex, weight: pet.weight, color_markings: pet.colorMarkings, microchip_number: pet.microchipNumber, photo_url: null,
         })
         .select("id").single();
