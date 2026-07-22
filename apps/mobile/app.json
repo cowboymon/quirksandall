@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "scheme": "quirksandall",
+    "scheme": ["quirksandall", "rc-358cffb44f", "rc-961b7cef65"],
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
