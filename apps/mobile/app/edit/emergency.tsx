@@ -13,6 +13,7 @@ import { router } from "expo-router";
 export default function EditEmergency() {
   const { petId, loading } = useActivePet();
 
+  const [vetContactName, setVetContactName] = useState("");
   const [vetClinic, setVetClinic] = useState("");
   const [vetAddress, setVetAddress] = useState("");
   const [vetPhone, setVetPhone] = useState("");
@@ -43,6 +44,7 @@ export default function EditEmergency() {
         supabase.from("owners").select("name, primary_phone, backup_contacts").eq("id", (await supabase.auth.getUser()).data.user!.id).single(),
       ]);
       if (vet) {
+        setVetContactName(vet.primary_vet?.contact_name ?? "");
         setVetClinic(vet.primary_vet?.clinic ?? "");
         setVetAddress(vet.primary_vet?.address ?? "");
         setVetPhone(vet.primary_vet?.phone ?? "");
@@ -82,7 +84,7 @@ export default function EditEmergency() {
       await Promise.all([
         supabase.from("pet_vet_info").upsert({
           pet_id: petId,
-          primary_vet: { clinic: vetClinic, address: vetAddress, phone: vetPhone },
+          primary_vet: { contact_name: vetContactName, clinic: vetClinic, address: vetAddress, phone: vetPhone },
           emergency_vet: { clinic: emergClinic, phone: emergPhone },
           insurance: { provider: insuranceProvider, policy_number: insurancePolicy, claims_contact: insuranceClaims },
           vet_pre_auth: vetPreAuth,
@@ -131,6 +133,7 @@ export default function EditEmergency() {
 
         <Card>
           <Eyebrow>Vet</Eyebrow>
+          <Input className="mt-2" placeholder="Vet name — e.g. Dr. Sarah Mitchell" value={vetContactName} onChangeText={setVetContactName} />
           <Input className="mt-2" placeholder="Clinic name" value={vetClinic} onChangeText={setVetClinic} />
           <Input className="mt-2" placeholder="Address" value={vetAddress} onChangeText={setVetAddress} />
           <Input className="mt-2" placeholder="Phone" keyboardType="phone-pad" value={vetPhone} onChangeText={setVetPhone} />

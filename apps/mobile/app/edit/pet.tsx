@@ -7,7 +7,7 @@ import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import { useActivePetStore } from "../../stores/activePet";
 import EditShell from "../../components/EditShell";
-import { Input, Eyebrow, Card } from "../../components/ui";
+import { Input, Eyebrow, Card, Select } from "../../components/ui";
 import { computeAge, colors } from "@quirksandall/shared";
 import { uploadPetPhoto } from "../../lib/uploadPhoto";
 
@@ -221,7 +221,9 @@ export default function EditPet() {
 
         <Card>
           <Eyebrow>Sex</Eyebrow>
-          <Input className="mt-1" placeholder="Female, spayed" value={sex} onChangeText={setSex} />
+          <View style={{ marginTop: 4 }}>
+            <Select value={sex} onValueChange={setSex} options={["Male", "Male, desexed", "Female", "Female, desexed"]} />
+          </View>
         </Card>
 
         <Card>

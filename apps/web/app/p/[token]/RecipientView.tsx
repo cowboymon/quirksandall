@@ -98,7 +98,7 @@ export default function RecipientView({ profile, token }: Props) {
             <section className="border rounded-card p-4" style={{ borderColor: "#E5BEC4" }}>
               <p className="eyebrow text-text-muted mb-3">Emergency contacts</p>
               <div className="flex flex-col gap-3">
-                <ContactRow label="Vet" name={emergencyContacts.primaryVet.clinic} phone={emergencyContacts.primaryVet.phone} />
+                <ContactRow label="Vet" name={[emergencyContacts.primaryVet.contactName, emergencyContacts.primaryVet.clinic].filter(Boolean).join(" · ")} phone={emergencyContacts.primaryVet.phone} />
                 <ContactRow label="Emergency vet" name={emergencyContacts.emergencyVet.clinic} phone={emergencyContacts.emergencyVet.phone} />
                 <ContactRow label="Insurance" name={emergencyContacts.insurance.provider} phone={emergencyContacts.insurance.claimsContact} />
                 <ContactRow label="Owner" name={emergencyContacts.ownerContact.name} phone={emergencyContacts.ownerContact.phone} />

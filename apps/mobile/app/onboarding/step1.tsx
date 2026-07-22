@@ -1,11 +1,15 @@
-// Screen 1 — Pet basics: photo, name, breed/species, DOB
+// Screen 1 — Pet basics: photo, name, breed/species, sex, colour, microchip,
+// weight, DOB (with live age). Mirrors the prototype's Screen1PetBasics.
 import { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Image, Alert, Platform } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Image, Alert } from "react-native";
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { Headline, Input, PrimaryButton, SkipButton, ProgressDots, Eyebrow } from "../../components/ui";
+import { Headline, Input, Select, PrimaryButton, ProgressDots, Eyebrow } from "../../components/ui";
+import { RollingAnimal } from "../../components/Underlined";
 import { useOnboardingStore } from "../../stores/onboarding";
-import { colors } from "@quirksandall/shared";
+import { colors, computeAge } from "@quirksandall/shared";
+
+const SEX_OPTIONS = ["Male", "Male, desexed", "Female", "Female, desexed"];
 
 export default function Step1() {
   const { pet, setPet } = useOnboardingStore();
@@ -31,30 +35,33 @@ export default function Step1() {
   };
 
   const canContinue = !!pet.name?.trim();
+  const dobValid = !!pet.dob && !isNaN(new Date(pet.dob).getTime());
+  const ageLabel = dobValid ? computeAge(pet.dob!, pet.dobIsEstimated ?? false) : null;
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerStyle={{ padding: 24, paddingTop: 60 }}>
+    <ScrollView className="flex-1 bg-background" contentContainerStyle={{ padding: 24, paddingTop: 60, paddingBottom: 48 }}>
       <ProgressDots total={4} current={1} />
 
-      <View style={{ marginTop: 20, marginBottom: 6 }}><Eyebrow>Step 1 of 4</Eyebrow></View>
-      <Headline className="mb-2">
-        {pet.name ? `${pet.name}'s got quirks.` : "Let's meet your pet."}
-      </Headline>
-      <Text className="text-text-muted text-sm leading-relaxed mb-8">
-        Let's write them down before someone else has to guess.
+      <View style={{ marginTop: 28, marginBottom: 6 }}><Eyebrow>Step 1 of 4</Eyebrow></View>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-end", marginBottom: 8 }}>
+        <Headline>Introduce your </Headline>
+        <RollingAnimal />
+      </View>
+      <Text style={{ color: colors.textMuted, fontSize: 14, lineHeight: 21, marginBottom: 24, fontFamily: "Satoshi-Light" }}>
+        A name is all you need to generate the link. Everything else fills in around it.
       </Text>
 
       {/* Photo picker */}
-      <TouchableOpacity onPress={pickPhoto} className="self-center mb-6">
+      <TouchableOpacity onPress={pickPhoto} style={{ alignSelf: "center", marginBottom: 24 }}>
         {photoUri ? (
           <Image
             source={{ uri: photoUri }}
-            style={{ width: 96, height: 96, borderRadius: 48, borderWidth: 2, borderColor: colors.border }}
+            style={{ width: 128, height: 128, borderRadius: 64, borderWidth: 2, borderColor: colors.dashedBorder }}
           />
         ) : (
           <View
             style={{
-              width: 96, height: 96, borderRadius: 48,
+              width: 128, height: 128, borderRadius: 64,
               backgroundColor: "#FFFFFF",
               borderWidth: 2, borderColor: colors.dashedBorder,
               borderStyle: "dashed",
@@ -68,49 +75,83 @@ export default function Step1() {
         )}
       </TouchableOpacity>
 
-      <View style={{ gap: 12 }}>
+      <View style={{ gap: 16 }}>
         <View>
-          <Eyebrow>Name</Eyebrow>
-          <Input
-            className="mt-1"
-            placeholder="Biscuit"
-            value={pet.name ?? ""}
-            onChangeText={(v) => setPet({ name: v })}
-            autoFocus
-          />
+          <Eyebrow>Name *</Eyebrow>
+          <Input className="mt-1" placeholder="e.g. Biscuit" value={pet.name ?? ""} onChangeText={(v) => setPet({ name: v })} autoFocus />
         </View>
 
         <View>
-          <Eyebrow>Breed or species</Eyebrow>
-          <Input
-            className="mt-1"
-            placeholder="Golden Retriever mix"
-            value={pet.breed ?? ""}
-            onChangeText={(v) => setPet({ breed: v })}
-          />
+          <Eyebrow>Breed / species</Eyebrow>
+          <Input className="mt-1" placeholder="e.g. Golden Retriever mix" value={pet.breed ?? ""} onChangeText={(v) => setPet({ breed: v })} />
+        </View>
+
+        <View>
+          <Eyebrow>Sex</Eyebrow>
+          <View style={{ marginTop: 4 }}>
+            <Select value={pet.sex ?? ""} onValueChange={(v) => setPet({ sex: v })} options={SEX_OPTIONS} />
+          </View>
+        </View>
+
+        <View>
+          <Eyebrow>Colour & markings</Eyebrow>
+          <Input className="mt-1" placeholder="e.g. Golden, white chest patch" value={pet.colorMarkings ?? ""} onChangeText={(v) => setPet({ colorMarkings: v })} />
+        </View>
+
+        <View>
+          <Eyebrow>Microchip number</Eyebrow>
+          <Input className="mt-1" placeholder="e.g. 985141002345678" keyboardType="numeric" value={pet.microchipNumber ?? ""} onChangeText={(v) => setPet({ microchipNumber: v })} />
+        </View>
+
+        <View>
+          <Eyebrow>Weight</Eyebrow>
+          <Input className="mt-1" placeholder="e.g. 28 kg" value={pet.weight ?? ""} onChangeText={(v) => setPet({ weight: v })} />
         </View>
 
         <View>
           <Eyebrow>Date of birth</Eyebrow>
           <Input
             className="mt-1"
-            placeholder="15 March 2021"
+            placeholder="YYYY-MM-DD"
             value={pet.dob ?? ""}
             onChangeText={(v) => setPet({ dob: v })}
+            keyboardType="numbers-and-punctuation"
           />
-          <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 4 }}>
-            Don't know it exactly? Best guess is fine — age updates itself from here on.
-          </Text>
+          {ageLabel && (
+            <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.primary, marginTop: 6 }}>
+              {ageLabel}{pet.dobIsEstimated ? " (estimated)" : ""}
+            </Text>
+          )}
+          <TouchableOpacity
+            onPress={() => setPet({ dobIsEstimated: !pet.dobIsEstimated })}
+            style={{ flexDirection: "row", alignItems: "flex-start", gap: 8, marginTop: 10 }}
+          >
+            <View
+              style={{
+                width: 18, height: 18, borderRadius: 4, borderWidth: 2, marginTop: 1,
+                borderColor: pet.dobIsEstimated ? colors.textDark : colors.dashedBorder,
+                backgroundColor: pet.dobIsEstimated ? colors.textDark : "transparent",
+                alignItems: "center", justifyContent: "center",
+              }}
+            >
+              {pet.dobIsEstimated && <Text style={{ color: "#F8ECEE", fontSize: 11 }}>✓</Text>}
+            </View>
+            <Text style={{ color: colors.textMuted, fontSize: 12, lineHeight: 17, flex: 1 }}>
+              Don't know it exactly? Best guess is fine — age updates itself from here on.
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
 
-      <View style={{ marginTop: 32, gap: 8 }}>
+      <View style={{ marginTop: 28, gap: 10 }}>
         <PrimaryButton
-          label="Get my link →"
+          label={`Get ${pet.name?.trim() || "your pet"}'s link`}
           onPress={() => router.push("/onboarding/step2")}
           disabled={!canContinue}
         />
-        <SkipButton label="Skip — link still works without a name" onPress={() => router.push("/onboarding/step2")} />
+        <Text style={{ color: colors.textMuted, fontSize: 12, textAlign: "center" }}>
+          The link works immediately. Fill in the rest after.
+        </Text>
       </View>
     </ScrollView>
   );

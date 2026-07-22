@@ -12,6 +12,7 @@ type PetDraft = {
   weight?: string;
   colorMarkings?: string;
   microchipNumber?: string;
+  vetContactName?: string;
   vetClinic?: string;
   vetPhone?: string;
   emergVetClinic?: string;

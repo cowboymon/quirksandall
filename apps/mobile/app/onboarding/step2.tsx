@@ -16,14 +16,15 @@ export default function Step2() {
       <ProgressDots total={4} current={2} />
 
       <View style={{ marginTop: 20, marginBottom: 6 }}><Eyebrow>Step 2 of 4</Eyebrow></View>
-      <Headline className="mb-1">What a sitter needs most.</Headline>
+      <Headline className="mb-1">What {pet.name?.trim() || "your pet"}'s stand-in needs to know most.</Headline>
       <Text style={{ color: colors.textMuted, fontSize: 14, lineHeight: 21, marginBottom: 20, fontFamily: "Satoshi-Light" }}>
-        PIN-gated — only people with the PIN see this block.
+        This is the information that matters.
       </Text>
 
       <View style={{ gap: 12 }}>
         <Card>
           <Eyebrow>Vet</Eyebrow>
+          <Input className="mt-2" placeholder="Vet name — e.g. Dr. Sarah Mitchell" value={pet.vetContactName ?? ""} onChangeText={(v) => setPet({ vetContactName: v })} />
           <Input className="mt-2" placeholder="Clinic name" value={pet.vetClinic ?? ""} onChangeText={(v) => setPet({ vetClinic: v })} />
           <Input className="mt-2" placeholder="Phone" keyboardType="phone-pad" value={pet.vetPhone ?? ""} onChangeText={(v) => setPet({ vetPhone: v })} />
         </Card>

@@ -87,7 +87,11 @@ async function fetchProfile(token: string, logView = true): Promise<RecipientPro
       ? {}
       : {
           emergencyContacts: {
-            primaryVet: vetInfo?.primary_vet ?? {},
+            primaryVet: {
+              contactName: vetInfo?.primary_vet?.contact_name ?? "",
+              clinic: vetInfo?.primary_vet?.clinic ?? "",
+              phone: vetInfo?.primary_vet?.phone ?? "",
+            },
             emergencyVet: vetInfo?.emergency_vet ?? {},
             insurance: vetInfo?.insurance ?? {},
             ownerContact: { name: owner.name ?? "", phone: owner.primary_phone ?? "" },

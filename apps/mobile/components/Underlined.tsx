@@ -2,8 +2,10 @@
 // Ports the prototype's <Underlined> (primitives.tsx) using react-native-svg.
 // Wrap around a <Text>; the wrapping View self-sizes to the text and the SVG
 // stretches under it (preserveAspectRatio="none").
-import { View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Animated, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
+import { Headline } from "./ui";
 
 export function Underlined({ children }: { children: React.ReactNode }) {
   return (
@@ -26,5 +28,38 @@ export function Underlined({ children }: { children: React.ReactNode }) {
         />
       </Svg>
     </View>
+  );
+}
+
+// Cycling pet word under the squiggle — ports the prototype's <RollingAnimal>.
+const PETS = [
+  "dog.", "cat.", "kitten.", "puppy.", "rabbit.",
+  "hamster.", "parrot.", "guinea pig.", "ferret.", "gecko.",
+];
+
+export function RollingAnimal() {
+  const [index, setIndex] = useState(() => Math.floor(Math.random() * PETS.length));
+  const opacity = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const cycle = setInterval(() => {
+      Animated.timing(opacity, { toValue: 0, duration: 300, useNativeDriver: true }).start(() => {
+        setIndex((i) => {
+          let next = i;
+          while (next === i) next = Math.floor(Math.random() * PETS.length);
+          return next;
+        });
+        Animated.timing(opacity, { toValue: 1, duration: 300, useNativeDriver: true }).start();
+      });
+    }, 2200);
+    return () => clearInterval(cycle);
+  }, [opacity]);
+
+  return (
+    <Underlined>
+      <Animated.Text style={{ opacity }}>
+        <Headline>{PETS[index]}</Headline>
+      </Animated.Text>
+    </Underlined>
   );
 }

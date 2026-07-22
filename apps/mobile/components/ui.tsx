@@ -1,7 +1,7 @@
 // Shared primitive UI components for the mobile app.
 // Mirrors the prototype's primitives.tsx (fonts, buttons, dots, inputs).
 import { useState } from "react";
-import { Text, TouchableOpacity, View, TextInput, type TextInputProps, type ViewProps } from "react-native";
+import { Text, TouchableOpacity, View, TextInput, Modal, type TextInputProps, type ViewProps } from "react-native";
 import { colors, radius } from "@quirksandall/shared";
 
 export function Headline({ children, className }: { children: React.ReactNode; className?: string }) {
@@ -153,6 +153,63 @@ export function Textarea({ style, filled, onFocus, onBlur, ...props }: TextInput
       onBlur={(e) => { setFocused(false); onBlur?.(e); }}
       {...props}
     />
+  );
+}
+
+// Dropdown select — native equivalent of the prototype's <select>. Renders a
+// white field that opens a modal option list. Matches Input styling.
+export function Select({
+  value,
+  onValueChange,
+  options,
+  placeholder = "Select…",
+}: {
+  value: string;
+  onValueChange: (v: string) => void;
+  options: string[];
+  placeholder?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <TouchableOpacity
+        onPress={() => setOpen(true)}
+        activeOpacity={0.7}
+        style={{
+          minHeight: 46, borderRadius: radius.input, borderWidth: 1, borderColor: colors.border,
+          backgroundColor: "#FFFFFF", paddingHorizontal: 16, paddingVertical: 12,
+          flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+        }}
+      >
+        <Text style={{ fontSize: 15, fontFamily: "Satoshi", color: value ? colors.textDark : colors.textMuted }}>
+          {value || placeholder}
+        </Text>
+        <Text style={{ color: colors.textMuted, fontSize: 12 }}>▾</Text>
+      </TouchableOpacity>
+      <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setOpen(false)}
+          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "center", padding: 32 }}
+        >
+          <View style={{ backgroundColor: "#FFFFFF", borderRadius: radius.card, overflow: "hidden" }}>
+            {options.map((opt, i) => (
+              <TouchableOpacity
+                key={opt}
+                onPress={() => { onValueChange(opt); setOpen(false); }}
+                style={{
+                  paddingHorizontal: 20, paddingVertical: 16,
+                  borderTopWidth: i === 0 ? 0 : 1, borderTopColor: colors.border,
+                  backgroundColor: value === opt ? colors.secondary : "#FFFFFF",
+                }}
+              >
+                <Text style={{ fontSize: 15, fontFamily: "Satoshi", color: colors.textDark }}>{opt}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </>
   );
 }
 
