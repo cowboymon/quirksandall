@@ -86,7 +86,7 @@ export default function EditEmergency() {
           emergency_vet: { clinic: emergClinic, phone: emergPhone },
           insurance: { provider: insuranceProvider, policy_number: insurancePolicy, claims_contact: insuranceClaims },
           vet_pre_auth: vetPreAuth,
-        }),
+        }, { onConflict: "pet_id" }),
         supabase.from("owners").update({
           name: ownerName,
           primary_phone: ownerPhone,

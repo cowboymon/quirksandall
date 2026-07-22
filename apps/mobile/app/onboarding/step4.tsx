@@ -101,7 +101,25 @@ export default function Step4() {
       });
 
       const token = Math.random().toString(36).slice(2) + Date.now().toString(36);
-      await supabase.from("share_links").insert({ pet_id: newPet.id, token, label: "Main link", pin_hash: null, mode: "full", revoked: false });
+      const { data: newLink } = await supabase
+        .from("share_links")
+        .insert({ pet_id: newPet.id, token, label: "Main link", pin_hash: null, mode: "full", revoked: false })
+        .select("id")
+        .single();
+
+      // Persist the PIN the owner chose during onboarding. Hashing happens
+      // server-side in the set-pin edge function so we never store it plaintext.
+      if (newLink?.id && pet.pin && /^\d{4}$/.test(pet.pin)) {
+        const { data: { session } } = await supabase.auth.getSession();
+        await fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/set-pin`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({ link_id: newLink.id, pin: pet.pin }),
+        }).catch(() => {});
+      }
 
       reset();
       router.replace("/dashboard");

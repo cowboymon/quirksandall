@@ -59,7 +59,7 @@ export default function EditBehavior() {
         flight_risk: flightRisk,
         escape_risk: { flag: !!flightRisk.trim(), notes: flightRisk },
         temperament_summary: temperament,
-      });
+      }, { onConflict: "pet_id" });
       if (error) throw error;
       router.back();
     } catch (e: any) {

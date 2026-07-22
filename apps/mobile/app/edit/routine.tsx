@@ -110,7 +110,7 @@ export default function EditRoutine() {
           walks,
           sleep,
           bathroom_habits: bathroom,
-        }),
+        }, { onConflict: "pet_id" }),
         supabase.from("pet_medical").upsert({
           pet_id: petId,
           allergies: allergies ? allergies.split(",").map((s) => s.trim()).filter(Boolean) : [],
@@ -118,7 +118,7 @@ export default function EditRoutine() {
           medications: medications
             ? [{ name: medications, dose: "", frequency: "", time_of_day: "", location_stored: "", notes: "" }]
             : [],
-        }),
+        }, { onConflict: "pet_id" }),
       ]);
       router.back();
     } catch (e: any) {

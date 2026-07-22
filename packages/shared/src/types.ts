@@ -120,7 +120,10 @@ export type RecipientProfile = {
   age: string; // computed, never raw DOB
   behavior: Pick<PetBehavior, "commands" | "quirksTriggers" | "escapeRisk" | "scared" | "noGo" | "flightRisk" | "temperamentSummary">;
   allergies: string[]; // always shown
-  // Only present when PIN unlocked:
+  // Whether the owner set a PIN. When false, there is nothing to gate, so the
+  // emergency block is shown openly (and emergencyContacts is populated below).
+  pinSet: boolean;
+  // Present when the owner set NO pin (shown openly) OR after PIN unlock:
   emergencyContacts?: {
     primaryVet: VetInfo["primaryVet"];
     emergencyVet: VetInfo["emergencyVet"];
