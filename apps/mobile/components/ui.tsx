@@ -15,7 +15,7 @@ export function Headline({ children, className }: { children: React.ReactNode; c
 
 export function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <Text className="text-text-muted text-[11px] uppercase tracking-[0.5px] font-medium">
+    <Text className="text-text-muted text-[11px] uppercase tracking-[0.5px]" style={{ fontFamily: "Satoshi-Medium" }}>
       {children}
     </Text>
   );
@@ -43,7 +43,7 @@ export function PrimaryButton({
       }}
       activeOpacity={0.85}
     >
-      <Text style={{ color: "#F8ECEE", fontWeight: "600", fontSize: 16 }}>{label}</Text>
+      <Text style={{ color: colors.buttonText, fontFamily: "Satoshi-Bold", fontSize: 16 }}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -51,7 +51,7 @@ export function PrimaryButton({
 export function SkipButton({ label, onPress }: { label: string; onPress: () => void }) {
   return (
     <TouchableOpacity onPress={onPress} style={{ alignItems: "center", paddingVertical: 12 }}>
-      <Text style={{ color: colors.textMuted, fontSize: 14 }}>{label}</Text>
+      <Text style={{ color: colors.textMuted, fontFamily: "Satoshi", fontSize: 14 }}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -88,6 +88,7 @@ export function Input({ style, ...props }: TextInputProps) {
           backgroundColor: colors.inputBg,
           paddingHorizontal: 14,
           fontSize: 16,
+          fontFamily: "Satoshi",
           color: colors.textDark,
         },
         style,

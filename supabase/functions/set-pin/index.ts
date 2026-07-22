@@ -3,7 +3,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { createHash } from "https://deno.land/std@0.168.0/node/crypto.ts";
+import { hashSync } from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
 serve(async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
@@ -43,7 +43,8 @@ serve(async (req) => {
 
   if (!pet || pet.owner_id !== user.id) return new Response("Forbidden", { status: 403 });
 
-  const pinHash = createHash("sha256").update(pin).digest("hex");
+  // bcrypt (salted, slow) — a 4-digit PIN must never sit behind a fast unsalted hash
+  const pinHash = hashSync(pin);
   await supabase.from("share_links").update({ pin_hash: pinHash }).eq("id", link_id);
 
   return new Response(JSON.stringify({ ok: true }), { headers: { "Content-Type": "application/json" } });

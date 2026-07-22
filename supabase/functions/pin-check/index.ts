@@ -5,7 +5,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { createHash } from "https://deno.land/std@0.168.0/node/crypto.ts";
+import { compareSync } from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
 const PIN_MAX_ATTEMPTS = 20;
 const PIN_WINDOW_MINUTES = 15;
@@ -50,8 +50,7 @@ serve(async (req) => {
   }
 
   // Verify PIN
-  const pinHash = createHash("sha256").update(pin).digest("hex");
-  const correct = link.pin_hash === pinHash;
+  const correct = !!link.pin_hash && compareSync(pin, link.pin_hash);
 
   await supabase.from("pin_attempts").insert({
     link_id: link.id,

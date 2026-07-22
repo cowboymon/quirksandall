@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { PIN_MAX_ATTEMPTS, PIN_WINDOW_MINUTES } from "@quirksandall/shared";
-import { createHash } from "crypto";
+import { compareSync } from "bcryptjs";
 
 export const runtime = "nodejs";
 
@@ -42,9 +42,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, cooldown: true });
   }
 
-  // Check PIN
-  const pinHash = createHash("sha256").update(pin).digest("hex");
-  const correct = link.pin_hash === pinHash;
+  // Check PIN — bcrypt (salted, slow); a 4-digit PIN must never sit behind
+  // a fast unsalted hash
+  const correct = !!link.pin_hash && compareSync(pin, link.pin_hash);
 
   // Log attempt
   await supabase.from("pin_attempts").insert({
