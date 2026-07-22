@@ -9,3 +9,4 @@ out
 *.tgz
 .DS_Store
 apps/web/tsconfig.tsbuildinfo
+apps/marketing/tsconfig.tsbuildinfo
