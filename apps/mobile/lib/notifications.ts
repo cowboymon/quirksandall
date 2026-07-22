@@ -7,7 +7,9 @@ import { supabase } from "./supabase";
 export function configureNotifications() {
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
-      shouldShowAlert: true,
+      // SDK 53+ split shouldShowAlert into banner + list
+      shouldShowBanner: true,
+      shouldShowList: true,
       shouldPlaySound: false,
       shouldSetBadge: false,
     }),
@@ -69,6 +71,8 @@ export async function scheduleTrickNudge(petName: string, commandWord: string, d
       data: { type: "trick_nudge" },
     },
     trigger: {
+      // SDK 54 requires an explicit trigger type
+      type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
       seconds: delayDays * 24 * 60 * 60,
       repeats: false,
     },

@@ -6,7 +6,9 @@
 import { useEffect, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Image, TextInput, Share, Alert, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
-import * as FileSystem from "expo-file-system";
+// SDK 54 moved the classic download/read/write API to /legacy; the new
+// File/Directory API isn't needed for these one-shot poster downloads.
+import * as FileSystem from "expo-file-system/legacy";
 import * as ImagePicker from "expo-image-picker";
 import { supabase } from "../lib/supabase";
 import { Eyebrow, Input } from "../components/ui";
