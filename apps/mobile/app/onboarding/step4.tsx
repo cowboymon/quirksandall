@@ -65,7 +65,7 @@ export default function Step4() {
 
       await supabase.from("pet_vet_info").insert({
         pet_id: newPet.id,
-        primary_vet: { clinic: pet.vetClinic, phone: pet.vetPhone },
+        primary_vet: { contact_name: pet.vetContactName, clinic: pet.vetClinic, phone: pet.vetPhone },
         emergency_vet: { clinic: pet.emergVetClinic, phone: pet.emergVetPhone },
         insurance: { provider: pet.insuranceProvider, policy_number: pet.insurancePolicy },
         vet_pre_auth: pet.vetPreAuth ?? false,
@@ -101,7 +101,25 @@ export default function Step4() {
       });
 
       const token = Math.random().toString(36).slice(2) + Date.now().toString(36);
-      await supabase.from("share_links").insert({ pet_id: newPet.id, token, label: "Main link", pin_hash: null, mode: "full", revoked: false });
+      const { data: newLink } = await supabase
+        .from("share_links")
+        .insert({ pet_id: newPet.id, token, label: "Main link", pin_hash: null, mode: "full", revoked: false })
+        .select("id")
+        .single();
+
+      // Persist the PIN the owner chose during onboarding. Hashing happens
+      // server-side in the set-pin edge function so we never store it plaintext.
+      if (newLink?.id && pet.pin && /^\d{4}$/.test(pet.pin)) {
+        const { data: { session } } = await supabase.auth.getSession();
+        await fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/set-pin`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({ link_id: newLink.id, pin: pet.pin }),
+        }).catch(() => {});
+      }
 
       reset();
       router.replace("/dashboard");
@@ -175,12 +193,10 @@ export default function Step4() {
           <View>
             <Eyebrow>Allergies</Eyebrow>
             <Textarea style={{ marginTop: 4 }} placeholder="Food, environmental, medication…" value={pet.allergies ?? ""} onChangeText={(v) => setPet({ allergies: v })} />
-            <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4, fontFamily: "Satoshi-Light" }}>Always shown to sitters, even on free tier — safety override.</Text>
           </View>
           <View>
             <Eyebrow>Medications</Eyebrow>
             <Textarea style={{ marginTop: 4 }} placeholder="Name, dose, timing, location stored…" value={pet.medications ?? ""} onChangeText={(v) => setPet({ medications: v })} />
-            <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4, fontFamily: "Satoshi-Light" }}>Paid tier: visible to sitters. Free tier: saved but not shown.</Text>
           </View>
         </View>
       </View>

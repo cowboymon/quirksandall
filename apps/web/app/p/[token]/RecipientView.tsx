@@ -7,10 +7,13 @@ import PINGate from "./PINGate";
 type Props = { profile: RecipientProfile; token: string };
 
 export default function RecipientView({ profile, token }: Props) {
-  const { pet, age, behavior, allergies, routine, medical, lastUpdatedAt, mode, isPaid } = profile;
+  const { pet, age, behavior, allergies, routine, medical, lastUpdatedAt, mode, isPaid, pinSet } = profile;
   const [view, setView] = useState<"quick" | "full">("quick");
-  const [pinUnlocked, setPinUnlocked] = useState(false);
-  const [emergencyContacts, setEmergencyContacts] = useState<RecipientProfile["emergencyContacts"] | null>(null);
+  // No PIN set → nothing to gate; the contacts are already in the profile.
+  const [pinUnlocked, setPinUnlocked] = useState(!pinSet);
+  const [emergencyContacts, setEmergencyContacts] = useState<RecipientProfile["emergencyContacts"] | null>(
+    profile.emergencyContacts ?? null
+  );
 
   const showRoutine = view === "full" && isPaid && routine;
   const showMedical = view === "full" && isPaid && medical;
@@ -81,8 +84,8 @@ export default function RecipientView({ profile, token }: Props) {
       </div>
 
       <div className="flex flex-col gap-5">
-        {/* Emergency contacts — PIN-gated, no personality, plain labels */}
-        {!pinUnlocked ? (
+        {/* Emergency contacts — PIN-gated only when the owner set a PIN */}
+        {pinSet && !pinUnlocked ? (
           <PINGate
             token={token}
             onUnlocked={(contacts) => {
@@ -91,11 +94,11 @@ export default function RecipientView({ profile, token }: Props) {
             }}
           />
         ) : (
-          emergencyContacts && (
+          emergencyContacts && hasContactData(emergencyContacts) && (
             <section className="border rounded-card p-4" style={{ borderColor: "#E5BEC4" }}>
               <p className="eyebrow text-text-muted mb-3">Emergency contacts</p>
               <div className="flex flex-col gap-3">
-                <ContactRow label="Vet" name={emergencyContacts.primaryVet.clinic} phone={emergencyContacts.primaryVet.phone} />
+                <ContactRow label="Vet" name={[emergencyContacts.primaryVet.contactName, emergencyContacts.primaryVet.clinic].filter(Boolean).join(" · ")} phone={emergencyContacts.primaryVet.phone} />
                 <ContactRow label="Emergency vet" name={emergencyContacts.emergencyVet.clinic} phone={emergencyContacts.emergencyVet.phone} />
                 <ContactRow label="Insurance" name={emergencyContacts.insurance.provider} phone={emergencyContacts.insurance.claimsContact} />
                 <ContactRow label="Owner" name={emergencyContacts.ownerContact.name} phone={emergencyContacts.ownerContact.phone} />
@@ -124,11 +127,42 @@ export default function RecipientView({ profile, token }: Props) {
                   {behavior.commands.map((cmd, i) => (
                     <tr
                       key={cmd.id}
-                      className="border-t"
+                      className="border-t align-top"
                       style={{ borderColor: "#E5BEC4", backgroundColor: i % 2 === 0 ? "#FFFFFF" : "#F8ECEE" }}
                     >
-                      <td className="px-3 py-2 font-semibold text-primary">{cmd.word}</td>
-                      <td className="px-3 py-2 text-text-muted">{cmd.meaning}</td>
+                      <td className="px-3 py-2 font-semibold text-primary">
+                        {cmd.word}
+                        {cmd.howToCue?.trim() && (
+                          // How-to-cue wasn't in the original table design, so keep it
+                          // subtle: a hint icon that reveals the cue on hover (desktop)
+                          // and an always-visible line beneath (mobile / no-hover).
+                          <span
+                            className="group relative ml-1 inline-flex cursor-help align-middle"
+                            title={`How to cue: ${cmd.howToCue}`}
+                          >
+                            <span
+                              className="inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold"
+                              style={{ backgroundColor: "#E5BEC4", color: "#510000" }}
+                            >
+                              ?
+                            </span>
+                            <span
+                              className="pointer-events-none absolute left-0 top-5 z-10 hidden w-44 rounded-card px-3 py-2 text-xs font-light leading-snug shadow-lg group-hover:block"
+                              style={{ backgroundColor: "#510000", color: "#F8ECEE" }}
+                            >
+                              {cmd.howToCue}
+                            </span>
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-text-muted">
+                        {cmd.meaning}
+                        {cmd.howToCue?.trim() && (
+                          <span className="mt-1 block text-xs font-light italic md:hidden" style={{ color: "#987080" }}>
+                            Cue: {cmd.howToCue}
+                          </span>
+                        )}
+                      </td>
                       <td className="px-3 py-2 text-text-muted">{cmd.reward}</td>
                     </tr>
                   ))}
@@ -215,6 +249,16 @@ export default function RecipientView({ profile, token }: Props) {
         </footer>
       </div>
     </div>
+  );
+}
+
+function hasContactData(c: NonNullable<RecipientProfile["emergencyContacts"]>): boolean {
+  return !!(
+    c.primaryVet?.clinic || c.primaryVet?.phone ||
+    c.emergencyVet?.clinic || c.emergencyVet?.phone ||
+    c.insurance?.provider ||
+    c.ownerContact?.name || c.ownerContact?.phone ||
+    (c.backupContacts && c.backupContacts.length > 0)
   );
 }
 

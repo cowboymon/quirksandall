@@ -42,17 +42,17 @@ export default function Step3() {
         <Underlined><Headline>got words.</Headline></Underlined>
       </View>
       <Text style={{ color: colors.textMuted, fontSize: 14, lineHeight: 21, marginBottom: 24, fontFamily: "Satoshi-Light" }}>
-        The stuff stand-ins learn the hard way — teach it once here.
+        The stuff stand-ins learn the hard way. Save them the trouble.
       </Text>
 
       {/* Commands */}
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-        <Eyebrow>Commands</Eyebrow>
-        {filled > 0 && (
-          <View style={{ backgroundColor: "rgba(184,58,82,0.1)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 1 }}>
-            <Text style={{ color: colors.primary, fontSize: 11, fontFamily: "Satoshi-Medium" }}>{filled}</Text>
-          </View>
-        )}
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+        <Text style={{ fontFamily: "Satoshi-Medium", fontSize: 14, color: colors.textDark }}>
+          Commands {pet.name?.trim() ? `${pet.name.trim()} knows` : "they know"}
+        </Text>
+        <View style={{ backgroundColor: "rgba(184,58,82,0.1)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 1 }}>
+          <Text style={{ color: colors.primary, fontSize: 11, fontFamily: "Satoshi-Medium" }}>{filled}</Text>
+        </View>
       </View>
 
       <View style={{ gap: 10, marginTop: 8 }}>
@@ -96,19 +96,24 @@ export default function Step3() {
         <Text style={{ color: colors.primary, fontSize: 14, fontFamily: "Satoshi-Medium" }}>+ Add another word</Text>
       </TouchableOpacity>
 
-      {/* Quirks */}
-      <View style={{ marginTop: 12, gap: 14 }}>
-        <View>
-          <Eyebrow>Scared of anything?</Eyebrow>
-          <Textarea style={{ marginTop: 4 }} placeholder="Skateboards and anything on wheels…" value={pet.scared ?? ""} onChangeText={(v) => setPet({ scared: v })} />
-        </View>
-        <View>
-          <Eyebrow>Anywhere they shouldn't go?</Eyebrow>
-          <Textarea style={{ marginTop: 4 }} placeholder="The back bedroom…" value={pet.noGo ?? ""} onChangeText={(v) => setPet({ noGo: v })} />
-        </View>
-        <View>
-          <Eyebrow>A flight risk if a door's left open?</Eyebrow>
-          <Textarea style={{ marginTop: 4 }} placeholder="Yes / No / Notes…" value={pet.flightRisk ?? ""} onChangeText={(v) => setPet({ flightRisk: v })} />
+      {/* Quirks & triggers */}
+      <View style={{ marginTop: 28 }}>
+        <Text style={{ fontFamily: "Satoshi-Medium", fontSize: 14, color: colors.textDark, marginBottom: 12 }}>
+          Quirks & triggers
+        </Text>
+        <View style={{ gap: 14 }}>
+          <View>
+            <Eyebrow>Scared of anything?</Eyebrow>
+            <Textarea style={{ marginTop: 4 }} placeholder="e.g. Skateboards, loud machinery…" value={pet.scared ?? ""} onChangeText={(v) => setPet({ scared: v })} />
+          </View>
+          <View>
+            <Eyebrow>Anywhere they shouldn't go?</Eyebrow>
+            <Textarea style={{ marginTop: 4 }} placeholder="e.g. The back bedroom…" value={pet.noGo ?? ""} onChangeText={(v) => setPet({ noGo: v })} />
+          </View>
+          <View>
+            <Eyebrow>A flight risk if a door's left open?</Eyebrow>
+            <Textarea style={{ marginTop: 4 }} placeholder="e.g. Yes — always check the gate." value={pet.flightRisk ?? ""} onChangeText={(v) => setPet({ flightRisk: v })} />
+          </View>
         </View>
       </View>
 

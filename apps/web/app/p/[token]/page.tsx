@@ -25,7 +25,7 @@ async function fetchProfile(token: string, logView = true): Promise<RecipientPro
     .select(`
       id, name, species, breed, dob, dob_is_estimated, sex, weight,
       color_markings, photo_url, microchip_number, updated_at,
-      owners!inner(purchase_status),
+      owners!inner(purchase_status, name, primary_phone, backup_contacts),
       pet_behavior(commands, quirks_triggers, escape_risk, scared, no_go, flight_risk, temperament_summary),
       pet_medical(allergies, conditions, medications),
       pet_routine(feeding, walks, sleep, bathroom_habits),
@@ -36,11 +36,13 @@ async function fetchProfile(token: string, logView = true): Promise<RecipientPro
 
   if (!pet) return null;
 
-  const isPaid = (pet as any).owners?.purchase_status === "paid";
+  const owner = (pet as any).owners ?? {};
+  const isPaid = owner.purchase_status === "paid";
   const behavior = (pet as any).pet_behavior?.[0] ?? {};
   const medical = (pet as any).pet_medical?.[0] ?? {};
   const routine = (pet as any).pet_routine?.[0] ?? null;
   const vetInfo = (pet as any).pet_vet_info?.[0] ?? null;
+  const pinSet = !!link.pin_hash;
 
   // Log view (fire and forget)
   if (logView) {
@@ -77,7 +79,25 @@ async function fetchProfile(token: string, logView = true): Promise<RecipientPro
       temperamentSummary: behavior.temperament_summary ?? "",
     },
     allergies: medical.allergies ?? [],
-    // emergencyContacts only populated after PIN unlock (handled client-side via edge function)
+    pinSet,
+    // When a PIN is set, emergencyContacts is populated client-side only after
+    // the sitter enters it (via the pin-check route). When NO pin is set there
+    // is nothing to protect, so we surface the contacts openly here.
+    ...(pinSet
+      ? {}
+      : {
+          emergencyContacts: {
+            primaryVet: {
+              contactName: vetInfo?.primary_vet?.contact_name ?? "",
+              clinic: vetInfo?.primary_vet?.clinic ?? "",
+              phone: vetInfo?.primary_vet?.phone ?? "",
+            },
+            emergencyVet: vetInfo?.emergency_vet ?? {},
+            insurance: vetInfo?.insurance ?? {},
+            ownerContact: { name: owner.name ?? "", phone: owner.primary_phone ?? "" },
+            backupContacts: owner.backup_contacts ?? [],
+          },
+        }),
     lastUpdatedAt: pet.updated_at ?? pet.dob,
     mode: link.mode,
     isPaid,

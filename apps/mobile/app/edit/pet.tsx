@@ -1,13 +1,13 @@
 // Edit pet basics: photo, name, breed/species, DOB, sex, weight, microchip
 import { useState, useEffect } from "react";
-import { View, Text, Image, TouchableOpacity, Alert } from "react-native";
+import { View, Text, Image, TouchableOpacity, Alert, Modal, Share } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import { useActivePetStore } from "../../stores/activePet";
 import EditShell from "../../components/EditShell";
-import { Input, Eyebrow, Card } from "../../components/ui";
+import { Input, Eyebrow, Card, Select } from "../../components/ui";
 import { computeAge, colors } from "@quirksandall/shared";
 import { uploadPetPhoto } from "../../lib/uploadPhoto";
 
@@ -27,6 +27,8 @@ export default function EditPet() {
   const [descriptionForId, setDescriptionForId] = useState("");
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     if (!pet) return;
@@ -93,30 +95,56 @@ export default function EditPet() {
     }
   };
 
-  const deletePet = () => {
+  // Pull everything we hold on this pet into a single JSON payload the owner
+  // can keep (Files, Notes, email…) before deleting.
+  const exportPetData = async () => {
     if (!petId) return;
-    Alert.alert(
-      `Delete ${name || "this"}'s profile?`,
-      "This removes the profile and immediately breaks every share link for it. This can't be undone.",
-      [
-        { text: "Never mind", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            // Soft-archive: keeps history, and the dashboard only shows active pets.
-            await supabase.from("pets").update({ status: "archived" }).eq("id", petId);
-            await supabase.from("share_links").update({ revoked: true }).eq("pet_id", petId);
-            // Route to the next active pet, or onboarding if none remain.
-            const { data: { user } } = await supabase.auth.getUser();
-            const { data: next } = await supabase
-              .from("pets").select("id").eq("owner_id", user!.id).eq("status", "active").limit(1).maybeSingle();
-            if (next?.id) setPetId(next.id);
-            router.replace(next ? "/dashboard" : "/onboarding/step1");
-          },
-        },
-      ]
-    );
+    setExporting(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const [petRow, behavior, routine, medical, vet, owner] = await Promise.all([
+        supabase.from("pets").select("*").eq("id", petId).single(),
+        supabase.from("pet_behavior").select("*").eq("pet_id", petId).maybeSingle(),
+        supabase.from("pet_routine").select("*").eq("pet_id", petId).maybeSingle(),
+        supabase.from("pet_medical").select("*").eq("pet_id", petId).maybeSingle(),
+        supabase.from("pet_vet_info").select("*").eq("pet_id", petId).maybeSingle(),
+        supabase.from("owners").select("name, primary_phone, primary_email, backup_contacts").eq("id", user!.id).single(),
+      ]);
+
+      const payload = {
+        exported_at: new Date().toISOString(),
+        app: "Quirks & All",
+        pet: petRow.data,
+        behavior: behavior.data,
+        routine: routine.data,
+        medical: medical.data,
+        vet_info: vet.data,
+        owner: owner.data,
+      };
+
+      await Share.share({
+        title: `${name || "Pet"} — Quirks & All export`,
+        message: JSON.stringify(payload, null, 2),
+      });
+    } catch (e: any) {
+      Alert.alert("Couldn't export", e.message);
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const doDelete = async () => {
+    if (!petId) return;
+    // Soft-archive: keeps history, and the dashboard only shows active pets.
+    await supabase.from("pets").update({ status: "archived" }).eq("id", petId);
+    await supabase.from("share_links").update({ revoked: true }).eq("pet_id", petId);
+    // Route to the next active pet, or onboarding if none remain.
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data: next } = await supabase
+      .from("pets").select("id").eq("owner_id", user!.id).eq("status", "active").limit(1).maybeSingle();
+    setShowDelete(false);
+    if (next?.id) setPetId(next.id);
+    router.replace(next ? "/dashboard" : "/onboarding/step1");
   };
 
   const age = dob ? computeAge(dob, dobIsEstimated) : null;
@@ -193,7 +221,9 @@ export default function EditPet() {
 
         <Card>
           <Eyebrow>Sex</Eyebrow>
-          <Input className="mt-1" placeholder="Female, spayed" value={sex} onChangeText={setSex} />
+          <View style={{ marginTop: 4 }}>
+            <Select value={sex} onValueChange={setSex} options={["Male", "Male, desexed", "Female", "Female, desexed"]} />
+          </View>
         </Card>
 
         <Card>
@@ -231,14 +261,54 @@ export default function EditPet() {
 
         {/* Danger zone */}
         <TouchableOpacity
-          onPress={deletePet}
-          style={{ marginTop: 20, height: 46, borderRadius: 10, borderWidth: 1, borderColor: "rgba(184,112,112,0.5)", alignItems: "center", justifyContent: "center" }}
+          onPress={() => setShowDelete(true)}
+          style={{ marginTop: 20, height: 46, alignItems: "center", justifyContent: "center" }}
         >
-          <Text style={{ color: colors.danger, fontSize: 14, fontFamily: "Satoshi-Medium" }}>
-            Delete {name || "this"}'s profile
+          <Text style={{ color: colors.textMuted, fontSize: 13, fontFamily: "Satoshi-Medium" }}>
+            Delete {name || "this pet"}'s profile
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Delete confirmation — bottom sheet, matching the prototype */}
+      <Modal visible={showDelete} transparent animationType="fade" onRequestClose={() => setShowDelete(false)}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setShowDelete(false)}
+          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "flex-end", padding: 16 }}
+        >
+          <TouchableOpacity activeOpacity={1} onPress={() => {}} style={{ backgroundColor: "#FFFFFF", borderRadius: 20, padding: 24, gap: 16 }}>
+            <View>
+              <Text style={{ fontFamily: "Tanker", fontSize: 26, lineHeight: 30, color: colors.textDark }}>
+                Say goodbye to {name || "this pet"}'s profile?
+              </Text>
+              <Text style={{ color: colors.textMuted, fontSize: 14, marginTop: 8, lineHeight: 20, fontFamily: "Satoshi-Light" }}>
+                Everything you've written stays gone once it's gone. If you'd rather keep the memories, you can export first.
+              </Text>
+            </View>
+            <View style={{ gap: 8 }}>
+              <TouchableOpacity
+                onPress={exportPetData}
+                disabled={exporting}
+                style={{ height: 46, borderRadius: 10, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center", opacity: exporting ? 0.5 : 1 }}
+              >
+                <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>
+                  {exporting ? "Preparing export…" : "Export first"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={doDelete}
+                style={{ height: 46, borderRadius: 10, backgroundColor: colors.primary, alignItems: "center", justifyContent: "center" }}
+              >
+                <Text style={{ color: "#F8ECEE", fontSize: 14, fontFamily: "Satoshi-Medium" }}>Delete anyway</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setShowDelete(false)} style={{ alignItems: "center", paddingVertical: 6 }}>
+                <Text style={{ color: colors.textMuted, fontSize: 14, fontFamily: "Satoshi" }}>Never mind</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </EditShell>
   );
 }
