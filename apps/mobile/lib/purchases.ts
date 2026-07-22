@@ -5,12 +5,22 @@ export const ENTITLEMENT_ID = "pro";
 export const PRODUCT_ID = "quirksandall_pro_799";
 
 export function initRevenueCat() {
-  if (__DEV__) Purchases.setLogLevel(LOG_LEVEL.DEBUG);
   const apiKey =
     Platform.OS === "ios"
-      ? process.env.EXPO_PUBLIC_RC_IOS_KEY!
-      : process.env.EXPO_PUBLIC_RC_ANDROID_KEY!;
-  Purchases.configure({ apiKey });
+      ? process.env.EXPO_PUBLIC_RC_IOS_KEY
+      : process.env.EXPO_PUBLIC_RC_ANDROID_KEY;
+
+  // IAP is stubbed until the RevenueCat keys exist. With no key — or in
+  // Expo Go, where the native module isn't linked — skip configuration so
+  // the app still launches. Wire the keys in and this activates automatically.
+  if (!apiKey) return;
+
+  try {
+    if (__DEV__) Purchases.setLogLevel(LOG_LEVEL.DEBUG);
+    Purchases.configure({ apiKey });
+  } catch (e) {
+    console.warn("RevenueCat unavailable (expected in Expo Go):", e);
+  }
 }
 
 export async function checkEntitlement(): Promise<boolean> {
