@@ -1,7 +1,8 @@
 // Screen 4 — Routine & medical
-import { View, Text, ScrollView, Alert } from "react-native";
+import { View, Text, ScrollView, TextInput, Alert } from "react-native";
 import { router } from "expo-router";
-import { Headline, Input, Textarea, PrimaryButton, SkipButton, ProgressDots, Eyebrow, Card } from "../../components/ui";
+import { Ionicons } from "@expo/vector-icons";
+import { Headline, Textarea, PrimaryButton, SkipButton, ProgressDots, Eyebrow } from "../../components/ui";
 import { Underlined } from "../../components/Underlined";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { supabase } from "../../lib/supabase";
@@ -9,20 +10,28 @@ import { uploadPetPhoto } from "../../lib/uploadPhoto";
 import { colors } from "@quirksandall/shared";
 import { useState } from "react";
 
-// One feeding meal block: label + time + amount on the blush surface.
-function MealBlock({
-  label, time, amount, onTime, onAmount, divider,
-}: {
+const mealInput = {
+  minHeight: 38,
+  borderRadius: 8,
+  borderWidth: 1,
+  borderColor: colors.border,
+  backgroundColor: colors.background, // blush #F8ECEE
+  paddingHorizontal: 12,
+  paddingVertical: 8,
+  fontSize: 14,
+  fontFamily: "Satoshi",
+  color: colors.textDark,
+} as const;
+
+function MealBlock({ label, time, amount, onTime, onAmount, divider }: {
   label: string; time: string; amount: string;
   onTime: (v: string) => void; onAmount: (v: string) => void; divider: boolean;
 }) {
   return (
-    <View style={{ paddingVertical: 10, borderTopWidth: divider ? 1 : 0, borderTopColor: colors.border }}>
-      <Text style={{ color: colors.textDark, fontSize: 13, fontFamily: "Satoshi-Medium", marginBottom: 6 }}>{label}</Text>
-      <View style={{ flexDirection: "row", gap: 8 }}>
-        <Input filled style={{ flex: 1, minHeight: 40, paddingVertical: 9 }} placeholder="Time" value={time} onChangeText={onTime} />
-        <Input filled style={{ flex: 1, minHeight: 40, paddingVertical: 9 }} placeholder="Amount" value={amount} onChangeText={onAmount} />
-      </View>
+    <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8, borderBottomWidth: divider ? 1 : 0, borderBottomColor: colors.border }}>
+      <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.textDark }}>{label}</Text>
+      <TextInput style={mealInput} placeholder="Time — e.g. 7:30am" placeholderTextColor={colors.dashedBorder} value={time} onChangeText={onTime} />
+      <TextInput style={mealInput} placeholder="Amount & brand" placeholderTextColor={colors.dashedBorder} value={amount} onChangeText={onAmount} />
     </View>
   );
 }
@@ -42,21 +51,11 @@ export default function Step4() {
       const { data: newPet } = await supabase
         .from("pets")
         .insert({
-          owner_id: user.id,
-          name: pet.name,
-          breed: pet.breed,
-          species: pet.species ?? "dog",
-          dob: pet.dob ?? new Date().toISOString().slice(0, 10),
-          dob_is_estimated: pet.dobIsEstimated ?? false,
-          sex: pet.sex,
-          weight: pet.weight,
-          color_markings: pet.colorMarkings,
-          microchip_number: pet.microchipNumber,
-          photo_url: null,
+          owner_id: user.id, name: pet.name, breed: pet.breed, species: pet.species ?? "dog",
+          dob: pet.dob ?? new Date().toISOString().slice(0, 10), dob_is_estimated: pet.dobIsEstimated ?? false,
+          sex: pet.sex, weight: pet.weight, color_markings: pet.colorMarkings, microchip_number: pet.microchipNumber, photo_url: null,
         })
-        .select("id")
-        .single();
-
+        .select("id").single();
       if (!newPet) throw new Error("Failed to create pet");
 
       if (pet.photoUri?.startsWith("file://")) {
@@ -69,23 +68,17 @@ export default function Step4() {
         primary_vet: { clinic: pet.vetClinic, phone: pet.vetPhone },
         emergency_vet: { clinic: pet.emergVetClinic, phone: pet.emergVetPhone },
         insurance: { provider: pet.insuranceProvider, policy_number: pet.insurancePolicy },
+        vet_pre_auth: pet.vetPreAuth ?? false,
       });
 
-      if (pet.backupName) {
-        await supabase.from("owners").update({
-          backup_contacts: [{
-            name: pet.backupName, relationship: pet.backupRelationship,
-            phone: pet.backupPhone, consent_to_share: pet.backupConsent ?? false,
-          }],
-        }).eq("id", user.id);
-      }
+      const backups = [];
+      if (pet.backupName) backups.push({ name: pet.backupName, relationship: pet.backupRelationship, phone: pet.backupPhone, consent_to_share: pet.backupConsent ?? false });
+      if (pet.backup2Name) backups.push({ name: pet.backup2Name, relationship: "", phone: pet.backup2Phone, consent_to_share: pet.backup2Consent ?? false });
+      if (backups.length) await supabase.from("owners").update({ backup_contacts: backups }).eq("id", user.id);
 
       await supabase.from("pet_behavior").insert({
-        pet_id: newPet.id,
-        commands: pet.commands ?? [],
-        scared: pet.scared, no_go: pet.noGo, flight_risk: pet.flightRisk,
-        escape_risk: { flag: !!pet.flightRisk, notes: pet.flightRisk },
-        quirks_triggers: [],
+        pet_id: newPet.id, commands: pet.commands ?? [], scared: pet.scared, no_go: pet.noGo, flight_risk: pet.flightRisk,
+        escape_risk: { flag: !!pet.flightRisk, notes: pet.flightRisk }, quirks_triggers: [],
       });
 
       await supabase.from("pet_medical").insert({
@@ -98,7 +91,6 @@ export default function Step4() {
       await supabase.from("pet_routine").insert({
         pet_id: newPet.id,
         feeding: {
-          brand: pet.feedingBrand,
           breakfast: { time: pet.feedingBreakfastTime, amount: pet.feedingBreakfastAmount },
           lunch: { time: pet.feedingLunchTime, amount: pet.feedingLunchAmount },
           dinner: { time: pet.feedingDinnerTime, amount: pet.feedingDinnerAmount },
@@ -109,9 +101,7 @@ export default function Step4() {
       });
 
       const token = Math.random().toString(36).slice(2) + Date.now().toString(36);
-      await supabase.from("share_links").insert({
-        pet_id: newPet.id, token, label: "Main link", pin_hash: null, mode: "full", revoked: false,
-      });
+      await supabase.from("share_links").insert({ pet_id: newPet.id, token, label: "Main link", pin_hash: null, mode: "full", revoked: false });
 
       reset();
       router.replace("/dashboard");
@@ -126,67 +116,78 @@ export default function Step4() {
     <ScrollView className="flex-1 bg-background" contentContainerStyle={{ padding: 24, paddingTop: 60 }}>
       <ProgressDots total={4} current={4} />
 
-      <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-end", marginTop: 20, marginBottom: 4 }}>
+      <View style={{ marginTop: 20, marginBottom: 6 }}><Eyebrow>Step 4 of 4</Eyebrow></View>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-end" }}>
         <Headline>A normal day </Headline>
-        <Underlined><Headline>for {pet.name ?? "your pet"}.</Headline></Underlined>
+        <Underlined><Headline>for {pet.name ?? "them"}.</Headline></Underlined>
       </View>
-      <Text style={{ color: colors.textMuted, fontSize: 14, lineHeight: 21, marginBottom: 24, fontFamily: "Satoshi-Light" }}>
-        Routine is saved now — sitters only see it once you unlock it.
+      <Text style={{ color: colors.textMuted, fontSize: 14, lineHeight: 21, marginTop: 8, fontFamily: "Satoshi-Light" }}>
+        Your link already works. This is the full picture.
       </Text>
+      <View style={{ flexDirection: "row", gap: 10, alignItems: "flex-start", marginTop: 12, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10, backgroundColor: "rgba(184,58,82,0.1)", borderWidth: 1, borderColor: "rgba(184,58,82,0.3)" }}>
+        <Ionicons name="lock-closed" size={14} color={colors.primary} style={{ marginTop: 1 }} />
+        <Text style={{ flex: 1, color: colors.textMuted, fontSize: 12, lineHeight: 17, fontFamily: "Satoshi-Light" }}>
+          Routine and medications are saved, but sitters won't see them until you unlock the full view.
+        </Text>
+      </View>
 
-      <View style={{ gap: 16 }}>
-        {/* Feeding */}
-        <View>
-          <Eyebrow ochre>Feeding</Eyebrow>
-          <Card style={{ marginTop: 8 }}>
-            <Input placeholder="Food brand" value={pet.feedingBrand ?? ""} onChangeText={(v) => setPet({ feedingBrand: v })} />
-            <MealBlock label="Breakfast" time={pet.feedingBreakfastTime ?? ""} amount={pet.feedingBreakfastAmount ?? ""} onTime={(v) => setPet({ feedingBreakfastTime: v })} onAmount={(v) => setPet({ feedingBreakfastAmount: v })} divider={false} />
+      {/* Routine */}
+      <View style={{ marginTop: 24 }}>
+        <Eyebrow ochre>Routine</Eyebrow>
+        <View style={{ marginTop: 12, gap: 12 }}>
+          {/* Feeding card */}
+          <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 10, overflow: "hidden" }}>
+            <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+              <Eyebrow ochre>Feeding</Eyebrow>
+            </View>
+            <MealBlock label="Breakfast" time={pet.feedingBreakfastTime ?? ""} amount={pet.feedingBreakfastAmount ?? ""} onTime={(v) => setPet({ feedingBreakfastTime: v })} onAmount={(v) => setPet({ feedingBreakfastAmount: v })} divider />
             <MealBlock label="Lunch" time={pet.feedingLunchTime ?? ""} amount={pet.feedingLunchAmount ?? ""} onTime={(v) => setPet({ feedingLunchTime: v })} onAmount={(v) => setPet({ feedingLunchAmount: v })} divider />
             <MealBlock label="Dinner" time={pet.feedingDinnerTime ?? ""} amount={pet.feedingDinnerAmount ?? ""} onTime={(v) => setPet({ feedingDinnerTime: v })} onAmount={(v) => setPet({ feedingDinnerAmount: v })} divider />
-            <View style={{ flexDirection: "row", gap: 8, marginTop: 10 }}>
-              <Input style={{ flex: 1 }} placeholder="Treats (type)" value={pet.feedingTreatsType ?? ""} onChangeText={(v) => setPet({ feedingTreatsType: v })} />
-              <Input style={{ flex: 1 }} placeholder="Limit" value={pet.feedingTreatsLimit ?? ""} onChangeText={(v) => setPet({ feedingTreatsLimit: v })} />
+            <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+              <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.textDark }}>Treats</Text>
+              <TextInput style={mealInput} placeholder="Type / brand" placeholderTextColor={colors.dashedBorder} value={pet.feedingTreatsType ?? ""} onChangeText={(v) => setPet({ feedingTreatsType: v })} />
+              <TextInput style={mealInput} placeholder="Daily limit — e.g. max 3 per day" placeholderTextColor={colors.dashedBorder} value={pet.feedingTreatsLimit ?? ""} onChangeText={(v) => setPet({ feedingTreatsLimit: v })} />
             </View>
-            <Textarea style={{ marginTop: 8 }} placeholder="Notes (e.g. slow feeder bowl only)" value={pet.feedingNotes ?? ""} onChangeText={(v) => setPet({ feedingNotes: v })} />
-          </Card>
-        </View>
+            <TextInput
+              style={{ paddingHorizontal: 16, paddingVertical: 12, fontSize: 13, fontFamily: "Satoshi", color: colors.textMuted }}
+              placeholder="Notes — slow feeder, timing, anything else…"
+              placeholderTextColor={colors.dashedBorder}
+              value={pet.feedingNotes ?? ""}
+              onChangeText={(v) => setPet({ feedingNotes: v })}
+            />
+          </View>
 
-        {/* Routine */}
-        <View>
-          <Eyebrow ochre>Routine</Eyebrow>
-          <View style={{ marginTop: 8, gap: 12 }}>
-            <View>
-              <Eyebrow>Walks</Eyebrow>
-              <Textarea style={{ marginTop: 4 }} placeholder="45 min morning, 20 min evening…" value={pet.walks ?? ""} onChangeText={(v) => setPet({ walks: v })} />
-            </View>
-            <View>
-              <Eyebrow>Sleep</Eyebrow>
-              <Textarea style={{ marginTop: 4 }} placeholder="Dog bed in the bedroom, door stays open…" value={pet.sleep ?? ""} onChangeText={(v) => setPet({ sleep: v })} />
-            </View>
+          <View>
+            <Eyebrow>Walks</Eyebrow>
+            <Textarea style={{ marginTop: 4 }} placeholder="Frequency, duration, any notes…" value={pet.walks ?? ""} onChangeText={(v) => setPet({ walks: v })} />
+          </View>
+          <View>
+            <Eyebrow>Sleep setup</Eyebrow>
+            <Textarea style={{ marginTop: 4 }} placeholder="Crate, bed location, door open/closed…" value={pet.sleep ?? ""} onChangeText={(v) => setPet({ sleep: v })} />
           </View>
         </View>
+      </View>
 
-        {/* Medical */}
-        <View>
-          <Eyebrow ochre>Medical</Eyebrow>
-          <View style={{ marginTop: 8, gap: 12 }}>
-            <View>
-              <Eyebrow>Allergies</Eyebrow>
-              <Textarea style={{ marginTop: 4 }} placeholder="Chicken-based kibble causes skin itching…" value={pet.allergies ?? ""} onChangeText={(v) => setPet({ allergies: v })} />
-              <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4, fontFamily: "Satoshi-Light" }}>Always shown to sitters, even on free tier — safety override.</Text>
-            </View>
-            <View>
-              <Eyebrow>Medications</Eyebrow>
-              <Textarea style={{ marginTop: 4 }} placeholder="Name, dose, frequency, where it's stored" value={pet.medications ?? ""} onChangeText={(v) => setPet({ medications: v })} />
-              <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4, fontFamily: "Satoshi-Light" }}>Paid tier: visible to sitters. Free tier: saved but not shown.</Text>
-            </View>
+      {/* Medical */}
+      <View style={{ marginTop: 24 }}>
+        <Eyebrow ochre>Medical</Eyebrow>
+        <View style={{ marginTop: 12, gap: 12 }}>
+          <View>
+            <Eyebrow>Allergies</Eyebrow>
+            <Textarea style={{ marginTop: 4 }} placeholder="Food, environmental, medication…" value={pet.allergies ?? ""} onChangeText={(v) => setPet({ allergies: v })} />
+            <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4, fontFamily: "Satoshi-Light" }}>Always shown to sitters, even on free tier — safety override.</Text>
+          </View>
+          <View>
+            <Eyebrow>Medications</Eyebrow>
+            <Textarea style={{ marginTop: 4 }} placeholder="Name, dose, timing, location stored…" value={pet.medications ?? ""} onChangeText={(v) => setPet({ medications: v })} />
+            <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4, fontFamily: "Satoshi-Light" }}>Paid tier: visible to sitters. Free tier: saved but not shown.</Text>
           </View>
         </View>
       </View>
 
       <View style={{ marginTop: 28, gap: 10 }}>
         <PrimaryButton label={saving ? "Saving…" : "Finish profile"} onPress={finish} disabled={saving} />
-        <SkipButton label="Skip — link still works" onPress={() => router.replace("/dashboard")} />
+        <SkipButton label={`${pet.name ?? "Their"}'s link already works — skip for now`} onPress={() => router.replace("/dashboard")} />
       </View>
     </ScrollView>
   );

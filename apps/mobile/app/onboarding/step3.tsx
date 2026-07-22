@@ -36,7 +36,8 @@ export default function Step3() {
     <ScrollView className="flex-1 bg-background" contentContainerStyle={{ padding: 24, paddingTop: 60 }}>
       <ProgressDots total={4} current={3} />
 
-      <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-end", marginTop: 20, marginBottom: 4 }}>
+      <View style={{ marginTop: 20, marginBottom: 6 }}><Eyebrow>Step 3 of 4</Eyebrow></View>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-end", marginBottom: 4 }}>
         <Headline>{pet.name ? `${pet.name}'s ` : "Your pet's "}</Headline>
         <Underlined><Headline>got words.</Headline></Underlined>
       </View>
