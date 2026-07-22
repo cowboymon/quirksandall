@@ -7,9 +7,9 @@ import { router } from "expo-router";
 
 type PetSummary = { id: string; name: string; photo_url: string | null };
 
-type Props = { isPaid: boolean };
-
-export default function PetSwitcher({ isPaid }: Props) {
+// Always-visible horizontal pet switcher (matches the prototype). Add-pet is
+// gated: free tier routes to the upgrade screen, paid starts a new onboarding.
+export default function PetSwitcher({ isPaid }: { isPaid: boolean }) {
   const { petId, setPetId } = useActivePetStore();
   const [pets, setPets] = useState<PetSummary[]>([]);
 
@@ -27,87 +27,65 @@ export default function PetSwitcher({ isPaid }: Props) {
     })();
   }, []);
 
-  // Only render if there's more than one pet (or we're paid, to show the add button)
-  if (pets.length <= 1 && !isPaid) return null;
+  const activeId = petId ?? pets[0]?.id;
 
   return (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 16, gap: 12 }}
+      contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 16, gap: 10, alignItems: "flex-start" }}
     >
       {pets.map((p) => {
-        const active = p.id === petId;
+        const active = p.id === activeId;
         return (
           <TouchableOpacity
             key={p.id}
             onPress={() => setPetId(p.id)}
-            style={{ alignItems: "center", gap: 4 }}
+            style={{ alignItems: "center", gap: 6, opacity: active ? 1 : 0.5 }}
+            activeOpacity={0.8}
           >
             {p.photo_url ? (
               <Image
                 source={{ uri: p.photo_url }}
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 24,
-                  borderWidth: 2,
-                  borderColor: active ? colors.primary : colors.border,
-                }}
+                style={{ width: 56, height: 56, borderRadius: 28, borderWidth: 2, borderColor: active ? colors.cardDark : colors.border }}
               />
             ) : (
               <View
                 style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 24,
-                  backgroundColor: active ? colors.primary : "#FFFFFF",
-                  borderWidth: 2,
-                  borderColor: active ? colors.primary : colors.border,
-                  alignItems: "center",
-                  justifyContent: "center",
+                  width: 56, height: 56, borderRadius: 28,
+                  backgroundColor: colors.secondary,
+                  borderWidth: 2, borderColor: active ? colors.cardDark : colors.border,
+                  alignItems: "center", justifyContent: "center",
                 }}
               >
-                <Text style={{ fontSize: 20 }}>🐾</Text>
+                <Text style={{ fontFamily: "Tanker", fontSize: 20, color: colors.textMuted }}>
+                  {p.name?.[0]?.toUpperCase() ?? "?"}
+                </Text>
               </View>
             )}
-            <Text
-              style={{
-                fontSize: 11,
-                color: active ? colors.primary : colors.textMuted,
-                fontWeight: active ? "700" : "400",
-              }}
-            >
-              {p.name}
+            <Text style={{ fontSize: 11, fontFamily: "Satoshi-Medium", color: active ? colors.textDark : colors.textMuted }}>
+              {p.name || "New pet"}
             </Text>
           </TouchableOpacity>
         );
       })}
 
-      {/* Add pet — paid only */}
-      {isPaid && (
-        <TouchableOpacity
-          onPress={() => router.push("/onboarding/step1")}
-          style={{ alignItems: "center", gap: 4 }}
+      <TouchableOpacity
+        onPress={() => router.push(isPaid ? "/onboarding/step1" : "/upgrade")}
+        style={{ alignItems: "center", gap: 6, opacity: 0.6 }}
+        activeOpacity={0.8}
+      >
+        <View
+          style={{
+            width: 56, height: 56, borderRadius: 28,
+            borderWidth: 2, borderColor: colors.dashedBorder, borderStyle: "dashed",
+            alignItems: "center", justifyContent: "center",
+          }}
         >
-          <View
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 24,
-              backgroundColor: "#FFFFFF",
-              borderWidth: 1.5,
-              borderColor: colors.dashedBorder,
-              borderStyle: "dashed",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Text style={{ color: colors.textMuted, fontSize: 22, lineHeight: 24 }}>+</Text>
-          </View>
-          <Text style={{ fontSize: 11, color: colors.textMuted }}>Add pet</Text>
-        </TouchableOpacity>
-      )}
+          <Text style={{ color: colors.textMuted, fontSize: 24, lineHeight: 26 }}>+</Text>
+        </View>
+        <Text style={{ fontSize: 11, fontFamily: "Satoshi-Medium", color: colors.textMuted }}>Add pet</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }

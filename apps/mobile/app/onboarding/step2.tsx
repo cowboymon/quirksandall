@@ -10,7 +10,7 @@ export default function Step2() {
 
   return (
     <ScrollView className="flex-1 bg-background" contentContainerStyle={{ padding: 24, paddingTop: 60 }}>
-      <ProgressDots total={4} current={1} />
+      <ProgressDots total={4} current={2} />
 
       <Headline className="mt-5 mb-1">What a sitter needs most.</Headline>
       <Text className="text-text-muted text-sm leading-relaxed mb-6">
