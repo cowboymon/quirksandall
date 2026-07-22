@@ -82,7 +82,7 @@ async function generate(params: Params): Promise<Response> {
   const { data: pet } = await supabase
     .from("pets")
     .select(
-      "name, breed, sex, dob, dob_is_estimated, weight, color_markings, microchip_number, photo_url, description_for_id, owners!inner(name, primary_phone, purchase_status)"
+      "name, breed, sex, dob, dob_is_estimated, weight, color_markings, microchip_number, photo_url, description_for_id, owners!inner(name, primary_phone)"
     )
     .eq("id", link.pet_id)
     .single();
@@ -90,7 +90,8 @@ async function generate(params: Params): Promise<Response> {
   if (!pet) return Response.json({ error: "pet not found" }, { status: 404 });
 
   const owner = (pet as any).owners;
-  const isPaid = owner?.purchase_status === "paid";
+  // Watermark is tier-independent (free and paid alike); it renders on the
+  // poster and 9:16 only, decided per-format inside the templates.
 
   const photoDataUri =
     params.photoDataUri ?? (pet.photo_url ? await photoToDataUri(pet.photo_url) : null);
@@ -116,7 +117,6 @@ async function generate(params: Params): Promise<Response> {
     ownerPhone: owner?.primary_phone ?? "",
     lastSeenArea: params.lastSeenArea,
     lastSeenDate: params.lastSeenDate,
-    watermark: !isPaid,
   };
 
   const { width, height } = FORMATS[format];
