@@ -9,6 +9,7 @@ import QRModal from "../../components/QRModal";
 import PetSwitcher from "../../components/PetSwitcher";
 import { useActivePetStore } from "../../stores/activePet";
 import { colors, computeAge, pinAttemptLabel } from "@quirksandall/shared";
+import { WEB_URL } from "../../lib/config";
 import type { Pet, ShareLink } from "@quirksandall/shared";
 
 type DashboardData = {
@@ -145,7 +146,7 @@ export default function Dashboard() {
 
   const shareLink = async () => {
     if (!data?.link?.token) return;
-    const url = `https://quirksandall.app/p/${data.link.token}`;
+    const url = `${WEB_URL}/p/${data.link.token}`;
     await Share.share({ message: url, url });
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -156,7 +157,7 @@ export default function Dashboard() {
   }
 
   const { pet, link, wrongPinCount, sections, isPaid } = data;
-  const shareUrl = link ? `https://quirksandall.app/p/${link.token}` : null;
+  const shareUrl = link ? `${WEB_URL}/p/${link.token}` : null;
   const pinMsg = pinAttemptLabel(wrongPinCount);
 
   const statusColor = { done: colors.success, saved: colors.caution, empty: colors.border };

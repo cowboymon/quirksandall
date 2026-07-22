@@ -13,7 +13,7 @@ import { Eyebrow, Input } from "../components/ui";
 import { useActivePetStore } from "../stores/activePet";
 import { colors, computeAge } from "@quirksandall/shared";
 
-const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL ?? "https://quirksandall.app";
+import { WEB_URL } from "../lib/config";
 
 type PosterProfile = {
   name: string;
