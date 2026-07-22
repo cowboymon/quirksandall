@@ -1,12 +1,31 @@
 // Edit routine + medical. Tier-aware: shows lock indicator on paid-gated sections for free users.
 import { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TouchableOpacity, TextInput, Alert } from "react-native";
 import { router } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
 import { Input, Eyebrow, Card } from "../../components/ui";
 import { colors } from "@quirksandall/shared";
+
+const mealInput = {
+  minHeight: 38, borderRadius: 8, borderWidth: 1, borderColor: colors.border,
+  backgroundColor: colors.background, paddingHorizontal: 12, paddingVertical: 8,
+  fontSize: 14, fontFamily: "Satoshi", color: colors.textDark,
+} as const;
+
+function RoutineMeal({ label, time, amount, onTime, onAmount, divider }: {
+  label: string; time: string; amount: string;
+  onTime: (v: string) => void; onAmount: (v: string) => void; divider: boolean;
+}) {
+  return (
+    <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8, borderBottomWidth: divider ? 1 : 0, borderBottomColor: colors.border }}>
+      <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.textDark }}>{label}</Text>
+      <TextInput style={mealInput} placeholder="Time — e.g. 7:30am" placeholderTextColor={colors.dashedBorder} value={time} onChangeText={onTime} />
+      <TextInput style={mealInput} placeholder="Amount & brand" placeholderTextColor={colors.dashedBorder} value={amount} onChangeText={onAmount} />
+    </View>
+  );
+}
 
 export default function EditRoutine() {
   const { petId, pet, loading } = useActivePet();
@@ -143,36 +162,28 @@ export default function EditRoutine() {
         </View>
       )}
 
-      {/* Feeding */}
-      <Card style={{ marginBottom: 12 }}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Eyebrow>Feeding</Eyebrow>
+      {/* Feeding — meal blocks on blush, matching the prototype */}
+      <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 10, overflow: "hidden", marginBottom: 12 }}>
+        <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: colors.border, flexDirection: "row", alignItems: "center" }}>
+          <Eyebrow ochre>Feeding</Eyebrow>
           <PaidBadge />
         </View>
-        <Input className="mt-2" placeholder="Food brand" value={feedingBrand} onChangeText={setFeedingBrand} />
-        <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
-          <Input style={{ flex: 1 }} placeholder="Breakfast time" value={breakfastTime} onChangeText={setBreakfastTime} />
-          <Input style={{ flex: 1 }} placeholder="Amount" value={breakfastAmount} onChangeText={setBreakfastAmount} />
+        <RoutineMeal label="Breakfast" time={breakfastTime} amount={breakfastAmount} onTime={setBreakfastTime} onAmount={setBreakfastAmount} divider />
+        <RoutineMeal label="Lunch" time={lunchTime} amount={lunchAmount} onTime={setLunchTime} onAmount={setLunchAmount} divider />
+        <RoutineMeal label="Dinner" time={dinnerTime} amount={dinnerAmount} onTime={setDinnerTime} onAmount={setDinnerAmount} divider />
+        <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+          <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.textDark }}>Treats</Text>
+          <TextInput style={mealInput} placeholder="Type / brand" placeholderTextColor={colors.dashedBorder} value={treatsType} onChangeText={setTreatsType} />
+          <TextInput style={mealInput} placeholder="Daily limit — e.g. max 3 per day" placeholderTextColor={colors.dashedBorder} value={treatsLimit} onChangeText={setTreatsLimit} />
         </View>
-        <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
-          <Input style={{ flex: 1 }} placeholder="Lunch time (optional)" value={lunchTime} onChangeText={setLunchTime} />
-          <Input style={{ flex: 1 }} placeholder="Amount" value={lunchAmount} onChangeText={setLunchAmount} />
-        </View>
-        <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
-          <Input style={{ flex: 1 }} placeholder="Dinner time" value={dinnerTime} onChangeText={setDinnerTime} />
-          <Input style={{ flex: 1 }} placeholder="Amount" value={dinnerAmount} onChangeText={setDinnerAmount} />
-        </View>
-        <Input className="mt-2" placeholder="Treats (type, e.g. Zuke's Mini Naturals)" value={treatsType} onChangeText={setTreatsType} />
-        <Input className="mt-2" placeholder="Treat limit" value={treatsLimit} onChangeText={setTreatsLimit} />
-        <Input
-          className="mt-2"
-          placeholder="Notes (e.g. slow feeder bowl only)"
+        <TextInput
+          style={{ paddingHorizontal: 16, paddingVertical: 12, fontSize: 13, fontFamily: "Satoshi", color: colors.textMuted }}
+          placeholder="Notes — slow feeder, timing, anything else…"
+          placeholderTextColor={colors.dashedBorder}
           value={feedingNotes}
           onChangeText={setFeedingNotes}
-          multiline
-          style={{ height: 60, paddingTop: 10, textAlignVertical: "top" }}
         />
-      </Card>
+      </View>
 
       {/* Walks */}
       <Card style={{ marginBottom: 12 }}>

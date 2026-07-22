@@ -75,7 +75,7 @@ export default function EditBehavior() {
     <EditShell title="Commands & quirks" onSave={save} saving={saving} loading={loading}>
       {/* Commands section */}
       <Text
-        style={{ fontFamily: "Tanker", fontSize: 22, color: colors.textDark, marginBottom: 4 }}
+        style={{ fontFamily: "Satoshi-Bold", fontSize: 17, color: colors.textDark, marginBottom: 4 }}
       >
         {petName}'s got words.
       </Text>
@@ -135,7 +135,7 @@ export default function EditBehavior() {
       {/* Quirks section */}
       <View style={{ marginTop: 28, gap: 12 }}>
         <Text
-          style={{ fontFamily: "Tanker", fontSize: 20, color: colors.textDark, marginBottom: 4 }}
+          style={{ fontFamily: "Satoshi-Bold", fontSize: 17, color: colors.textDark, marginBottom: 4 }}
         >
           Quirks & triggers
         </Text>

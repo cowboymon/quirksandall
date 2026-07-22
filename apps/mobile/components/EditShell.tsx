@@ -32,7 +32,7 @@ export default function EditShell({ title, children, onSave, saving, saveLabel =
         <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
           <Text style={{ color: colors.textMuted, fontSize: 15 }}>‹ Back</Text>
         </TouchableOpacity>
-        <Text style={{ fontFamily: "Tanker", fontSize: 18, color: colors.textDark }}>{title}</Text>
+        <Text style={{ fontFamily: "Satoshi-Bold", fontSize: 16, color: colors.textDark }}>{title}</Text>
         <TouchableOpacity
           onPress={onSave}
           disabled={saving}

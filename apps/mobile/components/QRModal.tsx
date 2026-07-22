@@ -21,7 +21,7 @@ export default function QRModal({ visible, url, petName, onClose }: Props) {
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
           <Text
             style={{
-              fontFamily: "Tanker",
+              fontFamily: "Satoshi-Bold",
               fontSize: 22,
               color: colors.textDark,
               flex: 1,

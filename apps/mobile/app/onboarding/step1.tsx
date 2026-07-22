@@ -36,7 +36,8 @@ export default function Step1() {
     <ScrollView className="flex-1 bg-background" contentContainerStyle={{ padding: 24, paddingTop: 60 }}>
       <ProgressDots total={4} current={1} />
 
-      <Headline className="mt-5 mb-2">
+      <View style={{ marginTop: 20, marginBottom: 6 }}><Eyebrow>Step 1 of 4</Eyebrow></View>
+      <Headline className="mb-2">
         {pet.name ? `${pet.name}'s got quirks.` : "Let's meet your pet."}
       </Headline>
       <Text className="text-text-muted text-sm leading-relaxed mb-8">

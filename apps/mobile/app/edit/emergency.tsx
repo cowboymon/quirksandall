@@ -1,6 +1,6 @@
 // Edit emergency contacts + PIN
 import { useState, useEffect } from "react";
-import { View, Text, Alert } from "react-native";
+import { View, Text, Alert, TouchableOpacity } from "react-native";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
@@ -25,6 +25,11 @@ export default function EditEmergency() {
   const [backupRel, setBackupRel] = useState("");
   const [backupPhone, setBackupPhone] = useState("");
   const [backupConsent, setBackupConsent] = useState(false);
+  const [backup2Name, setBackup2Name] = useState("");
+  const [backup2Phone, setBackup2Phone] = useState("");
+  const [backup2Consent, setBackup2Consent] = useState(false);
+  const [showSecondBackup, setShowSecondBackup] = useState(false);
+  const [vetPreAuth, setVetPreAuth] = useState(false);
   const [ownerName, setOwnerName] = useState("");
   const [ownerPhone, setOwnerPhone] = useState("");
   const [saving, setSaving] = useState(false);
@@ -46,6 +51,7 @@ export default function EditEmergency() {
         setInsuranceProvider(vet.insurance?.provider ?? "");
         setInsurancePolicy(vet.insurance?.policy_number ?? "");
         setInsuranceClaims(vet.insurance?.claims_contact ?? "");
+        setVetPreAuth(vet.vet_pre_auth ?? false);
       }
       if (owner) {
         setOwnerName(owner.name ?? "");
@@ -56,6 +62,13 @@ export default function EditEmergency() {
           setBackupRel(backup.relationship ?? "");
           setBackupPhone(backup.phone ?? "");
           setBackupConsent(backup.consent_to_share ?? false);
+        }
+        const backup2 = owner.backup_contacts?.[1];
+        if (backup2) {
+          setBackup2Name(backup2.name ?? "");
+          setBackup2Phone(backup2.phone ?? "");
+          setBackup2Consent(backup2.consent_to_share ?? false);
+          setShowSecondBackup(true);
         }
       }
     })();
@@ -72,16 +85,15 @@ export default function EditEmergency() {
           primary_vet: { clinic: vetClinic, address: vetAddress, phone: vetPhone },
           emergency_vet: { clinic: emergClinic, phone: emergPhone },
           insurance: { provider: insuranceProvider, policy_number: insurancePolicy, claims_contact: insuranceClaims },
+          vet_pre_auth: vetPreAuth,
         }),
         supabase.from("owners").update({
           name: ownerName,
           primary_phone: ownerPhone,
-          backup_contacts: [{
-            name: backupName,
-            relationship: backupRel,
-            phone: backupPhone,
-            consent_to_share: backupConsent,
-          }],
+          backup_contacts: [
+            { name: backupName, relationship: backupRel, phone: backupPhone, consent_to_share: backupConsent },
+            ...(backup2Name || backup2Phone ? [{ name: backup2Name, relationship: "", phone: backup2Phone, consent_to_share: backup2Consent }] : []),
+          ],
         }).eq("id", user!.id),
       ]);
       router.back();
@@ -151,6 +163,52 @@ export default function EditEmergency() {
             onToggle={setBackupConsent}
           />
         </Card>
+
+        {/* Second backup */}
+        {!showSecondBackup ? (
+          <TouchableOpacity
+            onPress={() => setShowSecondBackup(true)}
+            style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: colors.dashedBorder, borderStyle: "dashed" }}
+          >
+            <Text style={{ color: colors.textMuted, fontSize: 18, lineHeight: 18 }}>+</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Add another backup contact</Text>
+          </TouchableOpacity>
+        ) : (
+          <Card>
+            <Eyebrow>Second backup contact</Eyebrow>
+            <Input className="mt-2" placeholder="Name & relationship" value={backup2Name} onChangeText={setBackup2Name} />
+            <Input className="mt-2" placeholder="Phone" keyboardType="phone-pad" value={backup2Phone} onChangeText={setBackup2Phone} />
+            <CheckboxRow
+              label="I have permission to share this person's contact info."
+              checked={backup2Consent}
+              onToggle={setBackup2Consent}
+            />
+          </Card>
+        )}
+
+        {/* Pre-authorise vet */}
+        <TouchableOpacity
+          onPress={() => setVetPreAuth(!vetPreAuth)}
+          style={{
+            flexDirection: "row", alignItems: "flex-start", gap: 12, paddingHorizontal: 16, paddingVertical: 14, borderRadius: 12, borderWidth: 1,
+            backgroundColor: vetPreAuth ? colors.secondary : "#FFFFFF",
+            borderColor: vetPreAuth ? "rgba(81,0,0,0.2)" : colors.border,
+          }}
+        >
+          <View style={{
+            width: 18, height: 18, borderRadius: 4, borderWidth: 2, marginTop: 1, alignItems: "center", justifyContent: "center",
+            backgroundColor: vetPreAuth ? colors.cardDark : "transparent",
+            borderColor: vetPreAuth ? colors.cardDark : colors.dashedBorder,
+          }}>
+            {vetPreAuth && <Text style={{ color: "#F8ECEE", fontSize: 11 }}>✓</Text>}
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>I've pre-authorised my vet</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2, lineHeight: 17, fontFamily: "Satoshi-Light" }}>
+              Many clinics let you do this over the phone or via their portal — worth a quick call before you travel.
+            </Text>
+          </View>
+        </TouchableOpacity>
 
         {/* PIN editor */}
         <PINEditor petId={petId} />

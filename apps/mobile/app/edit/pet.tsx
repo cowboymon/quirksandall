@@ -5,6 +5,7 @@ import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
+import { useActivePetStore } from "../../stores/activePet";
 import EditShell from "../../components/EditShell";
 import { Input, Eyebrow, Card } from "../../components/ui";
 import { computeAge, colors } from "@quirksandall/shared";
@@ -12,6 +13,7 @@ import { uploadPetPhoto } from "../../lib/uploadPhoto";
 
 export default function EditPet() {
   const { pet, petId, loading } = useActivePet();
+  const setPetId = useActivePetStore((s) => s.setPetId);
 
   const [name, setName] = useState("");
   const [breed, setBreed] = useState("");
@@ -89,6 +91,32 @@ export default function EditPet() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const deletePet = () => {
+    if (!petId) return;
+    Alert.alert(
+      `Delete ${name || "this"}'s profile?`,
+      "This removes the profile and immediately breaks every share link for it. This can't be undone.",
+      [
+        { text: "Never mind", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            // Soft-archive: keeps history, and the dashboard only shows active pets.
+            await supabase.from("pets").update({ status: "archived" }).eq("id", petId);
+            await supabase.from("share_links").update({ revoked: true }).eq("pet_id", petId);
+            // Route to the next active pet, or onboarding if none remain.
+            const { data: { user } } = await supabase.auth.getUser();
+            const { data: next } = await supabase
+              .from("pets").select("id").eq("owner_id", user!.id).eq("status", "active").limit(1).maybeSingle();
+            if (next?.id) setPetId(next.id);
+            router.replace(next ? "/dashboard" : "/onboarding/step1");
+          },
+        },
+      ]
+    );
   };
 
   const age = dob ? computeAge(dob, dobIsEstimated) : null;
@@ -200,6 +228,16 @@ export default function EditPet() {
             Missing poster only — never shown on the shared profile.
           </Text>
         </Card>
+
+        {/* Danger zone */}
+        <TouchableOpacity
+          onPress={deletePet}
+          style={{ marginTop: 20, height: 46, borderRadius: 10, borderWidth: 1, borderColor: "rgba(184,112,112,0.5)", alignItems: "center", justifyContent: "center" }}
+        >
+          <Text style={{ color: colors.danger, fontSize: 14, fontFamily: "Satoshi-Medium" }}>
+            Delete {name || "this"}'s profile
+          </Text>
+        </TouchableOpacity>
       </View>
     </EditShell>
   );
