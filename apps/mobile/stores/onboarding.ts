@@ -30,6 +30,8 @@ type PetDraft = {
   feedingBrand?: string;
   feedingBreakfastTime?: string;
   feedingBreakfastAmount?: string;
+  feedingLunchTime?: string;
+  feedingLunchAmount?: string;
   feedingDinnerTime?: string;
   feedingDinnerAmount?: string;
   feedingTreatsType?: string;

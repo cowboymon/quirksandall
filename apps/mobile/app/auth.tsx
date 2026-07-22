@@ -39,7 +39,7 @@ export default function AuthScreen() {
     if (error) {
       Alert.alert("That code didn't work", "Check it and try again, or request a new one.");
     } else {
-      router.replace("/(tabs)/dashboard");
+      router.replace("/dashboard");
     }
   };
 

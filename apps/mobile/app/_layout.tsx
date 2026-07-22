@@ -12,6 +12,7 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     Tanker: require("../assets/fonts/Tanker-Regular.ttf"),
     Satoshi: require("../assets/fonts/Satoshi-Regular.ttf"),
+    "Satoshi-Light": require("../assets/fonts/Satoshi-Light.ttf"),
     "Satoshi-Medium": require("../assets/fonts/Satoshi-Medium.ttf"),
     "Satoshi-Bold": require("../assets/fonts/Satoshi-Bold.ttf"),
   });
@@ -32,8 +33,10 @@ export default function RootLayout() {
       <Stack.Screen name="auth" />
       <Stack.Screen name="auth-callback" options={{ animation: "none" }} />
       <Stack.Screen name="onboarding" options={{ presentation: "card" }} />
-      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="dashboard" />
+      <Stack.Screen name="account" />
       <Stack.Screen name="poster" />
+      <Stack.Screen name="upgrade" />
     </Stack>
   );
 }

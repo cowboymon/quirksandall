@@ -27,7 +27,7 @@ export default function AuthCallback() {
       // Regardless, check current session and route accordingly
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        router.replace("/(tabs)/dashboard");
+        router.replace("/dashboard");
       } else {
         router.replace("/auth");
       }

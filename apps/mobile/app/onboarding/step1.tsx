@@ -34,7 +34,7 @@ export default function Step1() {
 
   return (
     <ScrollView className="flex-1 bg-background" contentContainerStyle={{ padding: 24, paddingTop: 60 }}>
-      <ProgressDots total={4} current={0} />
+      <ProgressDots total={4} current={1} />
 
       <Headline className="mt-5 mb-2">
         {pet.name ? `${pet.name}'s got quirks.` : "Let's meet your pet."}
