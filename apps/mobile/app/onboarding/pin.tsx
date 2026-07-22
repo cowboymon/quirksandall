@@ -39,10 +39,10 @@ export default function PINSetup() {
       <Text className="text-text-muted text-sm leading-relaxed mt-2 mb-3">
         Only people with the PIN can see that block. The link still works without it.
       </Text>
-      <View style={{ backgroundColor: colors.primary, borderRadius: 10, padding: 12, marginBottom: 24 }}>
-        <Text style={{ color: "rgba(247,233,201,0.8)", fontSize: 12, lineHeight: 18 }}>
+      <View style={{ backgroundColor: colors.cardDark, borderRadius: 10, padding: 12, marginBottom: 24 }}>
+        <Text style={{ color: "rgba(248,236,238,0.8)", fontSize: 12, lineHeight: 18 }}>
           The link's the door. The PIN's the key.{" "}
-          <Text style={{ color: "#F7E9C9", fontWeight: "600" }}>Send them separately.</Text>
+          <Text style={{ color: "#F8ECEE", fontWeight: "600" }}>Send them separately.</Text>
         </Text>
       </View>
 
@@ -57,11 +57,11 @@ export default function PINSetup() {
             style={{
               flex: 1, height: 56, borderRadius: 10, borderWidth: 2,
               alignItems: "center", justifyContent: "center",
-              borderColor: mismatch ? colors.danger : i < current.length ? colors.primary : i === current.length ? colors.accent : colors.border,
-              backgroundColor: mismatch ? "rgba(201,143,143,0.1)" : i < current.length ? colors.primary : "#FFFFFF",
+              borderColor: mismatch ? colors.danger : i < current.length ? colors.button : i === current.length ? colors.primary : colors.border,
+              backgroundColor: mismatch ? "rgba(184,112,112,0.1)" : i < current.length ? colors.button : colors.cardBg,
             }}
           >
-            {i < current.length && <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: "#F7E9C9" }} />}
+            {i < current.length && <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: "#F8ECEE" }} />}
           </View>
         ))}
         <TextInput

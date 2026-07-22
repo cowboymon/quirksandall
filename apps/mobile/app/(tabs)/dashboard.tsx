@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Share, Alert, Image } from "react-native";
 import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../../lib/supabase";
 import { registerForPushNotifications, scheduleTrickNudge } from "../../lib/notifications";
 import { Eyebrow, Card } from "../../components/ui";
@@ -173,12 +174,15 @@ export default function Dashboard() {
             <Text style={{ fontSize: 24 }}>🐾</Text>
           </View>
         )}
-        <View>
-          <Text style={{ fontFamily: "Spectral_700BoldItalic", fontSize: 26, color: colors.primary, lineHeight: 30 }}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontFamily: "Tanker", fontSize: 26, color: colors.textDark, lineHeight: 30 }}>
             {pet.name}
           </Text>
           <Text style={{ color: colors.textMuted, fontSize: 13 }}>{pet.breed} · {pet.age}</Text>
         </View>
+        <TouchableOpacity onPress={() => router.push("/(tabs)/settings")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <Ionicons name="settings-outline" size={22} color={colors.textMuted} />
+        </TouchableOpacity>
       </View>
       </View>
 
@@ -188,22 +192,22 @@ export default function Dashboard() {
       <View style={{ paddingHorizontal: 24 }}>
       {/* Link card — dark plum surface */}
       {shareUrl && (
-        <View style={{ backgroundColor: colors.primary, borderRadius: 12, padding: 20, marginBottom: 16 }}>
-          <Eyebrow><Text style={{ color: colors.accent }}>Share link</Text></Eyebrow>
-          <Text style={{ color: "#F7E9C9", fontSize: 12, fontFamily: "monospace", marginTop: 6, marginBottom: 12 }}>
+        <View style={{ backgroundColor: colors.cardDark, borderRadius: 12, padding: 20, marginBottom: 16 }}>
+          <Eyebrow><Text style={{ color: colors.cardDarkLabel }}>Share link</Text></Eyebrow>
+          <Text style={{ color: "#F8ECEE", fontSize: 12, fontFamily: "monospace", marginTop: 6, marginBottom: 12 }}>
             {shareUrl}
           </Text>
 
           {/* Copy stack */}
-          <Text style={{ color: "rgba(247,233,201,0.5)", fontSize: 11, marginBottom: 2 }}>
+          <Text style={{ color: "rgba(248,236,238,0.5)", fontSize: 11, marginBottom: 2 }}>
             Anyone with this link can see what's on it.
           </Text>
-          <Text style={{ color: "rgba(247,233,201,0.7)", fontSize: 11, marginBottom: isPaid ? 0 : 4 }}>
+          <Text style={{ color: "rgba(248,236,238,0.7)", fontSize: 11, marginBottom: isPaid ? 0 : 4 }}>
             The link's the door. The PIN's the key. Send them separately.
           </Text>
           {!isPaid && (
             <TouchableOpacity onPress={() => router.push("/upgrade")}>
-              <Text style={{ color: "#F7E9C9", fontSize: 11, fontWeight: "600", textDecorationLine: "underline" }}>
+              <Text style={{ color: "#F8ECEE", fontSize: 11, fontWeight: "600", textDecorationLine: "underline" }}>
                 Routine's saved. Unlock it so sitters get the full day. →
               </Text>
             </TouchableOpacity>
@@ -211,12 +215,12 @@ export default function Dashboard() {
 
           {/* PIN log */}
           {pinMsg ? (
-            <Text style={{ color: "rgba(247,233,201,0.6)", fontSize: 11, marginTop: 8 }}>{pinMsg}</Text>
+            <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 11, marginTop: 8 }}>{pinMsg}</Text>
           ) : null}
 
           {/* Last viewed */}
           {link.lastViewedAt && (
-            <Text style={{ color: "rgba(247,233,201,0.4)", fontSize: 11, marginTop: 4 }}>
+            <Text style={{ color: "rgba(248,236,238,0.4)", fontSize: 11, marginTop: 4 }}>
               Viewed {new Date(link.lastViewedAt).toLocaleString()}
             </Text>
           )}
@@ -224,27 +228,27 @@ export default function Dashboard() {
           <View style={{ flexDirection: "row", gap: 8, marginTop: 14 }}>
             <TouchableOpacity
               onPress={shareLink}
-              style={{ flex: 1, height: 38, borderRadius: 8, backgroundColor: "rgba(247,233,201,0.1)", alignItems: "center", justifyContent: "center" }}
+              style={{ flex: 1, height: 38, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}
             >
-              <Text style={{ color: "#F7E9C9", fontSize: 13, fontWeight: "600" }}>{copied ? "Copied ✓" : "Share"}</Text>
+              <Text style={{ color: "#F8ECEE", fontSize: 13, fontWeight: "600" }}>{copied ? "Copied ✓" : "Share"}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setQrVisible(true)}
-              style={{ height: 38, paddingHorizontal: 14, borderRadius: 8, backgroundColor: "rgba(247,233,201,0.1)", alignItems: "center", justifyContent: "center" }}
+              style={{ height: 38, paddingHorizontal: 14, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}
             >
-              <Text style={{ color: "#F7E9C9", fontSize: 13, fontWeight: "600" }}>QR</Text>
+              <Text style={{ color: "#F8ECEE", fontSize: 13, fontWeight: "600" }}>QR</Text>
             </TouchableOpacity>
             {isPaid && (
               <TouchableOpacity
                 onPress={rotateLink}
-                style={{ height: 38, paddingHorizontal: 14, borderRadius: 8, backgroundColor: "rgba(247,233,201,0.1)", alignItems: "center", justifyContent: "center" }}
+                style={{ height: 38, paddingHorizontal: 14, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}
               >
-                <Text style={{ color: "#F7E9C9", fontSize: 13, fontWeight: "600" }}>Rotate</Text>
+                <Text style={{ color: "#F8ECEE", fontSize: 13, fontWeight: "600" }}>Rotate</Text>
               </TouchableOpacity>
             )}
             <TouchableOpacity
               onPress={revokeLink}
-              style={{ height: 38, paddingHorizontal: 14, borderRadius: 8, backgroundColor: "rgba(201,143,143,0.2)", alignItems: "center", justifyContent: "center" }}
+              style={{ height: 38, paddingHorizontal: 14, borderRadius: 8, backgroundColor: "rgba(184,112,112,0.2)", alignItems: "center", justifyContent: "center" }}
             >
               <Text style={{ color: colors.danger, fontSize: 13, fontWeight: "600" }}>Revoke</Text>
             </TouchableOpacity>
@@ -276,6 +280,22 @@ export default function Dashboard() {
           </TouchableOpacity>
         ))}
       </View>
+
+      {/* Missing poster — JUST IN CASE */}
+      <TouchableOpacity onPress={() => router.push("/poster")} style={{ marginTop: 16 }}>
+        <Card>
+          <Eyebrow>Just in case</Eyebrow>
+          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
+            <Text style={{ fontFamily: "Tanker", fontSize: 20, color: colors.textDark, flex: 1 }}>
+              If {pet.name} goes missing.
+            </Text>
+            <Text style={{ color: colors.border, fontSize: 16 }}>›</Text>
+          </View>
+          <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>
+            One tap. Everywhere it needs to be. Here if you ever need it.
+          </Text>
+        </Card>
+      </TouchableOpacity>
 
       {/* Add pet — only show as a footer row on free tier (paid uses the switcher) */}
       {!isPaid && (

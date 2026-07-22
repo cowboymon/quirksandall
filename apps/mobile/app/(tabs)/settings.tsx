@@ -55,7 +55,7 @@ export default function Settings() {
 
   return (
     <View className="flex-1 bg-background px-6 pt-16">
-      <Text style={{ fontFamily: "Spectral_700BoldItalic", fontSize: 26, color: colors.primary, marginBottom: 24 }}>
+      <Text style={{ fontFamily: "Tanker", fontSize: 26, color: colors.textDark, marginBottom: 24 }}>
         Settings
       </Text>
 
@@ -70,9 +70,9 @@ export default function Settings() {
           <TouchableOpacity
             onPress={handlePurchase}
             disabled={loading}
-            style={{ height: 44, borderRadius: 10, backgroundColor: colors.primary, alignItems: "center", justifyContent: "center" }}
+            style={{ height: 44, borderRadius: 10, backgroundColor: colors.button, alignItems: "center", justifyContent: "center" }}
           >
-            <Text style={{ color: "#F7E9C9", fontWeight: "600" }}>{loading ? "Working…" : "Unlock for $7.99"}</Text>
+            <Text style={{ color: "#F8ECEE", fontWeight: "600" }}>{loading ? "Working…" : "Unlock for $7.99"}</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={handleRestore} disabled={loading} style={{ alignItems: "center", marginTop: 10 }}>
             <Text style={{ color: colors.textMuted, fontSize: 13 }}>Restore purchases</Text>

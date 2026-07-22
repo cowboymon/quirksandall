@@ -16,14 +16,14 @@ export default function QRModal({ visible, url, petName, onClose }: Props) {
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: "#FBF4E8", padding: 24, paddingTop: 48 }}>
+      <View style={{ flex: 1, backgroundColor: "#F8ECEE", padding: 24, paddingTop: 48 }}>
         {/* Header */}
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
           <Text
             style={{
-              fontFamily: "Spectral_700BoldItalic",
+              fontFamily: "Tanker",
               fontSize: 22,
-              color: colors.primary,
+              color: colors.textDark,
               flex: 1,
             }}
           >
@@ -54,7 +54,7 @@ export default function QRModal({ visible, url, petName, onClose }: Props) {
           <QRCode
             value={url}
             size={220}
-            color={colors.primary}
+            color={colors.textDark}
             backgroundColor="#FFFFFF"
             // Quiet zone handled by the card padding
           />
@@ -91,12 +91,12 @@ export default function QRModal({ visible, url, petName, onClose }: Props) {
             marginTop: 28,
             height: 44,
             borderRadius: 10,
-            backgroundColor: colors.primary,
+            backgroundColor: colors.button,
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          <Text style={{ color: "#F7E9C9", fontWeight: "600", fontSize: 15 }}>
+          <Text style={{ color: "#F8ECEE", fontWeight: "600", fontSize: 15 }}>
             Share link
           </Text>
         </TouchableOpacity>

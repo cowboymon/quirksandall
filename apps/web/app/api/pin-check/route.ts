@@ -3,12 +3,14 @@ import { createClient } from "@supabase/supabase-js";
 import { PIN_MAX_ATTEMPTS, PIN_WINDOW_MINUTES } from "@quirksandall/shared";
 import { createHash } from "crypto";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-);
+export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
+  // Client created per-request so builds don't require env vars at import time
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_KEY!
+  );
   const { token, pin } = await req.json();
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
 

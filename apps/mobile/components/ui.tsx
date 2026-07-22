@@ -5,8 +5,8 @@ import { colors, buttonHeight, radius } from "@quirksandall/shared";
 export function Headline({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <Text
-      className={`text-primary text-[32px] leading-tight ${className ?? ""}`}
-      style={{ fontFamily: "Spectral_700BoldItalic" }}
+      className={`text-foreground text-[32px] leading-tight ${className ?? ""}`}
+      style={{ fontFamily: "Tanker" }}
     >
       {children}
     </Text>
@@ -37,13 +37,13 @@ export function PrimaryButton({
       style={{
         height: buttonHeight,
         borderRadius: radius.button,
-        backgroundColor: disabled ? "#8A7A72" : colors.primary,
+        backgroundColor: disabled ? colors.dashedBorder : colors.button,
         alignItems: "center",
         justifyContent: "center",
       }}
       activeOpacity={0.85}
     >
-      <Text style={{ color: "#F7E9C9", fontWeight: "600", fontSize: 16 }}>{label}</Text>
+      <Text style={{ color: "#F8ECEE", fontWeight: "600", fontSize: 16 }}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -108,7 +108,7 @@ export function ProgressDots({ total, current }: { total: number; current: numbe
             width: i === current ? 18 : 6,
             height: 6,
             borderRadius: 3,
-            backgroundColor: i === current ? colors.primary : colors.border,
+            backgroundColor: i === current ? colors.button : colors.border,
           }}
         />
       ))}

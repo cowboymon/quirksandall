@@ -52,21 +52,21 @@ export default function PINGate({ token, onUnlocked }: Props) {
       {/* Locked card — plain register, no personality */}
       <div
         className="rounded-card px-5 py-4 flex items-center gap-3 mb-3"
-        style={{ backgroundColor: "#4A2E3D" }}
+        style={{ backgroundColor: "#510000" }}
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F7E9C9" strokeWidth="2" opacity={0.6}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F8ECEE" strokeWidth="2" opacity={0.6}>
           <rect x="3" y="11" width="18" height="11" rx="2" />
           <path d="M7 11V7a5 5 0 0 1 10 0v4" />
         </svg>
         <div>
-          <p className="text-sm font-bold" style={{ color: "#F7E9C9" }}>Emergency contacts</p>
-          <p className="text-xs font-light mt-0.5" style={{ color: "rgba(247,233,201,0.5)" }}>
+          <p className="text-sm font-bold" style={{ color: "#F8ECEE" }}>Emergency contacts</p>
+          <p className="text-xs font-light mt-0.5" style={{ color: "rgba(248,236,238,0.5)" }}>
             PIN required to view
           </p>
         </div>
       </div>
 
-      <div className="bg-white border rounded-card p-4" style={{ borderColor: "#E8DCC8" }}>
+      <div className="bg-white border rounded-card p-4" style={{ borderColor: "#E5BEC4" }}>
         <p className="eyebrow text-text-muted mb-3">Enter PIN</p>
 
         {error && (
@@ -88,18 +88,18 @@ export default function PINGate({ token, onUnlocked }: Props) {
                   borderColor: error
                     ? "#C98F8F"
                     : filled
-                    ? "#4A2E3D"
+                    ? "#510000"
                     : isCurrent
-                    ? "#D9A24A"
-                    : "#E8DCC8",
+                    ? "#B83A52"
+                    : "#E5BEC4",
                   backgroundColor: error
-                    ? "rgba(201,143,143,0.1)"
+                    ? "rgba(184,112,112,0.1)"
                     : filled
-                    ? "#4A2E3D"
+                    ? "#510000"
                     : "#FFFFFF",
                 }}
               >
-                {filled && <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#F7E9C9" }} />}
+                {filled && <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#F8ECEE" }} />}
               </div>
             );
           })}

@@ -8,3 +8,4 @@ out
 .expo
 *.tgz
 .DS_Store
+apps/web/tsconfig.tsbuildinfo

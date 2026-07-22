@@ -12,6 +12,8 @@ export default {
         primary: colors.primary,
         accent: colors.accent,
         background: colors.background,
+        foreground: colors.foreground,
+        secondary: colors.secondary,
         "text-dark": colors.textDark,
         "text-muted": colors.textMuted,
         border: colors.border,
@@ -27,7 +29,8 @@ export default {
         button: `${radius.button}px`,
       },
       fontFamily: {
-        spectral: ["Spectral", "serif"],
+        tanker: ["Tanker", "serif"],
+        satoshi: ["Satoshi", "system-ui", "sans-serif"],
       },
     },
   },
