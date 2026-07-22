@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
-import { notFound } from "next/navigation";
 import type { RecipientProfile } from "@quirksandall/shared";
+import LinkUnavailable from "../../components/LinkUnavailable";
 import RecipientView from "./RecipientView";
 
 async function fetchProfile(token: string, logView = true): Promise<RecipientProfile | null> {
@@ -108,13 +108,7 @@ export async function generateMetadata({ params }: { params: { token: string } }
 export default async function RecipientPage({ params }: { params: { token: string } }) {
   const profile = await fetchProfile(params.token);
   if (!profile) {
-    return (
-      <main className="flex min-h-screen items-center justify-center px-6">
-        <div className="text-center">
-          <p className="text-[#510000] font-medium">This link's done its job. Ask for a new one.</p>
-        </div>
-      </main>
-    );
+    return <LinkUnavailable />;
   }
   return <RecipientView profile={profile} token={params.token} />;
 }
