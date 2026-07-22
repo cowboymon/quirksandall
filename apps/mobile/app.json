@@ -5,7 +5,11 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "scheme": ["quirksandall", "rc-358cffb44f", "rc-961b7cef65"],
+    "scheme": [
+      "quirksandall",
+      "rc-358cffb44f",
+      "rc-961b7cef65"
+    ],
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
@@ -36,7 +40,8 @@
           "icon": "./assets/notification-icon.png",
           "color": "#510000"
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
