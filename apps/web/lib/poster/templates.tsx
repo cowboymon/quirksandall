@@ -36,7 +36,7 @@ const CRIMSON_DEEP = "#3A0000";
 const ROSE = "#B83A52";
 const AMBER = "#A07848";
 const MUTED = "#987080";
-const WATERMARK_TEXT = "Made with Quirks & All · quirksandall.app";
+const WATERMARK_TEXT = "Made with Quirks & All · quirksandall.itshypothetical.com";
 
 function formatDate(iso: string, withYear: boolean): string {
   if (!iso) return "Today";
