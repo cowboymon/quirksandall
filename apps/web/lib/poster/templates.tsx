@@ -18,7 +18,6 @@ export type PosterData = {
   ownerPhone: string;
   lastSeenArea: string;
   lastSeenDate: string; // ISO date or ""
-  watermark: boolean; // free tier true, paid false
 };
 
 export const FORMATS = {
@@ -36,7 +35,7 @@ const CRIMSON_DEEP = "#3A0000";
 const ROSE = "#B83A52";
 const AMBER = "#A07848";
 const MUTED = "#987080";
-const WATERMARK_TEXT = "Made with Quirks & All · quirksandall.app";
+const WATERMARK_TEXT = "Made with Quirks & All · quirksandall.itshypothetical.com";
 
 function formatDate(iso: string, withYear: boolean): string {
   if (!iso) return "Today";
@@ -249,7 +248,8 @@ export function PosterTemplate(d: PosterData) {
         ) : null}
       </div>
 
-      {d.watermark ? <Watermark fontSize={22} padding={20} /> : null}
+      {/* Watermark always present on the poster — free and paid alike */}
+      <Watermark fontSize={22} padding={20} />
     </div>
   );
 }
@@ -271,7 +271,7 @@ export function SquareTileTemplate(d: PosterData) {
       }}
     >
       {/* Row 1: photo left, "name is missing" right */}
-      <div style={{ display: "flex", height: d.watermark ? "49%" : "52%", flexShrink: 0 }}>
+      <div style={{ display: "flex", height: "52%", flexShrink: 0 }}>
         <Photo uri={d.photoDataUri} style={{ width: "52%", height: "100%", flexShrink: 0 }} />
         <div
           style={{
@@ -302,9 +302,8 @@ export function SquareTileTemplate(d: PosterData) {
 
       <CreamInfoBand d={d} scale={scale} padding={`${10 * scale}px ${16 * scale}px`} />
 
+      {/* No watermark on 1:1 — too tight; kept to poster + 9:16 only */}
       <PhoneFooter d={d} scale={scale} padding={`${10 * scale}px ${16 * scale}px ${8 * scale}px`} grow />
-
-      {d.watermark ? <Watermark fontSize={22} padding={12} /> : null}
     </div>
   );
 }
@@ -325,7 +324,7 @@ export function PortraitTileTemplate(d: PosterData) {
         fontFamily: "Satoshi",
       }}
     >
-      <div style={{ display: "flex", height: d.watermark ? "53%" : "56%", flexShrink: 0 }}>
+      <div style={{ display: "flex", height: "56%", flexShrink: 0 }}>
         <Photo uri={d.photoDataUri} style={{ width: "52%", height: "100%", flexShrink: 0 }} />
         <div
           style={{
@@ -355,9 +354,8 @@ export function PortraitTileTemplate(d: PosterData) {
 
       <CreamInfoBand d={d} scale={scale} padding={`${12 * scale}px ${18 * scale}px`} />
 
+      {/* No watermark on 4:5 — too tight; kept to poster + 9:16 only */}
       <PhoneFooter d={d} scale={scale} padding={`${10 * scale}px ${18 * scale}px ${6 * scale}px`} grow />
-
-      {d.watermark ? <Watermark fontSize={22} padding={12} /> : null}
     </div>
   );
 }
@@ -419,7 +417,8 @@ export function StoryTileTemplate(d: PosterData) {
         showOwnerName
       />
 
-      {d.watermark ? <Watermark fontSize={24} padding={14} /> : null}
+      {/* Watermark always present on the 9:16 — free and paid alike */}
+      <Watermark fontSize={24} padding={14} />
     </div>
   );
 }
