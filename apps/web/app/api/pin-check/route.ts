@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
     .from("pets")
     .select(`
       owners!inner(name, primary_phone),
-      pet_vet_info(primary_vet, emergency_vet, insurance),
+      pet_vet_info(primary_vet, emergency_vet, insurance, vet_pre_auth),
       owners_backup_contacts:owners!inner(backup_contacts)
     `)
     .eq("id", link.pet_id)
@@ -84,6 +84,7 @@ export async function POST(req: NextRequest) {
       insurance: vetInfo.insurance ?? {},
       ownerContact: { name: owner.name ?? "", phone: owner.primary_phone ?? "" },
       backupContacts: owner.backup_contacts ?? [],
+      vetPreAuth: vetInfo.vet_pre_auth ?? false,
     },
   });
 }

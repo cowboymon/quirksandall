@@ -130,6 +130,7 @@ export type RecipientProfile = {
     insurance: VetInfo["insurance"];
     ownerContact: { name: string; phone: string };
     backupContacts: BackupContact[];
+    vetPreAuth?: boolean;
   };
   // Only present on paid tier:
   routine?: PetRoutine;
