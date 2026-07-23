@@ -138,7 +138,7 @@ export default function EditRoutine() {
     ) : null;
 
   return (
-    <EditShell title="Routine & medical" onSave={save} saving={saving} loading={loading}>
+    <EditShell title="Routine & Medical" onSave={save} saving={saving} loading={loading}>
       {!isPaid && (
         <View style={{ marginBottom: 16 }}>
           <InlineNote variant="paywall" cta="Unlock for $7.99" onCta={() => router.push("/upgrade")}>

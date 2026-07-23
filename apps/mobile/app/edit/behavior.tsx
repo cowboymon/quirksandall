@@ -72,7 +72,7 @@ export default function EditBehavior() {
   const petName = pet?.name ?? "your pet";
 
   return (
-    <EditShell title="Commands & quirks" onSave={save} saving={saving} loading={loading}>
+    <EditShell title="Commands & Quirks" onSave={save} saving={saving} loading={loading}>
       {/* Commands section */}
       <Text
         style={{ fontFamily: "Satoshi-Bold", fontSize: 17, color: colors.textDark, marginBottom: 4 }}
