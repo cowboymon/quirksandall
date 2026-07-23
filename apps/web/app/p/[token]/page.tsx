@@ -43,6 +43,11 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
   const routine = (pet as any).pet_routine?.[0] ?? null;
   const vetInfo = (pet as any).pet_vet_info?.[0] ?? null;
   const pinSet = !!link.pin_hash;
+  // Paid unlock: soft triggers, routine-rest (walks/sleep/bathroom), medical.
+  // Feeding, flight risk, commands and allergies stay free at every tier. The
+  // owner's own preview (?preview=1) always receives the paid fields — but the
+  // client badges them, so a free owner sees what they'd be unlocking.
+  const canSeePaid = isPaid || preview;
 
   // Log view (fire and forget) — never count an owner preview as a real view
   if (logView && !preview) {
@@ -72,11 +77,13 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
     behavior: {
       commands: behavior.commands ?? [],
       quirksTriggers: behavior.quirks_triggers ?? [],
+      // Flight/escape risk is a safety override — always free.
       escapeRisk: behavior.escape_risk ?? { flag: false, notes: "" },
-      scared: behavior.scared ?? "",
-      noGo: behavior.no_go ?? "",
       flightRisk: behavior.flight_risk ?? "",
-      temperamentSummary: behavior.temperament_summary ?? "",
+      // Soft behavioural colour — paid tier only (withheld from a free payload).
+      scared: canSeePaid ? behavior.scared ?? "" : "",
+      noGo: canSeePaid ? behavior.no_go ?? "" : "",
+      temperamentSummary: canSeePaid ? behavior.temperament_summary ?? "" : "",
     },
     allergies: medical.allergies ?? [],
     pinSet,
@@ -103,9 +110,20 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
     mode: link.mode,
     isPaid,
     preview,
-    // routine/medical for paid tier — or for the owner's own preview
-    ...((isPaid || preview) && routine ? { routine } : {}),
-    ...((isPaid || preview) && medical ? { medical: { conditions: medical.conditions ?? [], medications: medical.medications ?? [] } } : {}),
+    // Feeding is free at every tier; walks/sleep/bathroom are paid. Always send
+    // feeding when a routine row exists; withhold the rest for a free payload.
+    ...(routine
+      ? {
+          routine: {
+            feeding: routine.feeding ?? { brand: "", breakfast: { time: "", amount: "" }, lunch: { time: "", amount: "" }, dinner: { time: "", amount: "" }, treats: { type: "", limit: "" }, notes: "" },
+            walks: canSeePaid ? routine.walks ?? "" : "",
+            sleep: canSeePaid ? routine.sleep ?? "" : "",
+            bathroomHabits: canSeePaid ? routine.bathroom_habits ?? "" : "",
+          },
+        }
+      : {}),
+    // Medical (conditions + medications) — paid tier only.
+    ...(canSeePaid && medical ? { medical: { conditions: medical.conditions ?? [], medications: medical.medications ?? [] } } : {}),
   };
 
   return profile;
