@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Headline, Textarea, PrimaryButton, SkipButton, ProgressDots, Eyebrow } from "../../components/ui";
 import { Underlined } from "../../components/Underlined";
 import { useOnboardingStore } from "../../stores/onboarding";
+import { useActivePetStore } from "../../stores/activePet";
 import { supabase } from "../../lib/supabase";
 import { uploadPetPhoto } from "../../lib/uploadPhoto";
 import { colors, displayDateToISO } from "@quirksandall/shared";
@@ -121,6 +122,9 @@ export default function Step4() {
         }).catch(() => {});
       }
 
+      // Make the pet we just created the active one, so the dashboard lands on
+      // it instead of an earlier/stale selection (or bouncing to onboarding).
+      useActivePetStore.getState().setPetId(newPet.id);
       reset();
       router.replace("/dashboard");
     } catch (e: any) {

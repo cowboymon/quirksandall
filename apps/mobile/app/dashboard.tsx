@@ -60,9 +60,21 @@ export default function Dashboard() {
       .eq("id", user.id)
       .single();
 
-    let petQuery = supabase.from("pets").select("*").eq("owner_id", user.id).eq("status", "active");
-    petQuery = selectedPetId ? petQuery.eq("id", selectedPetId) : petQuery.order("created_at").limit(1);
-    const { data: pet } = await petQuery.single();
+    // Resolve the selected pet; if that id no longer maps to an active pet
+    // (stale selection, deleted pet, freshly added pet), fall back to the
+    // earliest active pet. Only send the owner to onboarding when they truly
+    // have no active pets.
+    let pet: any = null;
+    if (selectedPetId) {
+      const { data } = await supabase
+        .from("pets").select("*").eq("owner_id", user.id).eq("status", "active").eq("id", selectedPetId).maybeSingle();
+      pet = data;
+    }
+    if (!pet) {
+      const { data } = await supabase
+        .from("pets").select("*").eq("owner_id", user.id).eq("status", "active").order("created_at").limit(1).maybeSingle();
+      pet = data;
+    }
     if (!pet) { router.replace("/onboarding/step1"); return; }
 
     const [links, { data: behavior }] = await Promise.all([
