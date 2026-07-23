@@ -105,7 +105,7 @@ export default function Preview() {
           )}
           <View style={{ flex: 1 }}>
             <Text style={{ fontFamily: "Tanker", fontSize: 26, lineHeight: 30, color: colors.textDark }}>{data.name}'s Cheat Sheet</Text>
-            <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 2 }}>{[data.breed, data.age].filter(Boolean).join(" · ")}</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 2 }}>{[data.breed, data.sex, data.age].filter(Boolean).join(" · ")}</Text>
           </View>
         </View>
 

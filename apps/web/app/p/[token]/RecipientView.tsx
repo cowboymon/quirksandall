@@ -48,7 +48,7 @@ export default function RecipientView({ profile, token }: Props) {
               {pet.name}'s Cheat Sheet
             </h1>
             <p className="text-text-muted text-sm mt-1">
-              {pet.breed} · {age}
+              {[pet.breed, pet.sex, age].filter(Boolean).join(" · ")}
             </p>
           </div>
         </div>
