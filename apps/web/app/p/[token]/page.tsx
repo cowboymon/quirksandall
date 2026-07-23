@@ -3,7 +3,7 @@ import type { RecipientProfile } from "@quirksandall/shared";
 import LinkUnavailable from "../../components/LinkUnavailable";
 import RecipientView from "./RecipientView";
 
-async function fetchProfile(token: string, logView = true): Promise<RecipientProfile | null> {
+async function fetchProfile(token: string, logView = true, preview = false): Promise<RecipientProfile | null> {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_KEY!
@@ -44,8 +44,8 @@ async function fetchProfile(token: string, logView = true): Promise<RecipientPro
   const vetInfo = (pet as any).pet_vet_info?.[0] ?? null;
   const pinSet = !!link.pin_hash;
 
-  // Log view (fire and forget)
-  if (logView) {
+  // Log view (fire and forget) — never count an owner preview as a real view
+  if (logView && !preview) {
     supabase
       .from("share_links")
       .update({ last_viewed_at: new Date().toISOString() })
@@ -101,9 +101,10 @@ async function fetchProfile(token: string, logView = true): Promise<RecipientPro
     lastUpdatedAt: pet.updated_at ?? pet.dob,
     mode: link.mode,
     isPaid,
-    // routine/medical only for paid
-    ...(isPaid && routine ? { routine } : {}),
-    ...(isPaid && medical ? { medical: { conditions: medical.conditions ?? [], medications: medical.medications ?? [] } } : {}),
+    preview,
+    // routine/medical for paid tier — or for the owner's own preview
+    ...((isPaid || preview) && routine ? { routine } : {}),
+    ...((isPaid || preview) && medical ? { medical: { conditions: medical.conditions ?? [], medications: medical.medications ?? [] } } : {}),
   };
 
   return profile;
@@ -125,8 +126,15 @@ export async function generateMetadata({ params }: { params: { token: string } }
   };
 }
 
-export default async function RecipientPage({ params }: { params: { token: string } }) {
-  const profile = await fetchProfile(params.token);
+export default async function RecipientPage({
+  params,
+  searchParams,
+}: {
+  params: { token: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const preview = searchParams.preview === "1";
+  const profile = await fetchProfile(params.token, true, preview);
   if (!profile) {
     return <LinkUnavailable />;
   }

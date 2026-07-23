@@ -4,7 +4,7 @@ import { View, Text, Alert, TouchableOpacity } from "react-native";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
-import { Input, Eyebrow, Card } from "../../components/ui";
+import { LabeledInput, Eyebrow, Card } from "../../components/ui";
 import CheckboxRow from "../../components/CheckboxRow";
 import PINEditor from "../../components/PINEditor";
 import { colors } from "@quirksandall/shared";
@@ -126,40 +126,50 @@ export default function EditEmergency() {
 
       <View style={{ gap: 12 }}>
         <Card>
-          <Eyebrow>Your contact</Eyebrow>
-          <Input className="mt-2" placeholder="Your name" value={ownerName} onChangeText={setOwnerName} />
-          <Input className="mt-2" placeholder="Your phone" keyboardType="phone-pad" value={ownerPhone} onChangeText={setOwnerPhone} />
+          <Eyebrow bold>Your contact</Eyebrow>
+          <View style={{ gap: 8, marginTop: 12 }}>
+            <LabeledInput label="Name" placeholder="Your name" value={ownerName} onChangeText={setOwnerName} />
+            <LabeledInput label="Phone" placeholder="Your phone" keyboardType="phone-pad" value={ownerPhone} onChangeText={setOwnerPhone} />
+          </View>
         </Card>
 
         <Card>
-          <Eyebrow>Vet</Eyebrow>
-          <Input className="mt-2" placeholder="Vet name — e.g. Dr. Sarah Mitchell" value={vetContactName} onChangeText={setVetContactName} />
-          <Input className="mt-2" placeholder="Clinic name" value={vetClinic} onChangeText={setVetClinic} />
-          <Input className="mt-2" placeholder="Address" value={vetAddress} onChangeText={setVetAddress} />
-          <Input className="mt-2" placeholder="Phone" keyboardType="phone-pad" value={vetPhone} onChangeText={setVetPhone} />
-          <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 6 }}>
+          <Eyebrow bold>Vet</Eyebrow>
+          <View style={{ gap: 8, marginTop: 12 }}>
+            <LabeledInput label="Vet name" placeholder="e.g. Dr. Sarah Mitchell" value={vetContactName} onChangeText={setVetContactName} />
+            <LabeledInput label="Clinic" placeholder="Clinic name" value={vetClinic} onChangeText={setVetClinic} />
+            <LabeledInput label="Address" placeholder="Address" value={vetAddress} onChangeText={setVetAddress} />
+            <LabeledInput label="Phone" placeholder="Phone" keyboardType="phone-pad" value={vetPhone} onChangeText={setVetPhone} />
+          </View>
+          <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 8, fontFamily: "Satoshi-Light" }}>
             Consider pre-authorising your sitter directly with your vet by phone or through their online portal.
           </Text>
         </Card>
 
         <Card>
-          <Eyebrow>Emergency / after-hours vet</Eyebrow>
-          <Input className="mt-2" placeholder="Clinic name" value={emergClinic} onChangeText={setEmergClinic} />
-          <Input className="mt-2" placeholder="Phone" keyboardType="phone-pad" value={emergPhone} onChangeText={setEmergPhone} />
+          <Eyebrow bold>Emergency vet</Eyebrow>
+          <View style={{ gap: 8, marginTop: 12 }}>
+            <LabeledInput label="Clinic" placeholder="Clinic name" value={emergClinic} onChangeText={setEmergClinic} />
+            <LabeledInput label="Phone" placeholder="Phone" keyboardType="phone-pad" value={emergPhone} onChangeText={setEmergPhone} />
+          </View>
         </Card>
 
         <Card>
-          <Eyebrow>Insurance</Eyebrow>
-          <Input className="mt-2" placeholder="Provider" value={insuranceProvider} onChangeText={setInsuranceProvider} />
-          <Input className="mt-2" placeholder="Policy number" value={insurancePolicy} onChangeText={setInsurancePolicy} />
-          <Input className="mt-2" placeholder="Claims contact / phone" value={insuranceClaims} onChangeText={setInsuranceClaims} />
+          <Eyebrow bold>Insurance</Eyebrow>
+          <View style={{ gap: 8, marginTop: 12 }}>
+            <LabeledInput label="Provider" placeholder="Provider" value={insuranceProvider} onChangeText={setInsuranceProvider} />
+            <LabeledInput label="Policy number" placeholder="Policy number" value={insurancePolicy} onChangeText={setInsurancePolicy} />
+            <LabeledInput label="Claims contact" placeholder="Claims contact / phone" value={insuranceClaims} onChangeText={setInsuranceClaims} />
+          </View>
         </Card>
 
         <Card>
-          <Eyebrow>Backup contact</Eyebrow>
-          <Input className="mt-2" placeholder="Name" value={backupName} onChangeText={setBackupName} />
-          <Input className="mt-2" placeholder="Relationship (e.g. sister)" value={backupRel} onChangeText={setBackupRel} />
-          <Input className="mt-2" placeholder="Phone" keyboardType="phone-pad" value={backupPhone} onChangeText={setBackupPhone} />
+          <Eyebrow bold>Backup contact</Eyebrow>
+          <View style={{ gap: 8, marginTop: 12 }}>
+            <LabeledInput label="Name" placeholder="Name" value={backupName} onChangeText={setBackupName} />
+            <LabeledInput label="Relationship" placeholder="e.g. sister" value={backupRel} onChangeText={setBackupRel} />
+            <LabeledInput label="Phone" placeholder="Phone" keyboardType="phone-pad" value={backupPhone} onChangeText={setBackupPhone} />
+          </View>
           <CheckboxRow
             label="I have permission to share this person's contact info."
             checked={backupConsent}
@@ -178,9 +188,11 @@ export default function EditEmergency() {
           </TouchableOpacity>
         ) : (
           <Card>
-            <Eyebrow>Second backup contact</Eyebrow>
-            <Input className="mt-2" placeholder="Name & relationship" value={backup2Name} onChangeText={setBackup2Name} />
-            <Input className="mt-2" placeholder="Phone" keyboardType="phone-pad" value={backup2Phone} onChangeText={setBackup2Phone} />
+            <Eyebrow bold>Second backup contact</Eyebrow>
+            <View style={{ gap: 8, marginTop: 12 }}>
+              <LabeledInput label="Name & relationship" placeholder="Name & relationship" value={backup2Name} onChangeText={setBackup2Name} />
+              <LabeledInput label="Phone" placeholder="Phone" keyboardType="phone-pad" value={backup2Phone} onChangeText={setBackup2Phone} />
+            </View>
             <CheckboxRow
               label="I have permission to share this person's contact info."
               checked={backup2Consent}

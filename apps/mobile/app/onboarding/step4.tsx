@@ -5,9 +5,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { Headline, Textarea, PrimaryButton, SkipButton, ProgressDots, Eyebrow } from "../../components/ui";
 import { Underlined } from "../../components/Underlined";
 import { useOnboardingStore } from "../../stores/onboarding";
+import { useActivePetStore } from "../../stores/activePet";
 import { supabase } from "../../lib/supabase";
 import { uploadPetPhoto } from "../../lib/uploadPhoto";
-import { colors } from "@quirksandall/shared";
+import { colors, displayDateToISO } from "@quirksandall/shared";
 import { useState } from "react";
 
 const mealInput = {
@@ -52,7 +53,7 @@ export default function Step4() {
         .from("pets")
         .insert({
           owner_id: user.id, name: pet.name, breed: pet.breed, species: pet.species ?? "dog",
-          dob: pet.dob ?? new Date().toISOString().slice(0, 10), dob_is_estimated: pet.dobIsEstimated ?? false,
+          dob: displayDateToISO(pet.dob) ?? new Date().toISOString().slice(0, 10), dob_is_estimated: pet.dobIsEstimated ?? false,
           sex: pet.sex, weight: pet.weight, color_markings: pet.colorMarkings, microchip_number: pet.microchipNumber, photo_url: null,
         })
         .select("id").single();
@@ -121,6 +122,9 @@ export default function Step4() {
         }).catch(() => {});
       }
 
+      // Make the pet we just created the active one, so the dashboard lands on
+      // it instead of an earlier/stale selection (or bouncing to onboarding).
+      useActivePetStore.getState().setPetId(newPet.id);
       reset();
       router.replace("/dashboard");
     } catch (e: any) {

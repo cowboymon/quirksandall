@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
-import { Headline, Input, PrimaryButton, SkipButton, ProgressDots, Eyebrow, Card } from "../../components/ui";
+import { Headline, LabeledInput, PrimaryButton, SkipButton, ProgressDots, Eyebrow, Card } from "../../components/ui";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { colors } from "@quirksandall/shared";
 import CheckboxRow from "../../components/CheckboxRow";
@@ -23,29 +23,37 @@ export default function Step2() {
 
       <View style={{ gap: 12 }}>
         <Card>
-          <Eyebrow>Vet</Eyebrow>
-          <Input className="mt-2" placeholder="Vet name — e.g. Dr. Sarah Mitchell" value={pet.vetContactName ?? ""} onChangeText={(v) => setPet({ vetContactName: v })} />
-          <Input className="mt-2" placeholder="Clinic name" value={pet.vetClinic ?? ""} onChangeText={(v) => setPet({ vetClinic: v })} />
-          <Input className="mt-2" placeholder="Phone" keyboardType="phone-pad" value={pet.vetPhone ?? ""} onChangeText={(v) => setPet({ vetPhone: v })} />
+          <Eyebrow bold>Vet</Eyebrow>
+          <View style={{ gap: 8, marginTop: 12 }}>
+            <LabeledInput label="Vet name" placeholder="e.g. Dr. Sarah Mitchell" value={pet.vetContactName ?? ""} onChangeText={(v) => setPet({ vetContactName: v })} />
+            <LabeledInput label="Clinic" placeholder="Clinic name" value={pet.vetClinic ?? ""} onChangeText={(v) => setPet({ vetClinic: v })} />
+            <LabeledInput label="Phone" placeholder="Phone" keyboardType="phone-pad" value={pet.vetPhone ?? ""} onChangeText={(v) => setPet({ vetPhone: v })} />
+          </View>
         </Card>
 
         <Card>
-          <Eyebrow>Emergency / after-hours vet</Eyebrow>
-          <Input className="mt-2" placeholder="Clinic name" value={pet.emergVetClinic ?? ""} onChangeText={(v) => setPet({ emergVetClinic: v })} />
-          <Input className="mt-2" placeholder="Phone" keyboardType="phone-pad" value={pet.emergVetPhone ?? ""} onChangeText={(v) => setPet({ emergVetPhone: v })} />
+          <Eyebrow bold>Emergency vet</Eyebrow>
+          <View style={{ gap: 8, marginTop: 12 }}>
+            <LabeledInput label="Clinic" placeholder="Clinic name" value={pet.emergVetClinic ?? ""} onChangeText={(v) => setPet({ emergVetClinic: v })} />
+            <LabeledInput label="Phone" placeholder="Phone" keyboardType="phone-pad" value={pet.emergVetPhone ?? ""} onChangeText={(v) => setPet({ emergVetPhone: v })} />
+          </View>
         </Card>
 
         <Card>
-          <Eyebrow>Insurance</Eyebrow>
-          <Input className="mt-2" placeholder="Provider" value={pet.insuranceProvider ?? ""} onChangeText={(v) => setPet({ insuranceProvider: v })} />
-          <Input className="mt-2" placeholder="Policy number" value={pet.insurancePolicy ?? ""} onChangeText={(v) => setPet({ insurancePolicy: v })} />
+          <Eyebrow bold>Insurance</Eyebrow>
+          <View style={{ gap: 8, marginTop: 12 }}>
+            <LabeledInput label="Provider" placeholder="Provider" value={pet.insuranceProvider ?? ""} onChangeText={(v) => setPet({ insuranceProvider: v })} />
+            <LabeledInput label="Policy number" placeholder="Policy number" value={pet.insurancePolicy ?? ""} onChangeText={(v) => setPet({ insurancePolicy: v })} />
+          </View>
         </Card>
 
         <Card>
-          <Eyebrow>Backup contact</Eyebrow>
-          <Input className="mt-2" placeholder="Name" value={pet.backupName ?? ""} onChangeText={(v) => setPet({ backupName: v })} />
-          <Input className="mt-2" placeholder="Relationship (e.g. sister)" value={pet.backupRelationship ?? ""} onChangeText={(v) => setPet({ backupRelationship: v })} />
-          <Input className="mt-2" placeholder="Phone" keyboardType="phone-pad" value={pet.backupPhone ?? ""} onChangeText={(v) => setPet({ backupPhone: v })} />
+          <Eyebrow bold>Backup contact</Eyebrow>
+          <View style={{ gap: 8, marginTop: 12 }}>
+            <LabeledInput label="Name" placeholder="Name" value={pet.backupName ?? ""} onChangeText={(v) => setPet({ backupName: v })} />
+            <LabeledInput label="Relationship" placeholder="e.g. sister" value={pet.backupRelationship ?? ""} onChangeText={(v) => setPet({ backupRelationship: v })} />
+            <LabeledInput label="Phone" placeholder="Phone" keyboardType="phone-pad" value={pet.backupPhone ?? ""} onChangeText={(v) => setPet({ backupPhone: v })} />
+          </View>
           <CheckboxRow
             label="I have permission to share this person's contact info."
             checked={pet.backupConsent ?? false}
@@ -64,9 +72,11 @@ export default function Step2() {
           </TouchableOpacity>
         ) : (
           <Card>
-            <Eyebrow>Second backup contact</Eyebrow>
-            <Input className="mt-2" placeholder="Name & relationship" value={pet.backup2Name ?? ""} onChangeText={(v) => setPet({ backup2Name: v })} />
-            <Input className="mt-2" placeholder="Phone" keyboardType="phone-pad" value={pet.backup2Phone ?? ""} onChangeText={(v) => setPet({ backup2Phone: v })} />
+            <Eyebrow bold>Second backup contact</Eyebrow>
+            <View style={{ gap: 8, marginTop: 12 }}>
+              <LabeledInput label="Name & relationship" placeholder="Name & relationship" value={pet.backup2Name ?? ""} onChangeText={(v) => setPet({ backup2Name: v })} />
+              <LabeledInput label="Phone" placeholder="Phone" keyboardType="phone-pad" value={pet.backup2Phone ?? ""} onChangeText={(v) => setPet({ backup2Phone: v })} />
+            </View>
             <CheckboxRow
               label="I have permission to share this person's contact info."
               checked={pet.backup2Consent ?? false}
