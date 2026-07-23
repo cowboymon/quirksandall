@@ -4,7 +4,7 @@ import { router } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { checkEntitlement, purchasePro, restorePurchases } from "../lib/purchases";
 import { colors } from "@quirksandall/shared";
-import { Eyebrow, Input, Card } from "../components/ui";
+import { Eyebrow, Input } from "../components/ui";
 
 const SUPPORT_EMAIL = "hello@itshypothetical.com";
 
@@ -119,27 +119,33 @@ export default function Account() {
         </Text>
       </View>
 
-      {/* Purchase */}
+      {/* Purchase — styled to match the delete-confirmation modal */}
       {!isPaid ? (
-        <Card style={{ marginTop: 20, borderColor: colors.primary, borderWidth: 1.5 }}>
-          <Text style={{ color: colors.primary, fontFamily: "Satoshi-Bold", fontSize: 15, marginBottom: 4 }}>Unlock full access — $7.99</Text>
-          <Text style={{ color: colors.textMuted, fontSize: 13, lineHeight: 18, marginBottom: 14, fontFamily: "Satoshi-Light" }}>
-            Routine + medications visible to sitters. Multi-pet. Push nudges. One-time, account-wide.
-          </Text>
-          <TouchableOpacity onPress={handlePurchase} disabled={loading} style={{ height: 46, borderRadius: 10, backgroundColor: colors.button, alignItems: "center", justifyContent: "center", opacity: loading ? 0.6 : 1 }}>
-            <Text style={{ color: colors.buttonText, fontFamily: "Satoshi-Medium", fontSize: 15 }}>{loading ? "Working…" : "Unlock for $7.99"}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleRestore} disabled={loading} style={{ alignItems: "center", marginTop: 10 }}>
-            <Text style={{ color: colors.textMuted, fontSize: 13 }}>Restore purchases</Text>
-          </TouchableOpacity>
-        </Card>
+        <View style={{ marginTop: 24, backgroundColor: "#FFFFFF", borderRadius: 20, padding: 24, gap: 16 }}>
+          <View>
+            <Text style={{ fontFamily: "Tanker", fontSize: 24, lineHeight: 28, color: colors.textDark }}>
+              Unlock full access.
+            </Text>
+            <Text style={{ color: colors.textMuted, fontSize: 14, marginTop: 8, lineHeight: 20, fontFamily: "Satoshi-Light" }}>
+              Routine and medications visible to sitters, unlimited pets, and push nudges. One payment of $7.99, account-wide, forever.
+            </Text>
+          </View>
+          <View style={{ gap: 10 }}>
+            <TouchableOpacity onPress={handlePurchase} disabled={loading} style={{ height: 46, borderRadius: 10, backgroundColor: "#510000", alignItems: "center", justifyContent: "center", opacity: loading ? 0.5 : 1 }}>
+              <Text style={{ color: "#F8ECEE", fontSize: 14, fontFamily: "Satoshi-Medium" }}>{loading ? "Working…" : "Unlock for $7.99"}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleRestore} disabled={loading} style={{ alignItems: "center", paddingVertical: 4 }}>
+              <Text style={{ color: colors.textMuted, fontSize: 14, fontFamily: "Satoshi" }}>Restore purchases</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       ) : (
-        <Card style={{ marginTop: 20 }}>
-          <Text style={{ color: colors.success, fontFamily: "Satoshi-Medium" }}>Full access active</Text>
-          <TouchableOpacity onPress={handleRestore} disabled={loading} style={{ marginTop: 8 }}>
+        <View style={{ marginTop: 24, backgroundColor: "#FFFFFF", borderRadius: 20, padding: 24, gap: 8 }}>
+          <Text style={{ color: colors.success, fontFamily: "Satoshi-Medium", fontSize: 15 }}>Full access active</Text>
+          <TouchableOpacity onPress={handleRestore} disabled={loading}>
             <Text style={{ color: colors.textMuted, fontSize: 13 }}>Restore purchases</Text>
           </TouchableOpacity>
-        </Card>
+        </View>
       )}
 
       <TouchableOpacity onPress={save} disabled={saving} style={{ marginTop: 24, height: 48, borderRadius: 10, backgroundColor: colors.button, alignItems: "center", justifyContent: "center" }}>
