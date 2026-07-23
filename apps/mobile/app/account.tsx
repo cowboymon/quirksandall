@@ -119,31 +119,31 @@ export default function Account() {
         </Text>
       </View>
 
-      {/* Purchase — styled to match the delete-confirmation modal */}
+      {/* Unlock module — dark card, matching the paywall hero */}
       {!isPaid ? (
-        <View style={{ marginTop: 24, backgroundColor: "#FFFFFF", borderRadius: 20, padding: 24, gap: 16 }}>
-          <View>
-            <Text style={{ fontFamily: "Tanker", fontSize: 24, lineHeight: 28, color: colors.textDark }}>
-              Unlock full access.
-            </Text>
-            <Text style={{ color: colors.textMuted, fontSize: 14, marginTop: 8, lineHeight: 20, fontFamily: "Satoshi-Light" }}>
-              Routine and medications visible to sitters, unlimited pets, and push nudges. One payment of $7.99, account-wide, forever.
-            </Text>
+        <View style={{ marginTop: 24, backgroundColor: "#510000", borderRadius: 14, paddingHorizontal: 20, paddingVertical: 20 }}>
+          <Text style={{ fontFamily: "Tanker", fontSize: 26, lineHeight: 26, color: "#F8ECEE" }}>
+            Unlock full access.
+          </Text>
+          <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6, marginTop: 8, marginBottom: 16 }}>
+            <Text style={{ fontFamily: "Tanker", fontSize: 20, lineHeight: 20, color: "#F8ECEE" }}>$7.99</Text>
+            <Text style={{ color: "rgba(248,236,238,0.5)", fontSize: 11, fontFamily: "Satoshi-Light" }}>once, forever</Text>
           </View>
-          <View style={{ gap: 10 }}>
-            <TouchableOpacity onPress={handlePurchase} disabled={loading} style={{ height: 46, borderRadius: 10, backgroundColor: "#510000", alignItems: "center", justifyContent: "center", opacity: loading ? 0.5 : 1 }}>
-              <Text style={{ color: "#F8ECEE", fontSize: 14, fontFamily: "Satoshi-Medium" }}>{loading ? "Working…" : "Unlock for $7.99"}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleRestore} disabled={loading} style={{ alignItems: "center", paddingVertical: 4 }}>
-              <Text style={{ color: colors.textMuted, fontSize: 14, fontFamily: "Satoshi" }}>Restore purchases</Text>
-            </TouchableOpacity>
-          </View>
+          <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, lineHeight: 17, fontFamily: "Satoshi-Light", marginBottom: 20 }}>
+            Routine + medications visible to sitters. Unlimited pets. Push nudges.
+          </Text>
+          <TouchableOpacity onPress={handlePurchase} disabled={loading} activeOpacity={0.85} style={{ height: 44, borderRadius: 10, backgroundColor: "#F8ECEE", alignItems: "center", justifyContent: "center", opacity: loading ? 0.6 : 1 }}>
+            <Text style={{ color: "#510000", fontSize: 14, fontFamily: "Satoshi-Medium" }}>{loading ? "Working…" : "Unlock for $7.99"}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleRestore} disabled={loading} style={{ alignItems: "center", marginTop: 10, paddingVertical: 4 }}>
+            <Text style={{ color: "rgba(248,236,238,0.4)", fontSize: 12, fontFamily: "Satoshi" }}>Restore purchases</Text>
+          </TouchableOpacity>
         </View>
       ) : (
-        <View style={{ marginTop: 24, backgroundColor: "#FFFFFF", borderRadius: 20, padding: 24, gap: 8 }}>
-          <Text style={{ color: colors.success, fontFamily: "Satoshi-Medium", fontSize: 15 }}>Full access active</Text>
-          <TouchableOpacity onPress={handleRestore} disabled={loading}>
-            <Text style={{ color: colors.textMuted, fontSize: 13 }}>Restore purchases</Text>
+        <View style={{ marginTop: 24, backgroundColor: "#510000", borderRadius: 14, paddingHorizontal: 20, paddingVertical: 20 }}>
+          <Text style={{ color: "#F8ECEE", fontFamily: "Satoshi-Medium", fontSize: 15 }}>Full access active</Text>
+          <TouchableOpacity onPress={handleRestore} disabled={loading} style={{ marginTop: 8 }}>
+            <Text style={{ color: "rgba(248,236,238,0.4)", fontSize: 12, fontFamily: "Satoshi" }}>Restore purchases</Text>
           </TouchableOpacity>
         </View>
       )}
