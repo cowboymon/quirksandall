@@ -3,6 +3,7 @@ import { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
 import { Headline, LabeledInput, PrimaryButton, SkipButton, ProgressDots, Eyebrow, Card } from "../../components/ui";
+import { LabeledPlacesInput } from "../../components/PlacesInput";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { colors } from "@quirksandall/shared";
 import CheckboxRow from "../../components/CheckboxRow";
@@ -29,7 +30,13 @@ export default function Step2() {
           <Eyebrow bold>Vet</Eyebrow>
           <View style={{ gap: 8, marginTop: 12 }}>
             <LabeledInput label="Vet name" placeholder="e.g. Dr. Sarah Mitchell" value={pet.vetContactName ?? ""} onChangeText={(v) => setPet({ vetContactName: v })} />
-            <LabeledInput label="Clinic" placeholder="Clinic name" value={pet.vetClinic ?? ""} onChangeText={(v) => setPet({ vetClinic: v })} />
+            <LabeledPlacesInput
+              label="Clinic"
+              placeholder="Search clinic name"
+              value={pet.vetClinic ?? ""}
+              onChangeText={(v) => setPet({ vetClinic: v })}
+              onSelectPlace={(p) => setPet({ vetClinic: p.name, ...(p.phone ? { vetPhone: p.phone } : {}) })}
+            />
             <LabeledInput label="Phone" placeholder="Phone" keyboardType="phone-pad" value={pet.vetPhone ?? ""} onChangeText={(v) => setPet({ vetPhone: v })} />
           </View>
         </Card>
