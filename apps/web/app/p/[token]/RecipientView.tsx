@@ -7,19 +7,30 @@ import PINGate from "./PINGate";
 type Props = { profile: RecipientProfile; token: string };
 
 export default function RecipientView({ profile, token }: Props) {
-  const { pet, age, behavior, allergies, routine, medical, lastUpdatedAt, mode, isPaid, pinSet } = profile;
-  const [view, setView] = useState<"quick" | "full">("quick");
+  const { pet, age, behavior, allergies, routine, medical, lastUpdatedAt, mode, isPaid, pinSet, preview } = profile;
+  // Owner preview opens straight into the full view so they see everything.
+  const [view, setView] = useState<"quick" | "full">(preview ? "full" : "quick");
   // No PIN set → nothing to gate; the contacts are already in the profile.
   const [pinUnlocked, setPinUnlocked] = useState(!pinSet);
   const [emergencyContacts, setEmergencyContacts] = useState<RecipientProfile["emergencyContacts"] | null>(
     profile.emergencyContacts ?? null
   );
 
-  const showRoutine = view === "full" && isPaid && routine;
-  const showMedical = view === "full" && isPaid && medical;
+  // Paid recipients see routine/medical; the owner's own preview always does.
+  const canSeeGated = isPaid || preview;
+  const showRoutine = view === "full" && canSeeGated && routine;
+  const showMedical = view === "full" && canSeeGated && medical;
 
   return (
     <div className="flex flex-col min-h-screen pb-16 max-w-lg mx-auto px-6">
+      {preview && (
+        <div
+          className="mt-4 rounded-card px-4 py-2.5 text-center text-xs font-medium"
+          style={{ backgroundColor: "#510000", color: "#F8ECEE" }}
+        >
+          Preview — this is the full picture. {!isPaid && "Sitters see routine & medical only after you unlock."}
+        </div>
+      )}
       {/* Pet identity */}
       <div className="pt-10 pb-5">
         <div className="flex items-center gap-4 mb-4">

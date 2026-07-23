@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Share, TextInput, Alert, Linking } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Share, TextInput, Alert } from "react-native";
+import * as WebBrowser from "expo-web-browser";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabase";
@@ -139,7 +140,11 @@ export default function Dashboard() {
   };
 
   const preview = () => {
-    if (data?.links[0]) Linking.openURL(`${WEB_URL}/p/${data.links[0].token}`);
+    // Owner preview: open in an in-app browser (stays on-platform) and pass
+    // ?preview=1 so the recipient page shows the full picture — including the
+    // paid-tier routine/medical — even before the owner has unlocked. The
+    // links actually sent to sitters carry no preview flag, so they stay gated.
+    if (data?.links[0]) WebBrowser.openBrowserAsync(`${WEB_URL}/p/${data.links[0].token}?preview=1`);
   };
 
   if (loading || !data) {

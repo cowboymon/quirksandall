@@ -137,4 +137,8 @@ export type RecipientProfile = {
   lastUpdatedAt: string;
   mode: ShareLinkMode;
   isPaid: boolean;
+  // Owner-only preview (opened from the app with ?preview=1): shows the full
+  // picture — including paid-tier routine/medical — regardless of tier. The
+  // links sent to sitters never set this, so they stay gated.
+  preview?: boolean;
 };
