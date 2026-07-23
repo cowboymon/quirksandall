@@ -23,6 +23,9 @@ export default function RecipientView({ profile, token }: Props) {
   const [emergencyContacts, setEmergencyContacts] = useState<RecipientProfile["emergencyContacts"] | null>(
     profile.emergencyContacts ?? null
   );
+  // Once shown, the emergency block can be collapsed — it's a long list a sitter
+  // only needs in a pinch, so let them fold it away after a first read.
+  const [emergencyOpen, setEmergencyOpen] = useState(true);
 
   // Paid-tier fields (soft triggers, routine-rest, medical) are visible in the
   // Full view. In the owner's preview on a free plan we still show them but with
@@ -111,8 +114,16 @@ export default function RecipientView({ profile, token }: Props) {
         ) : (
           emergencyContacts && hasContactData(emergencyContacts) && (
             <section className="rounded-card p-5" style={{ backgroundColor: CRIMSON }}>
-              <p className="eyebrow mb-4" style={{ color: "rgba(248,236,238,0.5)" }}>Emergency contacts</p>
-              <div className="flex flex-col gap-4">
+              <button
+                onClick={() => setEmergencyOpen((o) => !o)}
+                className="flex w-full items-center justify-between"
+                style={{ marginBottom: emergencyOpen ? 16 : 0 }}
+                aria-expanded={emergencyOpen}
+              >
+                <span className="eyebrow" style={{ color: "rgba(248,236,238,0.5)" }}>Emergency contacts</span>
+                <span className="text-xs" style={{ color: "rgba(248,236,238,0.5)" }}>{emergencyOpen ? "Hide ▲" : "Show ▼"}</span>
+              </button>
+              <div className="flex flex-col gap-4" style={{ display: emergencyOpen ? "flex" : "none" }}>
                 {(emergencyContacts.primaryVet.contactName || emergencyContacts.primaryVet.clinic || emergencyContacts.primaryVet.phone) && (
                   <DarkContact
                     label="Vet"
