@@ -1,8 +1,7 @@
 // Screen 4 — Routine & medical
 import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert } from "react-native";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { Headline, Textarea, PrimaryButton, SkipButton, ProgressDots, Eyebrow } from "../../components/ui";
+import { Headline, Textarea, InlineNote, PrimaryButton, SkipButton, ProgressDots, Eyebrow } from "../../components/ui";
 import { Underlined } from "../../components/Underlined";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { useActivePetStore } from "../../stores/activePet";
@@ -149,11 +148,10 @@ export default function Step4() {
       <Text style={{ color: colors.textMuted, fontSize: 14, lineHeight: 21, marginTop: 8, fontFamily: "Satoshi-Light" }}>
         Your link already works. This is the full picture.
       </Text>
-      <View style={{ flexDirection: "row", gap: 10, alignItems: "flex-start", marginTop: 12, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10, backgroundColor: "rgba(184,58,82,0.1)", borderWidth: 1, borderColor: "rgba(184,58,82,0.3)" }}>
-        <Ionicons name="lock-closed" size={14} color={colors.primary} style={{ marginTop: 1 }} />
-        <Text style={{ flex: 1, color: colors.textMuted, fontSize: 12, lineHeight: 17, fontFamily: "Satoshi-Light" }}>
-          Routine and medications are saved, but sitters won't see them until you unlock the full view.
-        </Text>
+      <View style={{ marginTop: 12 }}>
+        <InlineNote variant="paywall" cta="Unlock for $7.99" onCta={() => router.push("/upgrade")}>
+          Routine's saved. Sitters won't see it until you unlock.
+        </InlineNote>
       </View>
 
       {/* Routine */}

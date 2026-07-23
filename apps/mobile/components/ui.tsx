@@ -260,6 +260,42 @@ export function Textarea({ style, filled, onFocus, onBlur, ...props }: TextInput
   );
 }
 
+// Contextual in-screen message bar.
+//  info    → warm blush background, muted light text, no border.
+//  paywall → dark plum card (matches the paywall hero), cream text + optional CTA.
+export function InlineNote({
+  children,
+  variant = "info",
+  cta,
+  onCta,
+}: {
+  children: React.ReactNode;
+  variant?: "info" | "paywall";
+  cta?: string;
+  onCta?: () => void;
+}) {
+  if (variant === "paywall") {
+    return (
+      <View style={{ backgroundColor: "#510000", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16 }}>
+        <Text style={{ fontSize: 13, color: "rgba(248,236,238,0.7)", fontFamily: "Satoshi-Light", lineHeight: 18 }}>{children}</Text>
+        {cta && onCta && (
+          <TouchableOpacity
+            onPress={onCta}
+            style={{ marginTop: 12, height: 32, alignSelf: "flex-start", paddingHorizontal: 16, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.15)", alignItems: "center", justifyContent: "center" }}
+          >
+            <Text style={{ color: "#F8ECEE", fontSize: 12, fontFamily: "Satoshi-Medium" }}>{cta} →</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  }
+  return (
+    <View style={{ backgroundColor: colors.secondary, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14 }}>
+      <Text style={{ fontSize: 13, color: colors.textMuted, fontFamily: "Satoshi-Light", lineHeight: 18 }}>{children}</Text>
+    </View>
+  );
+}
+
 // Dropdown select — native equivalent of the prototype's <select>. Renders a
 // white field that opens a modal option list. Matches Input styling.
 export function Select({

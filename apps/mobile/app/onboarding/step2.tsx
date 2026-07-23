@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
-import { Headline, LabeledInput, PrimaryButton, SkipButton, ProgressDots, Eyebrow, Card } from "../../components/ui";
+import { Headline, LabeledInput, InlineNote, PrimaryButton, SkipButton, ProgressDots, Eyebrow, Card } from "../../components/ui";
 import { LabeledPlacesInput } from "../../components/PlacesInput";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { colors } from "@quirksandall/shared";
@@ -21,9 +21,12 @@ export default function Step2() {
 
       <View style={{ marginTop: 20, marginBottom: 6 }}><Eyebrow>Step 2 of 4</Eyebrow></View>
       <Headline className="mb-1">What {pet.name?.trim() || "your pet"}'s stand-in needs to know most.</Headline>
-      <Text style={{ color: colors.textMuted, fontSize: 14, lineHeight: 21, marginBottom: 20, fontFamily: "Satoshi-Light" }}>
+      <Text style={{ color: colors.textMuted, fontSize: 14, lineHeight: 21, marginBottom: 12, fontFamily: "Satoshi-Light" }}>
         This is the information that matters.
       </Text>
+      <View style={{ marginBottom: 20 }}>
+        <InlineNote>Recipients see this block only after entering your PIN. No personality here — plain labels, clear numbers.</InlineNote>
+      </View>
 
       <View style={{ gap: 12 }}>
         <Card>

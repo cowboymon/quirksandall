@@ -5,7 +5,7 @@ import { router } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
-import { Input, Eyebrow, Card } from "../../components/ui";
+import { Input, Eyebrow, Card, InlineNote } from "../../components/ui";
 import { colors } from "@quirksandall/shared";
 
 const mealInput = {
@@ -140,25 +140,10 @@ export default function EditRoutine() {
   return (
     <EditShell title="Routine & medical" onSave={save} saving={saving} loading={loading}>
       {!isPaid && (
-        <View
-          style={{
-            backgroundColor: "#FFFFFF",
-            borderRadius: 10,
-            borderLeftWidth: 3,
-            borderLeftColor: colors.caution,
-            padding: 12,
-            marginBottom: 16,
-          }}
-        >
-          <Text style={{ color: colors.textMuted, fontSize: 12, lineHeight: 17 }}>
-            Routine's saved. Sitters won't see it until you unlock.{" "}
-            <Text
-              style={{ color: colors.accent, fontFamily: "Satoshi-Medium" }}
-              onPress={() => router.push("/upgrade")}
-            >
-              Unlock for $7.99 →
-            </Text>
-          </Text>
+        <View style={{ marginBottom: 16 }}>
+          <InlineNote variant="paywall" cta="Unlock for $7.99" onCta={() => router.push("/upgrade")}>
+            Routine's saved. Sitters won't see it until you unlock.
+          </InlineNote>
         </View>
       )}
 
