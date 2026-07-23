@@ -84,7 +84,7 @@ export default function Account() {
   };
 
   return (
-    <EditShell title="Your details" onSave={save} saving={saving}>
+    <EditShell title="Your Details" onSave={save} saving={saving}>
       <Text style={{ color: colors.textMuted, fontSize: 14, marginBottom: 20, lineHeight: 21, fontFamily: "Satoshi-Light" }}>
         Shown on missing posters and used to recover your profile. Never shared with sitters.
       </Text>

@@ -45,6 +45,7 @@ export default function Dashboard() {
   const [renameValue, setRenameValue] = useState("");
   const [showNewLink, setShowNewLink] = useState(false);
   const [newLinkName, setNewLinkName] = useState("");
+  const [nudgeDismissed, setNudgeDismissed] = useState(false);
 
   useEffect(() => {
     loadDashboard();
@@ -265,21 +266,24 @@ export default function Dashboard() {
           </View>
         )}
 
-        {/* Nudge card */}
-        {firstCommand && (
+        {/* Command freshness nudge — dismissible */}
+        {firstCommand && !nudgeDismissed && (
           <Card style={{ borderColor: "rgba(184,58,82,0.4)", flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
             <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: "rgba(184,58,82,0.15)", alignItems: "center", justifyContent: "center", marginTop: 1 }}>
               <Ionicons name="notifications-outline" size={15} color={colors.primary} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium", lineHeight: 19 }}>
-                Still using "{firstCommand}" with {pet.name}? Still accurate?
+                "{firstCommand}" — does {pet.name}'s stand-in know what that means?
               </Text>
-              <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 3, fontFamily: "Satoshi-Light" }}>Commands drift. Worth a check.</Text>
+              <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 3, fontFamily: "Satoshi-Light" }}>Worth a look before the next handoff.</Text>
               <TouchableOpacity onPress={() => router.push("/edit/behavior")} style={{ marginTop: 6 }}>
                 <Text style={{ color: colors.primary, fontSize: 12, fontFamily: "Satoshi-Medium" }}>Check them →</Text>
               </TouchableOpacity>
             </View>
+            <TouchableOpacity onPress={() => setNudgeDismissed(true)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Ionicons name="close" size={16} color={colors.textMuted} />
+            </TouchableOpacity>
           </Card>
         )}
 

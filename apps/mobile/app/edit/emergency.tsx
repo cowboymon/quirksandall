@@ -108,7 +108,7 @@ export default function EditEmergency() {
   };
 
   return (
-    <EditShell title="Emergency contacts" onSave={save} saving={saving} loading={loading}>
+    <EditShell title="Emergency Contacts" onSave={save} saving={saving} loading={loading}>
       {/* Voice carve-out reminder — plain register for this section */}
       <View style={{ marginBottom: 16 }}>
         <InlineNote>Recipients see this block only after entering your PIN. No personality here — plain labels, clear numbers.</InlineNote>

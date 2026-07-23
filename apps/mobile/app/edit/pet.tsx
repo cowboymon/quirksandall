@@ -152,7 +152,7 @@ export default function EditPet() {
   const age = dobISO ? computeAge(dobISO, dobIsEstimated) : null;
 
   return (
-    <EditShell title="Pet basics" onSave={save} saving={saving} loading={loading} hideSave>
+    <EditShell title="Pet Basics" onSave={save} saving={saving} loading={loading} hideSave>
       {/* Photo */}
       <TouchableOpacity onPress={pickPhoto} style={{ alignSelf: "center", marginBottom: 24 }}>
         {photoUri ? (
