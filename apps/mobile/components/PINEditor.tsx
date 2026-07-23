@@ -83,7 +83,7 @@ export default function PINEditor({ petId }: Props) {
         <Eyebrow>PIN for emergency contacts</Eyebrow>
         {stage === "idle" && (
           <TouchableOpacity onPress={() => setStage("set")}>
-            <Text style={{ color: colors.accent, fontSize: 13, fontWeight: "600" }}>Change PIN</Text>
+            <Text style={{ color: colors.accent, fontSize: 13, fontFamily: "Satoshi-Medium" }}>Change PIN</Text>
           </TouchableOpacity>
         )}
       </View>

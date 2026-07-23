@@ -75,7 +75,7 @@ export default function Upgrade() {
           <View key={f.label} style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
             <Text style={{ color: colors.success, fontSize: 16, marginTop: 1 }}>✓</Text>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: colors.primary, fontSize: 14, fontWeight: "600" }}>{f.label}</Text>
+              <Text style={{ color: colors.primary, fontSize: 14, fontFamily: "Satoshi-Medium" }}>{f.label}</Text>
               <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 1 }}>{f.note}</Text>
             </View>
           </View>
@@ -95,7 +95,7 @@ export default function Upgrade() {
           marginBottom: 12,
         }}
       >
-        <Text style={{ color: "#F8ECEE", fontWeight: "700", fontSize: 16 }}>
+        <Text style={{ color: "#F8ECEE", fontFamily: "Satoshi-Bold", fontSize: 16 }}>
           {loading ? "Working…" : "Unlock for $7.99"}
         </Text>
       </TouchableOpacity>

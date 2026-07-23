@@ -231,7 +231,7 @@ export default function MissingPoster() {
                   backgroundColor: format === f ? colors.cardBg : "transparent",
                 }}
               >
-                <Text style={{ color: format === f ? colors.textDark : colors.textMuted, fontSize: 12, fontWeight: "500" }}>
+                <Text style={{ color: format === f ? colors.textDark : colors.textMuted, fontSize: 12, fontFamily: "Satoshi-Medium" }}>
                   {f === "poster" ? "Poster" : "Social"}
                 </Text>
               </TouchableOpacity>
@@ -248,7 +248,7 @@ export default function MissingPoster() {
           {formats.map((f) => (
             <View key={f.key}>
               {format === "social" && (
-                <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: "500", letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 8 }}>
+                <Text style={{ color: colors.textMuted, fontSize: 11, fontFamily: "Satoshi-Medium", letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 8 }}>
                   {f.label}
                 </Text>
               )}
@@ -266,7 +266,7 @@ export default function MissingPoster() {
               </View>
               <View style={{ marginTop: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                 <TouchableOpacity onPress={() => pickPhotoFor(f.key)} disabled={regenerating !== null}>
-                  <Text style={{ color: colors.textMuted, fontSize: 12, fontWeight: "500" }}>
+                  <Text style={{ color: colors.textMuted, fontSize: 12, fontFamily: "Satoshi-Medium" }}>
                     📷 Change photo
                   </Text>
                 </TouchableOpacity>
@@ -282,7 +282,7 @@ export default function MissingPoster() {
                   {saving === f.key ? (
                     <ActivityIndicator size="small" color={colors.buttonText} />
                   ) : (
-                    <Text style={{ color: colors.buttonText, fontSize: 13, fontWeight: "600" }}>
+                    <Text style={{ color: colors.buttonText, fontSize: 13, fontFamily: "Satoshi-Medium" }}>
                       Save {f.key === "poster" ? "poster" : f.key.replace("x", ":")}
                     </Text>
                   )}
@@ -316,7 +316,7 @@ export default function MissingPoster() {
 
       {!hasPhoto && (
         <View style={{ backgroundColor: "rgba(184,58,82,0.1)", borderWidth: 1, borderColor: "rgba(184,58,82,0.3)", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, marginBottom: 16 }}>
-          <Text style={{ color: colors.primary, fontSize: 14, fontWeight: "500" }}>
+          <Text style={{ color: colors.primary, fontSize: 14, fontFamily: "Satoshi-Medium" }}>
             {profile.name} needs a photo for the poster. Add one in the profile first.
           </Text>
         </View>
@@ -333,18 +333,18 @@ export default function MissingPoster() {
             </View>
           )}
           <View style={{ flex: 1 }}>
-            <Text style={{ color: colors.textDark, fontSize: 14, fontWeight: "500" }}>{profile.name}</Text>
+            <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>{profile.name}</Text>
             <Text style={{ color: colors.textMuted, fontSize: 12 }}>
               {[profile.breed, profile.sex, profile.age].filter(Boolean).join(" · ")}
             </Text>
           </View>
           <TouchableOpacity onPress={() => router.push("/edit/pet")}>
-            <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "500" }}>Edit profile</Text>
+            <Text style={{ color: colors.primary, fontSize: 12, fontFamily: "Satoshi-Medium" }}>Edit profile</Text>
           </TouchableOpacity>
         </View>
         {snapshotRows.map((row, i) => (
           <View key={row.label} style={{ flexDirection: "row", gap: 16, paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: i < snapshotRows.length - 1 ? 1 : 0, borderBottomColor: colors.border }}>
-            <Text style={{ color: colors.textMuted, fontSize: 12, fontWeight: "500", width: 80 }}>{row.label}</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 12, fontFamily: "Satoshi-Medium", width: 80 }}>{row.label}</Text>
             <Text style={{ color: colors.textDark, fontSize: 14, flex: 1 }}>{row.val}</Text>
           </View>
         ))}
@@ -388,7 +388,7 @@ export default function MissingPoster() {
           opacity: hasPhoto && profile.token ? 1 : 0.4,
         }}
       >
-        <Text style={{ color: colors.buttonText, fontSize: 15, fontWeight: "500" }}>Generate</Text>
+        <Text style={{ color: colors.buttonText, fontSize: 15, fontFamily: "Satoshi-Medium" }}>Generate</Text>
       </TouchableOpacity>
       {!hasPhoto && (
         <Text style={{ color: colors.textMuted, fontSize: 12, textAlign: "center", marginTop: 8 }}>
