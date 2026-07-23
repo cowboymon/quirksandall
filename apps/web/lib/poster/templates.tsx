@@ -68,7 +68,7 @@ function Watermark({ fontSize, padding }: { fontSize: number; padding: number })
         justifyContent: "center",
       }}
     >
-      <span style={{ color: "#C4A0A8", fontSize, letterSpacing: "0.08em", fontFamily: "Satoshi" }}>
+      <span style={{ color: "#000000", fontSize, letterSpacing: "0.08em", fontFamily: "Satoshi" }}>
         {WATERMARK_TEXT}
       </span>
     </div>
