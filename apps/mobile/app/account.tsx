@@ -83,6 +83,35 @@ export default function Account() {
     router.replace("/auth");
   };
 
+  const deleteAccount = () => {
+    Alert.alert(
+      "Delete your account?",
+      "Your profile and every pet's details stay recoverable for 30 days — sign back in any time before then to cancel. After that, everything is permanently deleted.",
+      [
+        { text: "Keep my account", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+              const { error } = await supabase
+                .from("owners")
+                .update({ deletion_scheduled_at: new Date().toISOString() })
+                .eq("id", user.id);
+              if (error) {
+                Alert.alert("Couldn't schedule deletion", error.message);
+                return;
+              }
+            }
+            await supabase.auth.signOut();
+            router.replace("/auth");
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <EditShell
       title="Your Details"
@@ -110,7 +139,7 @@ export default function Account() {
 
       <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: colors.border }}>
         <Text style={{ color: colors.textMuted, fontSize: 12, lineHeight: 18, fontFamily: "Satoshi-Light" }}>
-          Deleting your account or changing your email requires contacting support at{" "}
+          Changing your email requires contacting support at{" "}
           <Text style={{ color: colors.textDark, fontFamily: "Satoshi-Medium" }}>{SUPPORT_EMAIL}</Text>
         </Text>
       </View>
@@ -146,6 +175,10 @@ export default function Account() {
 
       <TouchableOpacity onPress={signOut} style={{ marginTop: 24, alignItems: "center" }}>
         <Text style={{ color: colors.danger, fontSize: 14 }}>Sign out</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={deleteAccount} style={{ marginTop: 20, alignItems: "center" }}>
+        <Text style={{ color: colors.textMuted, fontSize: 13, fontFamily: "Satoshi-Light" }}>Delete account</Text>
       </TouchableOpacity>
     </EditShell>
   );
