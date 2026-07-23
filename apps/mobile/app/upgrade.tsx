@@ -7,12 +7,11 @@ import { purchasePro, restorePurchases } from "../lib/purchases";
 import { colors } from "@quirksandall/shared";
 
 const FEATURES = [
-  { label: "The full routine", sub: "Walks, sleep and bathroom — not just feeding" },
-  { label: "Medical needs", sub: "Conditions & medications, with where they're stored" },
-  { label: "The softer stuff", sub: "Temperament, fears and no-go zones" },
+  { label: "The soft stuff, too", sub: "Scared of, steers clear of, and what they're really like" },
+  { label: "Routine, beyond feeding", sub: "Walks, sleep, and the bathroom routine" },
+  { label: "Medications & conditions", sub: "Down to the dose — nothing left to guess" },
   { label: "Unlimited pets", sub: "Add as many as you need" },
-  { label: "Rotate share links", sub: "Old token invalidated instantly" },
-  { label: "Push nudges", sub: "Trick-reinforcement reminders" },
+  { label: "Rotate share links", sub: "Get a new link whenever you want. The old one won't work again." },
 ];
 
 export default function Upgrade() {

@@ -46,6 +46,7 @@ export default function Dashboard() {
   const [showNewLink, setShowNewLink] = useState(false);
   const [newLinkName, setNewLinkName] = useState("");
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
+  const [deletionScheduled, setDeletionScheduled] = useState(false);
 
   useEffect(() => {
     loadDashboard();
@@ -104,6 +105,12 @@ export default function Dashboard() {
     });
     setLoading(false);
 
+    // Defensive: the deletion column may not be present until the migration
+    // lands, so a missing column must not break the dashboard.
+    const { data: delRow } = await supabase
+      .from("owners").select("deletion_scheduled_at").eq("id", user.id).single();
+    setDeletionScheduled(!!(delRow as any)?.deletion_scheduled_at);
+
     if (isPaid) {
       registerForPushNotifications();
       if (behavior?.commands?.[0]?.word && pet.name) scheduleTrickNudge(pet.name, behavior.commands[0].word);
@@ -129,6 +136,12 @@ export default function Dashboard() {
       { text: "Cancel", style: "cancel" },
       { text: "Revoke", style: "destructive", onPress: async () => { await revokeLink(link.id); loadDashboard(); } },
     ]);
+  };
+
+  const cancelDeletion = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) await supabase.from("owners").update({ deletion_scheduled_at: null }).eq("id", user.id);
+    setDeletionScheduled(false);
   };
 
   const handleAddLink = async () => {
@@ -166,6 +179,19 @@ export default function Dashboard() {
       </View>
 
       <PetSwitcher isPaid={isPaid} />
+
+      {deletionScheduled && (
+        <View style={{ marginHorizontal: 24, marginBottom: 4, backgroundColor: colors.cardDark, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, flexDirection: "row", alignItems: "center", gap: 12 }}>
+          <Ionicons name="alert-circle-outline" size={18} color={colors.cardDarkLabel} />
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: colors.cardDarkText, fontSize: 13, fontFamily: "Satoshi-Medium" }}>Account scheduled for deletion</Text>
+            <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 11, marginTop: 2, fontFamily: "Satoshi-Light" }}>Deleted after 30 days unless you cancel.</Text>
+          </View>
+          <TouchableOpacity onPress={cancelDeletion} style={{ height: 32, paddingHorizontal: 14, borderRadius: 8, backgroundColor: colors.cardDarkText, alignItems: "center", justifyContent: "center" }}>
+            <Text style={{ color: colors.cardDark, fontSize: 12, fontFamily: "Satoshi-Bold" }}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <View style={{ paddingHorizontal: 24, gap: 16 }}>
         {/* Named share links */}
