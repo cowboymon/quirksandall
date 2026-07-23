@@ -139,6 +139,9 @@ export default function EditBehavior() {
         >
           Quirks & Triggers
         </Text>
+        <Text style={{ color: colors.textMuted, fontSize: 12, lineHeight: 17, marginBottom: 4, fontFamily: "Satoshi-Light" }}>
+          Flight risk shows to everyone — it's a safety note. Scared-of, no-go zones and temperament unlock with the full view.
+        </Text>
 
         <Card>
           <Eyebrow>Scared of anything?</Eyebrow>

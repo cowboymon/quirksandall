@@ -26,12 +26,24 @@ type Data = {
 };
 
 // Tanker section header, with a squiggle-underlined tail.
-function SectionHeader({ lead, underline }: { lead: string; underline: string }) {
+function SectionHeader({ lead, underline, badge }: { lead: string; underline: string; badge?: boolean }) {
   const style = { fontFamily: "Tanker", fontSize: 22, lineHeight: 26, color: colors.textDark } as const;
   return (
-    <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-end", marginBottom: 12 }}>
-      <Text style={style}>{lead} </Text>
-      <Underlined><Text style={style}>{underline}</Text></Underlined>
+    <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", marginBottom: 12, gap: 8 }}>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-end" }}>
+        <Text style={style}>{lead} </Text>
+        <Underlined><Text style={style}>{underline}</Text></Underlined>
+      </View>
+      {badge ? <PaidBadge /> : null}
+    </View>
+  );
+}
+
+// Owner-preview only: marks a field the sitter can't see until the owner unlocks.
+function PaidBadge() {
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 3, backgroundColor: "rgba(184,58,82,0.12)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 }}>
+      <Text style={{ fontSize: 10, color: colors.primary, fontFamily: "Satoshi-Medium" }}>🔒 Sitters unlock this</Text>
     </View>
   );
 }
@@ -42,7 +54,8 @@ export default function Preview() {
   const { petId: selectedPetId } = useActivePetStore();
   const [data, setData] = useState<Data | null>(null);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<"quick" | "full">("quick");
+  const [isPaid, setIsPaid] = useState(false);
+  const [view, setView] = useState<"quick" | "full">("full");
 
   useEffect(() => {
     (async () => {
@@ -61,9 +74,10 @@ export default function Preview() {
         supabase.from("pet_medical").select("*").eq("pet_id", pet.id).maybeSingle(),
         supabase.from("pet_routine").select("*").eq("pet_id", pet.id).maybeSingle(),
         supabase.from("pet_vet_info").select("*").eq("pet_id", pet.id).maybeSingle(),
-        supabase.from("owners").select("backup_contacts").eq("id", user.id).single(),
+        supabase.from("owners").select("backup_contacts, purchase_status").eq("id", user.id).single(),
       ]);
 
+      setIsPaid(owner?.purchase_status === "paid");
       const backups = owner?.backup_contacts ?? [];
       const meds = (medical?.medications ?? []).map((m: any) => [m.name, m.dose].filter(Boolean).join(" ")).filter(Boolean).join("; ");
 
@@ -93,6 +107,10 @@ export default function Preview() {
   const f = d.feeding ?? {};
   const idTiles = [["Weight", d.weight], ["Sex", d.sex], ["Colour", d.color], ["Microchip", d.microchip]].filter(([, v]) => !!v);
   const showFull = view === "full";
+  // Free plan → the paid fields carry a "Paid" badge so the owner sees what a
+  // sitter would unlock. Feeding, flight risk, allergies and commands are free.
+  const locked = !isPaid;
+  const hasFeeding = !!(f.breakfast?.time || f.breakfast?.amount || f.lunch?.time || f.lunch?.amount || f.dinner?.time || f.dinner?.amount || f.treats?.type || f.notes);
 
   const CreamLink = ({ icon, text, onPress, bold }: { icon: "location" | "call"; text: string; onPress: () => void; bold?: boolean }) => (
     <TouchableOpacity onPress={onPress} style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 }}>
@@ -198,43 +216,46 @@ export default function Preview() {
             </View>
           </View>
 
-          {/* Order (#15): Daily Routine → Medication → Allergies → Commands → Triggers */}
-          {showFull && (f.breakfast || f.lunch || f.dinner || d.walks || d.sleep || d.bathroom) && (
+          {/* Order (#15): Daily Routine → Medication → Allergies → Commands → Triggers.
+              Feeding is free at every tier; walks/sleep/bathroom are paid. */}
+          {(hasFeeding || (showFull && (d.walks || d.sleep || d.bathroom))) && (
             <View>
               <SectionHeader lead={possessive(d.name)} underline="Daily Routine" />
               <View style={{ gap: 12 }}>
-                <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden" }}>
-                  <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-                    <Text style={{ ...microLabel, color: colors.primary }}>Feeding</Text>
-                  </View>
-                  {[["Breakfast", f.breakfast], ["Lunch", f.lunch], ["Dinner", f.dinner]].map(([label, slot]: any, i) => (
-                    <MealRow key={label} label={label} time={slot?.time} amount={slot?.amount} divider={i < 2} />
-                  ))}
-                  {(f.treats?.type || f.treats?.limit) ? (
-                    <View style={{ flexDirection: "row", paddingHorizontal: 16, paddingVertical: 8, borderTopWidth: 1, borderTopColor: colors.border, alignItems: "flex-start" }}>
-                      <Text style={{ width: 64, fontSize: 13, fontFamily: "Satoshi-Medium", color: colors.textMuted }}>Treats</Text>
-                      <View style={{ flex: 1 }}>
-                        {f.treats?.type ? <Text style={{ fontSize: 13, color: colors.textDark }}>{f.treats.type}</Text> : null}
-                        {f.treats?.limit ? <Text style={{ fontSize: 11, color: colors.textMuted, fontFamily: "Satoshi-Light", marginTop: 2 }}>{f.treats.limit}</Text> : null}
+                {hasFeeding && (
+                  <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden" }}>
+                    <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
+                      <Text style={{ ...microLabel, color: colors.primary }}>Feeding</Text>
+                    </View>
+                    {[["Breakfast", f.breakfast], ["Lunch", f.lunch], ["Dinner", f.dinner]].map(([label, slot]: any, i) => (
+                      <MealRow key={label} label={label} time={slot?.time} amount={slot?.amount} divider={i < 2} />
+                    ))}
+                    {(f.treats?.type || f.treats?.limit) ? (
+                      <View style={{ flexDirection: "row", paddingHorizontal: 16, paddingVertical: 8, borderTopWidth: 1, borderTopColor: colors.border, alignItems: "flex-start" }}>
+                        <Text style={{ width: 64, fontSize: 13, fontFamily: "Satoshi-Medium", color: colors.textMuted }}>Treats</Text>
+                        <View style={{ flex: 1 }}>
+                          {f.treats?.type ? <Text style={{ fontSize: 13, color: colors.textDark }}>{f.treats.type}</Text> : null}
+                          {f.treats?.limit ? <Text style={{ fontSize: 11, color: colors.textMuted, fontFamily: "Satoshi-Light", marginTop: 2 }}>{f.treats.limit}</Text> : null}
+                        </View>
                       </View>
-                    </View>
-                  ) : null}
-                  {f.notes ? (
-                    <View style={{ paddingHorizontal: 16, paddingVertical: 10, borderTopWidth: 1, borderTopColor: colors.border }}>
-                      <Text style={{ fontSize: 12, color: colors.textMuted, fontFamily: "Satoshi-Light" }}>{f.notes}</Text>
-                    </View>
-                  ) : null}
-                </View>
-                {d.walks ? <InfoCard label="Walks" text={d.walks} /> : null}
-                {d.sleep ? <InfoCard label="Sleep" text={d.sleep} /> : null}
-                {d.bathroom ? <InfoCard label="Bathroom" text={d.bathroom} /> : null}
+                    ) : null}
+                    {f.notes ? (
+                      <View style={{ paddingHorizontal: 16, paddingVertical: 10, borderTopWidth: 1, borderTopColor: colors.border }}>
+                        <Text style={{ fontSize: 12, color: colors.textMuted, fontFamily: "Satoshi-Light" }}>{f.notes}</Text>
+                      </View>
+                    ) : null}
+                  </View>
+                )}
+                {showFull && d.walks ? <InfoCard label="Walks" text={d.walks} locked={locked} /> : null}
+                {showFull && d.sleep ? <InfoCard label="Sleep" text={d.sleep} locked={locked} /> : null}
+                {showFull && d.bathroom ? <InfoCard label="Bathroom" text={d.bathroom} locked={locked} /> : null}
               </View>
             </View>
           )}
 
           {showFull && (d.medications || d.conditions) && (
             <View>
-              <SectionHeader lead={possessive(d.name)} underline="Medication" />
+              <SectionHeader lead={possessive(d.name)} underline="Medication" badge={locked} />
               <View style={{ gap: 12 }}>
                 {d.conditions ? <InfoCard label="Conditions" text={d.conditions} /> : null}
                 {d.medications ? <InfoCard label="Medications" text={d.medications} /> : null}
@@ -274,14 +295,15 @@ export default function Preview() {
             </View>
           )}
 
-          {(d.scared || d.noGo || d.flightRisk || d.temperament) && (
+          {(d.flightRisk || (showFull && (d.scared || d.noGo || d.temperament))) && (
             <View>
               <SectionHeader lead={possessive(d.name)} underline="Triggers" />
               <View style={{ gap: 12 }}>
-                {d.scared ? <InfoCard label="Scared of" text={d.scared} /> : null}
-                {d.noGo ? <InfoCard label="No-go zones" text={d.noGo} /> : null}
+                {/* Flight risk is a safety override — free at every tier */}
                 {d.flightRisk ? <InfoCard label="Flight risk" text={d.flightRisk} /> : null}
-                {d.temperament ? <InfoCard label="Temperament" text={d.temperament} /> : null}
+                {showFull && d.scared ? <InfoCard label="Scared of" text={d.scared} locked={locked} /> : null}
+                {showFull && d.noGo ? <InfoCard label="No-go zones" text={d.noGo} locked={locked} /> : null}
+                {showFull && d.temperament ? <InfoCard label="Temperament" text={d.temperament} locked={locked} /> : null}
               </View>
             </View>
           )}
@@ -314,10 +336,13 @@ function MealRow({ label, time, amount, divider }: { label: string; time?: strin
   );
 }
 
-function InfoCard({ label, text }: { label: string; text: string }) {
+function InfoCard({ label, text, locked }: { label: string; text: string; locked?: boolean }) {
   return (
     <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 16 }}>
-      <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.primary }}>{label}</Text>
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+        <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.primary }}>{label}</Text>
+        {locked ? <PaidBadge /> : null}
+      </View>
       <Text style={{ color: colors.primary, fontSize: 14, marginTop: 6, lineHeight: 20 }}>{text}</Text>
     </View>
   );

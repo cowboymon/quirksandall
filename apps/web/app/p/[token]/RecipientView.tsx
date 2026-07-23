@@ -14,18 +14,21 @@ const MUTED = "#987080";
 
 export default function RecipientView({ profile, token }: Props) {
   const { pet, age, behavior, allergies, routine, medical, lastUpdatedAt, isPaid, pinSet, preview } = profile;
-  // Owner preview opens straight into the full view so they see everything.
-  const [view, setView] = useState<"quick" | "full">(preview ? "full" : "quick");
+  // The Quick/Full toggle only exists where there is paid content to toggle:
+  // paid links and the owner's own preview. A free sitter gets one fixed view.
+  const showToggle = isPaid || preview;
+  const [view, setView] = useState<"quick" | "full">(showToggle ? "full" : "quick");
   // No PIN set → nothing to gate; the contacts are already in the profile.
   const [pinUnlocked, setPinUnlocked] = useState(!pinSet);
   const [emergencyContacts, setEmergencyContacts] = useState<RecipientProfile["emergencyContacts"] | null>(
     profile.emergencyContacts ?? null
   );
 
-  // Paid recipients see routine/medical; the owner's own preview always does.
-  const canSeeGated = isPaid || preview;
-  const showRoutine = view === "full" && canSeeGated && routine;
-  const showMedical = view === "full" && canSeeGated && medical;
+  // Paid-tier fields (soft triggers, routine-rest, medical) are visible in the
+  // Full view. In the owner's preview on a free plan we still show them but with
+  // a "Paid" badge, so the owner sees exactly what an upgrade would unlock.
+  const lockedPreview = preview && !isPaid;
+  const paidVisible = view === "full";
 
   const name = pet.name?.trim() ?? "";
   const idTiles: [string, string][] = [
@@ -34,8 +37,6 @@ export default function RecipientView({ profile, token }: Props) {
     ["Colour", pet.colorMarkings],
     ["Microchip", pet.microchipNumber ?? ""],
   ].filter(([, v]) => !!v) as [string, string][];
-
-  const hasTriggers = behavior.scared || behavior.noGo || behavior.flightRisk || behavior.escapeRisk.flag || behavior.temperamentSummary;
 
   return (
     <div className="flex flex-col min-h-screen pb-16 max-w-lg mx-auto px-6">
@@ -80,19 +81,21 @@ export default function RecipientView({ profile, token }: Props) {
           </div>
         )}
 
-        {/* Quick / Full toggle */}
-        <div className="flex gap-1 rounded-card p-1" style={{ backgroundColor: "#EFE7D8" }}>
-          {(["quick", "full"] as const).map((v) => (
-            <button
-              key={v}
-              onClick={() => setView(v)}
-              className="flex-1 h-9 rounded-button text-sm font-medium transition-all"
-              style={view === v ? { backgroundColor: CRIMSON, color: BLUSH } : { color: MUTED }}
-            >
-              {v === "quick" ? "Quick view" : "Full view"}
-            </button>
-          ))}
-        </div>
+        {/* Quick / Full toggle — only where there's paid content to toggle */}
+        {showToggle && (
+          <div className="flex gap-1 rounded-card p-1" style={{ backgroundColor: "#EFE7D8" }}>
+            {(["quick", "full"] as const).map((v) => (
+              <button
+                key={v}
+                onClick={() => setView(v)}
+                className="flex-1 h-9 rounded-button text-sm font-medium transition-all"
+                style={view === v ? { backgroundColor: CRIMSON, color: BLUSH } : { color: MUTED }}
+              >
+                {v === "quick" ? "Quick view" : "Full view"}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-6">
@@ -150,23 +153,23 @@ export default function RecipientView({ profile, token }: Props) {
           )
         )}
 
-        {/* Daily Routine — paid tier + full view only */}
-        {showRoutine && routine && (
+        {/* Daily Routine — feeding is free; walks/sleep/bathroom are paid */}
+        {routine && (hasFeeding(routine.feeding) || (paidVisible && (routine.walks || routine.sleep || routine.bathroomHabits))) && (
           <section>
             <SectionTitle name={name} tail="Daily Routine" />
             <div className="flex flex-col gap-2">
-              {routine.feeding && hasFeeding(routine.feeding) && <FeedingCard feeding={routine.feeding} />}
-              {routine.walks && <InfoCard label="Walks" text={routine.walks} />}
-              {routine.sleep && <InfoCard label="Sleep" text={routine.sleep} />}
-              {routine.bathroomHabits && <InfoCard label="Bathroom" text={routine.bathroomHabits} />}
+              {hasFeeding(routine.feeding) && <FeedingCard feeding={routine.feeding} />}
+              {paidVisible && routine.walks && <InfoCard label="Walks" text={routine.walks} locked={lockedPreview} />}
+              {paidVisible && routine.sleep && <InfoCard label="Sleep" text={routine.sleep} locked={lockedPreview} />}
+              {paidVisible && routine.bathroomHabits && <InfoCard label="Bathroom" text={routine.bathroomHabits} locked={lockedPreview} />}
             </div>
           </section>
         )}
 
         {/* Medication — paid tier + full view only */}
-        {showMedical && medical && (medical.conditions?.length > 0 || medical.medications?.length > 0) && (
+        {paidVisible && medical && (medical.conditions?.length > 0 || medical.medications?.length > 0) && (
           <section>
-            <SectionTitle name={name} tail="Medication" />
+            <SectionTitle name={name} tail="Medication" locked={lockedPreview} />
             <div className="flex flex-col gap-2">
               {medical.conditions?.length > 0 && <InfoCard label="Conditions" text={medical.conditions.join(", ")} />}
               {medical.medications?.map((med, i) => (
@@ -255,17 +258,18 @@ export default function RecipientView({ profile, token }: Props) {
           </section>
         )}
 
-        {/* Triggers */}
-        {hasTriggers && (
+        {/* Triggers — flight risk is a free safety override; the soft
+            behavioural colour (scared/no-go/temperament) is paid */}
+        {((behavior.flightRisk || behavior.escapeRisk.flag) || (paidVisible && (behavior.scared || behavior.noGo || behavior.temperamentSummary))) && (
           <section>
             <SectionTitle name={name} tail="Triggers" />
             <div className="flex flex-col gap-2">
-              {behavior.scared && <InfoCard label="Scared of" text={behavior.scared} />}
-              {behavior.noGo && <InfoCard label="No-go zones" text={behavior.noGo} />}
               {(behavior.flightRisk || behavior.escapeRisk.flag) && (
                 <InfoCard label="Flight risk" text={behavior.flightRisk || behavior.escapeRisk.notes} highlight />
               )}
-              {behavior.temperamentSummary && <InfoCard label="Temperament" text={behavior.temperamentSummary} />}
+              {paidVisible && behavior.scared && <InfoCard label="Scared of" text={behavior.scared} locked={lockedPreview} />}
+              {paidVisible && behavior.noGo && <InfoCard label="No-go zones" text={behavior.noGo} locked={lockedPreview} />}
+              {paidVisible && behavior.temperamentSummary && <InfoCard label="Temperament" text={behavior.temperamentSummary} locked={lockedPreview} />}
             </div>
           </section>
         )}
@@ -297,11 +301,27 @@ function hasFeeding(f: NonNullable<RecipientProfile["routine"]>["feeding"]): boo
   return !!(f.breakfast?.time || f.breakfast?.amount || f.lunch?.time || f.lunch?.amount || f.dinner?.time || f.dinner?.amount || f.treats?.type || f.notes);
 }
 
-function SectionTitle({ name, tail }: { name: string; tail: string }) {
+function SectionTitle({ name, tail, locked }: { name: string; tail: string; locked?: boolean }) {
   return (
-    <h2 className="font-tanker text-2xl leading-none text-foreground mb-3">
-      {possessive(name)} {tail}
-    </h2>
+    <div className="flex items-center gap-2 mb-3">
+      <h2 className="font-tanker text-2xl leading-none text-foreground">
+        {possessive(name)} {tail}
+      </h2>
+      {locked && <PaidBadge />}
+    </div>
+  );
+}
+
+// Shown in the owner's preview only: marks a section the sitter can't see until
+// the owner unlocks the paid tier.
+function PaidBadge() {
+  return (
+    <span
+      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
+      style={{ backgroundColor: "rgba(184,58,82,0.12)", color: "#B83A52" }}
+    >
+      🔒 Sitters unlock this
+    </span>
   );
 }
 
@@ -332,10 +352,13 @@ function DarkContact({ label, name, place, phone }: { label: string; name?: stri
   );
 }
 
-function InfoCard({ label, text, highlight }: { label: string; text: string; highlight?: boolean }) {
+function InfoCard({ label, text, highlight, locked }: { label: string; text: string; highlight?: boolean; locked?: boolean }) {
   return (
     <div className="bg-white border rounded-card px-4 py-3" style={{ borderColor: highlight ? "#A07848" : BORDER }}>
-      <p className="eyebrow mb-1" style={{ color: highlight ? "#A07848" : "#B83A52" }}>{label}</p>
+      <div className="flex items-center justify-between mb-1">
+        <p className="eyebrow" style={{ color: highlight ? "#A07848" : "#B83A52" }}>{label}</p>
+        {locked && <PaidBadge />}
+      </div>
       <p className="text-primary text-sm leading-relaxed">{text}</p>
     </div>
   );

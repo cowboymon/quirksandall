@@ -142,7 +142,7 @@ export default function EditRoutine() {
       {!isPaid && (
         <View style={{ marginBottom: 16 }}>
           <InlineNote variant="paywall" cta="Unlock for $7.99" onCta={() => router.push("/upgrade")}>
-            Routine's saved. Sitters won't see it until you unlock.
+            Feeding shows on every link. Walks, sleep and medical stay saved until you unlock.
           </InlineNote>
         </View>
       )}
@@ -152,9 +152,9 @@ export default function EditRoutine() {
 
       {/* Feeding — meal blocks on blush, matching the prototype */}
       <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 10, overflow: "hidden", marginBottom: 12 }}>
-        <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: colors.border, flexDirection: "row", alignItems: "center" }}>
+        <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: colors.border, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <Eyebrow ochre>Feeding</Eyebrow>
-          <PaidBadge />
+          <Text style={{ fontSize: 11, color: colors.success, fontFamily: "Satoshi-Medium" }}>Always shown</Text>
         </View>
         <RoutineMeal label="Breakfast" time={breakfastTime} amount={breakfastAmount} onTime={setBreakfastTime} onAmount={setBreakfastAmount} divider />
         <RoutineMeal label="Lunch" time={lunchTime} amount={lunchAmount} onTime={setLunchTime} onAmount={setLunchAmount} divider />
