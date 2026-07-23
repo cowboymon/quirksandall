@@ -49,6 +49,18 @@ export function displayDateToISO(s?: string | null): string | null {
   return `${yyyy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
 }
 
+/**
+ * Format a weight value for display. Stored values are usually a bare number
+ * ("15"); append " kg" unless the value already carries a unit/letter.
+ */
+export function formatWeight(value?: string | null): string {
+  if (!value) return "";
+  const v = value.trim();
+  if (!v) return "";
+  // Already has a unit or any non-numeric character → leave as the owner wrote it.
+  return /[a-zA-Z]/.test(v) ? v : `${v} kg`;
+}
+
 // PIN rate-limiting constants (enforced server-side in edge function)
 export const PIN_MAX_ATTEMPTS = 20;
 export const PIN_WINDOW_MINUTES = 15;

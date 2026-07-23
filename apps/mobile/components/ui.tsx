@@ -172,6 +172,8 @@ export function Input({ style, filled, onFocus, onBlur, ...props }: TextInputPro
   const [focused, setFocused] = useState(false);
   return (
     <TextInput
+      // Default to sentence-case entry; callers can override (email, etc.).
+      autoCapitalize="sentences"
       style={[
         {
           minHeight: 46,
@@ -184,6 +186,7 @@ export function Input({ style, filled, onFocus, onBlur, ...props }: TextInputPro
           fontSize: 15,
           fontFamily: "Satoshi",
           color: colors.textDark,
+          letterSpacing: 0, // guard against iOS placeholder letter-spacing quirk
         },
         style,
       ]}
@@ -195,6 +198,36 @@ export function Input({ style, filled, onFocus, onBlur, ...props }: TextInputPro
   );
 }
 
+// Numeric weight field with a persistent "kg" suffix (the unit stays visible
+// after a value is entered). Stores the bare number.
+export function WeightInput({ value, onChangeText, style }: { value: string; onChangeText: (v: string) => void; style?: TextInputProps["style"] }) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <View
+      style={[
+        {
+          minHeight: 46, borderRadius: radius.input, borderWidth: 1,
+          borderColor: focused ? colors.primary : colors.border, backgroundColor: "#FFFFFF",
+          paddingHorizontal: 16, flexDirection: "row", alignItems: "center",
+        },
+        style as any,
+      ]}
+    >
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        placeholder="28"
+        placeholderTextColor={colors.textMuted}
+        keyboardType="decimal-pad"
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        style={{ flex: 1, paddingVertical: 12, fontSize: 15, fontFamily: "Satoshi", color: colors.textDark, letterSpacing: 0 }}
+      />
+      <Text style={{ fontSize: 15, fontFamily: "Satoshi-Medium", color: colors.textMuted, marginLeft: 6 }}>kg</Text>
+    </View>
+  );
+}
+
 // Multiline variant for quirks / walks / notes.
 export function Textarea({ style, filled, onFocus, onBlur, ...props }: TextInputProps & { filled?: boolean }) {
   const [focused, setFocused] = useState(false);
@@ -202,6 +235,7 @@ export function Textarea({ style, filled, onFocus, onBlur, ...props }: TextInput
     <TextInput
       multiline
       textAlignVertical="top"
+      autoCapitalize="sentences"
       style={[
         {
           minHeight: 68,

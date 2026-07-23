@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { RecipientProfile } from "@quirksandall/shared";
+import { formatWeight } from "@quirksandall/shared";
 import PINGate from "./PINGate";
 
 type Props = { profile: RecipientProfile; token: string };
@@ -54,7 +55,7 @@ export default function RecipientView({ profile, token }: Props) {
 
         <div className="grid grid-cols-2 gap-2 mb-4">
           {[
-            ["Weight", pet.weight],
+            ["Weight", formatWeight(pet.weight)],
             ["Sex", pet.sex],
             ["Color", pet.colorMarkings],
             ["Microchip", pet.microchipNumber],

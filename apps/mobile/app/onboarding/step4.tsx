@@ -135,7 +135,7 @@ export default function Step4() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerStyle={{ padding: 24, paddingTop: 60 }}>
+    <ScrollView className="flex-1 bg-background" keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 24, paddingTop: 60 }}>
       <ProgressDots total={4} current={4} />
 
       <View style={{ marginTop: 20, marginBottom: 6 }}><Eyebrow>Step 4 of 4</Eyebrow></View>

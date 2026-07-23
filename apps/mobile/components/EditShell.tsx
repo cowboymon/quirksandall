@@ -10,9 +10,11 @@ type Props = {
   saving?: boolean;
   saveLabel?: string;
   loading?: boolean;
+  // Hide the top-right Save (for screens that render their own bottom button).
+  hideSave?: boolean;
 };
 
-export default function EditShell({ title, children, onSave, saving, saveLabel = "Save", loading }: Props) {
+export default function EditShell({ title, children, onSave, saving, saveLabel = "Save", loading, hideSave }: Props) {
   return (
     <View style={{ flex: 1, backgroundColor: "#F8ECEE" }}>
       {/* Header */}
@@ -33,17 +35,21 @@ export default function EditShell({ title, children, onSave, saving, saveLabel =
           <Text style={{ color: colors.textMuted, fontSize: 15 }}>‹ Back</Text>
         </TouchableOpacity>
         <Text style={{ fontFamily: "Satoshi-Bold", fontSize: 16, color: colors.textDark }}>{title}</Text>
-        <TouchableOpacity
-          onPress={onSave}
-          disabled={saving}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-        >
-          {saving ? (
-            <ActivityIndicator size="small" color={colors.primary} />
-          ) : (
-            <Text style={{ color: colors.primary, fontSize: 15, fontFamily: "Satoshi-Bold" }}>{saveLabel}</Text>
-          )}
-        </TouchableOpacity>
+        {hideSave ? (
+          <View style={{ width: 40 }} />
+        ) : (
+          <TouchableOpacity
+            onPress={onSave}
+            disabled={saving}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            {saving ? (
+              <ActivityIndicator size="small" color={colors.primary} />
+            ) : (
+              <Text style={{ color: colors.primary, fontSize: 15, fontFamily: "Satoshi-Bold" }}>{saveLabel}</Text>
+            )}
+          </TouchableOpacity>
+        )}
       </View>
 
       {loading ? (
@@ -54,6 +60,8 @@ export default function EditShell({ title, children, onSave, saving, saveLabel =
         <ScrollView
           contentContainerStyle={{ padding: 24, paddingBottom: 60 }}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+          automaticallyAdjustKeyboardInsets
         >
           {children}
         </ScrollView>

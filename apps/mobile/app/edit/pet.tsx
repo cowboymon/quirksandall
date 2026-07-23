@@ -7,7 +7,7 @@ import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import { useActivePetStore } from "../../stores/activePet";
 import EditShell from "../../components/EditShell";
-import { Input, Eyebrow, Card, Select, DateInput } from "../../components/ui";
+import { Input, Eyebrow, Card, Select, DateInput, WeightInput } from "../../components/ui";
 import { computeAge, colors, isoToDisplayDate, displayDateToISO } from "@quirksandall/shared";
 import { uploadPetPhoto } from "../../lib/uploadPhoto";
 
@@ -152,7 +152,7 @@ export default function EditPet() {
   const age = dobISO ? computeAge(dobISO, dobIsEstimated) : null;
 
   return (
-    <EditShell title="Pet basics" onSave={save} saving={saving} loading={loading}>
+    <EditShell title="Pet basics" onSave={save} saving={saving} loading={loading} hideSave>
       {/* Photo */}
       <TouchableOpacity onPress={pickPhoto} style={{ alignSelf: "center", marginBottom: 24 }}>
         {photoUri ? (
@@ -226,7 +226,9 @@ export default function EditPet() {
 
         <Card>
           <Eyebrow>Weight</Eyebrow>
-          <Input className="mt-1" placeholder="28 kg" value={weight} onChangeText={setWeight} />
+          <View style={{ marginTop: 4 }}>
+            <WeightInput value={weight} onChangeText={setWeight} />
+          </View>
         </Card>
 
         <Card>
@@ -242,10 +244,22 @@ export default function EditPet() {
           </Text>
         </Card>
 
-        {/* Danger zone */}
+        {/* Save changes — full-width at the bottom */}
+        <TouchableOpacity
+          onPress={save}
+          disabled={saving}
+          activeOpacity={0.85}
+          style={{ marginTop: 24, height: 52, borderRadius: 12, backgroundColor: "#510000", alignItems: "center", justifyContent: "center", opacity: saving ? 0.5 : 1 }}
+        >
+          <Text style={{ color: "#F8ECEE", fontSize: 15, fontFamily: "Satoshi-Medium", letterSpacing: 0.3 }}>
+            {saving ? "Saving…" : "Save changes"}
+          </Text>
+        </TouchableOpacity>
+
+        {/* Delete link beneath */}
         <TouchableOpacity
           onPress={() => setShowDelete(true)}
-          style={{ marginTop: 20, height: 46, alignItems: "center", justifyContent: "center" }}
+          style={{ marginTop: 14, alignItems: "center", paddingVertical: 6 }}
         >
           <Text style={{ color: colors.textMuted, fontSize: 13, fontFamily: "Satoshi-Medium" }}>
             Delete {name || "this pet"}'s profile
