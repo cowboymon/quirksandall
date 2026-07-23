@@ -29,7 +29,7 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
       pet_behavior(commands, quirks_triggers, escape_risk, scared, no_go, flight_risk, temperament_summary),
       pet_medical(allergies, conditions, medications),
       pet_routine(feeding, walks, sleep, bathroom_habits),
-      pet_vet_info(primary_vet, emergency_vet, insurance)
+      pet_vet_info(primary_vet, emergency_vet, insurance, vet_pre_auth)
     `)
     .eq("id", link.pet_id)
     .single();
@@ -96,6 +96,7 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
             insurance: vetInfo?.insurance ?? {},
             ownerContact: { name: owner.name ?? "", phone: owner.primary_phone ?? "" },
             backupContacts: owner.backup_contacts ?? [],
+            vetPreAuth: vetInfo?.vet_pre_auth ?? false,
           },
         }),
     lastUpdatedAt: pet.updated_at ?? pet.dob,
