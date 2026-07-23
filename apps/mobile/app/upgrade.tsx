@@ -7,8 +7,9 @@ import { purchasePro, restorePurchases } from "../lib/purchases";
 import { colors } from "@quirksandall/shared";
 
 const FEATURES = [
-  { label: "Routine visible to sitters", sub: "Feeding, walks, sleep, bathroom" },
-  { label: "Medications & conditions", sub: "With location stored" },
+  { label: "The full routine", sub: "Walks, sleep and bathroom — not just feeding" },
+  { label: "Medical needs", sub: "Conditions & medications, with where they're stored" },
+  { label: "The softer stuff", sub: "Temperament, fears and no-go zones" },
   { label: "Unlimited pets", sub: "Add as many as you need" },
   { label: "Rotate share links", sub: "Old token invalidated instantly" },
   { label: "Push nudges", sub: "Trick-reinforcement reminders" },
@@ -26,7 +27,7 @@ export default function Upgrade() {
         await supabase.from("owners").update({ purchase_status: "paid" }).eq("id", user!.id);
         Alert.alert(
           "Unlocked.",
-          "Routine's saved. Sitters can see the full day now.",
+          "The full picture is live now — routines, medical, and the softer stuff.",
           [{ text: "Got it", onPress: () => router.back() }]
         );
       }
@@ -64,8 +65,11 @@ export default function Upgrade() {
             <Text style={{ color: "rgba(248,236,238,0.5)", fontSize: 13, fontFamily: "Satoshi-Medium" }}>‹ Back</Text>
           </TouchableOpacity>
 
-          <Text style={{ fontFamily: "Tanker", fontSize: 42, lineHeight: 42, color: "#F8ECEE", marginBottom: 24 }}>
-            Unlock it so sitters get the full day.
+          <Text style={{ fontFamily: "Tanker", fontSize: 42, lineHeight: 42, color: "#F8ECEE", marginBottom: 14 }}>
+            Unlock the full picture.
+          </Text>
+          <Text style={{ color: "rgba(248,236,238,0.7)", fontSize: 15, lineHeight: 22, fontFamily: "Satoshi-Light", marginBottom: 24 }}>
+            Routines, medical needs, and the softer stuff that makes the handoff feel less like a stranger and more like you.
           </Text>
 
           {/* Price pill */}

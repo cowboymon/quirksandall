@@ -1,7 +1,7 @@
 // Screen 4 — Routine & medical
 import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert } from "react-native";
 import { router } from "expo-router";
-import { Headline, Textarea, InlineNote, PrimaryButton, SkipButton, ProgressDots, Eyebrow } from "../../components/ui";
+import { Headline, Textarea, InlineNote, PrimaryButton, SkipButton, ProgressDots, Eyebrow, TimeInput } from "../../components/ui";
 import { Underlined } from "../../components/Underlined";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { useActivePetStore } from "../../stores/activePet";
@@ -30,7 +30,7 @@ function MealBlock({ label, time, amount, onTime, onAmount, divider }: {
   return (
     <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8, borderBottomWidth: divider ? 1 : 0, borderBottomColor: colors.border }}>
       <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.textDark }}>{label}</Text>
-      <TextInput style={mealInput} placeholder="Time — e.g. 7:30am" placeholderTextColor={colors.dashedBorder} value={time} onChangeText={onTime} />
+      <TimeInput style={mealInput} placeholder="Time — HH:MM" value={time} onChangeText={onTime} />
       <TextInput style={mealInput} placeholder="Amount & brand" placeholderTextColor={colors.dashedBorder} value={amount} onChangeText={onAmount} />
     </View>
   );

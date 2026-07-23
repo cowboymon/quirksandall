@@ -5,7 +5,7 @@ import { router } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
-import { Input, Eyebrow, Card, InlineNote } from "../../components/ui";
+import { Input, Eyebrow, Card, InlineNote, TimeInput } from "../../components/ui";
 import { colors } from "@quirksandall/shared";
 
 const mealInput = {
@@ -21,7 +21,7 @@ function RoutineMeal({ label, time, amount, onTime, onAmount, divider }: {
   return (
     <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8, borderBottomWidth: divider ? 1 : 0, borderBottomColor: colors.border }}>
       <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.textDark }}>{label}</Text>
-      <TextInput style={mealInput} placeholder="Time — e.g. 7:30am" placeholderTextColor={colors.dashedBorder} value={time} onChangeText={onTime} />
+      <TimeInput style={mealInput} placeholder="Time — HH:MM" value={time} onChangeText={onTime} />
       <TextInput style={mealInput} placeholder="Amount & brand" placeholderTextColor={colors.dashedBorder} value={amount} onChangeText={onAmount} />
     </View>
   );

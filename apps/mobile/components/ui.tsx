@@ -107,6 +107,30 @@ export function DateInput({ value, onChangeText, style, ...props }: TextInputPro
   );
 }
 
+// Masked 24-hour time field (HH:MM). Digits only; auto-inserts the colon and
+// clamps hours to 23 / minutes to 59. Stores the "HH:MM" string.
+export function TimeInput({ value, onChangeText, style, placeholder, ...props }: TextInputProps & { onChangeText: (v: string) => void }) {
+  const handle = (raw: string) => {
+    const d = raw.replace(/\D/g, "").slice(0, 4);
+    let hh = d.slice(0, 2);
+    let mm = d.slice(2, 4);
+    if (hh.length === 2) hh = String(Math.min(parseInt(hh, 10), 23)).padStart(2, "0");
+    if (mm.length === 2) mm = String(Math.min(parseInt(mm, 10), 59)).padStart(2, "0");
+    onChangeText(d.length > 2 ? `${hh}:${mm}` : hh);
+  };
+  return (
+    <Input
+      value={value}
+      onChangeText={handle}
+      placeholder={placeholder ?? "HH:MM"}
+      keyboardType="number-pad"
+      maxLength={5}
+      style={style}
+      {...props}
+    />
+  );
+}
+
 export function PrimaryButton({
   label,
   onPress,
