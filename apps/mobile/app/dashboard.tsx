@@ -94,10 +94,10 @@ export default function Dashboard() {
       firstCommand: behavior?.commands?.[0]?.word ?? null,
       isPaid,
       sections: [
-        { label: "Pet basics", detail: `${pet.breed ?? ""}${pet.breed && pet.sex ? " · " : ""}${pet.sex ?? ""}`.trim() || "Name, breed, photo", status: pet.breed ? "done" : "empty", route: "/edit/pet" },
-        { label: "Emergency contacts", detail: "Vet, emergency vet, backup", status: "done", route: "/edit/emergency" },
-        { label: "Commands", detail: `${commandCount} commands logged`, status: commandCount ? "done" : "empty", route: "/edit/behavior" },
-        { label: "Quirks & triggers", detail: "Escape risk, fears, off-limits zones", status: "done", route: "/edit/behavior" },
+        { label: "Pet Basics", detail: `${pet.breed ?? ""}${pet.breed && pet.sex ? " · " : ""}${pet.sex ?? ""}`.trim() || "Name, breed, photo", status: pet.breed ? "done" : "empty", route: "/edit/pet" },
+        { label: "Emergency Contacts", detail: "Vet, emergency vet, backup", status: "done", route: "/edit/emergency" },
+        { label: "Commands", detail: commandCount ? `${commandCount} command${commandCount === 1 ? "" : "s"} saved` : "None saved yet", status: commandCount ? "done" : "empty", route: "/edit/behavior" },
+        { label: "Quirks & Triggers", detail: "Escape risk, fears, off-limits zones", status: "done", route: "/edit/behavior" },
         { label: "Routine", detail: isPaid ? "Shown to sitters" : "Saved — not shown to sitters yet", status: "saved", route: "/edit/routine" },
         { label: "Medical", detail: isPaid ? "Shown to sitters" : "Saved — not shown to sitters yet", status: "saved", route: "/edit/routine" },
       ],
@@ -255,15 +255,24 @@ export default function Dashboard() {
           </View>
         </View>
 
-        {/* Upgrade nudge */}
+        {/* Upgrade nudge — soft card with lock chip */}
         {!isPaid && (
-          <View style={{ paddingHorizontal: 2 }}>
-            <TouchableOpacity onPress={() => router.push("/upgrade")}>
-              <Text style={{ color: colors.primary, fontSize: 11, fontFamily: "Satoshi-Medium" }}>
-                Routine's saved. Unlock it so sitters get the full day. →
-              </Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity onPress={() => router.push("/upgrade")} activeOpacity={0.85}>
+            <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 12, backgroundColor: colors.secondary, borderWidth: 1, borderColor: "rgba(184,58,82,0.25)", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14 }}>
+              <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: "rgba(184,58,82,0.15)", alignItems: "center", justifyContent: "center", marginTop: 1 }}>
+                <Ionicons name="lock-closed-outline" size={14} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium", lineHeight: 19 }}>
+                  Routine &amp; medical are saved, not shared yet.
+                </Text>
+                <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 3, fontFamily: "Satoshi-Light" }}>
+                  Unlock so sitters get {pet.name}'s full day — $7.99, once.
+                </Text>
+                <Text style={{ color: colors.primary, fontSize: 12, marginTop: 6, fontFamily: "Satoshi-Medium" }}>Unlock full access →</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
         )}
 
         {/* Command freshness nudge — dismissible */}

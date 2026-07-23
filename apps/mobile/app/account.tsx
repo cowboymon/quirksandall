@@ -7,7 +7,7 @@ import { colors } from "@quirksandall/shared";
 import { Eyebrow, Input } from "../components/ui";
 import EditShell from "../components/EditShell";
 
-const SUPPORT_EMAIL = "hello@itshypothetical.com";
+const SUPPORT_EMAIL = "quirksandall@itshypothetical.com";
 
 export default function Account() {
   const [name, setName] = useState("");

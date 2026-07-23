@@ -61,7 +61,7 @@ export default function Upgrade() {
         {/* ── Dark hero ─────────────────────────────── */}
         <View style={{ paddingHorizontal: 24, paddingTop: 60, paddingBottom: 36 }}>
           <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 36 }}>
-            <Text style={{ color: "rgba(248,236,238,0.5)", fontSize: 13, fontFamily: "Satoshi-Medium" }}>← Back</Text>
+            <Text style={{ color: "rgba(248,236,238,0.5)", fontSize: 13, fontFamily: "Satoshi-Medium" }}>‹ Back</Text>
           </TouchableOpacity>
 
           <Text style={{ fontFamily: "Tanker", fontSize: 42, lineHeight: 42, color: "#F8ECEE", marginBottom: 24 }}>

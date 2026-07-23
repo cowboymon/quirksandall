@@ -33,7 +33,6 @@ const BLUSH = "#F8ECEE";
 const CRIMSON = "#510000";
 const CRIMSON_DEEP = "#3A0000";
 const ROSE = "#B83A52";
-const AMBER = "#A07848";
 const MUTED = "#987080";
 const WATERMARK_TEXT = "Made with Quirks & All · quirksandall.itshypothetical.com";
 
@@ -107,7 +106,7 @@ function CreamInfoBand({
             paddingLeft: 16 * scale,
           }}
         >
-          <span style={{ ...eyebrowStyle(8 * scale, MUTED), marginBottom: 3 * scale }}>Look for</span>
+          <span style={{ ...eyebrowStyle(8 * scale, MUTED), marginBottom: 3 * scale }}>Wearing</span>
           <span style={{ color: CRIMSON, fontSize: 10.5 * scale, fontFamily: "Satoshi", lineHeight: 1.4 }}>
             {d.descriptionForId}
           </span>
@@ -196,7 +195,6 @@ export function PosterTemplate(d: PosterData) {
         <span style={{ fontFamily: "Tanker", fontSize: 180, lineHeight: 1, color: BLUSH, letterSpacing: "-0.01em" }}>
           MISSING
         </span>
-        <span style={{ ...eyebrowStyle(28, "rgba(248,236,238,0.6)"), marginTop: 10 }}>Please help us find</span>
       </div>
 
       {/* Photo — full bleed */}
@@ -216,7 +214,7 @@ export function PosterTemplate(d: PosterData) {
       <div style={{ backgroundColor: BLUSH, padding: "40px 48px", display: "flex", flexDirection: "column", gap: 28, flexShrink: 0 }}>
         {d.descriptionForId ? (
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <span style={{ ...eyebrowStyle(22, CRIMSON), letterSpacing: "0.15em", marginBottom: 8 }}>What to look for</span>
+            <span style={{ ...eyebrowStyle(22, CRIMSON), letterSpacing: "0.15em", marginBottom: 8 }}>Wearing</span>
             <span style={{ color: CRIMSON, fontSize: 30, lineHeight: 1.5 }}>{d.descriptionForId}</span>
           </div>
         ) : null}
@@ -298,9 +296,7 @@ export function SquareTileTemplate(d: PosterData) {
       </div>
 
       {/* Amber divider */}
-      <div style={{ height: 9, backgroundColor: AMBER, display: "flex", flexShrink: 0 }} />
-
-      <CreamInfoBand d={d} scale={scale} padding={`${10 * scale}px ${16 * scale}px`} />
+<CreamInfoBand d={d} scale={scale} padding={`${10 * scale}px ${16 * scale}px`} />
 
       {/* No watermark on 1:1 — too tight; kept to poster + 9:16 only */}
       <PhoneFooter d={d} scale={scale} padding={`${10 * scale}px ${16 * scale}px ${8 * scale}px`} grow />
@@ -350,9 +346,7 @@ export function PortraitTileTemplate(d: PosterData) {
         </div>
       </div>
 
-      <div style={{ height: 9, backgroundColor: AMBER, display: "flex", flexShrink: 0 }} />
-
-      <CreamInfoBand d={d} scale={scale} padding={`${12 * scale}px ${18 * scale}px`} />
+<CreamInfoBand d={d} scale={scale} padding={`${12 * scale}px ${18 * scale}px`} />
 
       {/* No watermark on 4:5 — too tight; kept to poster + 9:16 only */}
       <PhoneFooter d={d} scale={scale} padding={`${10 * scale}px ${18 * scale}px ${6 * scale}px`} grow />
@@ -400,14 +394,10 @@ export function StoryTileTemplate(d: PosterData) {
         ) : null}
       </div>
 
-      <div style={{ height: 9, backgroundColor: AMBER, display: "flex", flexShrink: 0 }} />
-
-      {/* Photo — dominant middle section */}
+{/* Photo — dominant middle section */}
       <Photo uri={d.photoDataUri} style={{ width: "100%", flex: 1, minHeight: 0 }} />
 
-      <div style={{ height: 9, backgroundColor: AMBER, display: "flex", flexShrink: 0 }} />
-
-      <CreamInfoBand d={d} scale={scale} padding={`${16 * scale}px ${24 * scale}px`} />
+<CreamInfoBand d={d} scale={scale} padding={`${16 * scale}px ${24 * scale}px`} />
 
       <PhoneFooter
         d={d}

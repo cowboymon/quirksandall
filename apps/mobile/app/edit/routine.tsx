@@ -147,6 +147,9 @@ export default function EditRoutine() {
         </View>
       )}
 
+      {/* Routine section title */}
+      <Text style={{ fontFamily: "Tanker", fontSize: 24, lineHeight: 28, color: colors.textDark, marginBottom: 12 }}>Routine</Text>
+
       {/* Feeding — meal blocks on blush, matching the prototype */}
       <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 10, overflow: "hidden", marginBottom: 12 }}>
         <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: colors.border, flexDirection: "row", alignItems: "center" }}>
@@ -217,6 +220,9 @@ export default function EditRoutine() {
           style={{ height: 72, paddingTop: 10, textAlignVertical: "top" }}
         />
       </Card>
+
+      {/* Medical section title */}
+      <Text style={{ fontFamily: "Tanker", fontSize: 24, lineHeight: 28, color: colors.textDark, marginTop: 8, marginBottom: 12 }}>Medical</Text>
 
       {/* Allergies — always visible, free */}
       <Card style={{ marginBottom: 12, borderColor: colors.success }}>

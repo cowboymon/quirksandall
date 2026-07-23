@@ -49,6 +49,35 @@ export function displayDateToISO(s?: string | null): string | null {
   return `${yyyy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
 }
 
+/** Trim a name and render its possessive form ("Olive " → "Olive's"). */
+export function possessive(name?: string | null): string {
+  const n = (name ?? "").trim();
+  if (!n) return "";
+  return n.endsWith("s") ? `${n}'` : `${n}'s`;
+}
+
+/**
+ * Format an Australian phone number for display with readable spacing.
+ * Mobile → 0424 002 474 · Landline → (02) 6294 1228 · Toll-free → 1800 678 387.
+ * Falls back to the original string when it doesn't look like an AU number.
+ */
+export function formatPhone(value?: string | null): string {
+  if (!value) return "";
+  const d = value.replace(/[^\d]/g, "");
+  if (d.length === 10 && d.startsWith("04")) return `${d.slice(0, 4)} ${d.slice(4, 7)} ${d.slice(7)}`; // mobile
+  if (d.length === 10 && (d.startsWith("1800") || d.startsWith("1300"))) return `${d.slice(0, 4)} ${d.slice(4, 7)} ${d.slice(7)}`; // toll-free / 1300
+  if (d.length === 10 && d.startsWith("0")) return `(${d.slice(0, 2)}) ${d.slice(2, 6)} ${d.slice(6)}`; // landline
+  if (d.length === 6 && d.startsWith("13")) return `${d.slice(0, 2)} ${d.slice(2, 4)} ${d.slice(4)}`; // 13 XX XX
+  return value.trim();
+}
+
+/** Prefix a vet's name with "Dr." when the user didn't. */
+export function formatVetName(value?: string | null): string {
+  const n = (value ?? "").trim();
+  if (!n) return "";
+  return /^(dr\.?|doctor|prof\.?|professor)\b/i.test(n) ? n : `Dr. ${n}`;
+}
+
 /**
  * Sentence-case the first character of a string. Used to force sentence case on
  * free-text fields regardless of the device keyboard's auto-capitalize setting.

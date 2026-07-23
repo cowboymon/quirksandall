@@ -28,12 +28,11 @@ export default function EditEmergency() {
   const [backupPhone, setBackupPhone] = useState("");
   const [backupConsent, setBackupConsent] = useState(false);
   const [backup2Name, setBackup2Name] = useState("");
+  const [backup2Rel, setBackup2Rel] = useState("");
   const [backup2Phone, setBackup2Phone] = useState("");
   const [backup2Consent, setBackup2Consent] = useState(false);
   const [showSecondBackup, setShowSecondBackup] = useState(false);
   const [vetPreAuth, setVetPreAuth] = useState(false);
-  const [ownerName, setOwnerName] = useState("");
-  const [ownerPhone, setOwnerPhone] = useState("");
   const [saving, setSaving] = useState(false);
   const [showPIN, setShowPIN] = useState(false);
 
@@ -42,7 +41,7 @@ export default function EditEmergency() {
     (async () => {
       const [{ data: vet }, { data: owner }] = await Promise.all([
         supabase.from("pet_vet_info").select("*").eq("pet_id", petId).single(),
-        supabase.from("owners").select("name, primary_phone, backup_contacts").eq("id", (await supabase.auth.getUser()).data.user!.id).single(),
+        supabase.from("owners").select("backup_contacts").eq("id", (await supabase.auth.getUser()).data.user!.id).single(),
       ]);
       if (vet) {
         setVetContactName(vet.primary_vet?.contact_name ?? "");
@@ -57,8 +56,6 @@ export default function EditEmergency() {
         setVetPreAuth(vet.vet_pre_auth ?? false);
       }
       if (owner) {
-        setOwnerName(owner.name ?? "");
-        setOwnerPhone(owner.primary_phone ?? "");
         const backup = owner.backup_contacts?.[0];
         if (backup) {
           setBackupName(backup.name ?? "");
@@ -69,6 +66,7 @@ export default function EditEmergency() {
         const backup2 = owner.backup_contacts?.[1];
         if (backup2) {
           setBackup2Name(backup2.name ?? "");
+          setBackup2Rel(backup2.relationship ?? "");
           setBackup2Phone(backup2.phone ?? "");
           setBackup2Consent(backup2.consent_to_share ?? false);
           setShowSecondBackup(true);
@@ -91,11 +89,9 @@ export default function EditEmergency() {
           vet_pre_auth: vetPreAuth,
         }, { onConflict: "pet_id" }),
         supabase.from("owners").update({
-          name: ownerName,
-          primary_phone: ownerPhone,
           backup_contacts: [
             { name: backupName, relationship: backupRel, phone: backupPhone, consent_to_share: backupConsent },
-            ...(backup2Name || backup2Phone ? [{ name: backup2Name, relationship: "", phone: backup2Phone, consent_to_share: backup2Consent }] : []),
+            ...(backup2Name || backup2Phone ? [{ name: backup2Name, relationship: backup2Rel, phone: backup2Phone, consent_to_share: backup2Consent }] : []),
           ],
         }).eq("id", user!.id),
       ]);
@@ -115,14 +111,6 @@ export default function EditEmergency() {
       </View>
 
       <View style={{ gap: 12 }}>
-        <Card>
-          <Eyebrow bold>Your contact</Eyebrow>
-          <View style={{ gap: 8, marginTop: 12 }}>
-            <LabeledInput label="Name" placeholder="Your name" value={ownerName} onChangeText={setOwnerName} />
-            <LabeledInput label="Phone" placeholder="Your phone" keyboardType="phone-pad" value={ownerPhone} onChangeText={setOwnerPhone} />
-          </View>
-        </Card>
-
         <Card>
           <Eyebrow bold>Vet</Eyebrow>
           <View style={{ gap: 8, marginTop: 12 }}>
@@ -192,7 +180,8 @@ export default function EditEmergency() {
           <Card>
             <Eyebrow bold>Second backup contact</Eyebrow>
             <View style={{ gap: 8, marginTop: 12 }}>
-              <LabeledInput label="Name & relationship" placeholder="Name & relationship" value={backup2Name} onChangeText={setBackup2Name} />
+              <LabeledInput label="Name" placeholder="Name" value={backup2Name} onChangeText={setBackup2Name} />
+              <LabeledInput label="Relationship" placeholder="e.g. neighbour" value={backup2Rel} onChangeText={setBackup2Rel} />
               <LabeledInput label="Phone" placeholder="Phone" keyboardType="phone-pad" value={backup2Phone} onChangeText={setBackup2Phone} />
             </View>
             <CheckboxRow
