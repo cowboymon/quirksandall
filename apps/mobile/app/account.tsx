@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
+import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { router } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { checkEntitlement, purchasePro, restorePurchases } from "../lib/purchases";
 import { colors } from "@quirksandall/shared";
 import { Eyebrow, Input } from "../components/ui";
+import EditShell from "../components/EditShell";
 
 const SUPPORT_EMAIL = "hello@itshypothetical.com";
 
@@ -83,18 +84,12 @@ export default function Account() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerStyle={{ paddingTop: 52, paddingBottom: 40, paddingHorizontal: 24 }}>
-      <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 28 }}>
-        <Text style={{ color: colors.textMuted, fontSize: 14 }}>← Dashboard</Text>
-      </TouchableOpacity>
-
-      <Eyebrow>Account</Eyebrow>
-      <Text style={{ fontFamily: "Tanker", fontSize: 34, lineHeight: 40, color: colors.textDark, marginTop: 6 }}>Your details.</Text>
-      <Text style={{ color: colors.textMuted, fontSize: 14, marginTop: 8, lineHeight: 21, fontFamily: "Satoshi-Light" }}>
+    <EditShell title="Your details" onSave={save} saving={saving}>
+      <Text style={{ color: colors.textMuted, fontSize: 14, marginBottom: 20, lineHeight: 21, fontFamily: "Satoshi-Light" }}>
         Shown on missing posters and used to recover your profile. Never shared with sitters.
       </Text>
 
-      <View style={{ marginTop: 20, gap: 16 }}>
+      <View style={{ gap: 16 }}>
         <View>
           <Eyebrow>Your name</Eyebrow>
           <Input style={{ marginTop: 4 }} placeholder="e.g. Jamie Nguyen" value={name} onChangeText={setName} />
@@ -148,13 +143,9 @@ export default function Account() {
         </View>
       )}
 
-      <TouchableOpacity onPress={save} disabled={saving} style={{ marginTop: 24, height: 48, borderRadius: 10, backgroundColor: colors.button, alignItems: "center", justifyContent: "center" }}>
-        {saving ? <ActivityIndicator color={colors.buttonText} /> : <Text style={{ color: colors.buttonText, fontFamily: "Satoshi-Medium", fontSize: 15 }}>Save</Text>}
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={signOut} style={{ marginTop: 20, alignItems: "center" }}>
+      <TouchableOpacity onPress={signOut} style={{ marginTop: 24, alignItems: "center" }}>
         <Text style={{ color: colors.danger, fontSize: 14 }}>Sign out</Text>
       </TouchableOpacity>
-    </ScrollView>
+    </EditShell>
   );
 }

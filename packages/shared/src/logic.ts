@@ -50,6 +50,14 @@ export function displayDateToISO(s?: string | null): string | null {
 }
 
 /**
+ * Sentence-case the first character of a string. Used to force sentence case on
+ * free-text fields regardless of the device keyboard's auto-capitalize setting.
+ */
+export function capitalizeFirst(s: string): string {
+  return s.length ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+}
+
+/**
  * Format a weight value for display. Stored values are usually a bare number
  * ("15"); append " kg" unless the value already carries a unit/letter.
  */

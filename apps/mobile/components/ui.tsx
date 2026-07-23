@@ -2,7 +2,15 @@
 // Mirrors the prototype's primitives.tsx (fonts, buttons, dots, inputs).
 import { useState } from "react";
 import { Text, TouchableOpacity, View, TextInput, Modal, type TextInputProps, type ViewProps } from "react-native";
-import { colors, radius } from "@quirksandall/shared";
+import { colors, radius, capitalizeFirst } from "@quirksandall/shared";
+
+// Keyboard types where sentence-casing the first char would be wrong.
+const NON_TEXT_KEYBOARDS = ["numeric", "number-pad", "decimal-pad", "phone-pad", "email-address"];
+function sentenceCased(keyboardType: TextInputProps["keyboardType"], onChangeText?: (t: string) => void) {
+  if (!onChangeText) return undefined;
+  if (keyboardType && NON_TEXT_KEYBOARDS.includes(keyboardType)) return onChangeText;
+  return (t: string) => onChangeText(capitalizeFirst(t));
+}
 
 export function Headline({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
@@ -47,6 +55,7 @@ export function FieldLabel({ children }: { children: React.ReactNode }) {
 export function LabeledInput({
   label,
   style,
+  onChangeText,
   ...props
 }: TextInputProps & { label: string }) {
   const [focused, setFocused] = useState(false);
@@ -54,6 +63,8 @@ export function LabeledInput({
     <View>
       <FieldLabel>{label}</FieldLabel>
       <TextInput
+        autoCapitalize="sentences"
+        onChangeText={sentenceCased(props.keyboardType, onChangeText)}
         style={[
           {
             minHeight: 40, borderRadius: 8, borderWidth: 1,
@@ -168,12 +179,14 @@ export function Card({ children, style, ...props }: ViewProps) {
 
 // Single-line input. `filled` uses the blush surface the prototype uses inside
 // emergency/routine cards; default is white with a rose focus border.
-export function Input({ style, filled, onFocus, onBlur, ...props }: TextInputProps & { filled?: boolean }) {
+export function Input({ style, filled, onFocus, onBlur, onChangeText, ...props }: TextInputProps & { filled?: boolean }) {
   const [focused, setFocused] = useState(false);
   return (
     <TextInput
-      // Default to sentence-case entry; callers can override (email, etc.).
+      // Sentence-case the first char programmatically so it works regardless of
+      // the device's keyboard auto-capitalize setting (text fields only).
       autoCapitalize="sentences"
+      onChangeText={sentenceCased(props.keyboardType, onChangeText)}
       style={[
         {
           minHeight: 46,
@@ -229,13 +242,14 @@ export function WeightInput({ value, onChangeText, style }: { value: string; onC
 }
 
 // Multiline variant for quirks / walks / notes.
-export function Textarea({ style, filled, onFocus, onBlur, ...props }: TextInputProps & { filled?: boolean }) {
+export function Textarea({ style, filled, onFocus, onBlur, onChangeText, ...props }: TextInputProps & { filled?: boolean }) {
   const [focused, setFocused] = useState(false);
   return (
     <TextInput
       multiline
       textAlignVertical="top"
       autoCapitalize="sentences"
+      onChangeText={sentenceCased(props.keyboardType, onChangeText)}
       style={[
         {
           minHeight: 68,

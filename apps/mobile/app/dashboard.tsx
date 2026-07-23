@@ -75,7 +75,8 @@ export default function Dashboard() {
         .from("pets").select("*").eq("owner_id", user.id).eq("status", "active").order("created_at").limit(1).maybeSingle();
       pet = data;
     }
-    if (!pet) { router.replace("/onboarding/step1"); return; }
+    // New user with no pets → start onboarding at the owner-details step.
+    if (!pet) { router.replace("/onboarding/owner"); return; }
 
     const [links, { data: behavior }] = await Promise.all([
       listLinks(pet.id),

@@ -14,7 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabase";
 import { Eyebrow, Input, DateInput } from "../components/ui";
 import { useActivePetStore } from "../stores/activePet";
-import { colors, computeAge, formatWeight, isoToDisplayDate, displayDateToISO } from "@quirksandall/shared";
+import { colors, computeAge, formatWeight, isoToDisplayDate, displayDateToISO, capitalizeFirst } from "@quirksandall/shared";
 
 import { WEB_URL } from "../lib/config";
 
@@ -351,7 +351,7 @@ export default function MissingPoster() {
         <Eyebrow>What did they have on when you last saw them?</Eyebrow>
         <TextInput
           value={whatToLookFor}
-          onChangeText={setWhatToLookFor}
+          onChangeText={(t) => setWhatToLookFor(capitalizeFirst(t))}
           placeholder="Grey knit jumper, pink bedazzled leash, red collar underneath."
           placeholderTextColor={colors.textMuted}
           multiline
