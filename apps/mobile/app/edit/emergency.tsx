@@ -4,7 +4,7 @@ import { View, Text, Alert, TouchableOpacity } from "react-native";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
-import { LabeledInput, Eyebrow, Card } from "../../components/ui";
+import { LabeledInput, Eyebrow, Card, InlineNote } from "../../components/ui";
 import { LabeledPlacesInput } from "../../components/PlacesInput";
 import CheckboxRow from "../../components/CheckboxRow";
 import PINEditor from "../../components/PINEditor";
@@ -110,19 +110,8 @@ export default function EditEmergency() {
   return (
     <EditShell title="Emergency contacts" onSave={save} saving={saving} loading={loading}>
       {/* Voice carve-out reminder — plain register for this section */}
-      <View
-        style={{
-          backgroundColor: "#FFFFFF",
-          borderRadius: 10,
-          borderLeftWidth: 3,
-          borderLeftColor: colors.caution,
-          padding: 12,
-          marginBottom: 16,
-        }}
-      >
-        <Text style={{ color: colors.textMuted, fontSize: 12, lineHeight: 17 }}>
-          Recipients see this block only after entering your PIN. No personality here — plain labels, clear numbers.
-        </Text>
+      <View style={{ marginBottom: 16 }}>
+        <InlineNote>Recipients see this block only after entering your PIN. No personality here — plain labels, clear numbers.</InlineNote>
       </View>
 
       <View style={{ gap: 12 }}>
