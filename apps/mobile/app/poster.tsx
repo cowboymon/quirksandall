@@ -318,14 +318,6 @@ export default function MissingPoster() {
         One tap. Everywhere it needs to be. Here if you ever need it.
       </Text>
 
-      {!hasPhoto && (
-        <View style={{ backgroundColor: "rgba(184,58,82,0.1)", borderWidth: 1, borderColor: "rgba(184,58,82,0.3)", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, marginBottom: 16 }}>
-          <Text style={{ color: colors.primary, fontSize: 14, fontFamily: "Satoshi-Medium" }}>
-            {profile.name} needs a photo for the poster. Add one in the profile first.
-          </Text>
-        </View>
-      )}
-
       {/* Pre-filled snapshot */}
       <View style={{ backgroundColor: colors.cardBg, borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden", marginBottom: 16 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.border }}>

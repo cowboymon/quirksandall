@@ -13,6 +13,9 @@ export default function Step2() {
 
   return (
     <ScrollView className="flex-1 bg-background" keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 24, paddingTop: 60 }}>
+      <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 16 }}>
+        <Text style={{ color: colors.textMuted, fontSize: 14 }}>‹ Back</Text>
+      </TouchableOpacity>
       <ProgressDots total={4} current={2} />
 
       <View style={{ marginTop: 20, marginBottom: 6 }}><Eyebrow>Step 2 of 4</Eyebrow></View>
