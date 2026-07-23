@@ -21,7 +21,7 @@ export default function CheckboxRow({ label, checked, onToggle }: Props) {
         }}
       >
         {checked && (
-          <Text style={{ color: "#F8ECEE", fontSize: 12, fontWeight: "700" }}>✓</Text>
+          <Text style={{ color: "#F8ECEE", fontSize: 12, fontFamily: "Satoshi-Bold" }}>✓</Text>
         )}
       </View>
       <Text style={{ flex: 1, color: colors.textMuted, fontSize: 13, lineHeight: 18 }}>{label}</Text>

@@ -133,7 +133,7 @@ export default function EditRoutine() {
   const PaidBadge = () =>
     !isPaid ? (
       <TouchableOpacity onPress={() => router.push("/upgrade")} style={{ marginLeft: 8 }}>
-        <Text style={{ fontSize: 11, color: colors.caution, fontWeight: "600" }}>🔒 Paid</Text>
+        <Text style={{ fontSize: 11, color: colors.caution, fontFamily: "Satoshi-Medium" }}>🔒 Paid</Text>
       </TouchableOpacity>
     ) : null;
 
@@ -153,7 +153,7 @@ export default function EditRoutine() {
           <Text style={{ color: colors.textMuted, fontSize: 12, lineHeight: 17 }}>
             Routine's saved. Sitters won't see it until you unlock.{" "}
             <Text
-              style={{ color: colors.accent, fontWeight: "600" }}
+              style={{ color: colors.accent, fontFamily: "Satoshi-Medium" }}
               onPress={() => router.push("/upgrade")}
             >
               Unlock for $7.99 →
@@ -237,7 +237,7 @@ export default function EditRoutine() {
       <Card style={{ marginBottom: 12, borderColor: colors.success }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <Eyebrow>Allergies</Eyebrow>
-          <Text style={{ fontSize: 11, color: colors.success, fontWeight: "600" }}>Always shown</Text>
+          <Text style={{ fontSize: 11, color: colors.success, fontFamily: "Satoshi-Medium" }}>Always shown</Text>
         </View>
         <Input
           className="mt-2"

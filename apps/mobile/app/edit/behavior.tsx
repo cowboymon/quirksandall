@@ -168,7 +168,7 @@ export default function EditBehavior() {
           <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
             <Eyebrow>Flight risk if a door's left open?</Eyebrow>
             {flightRisk.trim() && (
-              <Text style={{ fontSize: 11, color: colors.caution, fontWeight: "600" }}>⚠ Flagged</Text>
+              <Text style={{ fontSize: 11, color: colors.caution, fontFamily: "Satoshi-Medium" }}>⚠ Flagged</Text>
             )}
           </View>
           <Input

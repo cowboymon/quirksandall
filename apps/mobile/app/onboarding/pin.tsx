@@ -42,7 +42,7 @@ export default function PINSetup() {
       <View style={{ backgroundColor: colors.cardDark, borderRadius: 10, padding: 12, marginBottom: 24 }}>
         <Text style={{ color: "rgba(248,236,238,0.8)", fontSize: 12, lineHeight: 18 }}>
           The link's the door. The PIN's the key.{" "}
-          <Text style={{ color: "#F8ECEE", fontWeight: "600" }}>Send them separately.</Text>
+          <Text style={{ color: "#F8ECEE", fontFamily: "Satoshi-Medium" }}>Send them separately.</Text>
         </Text>
       </View>
 

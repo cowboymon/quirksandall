@@ -96,7 +96,7 @@ export default function QRModal({ visible, url, petName, onClose }: Props) {
             justifyContent: "center",
           }}
         >
-          <Text style={{ color: "#F8ECEE", fontWeight: "600", fontSize: 15 }}>
+          <Text style={{ color: "#F8ECEE", fontFamily: "Satoshi-Medium", fontSize: 15 }}>
             Share link
           </Text>
         </TouchableOpacity>

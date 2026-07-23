@@ -209,7 +209,7 @@ export default function EditPet() {
                 alignItems: "center", justifyContent: "center",
               }}
             >
-              {dobIsEstimated && <Text style={{ color: "#F8ECEE", fontSize: 11, fontWeight: "700" }}>✓</Text>}
+              {dobIsEstimated && <Text style={{ color: "#F8ECEE", fontSize: 11, fontFamily: "Satoshi-Bold" }}>✓</Text>}
             </View>
             <Text style={{ color: colors.textMuted, fontSize: 13 }}>
               Don't know exactly — best guess
