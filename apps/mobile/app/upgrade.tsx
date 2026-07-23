@@ -1,16 +1,17 @@
 import { useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabase";
 import { purchasePro, restorePurchases } from "../lib/purchases";
 import { colors } from "@quirksandall/shared";
 
 const FEATURES = [
-  { label: "Routine visible to sitters", note: "Feeding, walks, sleep, bathroom" },
-  { label: "Medications & conditions visible", note: "With location stored" },
-  { label: "Multi-pet", note: "Add as many pets as you need" },
-  { label: "Rotate share link", note: "Generate a fresh token, old one invalidated" },
-  { label: "Push nudges", note: "Trick-reinforcement reminders" },
+  { label: "Routine visible to sitters", sub: "Feeding, walks, sleep, bathroom" },
+  { label: "Medications & conditions", sub: "With location stored" },
+  { label: "Unlimited pets", sub: "Add as many as you need" },
+  { label: "Rotate share links", sub: "Old token invalidated instantly" },
+  { label: "Push nudges", sub: "Trick-reinforcement reminders" },
 ];
 
 export default function Upgrade() {
@@ -55,58 +56,128 @@ export default function Upgrade() {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: "#F8ECEE" }} contentContainerStyle={{ padding: 24, paddingTop: 60 }}>
-      <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 24 }}>
-        <Text style={{ color: colors.textMuted, fontSize: 15 }}>‹ Back</Text>
-      </TouchableOpacity>
+    <View style={{ flex: 1, backgroundColor: "#510000" }}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+        {/* ── Dark hero ─────────────────────────────── */}
+        <View style={{ paddingHorizontal: 24, paddingTop: 60, paddingBottom: 36 }}>
+          <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 36 }}>
+            <Text style={{ color: "rgba(248,236,238,0.5)", fontSize: 13, fontFamily: "Satoshi-Medium" }}>← Back</Text>
+          </TouchableOpacity>
 
-      <Text
-        style={{ fontFamily: "Tanker", fontSize: 30, color: colors.textDark, lineHeight: 36, marginBottom: 8 }}
-      >
-        Routine's saved.{"\n"}Unlock it so sitters{"\n"}get the full day.
-      </Text>
-      <Text style={{ color: colors.textMuted, fontSize: 14, lineHeight: 20, marginBottom: 28 }}>
-        One payment, all your pets, forever. No subscription.
-      </Text>
+          <Text style={{ fontFamily: "Tanker", fontSize: 42, lineHeight: 42, color: "#F8ECEE", marginBottom: 24 }}>
+            Unlock it so sitters get the full day.
+          </Text>
 
-      {/* Feature list */}
-      <View style={{ gap: 10, marginBottom: 28 }}>
-        {FEATURES.map((f) => (
-          <View key={f.label} style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
-            <Text style={{ color: colors.success, fontSize: 16, marginTop: 1 }}>✓</Text>
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: colors.primary, fontSize: 14, fontFamily: "Satoshi-Medium" }}>{f.label}</Text>
-              <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 1 }}>{f.note}</Text>
-            </View>
+          {/* Price pill */}
+          <View
+            style={{
+              alignSelf: "flex-start",
+              flexDirection: "row",
+              alignItems: "baseline",
+              gap: 8,
+              backgroundColor: "rgba(248,236,238,0.1)",
+              borderWidth: 1,
+              borderColor: "rgba(248,236,238,0.2)",
+              borderRadius: 999,
+              paddingHorizontal: 20,
+              paddingVertical: 10,
+            }}
+          >
+            <Text style={{ fontFamily: "Tanker", fontSize: 30, color: "#F8ECEE" }}>$7.99</Text>
+            <Text style={{ color: "rgba(248,236,238,0.5)", fontSize: 12, fontFamily: "Satoshi-Light" }}>once, forever</Text>
           </View>
-        ))}
-      </View>
+        </View>
 
-      {/* Purchase button */}
-      <TouchableOpacity
-        onPress={handlePurchase}
-        disabled={loading}
-        style={{
-          height: 52,
-          borderRadius: 10,
-          backgroundColor: loading ? colors.dashedBorder : colors.button,
-          alignItems: "center",
-          justifyContent: "center",
-          marginBottom: 12,
-        }}
-      >
-        <Text style={{ color: "#F8ECEE", fontFamily: "Satoshi-Bold", fontSize: 16 }}>
-          {loading ? "Working…" : "Unlock for $7.99"}
-        </Text>
-      </TouchableOpacity>
+        {/* ── Light panel ───────────────────────────── */}
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "#F8ECEE",
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            paddingHorizontal: 24,
+            paddingTop: 28,
+            paddingBottom: 40,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 11,
+              fontFamily: "Satoshi-Medium",
+              textTransform: "uppercase",
+              letterSpacing: 0.7,
+              color: colors.textMuted,
+              marginBottom: 20,
+            }}
+          >
+            Everything unlocked
+          </Text>
 
-      <TouchableOpacity onPress={handleRestore} disabled={loading} style={{ alignItems: "center", paddingVertical: 10 }}>
-        <Text style={{ color: colors.textMuted, fontSize: 13 }}>Restore purchases</Text>
-      </TouchableOpacity>
+          {/* Features */}
+          <View style={{ flex: 1 }}>
+            {FEATURES.map((f, i) => (
+              <View
+                key={f.label}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 16,
+                  paddingVertical: 14,
+                  borderBottomWidth: i < FEATURES.length - 1 ? 1 : 0,
+                  borderBottomColor: colors.border,
+                }}
+              >
+                <View
+                  style={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: 12,
+                    backgroundColor: "#510000",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Ionicons name="checkmark" size={13} color="#F8ECEE" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: "#510000", fontSize: 15, fontFamily: "Satoshi-Medium" }}>{f.label}</Text>
+                  <Text style={{ color: colors.textMuted, fontSize: 12, fontFamily: "Satoshi-Light", marginTop: 3 }}>{f.sub}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
 
-      <Text style={{ color: colors.textMuted, fontSize: 11, textAlign: "center", marginTop: 16, lineHeight: 16 }}>
-        Payment is charged to your App Store / Google Play account. Unlocks account-wide — works on any pet you add.
-      </Text>
-    </ScrollView>
+          {/* CTA footer */}
+          <View style={{ marginTop: 28, alignItems: "center", gap: 12 }}>
+            <TouchableOpacity
+              onPress={handlePurchase}
+              disabled={loading}
+              activeOpacity={0.85}
+              style={{
+                width: "100%",
+                height: 52,
+                borderRadius: 12,
+                backgroundColor: "#510000",
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: loading ? 0.5 : 1,
+              }}
+            >
+              <Text style={{ color: "#F8ECEE", fontSize: 15, fontFamily: "Satoshi-Medium", letterSpacing: 0.3 }}>
+                {loading ? "Working…" : "Unlock for $7.99"}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={handleRestore} disabled={loading} style={{ paddingVertical: 4 }}>
+              <Text style={{ color: colors.textMuted, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Restore purchases</Text>
+            </TouchableOpacity>
+
+            <Text style={{ color: "rgba(152,112,128,0.6)", fontSize: 10, fontFamily: "Satoshi-Light", textAlign: "center", lineHeight: 15 }}>
+              Charged to your App Store / Google Play account. Unlocks account-wide — every pet you add, covered.
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
