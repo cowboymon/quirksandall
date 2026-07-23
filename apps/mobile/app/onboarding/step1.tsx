@@ -4,7 +4,7 @@ import { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Image, Alert } from "react-native";
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { Headline, Input, Select, DateInput, PrimaryButton, ProgressDots, Eyebrow } from "../../components/ui";
+import { Headline, Input, Select, DateInput, WeightInput, PrimaryButton, ProgressDots, Eyebrow } from "../../components/ui";
 import { RollingAnimal } from "../../components/Underlined";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { colors, computeAge, displayDateToISO } from "@quirksandall/shared";
@@ -39,7 +39,7 @@ export default function Step1() {
   const ageLabel = dobISO ? computeAge(dobISO, pet.dobIsEstimated ?? false) : null;
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerStyle={{ padding: 24, paddingTop: 60, paddingBottom: 48 }}>
+    <ScrollView className="flex-1 bg-background" keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 24, paddingTop: 60, paddingBottom: 48 }}>
       <ProgressDots total={4} current={1} />
 
       <View style={{ marginTop: 28, marginBottom: 6 }}><Eyebrow>Step 1 of 4</Eyebrow></View>
@@ -78,7 +78,7 @@ export default function Step1() {
       <View style={{ gap: 16 }}>
         <View>
           <Eyebrow>Name *</Eyebrow>
-          <Input className="mt-1" placeholder="e.g. Biscuit" value={pet.name ?? ""} onChangeText={(v) => setPet({ name: v })} autoFocus />
+          <Input className="mt-1" placeholder="e.g. Biscuit" value={pet.name ?? ""} onChangeText={(v) => setPet({ name: v })} autoFocus autoComplete="off" textContentType="none" />
         </View>
 
         <View>
@@ -105,7 +105,9 @@ export default function Step1() {
 
         <View>
           <Eyebrow>Weight</Eyebrow>
-          <Input className="mt-1" placeholder="e.g. 28 kg" value={pet.weight ?? ""} onChangeText={(v) => setPet({ weight: v })} />
+          <View style={{ marginTop: 4 }}>
+            <WeightInput value={pet.weight ?? ""} onChangeText={(v) => setPet({ weight: v })} />
+          </View>
         </View>
 
         <View>

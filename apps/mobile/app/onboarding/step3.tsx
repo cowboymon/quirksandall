@@ -1,8 +1,8 @@
 // Screen 3 — Behavior / quirks
 import { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, TextInput } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
-import { Headline, Textarea, PrimaryButton, SkipButton, ProgressDots, Eyebrow } from "../../components/ui";
+import { Headline, Textarea, Input, Card, PrimaryButton, SkipButton, ProgressDots, Eyebrow } from "../../components/ui";
 import { Underlined } from "../../components/Underlined";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { colors } from "@quirksandall/shared";
@@ -33,7 +33,7 @@ export default function Step3() {
   const filled = commands.filter((c) => c.word.trim()).length;
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerStyle={{ padding: 24, paddingTop: 60 }}>
+    <ScrollView className="flex-1 bg-background" keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 24, paddingTop: 60 }}>
       <ProgressDots total={4} current={3} />
 
       <View style={{ marginTop: 20, marginBottom: 6 }}><Eyebrow>Step 3 of 4</Eyebrow></View>
@@ -55,45 +55,30 @@ export default function Step3() {
         </View>
       </View>
 
+      {/* Numbered command cards — same structure as the Dashboard edit screen */}
       <View style={{ gap: 10, marginTop: 8 }}>
-        {commands.map((cmd) => (
-          <View key={cmd.id} style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14 }}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <TextInput
-                placeholder="Word (e.g. Settle)"
-                placeholderTextColor={colors.textMuted}
-                value={cmd.word}
-                onChangeText={(v) => updateCommand(cmd.id, "word", v)}
-                style={{ flex: 1, fontFamily: "Satoshi-Bold", fontSize: 16, color: colors.textDark, padding: 0 }}
-              />
+        {commands.map((cmd, i) => (
+          <Card key={cmd.id}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <Eyebrow>Command {i + 1}</Eyebrow>
               {commands.length > 1 && (
-                <TouchableOpacity onPress={() => removeCommand(cmd.id)} hitSlop={8}>
-                  <Text style={{ color: colors.textMuted, fontSize: 18, lineHeight: 18 }}>×</Text>
+                <TouchableOpacity onPress={() => removeCommand(cmd.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                  <Text style={{ color: colors.danger, fontSize: 20, lineHeight: 20 }}>×</Text>
                 </TouchableOpacity>
               )}
             </View>
-            <TextInput
-              placeholder="Means…"
-              placeholderTextColor={colors.textMuted}
-              value={cmd.meaning}
-              onChangeText={(v) => updateCommand(cmd.id, "meaning", v)}
-              style={{ fontFamily: "Satoshi", fontSize: 14, color: colors.textMuted, padding: 0, marginTop: 6 }}
-            />
-            <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8, gap: 6 }}>
-              <Text style={{ color: colors.primary, fontSize: 13, fontFamily: "Satoshi-Medium" }}>Reward:</Text>
-              <TextInput
-                placeholder="what they get"
-                placeholderTextColor={colors.textMuted}
-                value={cmd.reward}
-                onChangeText={(v) => updateCommand(cmd.id, "reward", v)}
-                style={{ flex: 1, fontFamily: "Satoshi", fontSize: 13, color: colors.primary, padding: 0 }}
-              />
-            </View>
-          </View>
+            <Input placeholder="Word (e.g. Settle)" value={cmd.word} onChangeText={(v) => updateCommand(cmd.id, "word", v)} />
+            <Input className="mt-2" placeholder="Means…" value={cmd.meaning} onChangeText={(v) => updateCommand(cmd.id, "meaning", v)} />
+            <Input className="mt-2" placeholder="How to cue (optional)" value={cmd.howToCue ?? ""} onChangeText={(v) => updateCommand(cmd.id, "howToCue", v)} />
+            <Input className="mt-2" placeholder="Reward" value={cmd.reward} onChangeText={(v) => updateCommand(cmd.id, "reward", v)} />
+          </Card>
         ))}
       </View>
-      <TouchableOpacity onPress={addCommand} style={{ paddingVertical: 12, flexDirection: "row", alignItems: "center", gap: 6 }}>
-        <Text style={{ color: colors.primary, fontSize: 14, fontFamily: "Satoshi-Medium" }}>+ Add another word</Text>
+      <TouchableOpacity
+        onPress={addCommand}
+        style={{ height: 44, borderRadius: 10, borderWidth: 1.5, borderColor: colors.dashedBorder, borderStyle: "dashed", alignItems: "center", justifyContent: "center", marginTop: 10 }}
+      >
+        <Text style={{ color: colors.textMuted, fontSize: 14 }}>+ Add another word</Text>
       </TouchableOpacity>
 
       {/* Quirks & triggers */}

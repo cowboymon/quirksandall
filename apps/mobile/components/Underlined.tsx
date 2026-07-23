@@ -8,11 +8,13 @@ import Svg, { Path } from "react-native-svg";
 import { Headline } from "./ui";
 
 export function Underlined({ children }: { children: React.ReactNode }) {
+  // No bottom padding — the squiggle is drawn just below the text box (bottom:-2)
+  // so the word keeps the same baseline as adjacent (non-underlined) headline text.
   return (
-    <View style={{ position: "relative", alignSelf: "flex-start", paddingBottom: 4 }}>
+    <View style={{ position: "relative", alignSelf: "flex-start" }}>
       {children}
       <Svg
-        style={{ position: "absolute", left: 0, right: 0, bottom: 0 }}
+        style={{ position: "absolute", left: 0, right: 0, bottom: -2 }}
         width="100%"
         height={5}
         viewBox="0 0 100 5"

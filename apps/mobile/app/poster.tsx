@@ -10,10 +10,11 @@ import { router } from "expo-router";
 // File/Directory API isn't needed for these one-shot poster downloads.
 import * as FileSystem from "expo-file-system/legacy";
 import * as ImagePicker from "expo-image-picker";
+import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabase";
-import { Eyebrow, Input } from "../components/ui";
+import { Eyebrow, Input, DateInput } from "../components/ui";
 import { useActivePetStore } from "../stores/activePet";
-import { colors, computeAge } from "@quirksandall/shared";
+import { colors, computeAge, formatWeight, isoToDisplayDate, displayDateToISO } from "@quirksandall/shared";
 
 import { WEB_URL } from "../lib/config";
 
@@ -47,7 +48,7 @@ export default function MissingPoster() {
   const [format, setFormat] = useState<"poster" | "social">("poster");
   const [whatToLookFor, setWhatToLookFor] = useState("");
   const [lastSeenArea, setLastSeenArea] = useState("");
-  const [lastSeenDate, setLastSeenDate] = useState(new Date().toISOString().split("T")[0]);
+  const [lastSeenDate, setLastSeenDate] = useState(isoToDisplayDate(new Date().toISOString().split("T")[0]));
   const [saving, setSaving] = useState<string | null>(null);
   // Per-format photo override: format key → data URI; previews hold the
   // locally cached PNG generated with that override.
@@ -203,12 +204,14 @@ export default function MissingPoster() {
   }
 
   const hasPhoto = !!profile.photoUrl;
+  // Always show all four rows (matching the design); a missing value renders as
+  // "Not provided" rather than dropping the row entirely.
   const snapshotRows = [
-    { label: "Weight", val: profile.weight },
+    { label: "Weight", val: formatWeight(profile.weight) },
     { label: "Colour", val: profile.colorMarkings },
     { label: "Microchip", val: profile.microchip },
     { label: "Your phone", val: profile.ownerPhone },
-  ].filter((r) => r.val);
+  ];
 
   // ── Output view ─────────────────────────────────────────────────────────────
   if (view === "output") {
@@ -265,9 +268,10 @@ export default function MissingPoster() {
                 )}
               </View>
               <View style={{ marginTop: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                <TouchableOpacity onPress={() => pickPhotoFor(f.key)} disabled={regenerating !== null}>
+                <TouchableOpacity onPress={() => pickPhotoFor(f.key)} disabled={regenerating !== null} style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+                  <Ionicons name="camera-outline" size={15} color={colors.textMuted} />
                   <Text style={{ color: colors.textMuted, fontSize: 12, fontFamily: "Satoshi-Medium" }}>
-                    📷 Change photo
+                    Change photo
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -301,7 +305,7 @@ export default function MissingPoster() {
 
   // ── Form view ───────────────────────────────────────────────────────────────
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={{ paddingTop: 56, paddingBottom: 40, paddingHorizontal: 24 }}>
+    <ScrollView style={{ flex: 1, backgroundColor: colors.background }} keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingTop: 56, paddingBottom: 40, paddingHorizontal: 24 }}>
       <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 28 }}>
         <Text style={{ color: colors.textMuted, fontSize: 14 }}>← Dashboard</Text>
       </TouchableOpacity>
@@ -329,7 +333,7 @@ export default function MissingPoster() {
             <Image source={{ uri: profile.photoUrl }} style={{ width: 40, height: 40, borderRadius: 20, borderWidth: 1, borderColor: colors.border }} />
           ) : (
             <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.secondary, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}>
-              <Text>📷</Text>
+              <Ionicons name="camera-outline" size={18} color={colors.textMuted} />
             </View>
           )}
           <View style={{ flex: 1 }}>
@@ -345,7 +349,7 @@ export default function MissingPoster() {
         {snapshotRows.map((row, i) => (
           <View key={row.label} style={{ flexDirection: "row", gap: 16, paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: i < snapshotRows.length - 1 ? 1 : 0, borderBottomColor: colors.border }}>
             <Text style={{ color: colors.textMuted, fontSize: 12, fontFamily: "Satoshi-Medium", width: 80 }}>{row.label}</Text>
-            <Text style={{ color: colors.textDark, fontSize: 14, flex: 1 }}>{row.val}</Text>
+            <Text style={{ color: row.val ? colors.textDark : colors.dashedBorder, fontSize: 14, flex: 1 }}>{row.val || "Not provided"}</Text>
           </View>
         ))}
       </View>
@@ -374,7 +378,7 @@ export default function MissingPoster() {
         <Eyebrow>Last seen</Eyebrow>
         <View style={{ marginTop: 6, gap: 8 }}>
           <Input value={lastSeenArea} onChangeText={setLastSeenArea} placeholder="Newtown" />
-          <Input value={lastSeenDate} onChangeText={setLastSeenDate} placeholder="YYYY-MM-DD" />
+          <DateInput value={lastSeenDate} onChangeText={setLastSeenDate} />
         </View>
         <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 6 }}>Not saved to your profile.</Text>
       </View>

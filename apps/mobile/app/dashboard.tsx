@@ -256,19 +256,16 @@ export default function Dashboard() {
           </View>
         </View>
 
-        {/* Link disclosure + upgrade nudge */}
-        <View style={{ paddingHorizontal: 2 }}>
-          <Text style={{ color: colors.textMuted, fontSize: 11, fontFamily: "Satoshi-Light" }}>
-            The link's the door. The PIN's the key. Send them separately.
-          </Text>
-          {!isPaid && (
-            <TouchableOpacity onPress={() => router.push("/upgrade")} style={{ marginTop: 4 }}>
+        {/* Upgrade nudge */}
+        {!isPaid && (
+          <View style={{ paddingHorizontal: 2 }}>
+            <TouchableOpacity onPress={() => router.push("/upgrade")}>
               <Text style={{ color: colors.primary, fontSize: 11, fontFamily: "Satoshi-Medium" }}>
                 Routine's saved. Unlock it so sitters get the full day. →
               </Text>
             </TouchableOpacity>
-          )}
-        </View>
+          </View>
+        )}
 
         {/* Nudge card */}
         {firstCommand && (
@@ -318,7 +315,7 @@ export default function Dashboard() {
           <View style={{ flex: 1 }}>
             <Text style={{ color: colors.cardDarkText, fontSize: 14, fontFamily: "Satoshi-Medium" }}>If {pet.name} goes missing</Text>
             <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 11, marginTop: 2, fontFamily: "Satoshi-Light" }}>
-              One tap. Everywhere it needs to be. Here if you ever need it.
+              One tap. Something to share, something to print. Free, always. Here if you ever need it.
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={16} color="rgba(248,236,238,0.5)" />
