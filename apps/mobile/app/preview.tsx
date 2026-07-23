@@ -8,7 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabase";
 import { useActivePetStore } from "../stores/activePet";
 import { Underlined } from "../components/Underlined";
-import { colors, computeAge, formatWeight } from "@quirksandall/shared";
+import { colors, computeAge, formatWeight, formatPhone, formatVetName, possessive } from "@quirksandall/shared";
 
 type Data = {
   name: string; breed: string; age: string; photoUrl: string | null;
@@ -17,32 +17,26 @@ type Data = {
   emergVetClinic: string; emergVetPhone: string;
   vetPreAuth: boolean; insuranceProvider: string; insurancePolicy: string;
   backupName: string; backupPhone: string; backupRel: string;
-  backup2Name: string; backup2Phone: string;
+  backup2Name: string; backup2Phone: string; backup2Rel: string;
   commands: any[];
-  scared: string; noGo: string; flightRisk: string;
-  allergies: string;
-  feeding: any; walks: string; sleep: string; medications: string;
+  scared: string; noGo: string; flightRisk: string; temperament: string;
+  allergies: string; conditions: string; medications: string;
+  feeding: any; walks: string; sleep: string; bathroom: string;
   updatedAt: string;
 };
 
-// Tanker section header, optionally with a squiggle-underlined tail.
-function SectionHeader({ lead, underline }: { lead: string; underline?: string }) {
+// Tanker section header, with a squiggle-underlined tail.
+function SectionHeader({ lead, underline }: { lead: string; underline: string }) {
   const style = { fontFamily: "Tanker", fontSize: 22, lineHeight: 26, color: colors.textDark } as const;
   return (
     <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-end", marginBottom: 12 }}>
-      <Text style={style}>{lead}{underline ? " " : ""}</Text>
-      {underline ? <Underlined><Text style={style}>{underline}</Text></Underlined> : null}
+      <Text style={style}>{lead} </Text>
+      <Underlined><Text style={style}>{underline}</Text></Underlined>
     </View>
   );
 }
 
-function Label({ children, light }: { children: React.ReactNode; light?: boolean }) {
-  return (
-    <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: light ? "rgba(248,236,238,0.5)" : colors.textMuted }}>
-      {children}
-    </Text>
-  );
-}
+const microLabel = { fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6 } as const;
 
 export default function Preview() {
   const { petId: selectedPetId } = useActivePetStore();
@@ -74,17 +68,17 @@ export default function Preview() {
       const meds = (medical?.medications ?? []).map((m: any) => [m.name, m.dose].filter(Boolean).join(" ")).filter(Boolean).join("; ");
 
       setData({
-        name: pet.name, breed: pet.breed ?? "", age: computeAge(pet.dob, pet.dob_is_estimated), photoUrl: pet.photo_url,
+        name: (pet.name ?? "").trim(), breed: pet.breed ?? "", age: computeAge(pet.dob, pet.dob_is_estimated), photoUrl: pet.photo_url,
         weight: formatWeight(pet.weight), sex: pet.sex ?? "", color: pet.color_markings ?? "", microchip: pet.microchip_number ?? "",
         vetContactName: vet?.primary_vet?.contact_name ?? "", vetClinic: vet?.primary_vet?.clinic ?? "", vetPhone: vet?.primary_vet?.phone ?? "",
         emergVetClinic: vet?.emergency_vet?.clinic ?? "", emergVetPhone: vet?.emergency_vet?.phone ?? "",
         vetPreAuth: vet?.vet_pre_auth ?? false, insuranceProvider: vet?.insurance?.provider ?? "", insurancePolicy: vet?.insurance?.policy_number ?? "",
         backupName: backups[0]?.name ?? "", backupPhone: backups[0]?.phone ?? "", backupRel: backups[0]?.relationship ?? "",
-        backup2Name: backups[1]?.name ?? "", backup2Phone: backups[1]?.phone ?? "",
+        backup2Name: backups[1]?.name ?? "", backup2Phone: backups[1]?.phone ?? "", backup2Rel: backups[1]?.relationship ?? "",
         commands: behavior?.commands ?? [],
-        scared: behavior?.scared ?? "", noGo: behavior?.no_go ?? "", flightRisk: behavior?.flight_risk ?? "",
-        allergies: (medical?.allergies ?? []).join(", "),
-        feeding: routine?.feeding ?? null, walks: routine?.walks ?? "", sleep: routine?.sleep ?? "", medications: meds,
+        scared: behavior?.scared ?? "", noGo: behavior?.no_go ?? "", flightRisk: behavior?.flight_risk ?? "", temperament: behavior?.temperament_summary ?? "",
+        allergies: (medical?.allergies ?? []).join(", "), conditions: (medical?.conditions ?? []).join(", "), medications: meds,
+        feeding: routine?.feeding ?? null, walks: routine?.walks ?? "", sleep: routine?.sleep ?? "", bathroom: routine?.bathroom_habits ?? "",
         updatedAt: pet.updated_at,
       });
       setLoading(false);
@@ -95,9 +89,10 @@ export default function Preview() {
     return <View style={{ flex: 1, backgroundColor: colors.background, alignItems: "center", justifyContent: "center" }}><ActivityIndicator color={colors.textDark} /></View>;
   }
 
-  const f = data.feeding ?? {};
-  const idTiles = [["Weight", data.weight], ["Sex", data.sex], ["Colour", data.color], ["Microchip", data.microchip]].filter(([, v]) => !!v);
-  const hasQuirks = data.scared || data.noGo || data.flightRisk;
+  const d = data;
+  const f = d.feeding ?? {};
+  const idTiles = [["Weight", d.weight], ["Sex", d.sex], ["Colour", d.color], ["Microchip", d.microchip]].filter(([, v]) => !!v);
+  const showFull = view === "full";
 
   const CreamLink = ({ icon, text, onPress, bold }: { icon: "location" | "call"; text: string; onPress: () => void; bold?: boolean }) => (
     <TouchableOpacity onPress={onPress} style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 }}>
@@ -108,21 +103,21 @@ export default function Preview() {
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={{ paddingTop: 56, paddingBottom: 48 }}>
-      {/* Owner dashboard back */}
+      {/* Dashboard back */}
       <View style={{ paddingHorizontal: 24, paddingBottom: 8 }}>
         <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
           <Ionicons name="chevron-back" size={16} color={colors.textMuted} />
-          <Text style={{ color: colors.textMuted, fontSize: 14 }}>Owner dashboard</Text>
+          <Text style={{ color: colors.textMuted, fontSize: 14 }}>Dashboard</Text>
         </TouchableOpacity>
       </View>
 
       <View style={{ paddingHorizontal: 24 }}>
         {/* Identity */}
         <View style={{ flexDirection: "row", alignItems: "center", gap: 16, marginTop: 12, marginBottom: 16 }}>
-          {data.photoUrl && <Image source={{ uri: data.photoUrl }} style={{ width: 64, height: 64, borderRadius: 32, borderWidth: 2, borderColor: colors.border }} />}
+          {d.photoUrl && <Image source={{ uri: d.photoUrl }} style={{ width: 64, height: 64, borderRadius: 32, borderWidth: 2, borderColor: colors.border }} />}
           <View style={{ flex: 1 }}>
-            <Text style={{ fontFamily: "Tanker", fontSize: 28, lineHeight: 30, color: colors.textDark }}>{data.name}'s Cheat Sheet</Text>
-            <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 2 }}>{[data.breed, data.age].filter(Boolean).join(" · ")}</Text>
+            <Text style={{ fontFamily: "Tanker", fontSize: 28, lineHeight: 30, color: colors.textDark }}>{possessive(d.name)} Cheat Sheet</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 2 }}>{[d.breed, d.age].filter(Boolean).join(" · ")}</Text>
           </View>
         </View>
 
@@ -131,7 +126,7 @@ export default function Preview() {
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
             {idTiles.map(([label, val]) => (
               <View key={label} style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, width: "47.5%" }}>
-                <Label>{label}</Label>
+                <Text style={{ ...microLabel, color: colors.textMuted }}>{label}</Text>
                 <Text numberOfLines={1} style={{ color: colors.primary, fontSize: 13, fontFamily: "Satoshi-Medium", marginTop: 2 }}>{val}</Text>
               </View>
             ))}
@@ -158,105 +153,59 @@ export default function Preview() {
               🔒 Sitters enter your PIN to see this. Shown here for your preview.
             </Text>
             <View style={{ gap: 16 }}>
-              {(data.vetContactName || data.vetClinic || data.vetPhone) && (
+              {(d.vetContactName || d.vetClinic || d.vetPhone) && (
                 <View>
-                  <Label light>Vet</Label>
-                  {data.vetContactName ? <Text style={{ color: colors.cardDarkText, fontSize: 14, fontFamily: "Satoshi-Bold", marginTop: 2 }}>{data.vetContactName}</Text> : null}
-                  {data.vetClinic ? <CreamLink icon="location" text={data.vetClinic} onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(data.vetClinic)}`)} /> : null}
-                  {data.vetPhone ? <CreamLink icon="call" text={data.vetPhone} onPress={() => Linking.openURL(`tel:${data.vetPhone}`)} /> : null}
+                  <Text style={{ ...microLabel, color: "rgba(248,236,238,0.5)" }}>Vet</Text>
+                  {d.vetContactName ? <Text style={{ color: colors.cardDarkText, fontSize: 14, fontFamily: "Satoshi-Bold", marginTop: 2 }}>{formatVetName(d.vetContactName)}</Text> : null}
+                  {d.vetClinic ? <CreamLink icon="location" text={d.vetClinic} onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(d.vetClinic)}`)} /> : null}
+                  {d.vetPhone ? <CreamLink icon="call" text={formatPhone(d.vetPhone)} onPress={() => Linking.openURL(`tel:${d.vetPhone}`)} /> : null}
                 </View>
               )}
-              {(data.emergVetClinic || data.emergVetPhone) && (
+              {(d.emergVetClinic || d.emergVetPhone) && (
                 <View>
-                  <Label light>Emergency vet</Label>
-                  {data.emergVetClinic ? <CreamLink icon="location" text={data.emergVetClinic} bold onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(data.emergVetClinic)}`)} /> : null}
-                  {data.emergVetPhone ? <CreamLink icon="call" text={data.emergVetPhone} onPress={() => Linking.openURL(`tel:${data.emergVetPhone}`)} /> : null}
+                  <Text style={{ ...microLabel, color: "rgba(248,236,238,0.5)" }}>Emergency vet</Text>
+                  {d.emergVetClinic ? <CreamLink icon="location" text={d.emergVetClinic} bold onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(d.emergVetClinic)}`)} /> : null}
+                  {d.emergVetPhone ? <CreamLink icon="call" text={formatPhone(d.emergVetPhone)} onPress={() => Linking.openURL(`tel:${d.emergVetPhone}`)} /> : null}
                 </View>
               )}
-              {data.vetPreAuth && (
+              {(d.insuranceProvider || d.insurancePolicy) && (
+                <View>
+                  <Text style={{ ...microLabel, color: "rgba(248,236,238,0.5)" }}>Insurance</Text>
+                  <Text style={{ color: colors.cardDarkText, fontSize: 14, marginTop: 2 }}>{[d.insuranceProvider, d.insurancePolicy].filter(Boolean).join(" · ")}</Text>
+                </View>
+              )}
+              {d.backupName ? (
+                <View>
+                  <Text style={{ ...microLabel, color: "rgba(248,236,238,0.5)" }}>{d.backupRel ? `Backup — ${d.backupRel}` : "Backup contact"}</Text>
+                  <Text style={{ color: colors.cardDarkText, fontSize: 14, fontFamily: "Satoshi-Bold", marginTop: 2 }}>{d.backupName}</Text>
+                  {d.backupPhone ? <CreamLink icon="call" text={formatPhone(d.backupPhone)} onPress={() => Linking.openURL(`tel:${d.backupPhone}`)} /> : null}
+                </View>
+              ) : null}
+              {d.backup2Name ? (
+                <View>
+                  <Text style={{ ...microLabel, color: "rgba(248,236,238,0.5)" }}>{d.backup2Rel ? `Second backup — ${d.backup2Rel}` : "Second backup"}</Text>
+                  <Text style={{ color: colors.cardDarkText, fontSize: 14, fontFamily: "Satoshi-Bold", marginTop: 2 }}>{d.backup2Name}</Text>
+                  {d.backup2Phone ? <CreamLink icon="call" text={formatPhone(d.backup2Phone)} onPress={() => Linking.openURL(`tel:${d.backup2Phone}`)} /> : null}
+                </View>
+              ) : null}
+              {/* Vet pre-auth — below the backup contacts (#20) */}
+              {d.vetPreAuth && (
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(248,236,238,0.1)", borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 }}>
                   <Ionicons name="checkmark-circle" size={14} color="#88C888" />
                   <Text style={{ color: "rgba(248,236,238,0.8)", fontSize: 12, flex: 1, lineHeight: 16 }}>Vet pre-authorised — backup contact can approve treatment</Text>
                 </View>
               )}
-              {(data.insuranceProvider || data.insurancePolicy) && (
-                <View>
-                  <Label light>Insurance</Label>
-                  <Text style={{ color: colors.cardDarkText, fontSize: 14, marginTop: 2 }}>{[data.insuranceProvider, data.insurancePolicy].filter(Boolean).join(" · ")}</Text>
-                </View>
-              )}
-              {data.backupName ? (
-                <View>
-                  <Label light>{data.backupRel ? `Backup — ${data.backupRel}` : "Backup contact"}</Label>
-                  <Text style={{ color: colors.cardDarkText, fontSize: 14, fontFamily: "Satoshi-Bold", marginTop: 2 }}>{data.backupName}</Text>
-                  {data.backupPhone ? <CreamLink icon="call" text={data.backupPhone} onPress={() => Linking.openURL(`tel:${data.backupPhone}`)} /> : null}
-                </View>
-              ) : null}
-              {data.backup2Name ? (
-                <View>
-                  <Label light>Second backup</Label>
-                  <Text style={{ color: colors.cardDarkText, fontSize: 14, fontFamily: "Satoshi-Bold", marginTop: 2 }}>{data.backup2Name}</Text>
-                  {data.backup2Phone ? <CreamLink icon="call" text={data.backup2Phone} onPress={() => Linking.openURL(`tel:${data.backup2Phone}`)} /> : null}
-                </View>
-              ) : null}
             </View>
           </View>
 
-          {/* Commands — table */}
-          {data.commands.length > 0 && (
+          {/* Order (#15): Daily Routine → Medication → Allergies → Commands → Triggers */}
+          {showFull && (f.breakfast || f.lunch || f.dinner || d.walks || d.sleep || d.bathroom) && (
             <View>
-              <SectionHeader lead="Commands" underline={`${data.name} knows`} />
-              <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden" }}>
-                <View style={{ flexDirection: "row", backgroundColor: colors.secondary, paddingHorizontal: 12, paddingVertical: 8 }}>
-                  <Text style={{ width: "26%", ...labelStyle }}>Word</Text>
-                  <Text style={{ flex: 1, ...labelStyle }}>Means</Text>
-                  <Text style={{ width: "26%", ...labelStyle }}>Reward</Text>
-                </View>
-                {data.commands.map((cmd, i) => (
-                  <View key={cmd.id ?? i} style={{ flexDirection: "row", paddingHorizontal: 12, paddingVertical: 10, backgroundColor: i % 2 === 0 ? "#FFFFFF" : colors.background, alignItems: "flex-start" }}>
-                    <Text style={{ width: "26%", fontSize: 13, fontFamily: "Satoshi-Bold", color: colors.textDark }}>"{cmd.word}"</Text>
-                    <View style={{ flex: 1, paddingRight: 8 }}>
-                      <Text style={{ fontSize: 13, color: colors.textDark }}>{cmd.meaning}</Text>
-                      {cmd.howToCue ? <Text style={{ fontSize: 11, color: colors.textMuted, fontStyle: "italic", marginTop: 2 }}>Cue: {cmd.howToCue}</Text> : null}
-                    </View>
-                    <Text style={{ width: "26%", fontSize: 12, color: colors.textMuted }}>{cmd.reward}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          )}
-
-          {/* Quirks */}
-          {hasQuirks && (
-            <View>
-              <SectionHeader lead="Quirks" underline="& triggers" />
+              <SectionHeader lead={possessive(d.name)} underline="Daily Routine" />
               <View style={{ gap: 12 }}>
-                {data.scared ? <QuirkCard label="Scared of" text={data.scared} /> : null}
-                {data.noGo ? <QuirkCard label="No-go zones" text={data.noGo} /> : null}
-                {data.flightRisk ? <QuirkCard label="Flight risk" text={data.flightRisk} /> : null}
-              </View>
-            </View>
-          )}
-
-          {/* Allergies */}
-          {data.allergies ? (
-            <View>
-              <SectionHeader lead="Allergies" />
-              <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 16 }}>
-                <Text style={{ color: colors.primary, fontSize: 14, lineHeight: 20 }}>{data.allergies}</Text>
-              </View>
-            </View>
-          ) : null}
-
-          {/* Daily routine — full view */}
-          {view === "full" && (data.feeding || data.walks || data.sleep || data.medications) && (
-            <View>
-              <SectionHeader lead="Daily" underline="routine" />
-              <View style={{ gap: 12 }}>
-                {/* Feeding card */}
                 <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden" }}>
                   <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-                    <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.primary }}>Feeding</Text>
+                    <Text style={{ ...microLabel, color: colors.primary }}>Feeding</Text>
                   </View>
                   {[["Breakfast", f.breakfast], ["Lunch", f.lunch], ["Dinner", f.dinner]].map(([label, slot]: any, i) => (
                     <MealRow key={label} label={label} time={slot?.time} amount={slot?.amount} divider={i < 2} />
@@ -275,15 +224,64 @@ export default function Preview() {
                       <Text style={{ fontSize: 12, color: colors.textMuted, fontFamily: "Satoshi-Light" }}>{f.notes}</Text>
                     </View>
                   ) : null}
-                  {data.medications ? (
-                    <View style={{ flexDirection: "row", paddingHorizontal: 16, paddingVertical: 8, borderTopWidth: 1, borderTopColor: colors.border, alignItems: "flex-start" }}>
-                      <Text style={{ width: 64, fontSize: 13, fontFamily: "Satoshi-Medium", color: colors.textMuted }}>Meds</Text>
-                      <Text style={{ flex: 1, fontSize: 13, color: colors.textDark, lineHeight: 18 }}>{data.medications}</Text>
-                    </View>
-                  ) : null}
                 </View>
-                {data.walks ? <QuirkCard label="Walks" text={data.walks} /> : null}
-                {data.sleep ? <QuirkCard label="Sleep" text={data.sleep} /> : null}
+                {d.walks ? <InfoCard label="Walks" text={d.walks} /> : null}
+                {d.sleep ? <InfoCard label="Sleep" text={d.sleep} /> : null}
+                {d.bathroom ? <InfoCard label="Bathroom" text={d.bathroom} /> : null}
+              </View>
+            </View>
+          )}
+
+          {showFull && (d.medications || d.conditions) && (
+            <View>
+              <SectionHeader lead={possessive(d.name)} underline="Medication" />
+              <View style={{ gap: 12 }}>
+                {d.conditions ? <InfoCard label="Conditions" text={d.conditions} /> : null}
+                {d.medications ? <InfoCard label="Medications" text={d.medications} /> : null}
+              </View>
+            </View>
+          )}
+
+          {d.allergies ? (
+            <View>
+              <SectionHeader lead={possessive(d.name)} underline="Allergies" />
+              <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 16 }}>
+                <Text style={{ color: colors.primary, fontSize: 14, lineHeight: 20 }}>{d.allergies}</Text>
+              </View>
+            </View>
+          ) : null}
+
+          {d.commands.length > 0 && (
+            <View>
+              <SectionHeader lead={possessive(d.name)} underline="Commands" />
+              <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden" }}>
+                <View style={{ flexDirection: "row", backgroundColor: colors.secondary, paddingHorizontal: 12, paddingVertical: 8 }}>
+                  <Text style={{ width: "26%", ...microLabel, color: colors.textMuted }}>Word</Text>
+                  <Text style={{ flex: 1, ...microLabel, color: colors.textMuted }}>Means</Text>
+                  <Text style={{ width: "26%", ...microLabel, color: colors.textMuted }}>Reward</Text>
+                </View>
+                {d.commands.map((cmd, i) => (
+                  <View key={cmd.id ?? i} style={{ flexDirection: "row", paddingHorizontal: 12, paddingVertical: 10, backgroundColor: i % 2 === 0 ? "#FFFFFF" : colors.background, alignItems: "flex-start" }}>
+                    <Text style={{ width: "26%", fontSize: 13, fontFamily: "Satoshi-Bold", color: colors.textDark }}>"{cmd.word}"</Text>
+                    <View style={{ flex: 1, paddingRight: 8 }}>
+                      <Text style={{ fontSize: 13, color: colors.textDark }}>{cmd.meaning}</Text>
+                      {cmd.howToCue ? <Text style={{ fontSize: 11, color: colors.textMuted, fontStyle: "italic", marginTop: 2 }}>Cue: {cmd.howToCue}</Text> : null}
+                    </View>
+                    <Text style={{ width: "26%", fontSize: 12, color: colors.textMuted }}>{cmd.reward}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {(d.scared || d.noGo || d.flightRisk || d.temperament) && (
+            <View>
+              <SectionHeader lead={possessive(d.name)} underline="Triggers" />
+              <View style={{ gap: 12 }}>
+                {d.scared ? <InfoCard label="Scared of" text={d.scared} /> : null}
+                {d.noGo ? <InfoCard label="No-go zones" text={d.noGo} /> : null}
+                {d.flightRisk ? <InfoCard label="Flight risk" text={d.flightRisk} /> : null}
+                {d.temperament ? <InfoCard label="Temperament" text={d.temperament} /> : null}
               </View>
             </View>
           )}
@@ -292,16 +290,14 @@ export default function Preview() {
         {/* Footer */}
         <View style={{ marginTop: 32, paddingTop: 20, borderTopWidth: 1, borderTopColor: colors.border }}>
           <Text style={{ color: colors.textMuted, fontSize: 12, textAlign: "center", fontFamily: "Satoshi-Light" }}>
-            Made with love by {data.name}'s owner · updated {new Date(data.updatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+            Made with love by {possessive(d.name)} owner · updated {new Date(d.updatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
           </Text>
-          <Text style={{ color: colors.dashedBorder, fontSize: 11, textAlign: "center", marginTop: 4, fontFamily: "Satoshi-Light" }}>Quirks & All · quirksandall.app</Text>
+          <Text style={{ color: colors.textDark, fontSize: 11, textAlign: "center", marginTop: 4, fontFamily: "Satoshi-Medium" }}>Quirks & All · quirksandall.itshypothetical.com</Text>
         </View>
       </View>
     </ScrollView>
   );
 }
-
-const labelStyle = { fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.textMuted } as const;
 
 function MealRow({ label, time, amount, divider }: { label: string; time?: string; amount?: string; divider: boolean }) {
   return (
@@ -318,7 +314,7 @@ function MealRow({ label, time, amount, divider }: { label: string; time?: strin
   );
 }
 
-function QuirkCard({ label, text }: { label: string; text: string }) {
+function InfoCard({ label, text }: { label: string; text: string }) {
   return (
     <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 16 }}>
       <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.primary }}>{label}</Text>

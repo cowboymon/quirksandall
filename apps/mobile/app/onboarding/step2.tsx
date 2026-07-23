@@ -87,7 +87,8 @@ export default function Step2() {
           <Card>
             <Eyebrow bold>Second backup contact</Eyebrow>
             <View style={{ gap: 8, marginTop: 12 }}>
-              <LabeledInput label="Name & relationship" placeholder="Name & relationship" value={pet.backup2Name ?? ""} onChangeText={(v) => setPet({ backup2Name: v })} />
+              <LabeledInput label="Name" placeholder="Name" value={pet.backup2Name ?? ""} onChangeText={(v) => setPet({ backup2Name: v })} />
+              <LabeledInput label="Relationship" placeholder="e.g. neighbour" value={pet.backup2Relationship ?? ""} onChangeText={(v) => setPet({ backup2Relationship: v })} />
               <LabeledInput label="Phone" placeholder="Phone" keyboardType="phone-pad" value={pet.backup2Phone ?? ""} onChangeText={(v) => setPet({ backup2Phone: v })} />
             </View>
             <CheckboxRow

@@ -75,9 +75,9 @@ export default function EditBehavior() {
     <EditShell title="Commands & Quirks" onSave={save} saving={saving} loading={loading}>
       {/* Commands section */}
       <Text
-        style={{ fontFamily: "Satoshi-Bold", fontSize: 17, color: colors.textDark, marginBottom: 4 }}
+        style={{ fontFamily: "Tanker", fontSize: 24, lineHeight: 28, color: colors.textDark, marginBottom: 4 }}
       >
-        {petName}'s got words.
+        Commands
       </Text>
       <Text style={{ color: colors.textMuted, fontSize: 13, marginBottom: 16 }}>
         Commands your sitter needs to know — word, what it means, what the reward is.
@@ -135,9 +135,9 @@ export default function EditBehavior() {
       {/* Quirks section */}
       <View style={{ marginTop: 28, gap: 12 }}>
         <Text
-          style={{ fontFamily: "Satoshi-Bold", fontSize: 17, color: colors.textDark, marginBottom: 4 }}
+          style={{ fontFamily: "Tanker", fontSize: 24, lineHeight: 28, color: colors.textDark, marginBottom: 4 }}
         >
-          Quirks & triggers
+          Quirks & Triggers
         </Text>
 
         <Card>
@@ -164,13 +164,8 @@ export default function EditBehavior() {
           />
         </Card>
 
-        <Card style={{ borderColor: flightRisk.trim() ? colors.caution : colors.border }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-            <Eyebrow>Flight risk if a door's left open?</Eyebrow>
-            {flightRisk.trim() && (
-              <Text style={{ fontSize: 11, color: colors.caution, fontFamily: "Satoshi-Medium" }}>⚠ Flagged</Text>
-            )}
-          </View>
+        <Card>
+          <Eyebrow>Do they bolt if they get the chance?</Eyebrow>
           <Input
             className="mt-2"
             placeholder="Yes / No — and what to watch for"
@@ -179,13 +174,10 @@ export default function EditBehavior() {
             multiline
             style={{ height: 72, paddingTop: 10, textAlignVertical: "top" }}
           />
-          <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4 }}>
-            Shown to all recipients regardless of tier — safety override.
-          </Text>
         </Card>
 
         <Card>
-          <Eyebrow>Temperament summary (full view only)</Eyebrow>
+          <Eyebrow>What's their temperament like?</Eyebrow>
           <Input
             className="mt-2"
             placeholder="Friendly but anxious with strangers. Needs 10 minutes to settle."

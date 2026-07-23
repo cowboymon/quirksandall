@@ -24,6 +24,7 @@ type PetDraft = {
   backupPhone?: string;
   backupConsent?: boolean;
   backup2Name?: string;
+  backup2Relationship?: string;
   backup2Phone?: string;
   backup2Consent?: boolean;
   vetPreAuth?: boolean;

@@ -222,7 +222,7 @@ export default function MissingPoster() {
       <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={{ paddingTop: 56, paddingBottom: 40 }}>
         <View style={{ paddingHorizontal: 24, flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
           <TouchableOpacity onPress={() => setView("form")}>
-            <Text style={{ color: colors.textMuted, fontSize: 14 }}>← Back</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 14 }}>‹ Back</Text>
           </TouchableOpacity>
           <View style={{ flexDirection: "row", backgroundColor: colors.secondary, borderRadius: 999, padding: 2 }}>
             {(["poster", "social"] as const).map((f) => (
@@ -307,7 +307,7 @@ export default function MissingPoster() {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.background }} keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingTop: 56, paddingBottom: 40, paddingHorizontal: 24 }}>
       <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 28 }}>
-        <Text style={{ color: colors.textMuted, fontSize: 14 }}>← Dashboard</Text>
+        <Text style={{ color: colors.textMuted, fontSize: 14 }}>‹ Dashboard</Text>
       </TouchableOpacity>
 
       <Eyebrow>Just in case</Eyebrow>
@@ -369,7 +369,7 @@ export default function MissingPoster() {
       <View style={{ marginBottom: 24 }}>
         <Eyebrow>Last seen</Eyebrow>
         <View style={{ marginTop: 6, gap: 8 }}>
-          <Input value={lastSeenArea} onChangeText={setLastSeenArea} placeholder="Newtown" />
+          <Input value={lastSeenArea} onChangeText={setLastSeenArea} placeholder="Newtown IGA @ 4:40pm" />
           <DateInput value={lastSeenDate} onChangeText={setLastSeenDate} />
         </View>
         <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 6 }}>Not saved to your profile.</Text>

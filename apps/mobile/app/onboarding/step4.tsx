@@ -73,7 +73,7 @@ export default function Step4() {
 
       const backups = [];
       if (pet.backupName) backups.push({ name: pet.backupName, relationship: pet.backupRelationship, phone: pet.backupPhone, consent_to_share: pet.backupConsent ?? false });
-      if (pet.backup2Name) backups.push({ name: pet.backup2Name, relationship: "", phone: pet.backup2Phone, consent_to_share: pet.backup2Consent ?? false });
+      if (pet.backup2Name) backups.push({ name: pet.backup2Name, relationship: pet.backup2Relationship ?? "", phone: pet.backup2Phone, consent_to_share: pet.backup2Consent ?? false });
       if (backups.length) await supabase.from("owners").update({ backup_contacts: backups }).eq("id", user.id);
 
       await supabase.from("pet_behavior").insert({
