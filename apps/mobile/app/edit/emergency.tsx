@@ -5,6 +5,7 @@ import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
 import { LabeledInput, Eyebrow, Card } from "../../components/ui";
+import { LabeledPlacesInput } from "../../components/PlacesInput";
 import CheckboxRow from "../../components/CheckboxRow";
 import PINEditor from "../../components/PINEditor";
 import { colors } from "@quirksandall/shared";
@@ -137,7 +138,13 @@ export default function EditEmergency() {
           <Eyebrow bold>Vet</Eyebrow>
           <View style={{ gap: 8, marginTop: 12 }}>
             <LabeledInput label="Vet name" placeholder="e.g. Dr. Sarah Mitchell" value={vetContactName} onChangeText={setVetContactName} />
-            <LabeledInput label="Clinic" placeholder="Clinic name" value={vetClinic} onChangeText={setVetClinic} />
+            <LabeledPlacesInput
+              label="Clinic"
+              placeholder="Search clinic name"
+              value={vetClinic}
+              onChangeText={setVetClinic}
+              onSelectPlace={(p) => { setVetClinic(p.name); if (p.phone) setVetPhone(p.phone); if (p.address) setVetAddress(p.address); }}
+            />
             <LabeledInput label="Address" placeholder="Address" value={vetAddress} onChangeText={setVetAddress} />
             <LabeledInput label="Phone" placeholder="Phone" keyboardType="phone-pad" value={vetPhone} onChangeText={setVetPhone} />
           </View>
@@ -149,7 +156,13 @@ export default function EditEmergency() {
         <Card>
           <Eyebrow bold>Emergency vet</Eyebrow>
           <View style={{ gap: 8, marginTop: 12 }}>
-            <LabeledInput label="Clinic" placeholder="Clinic name" value={emergClinic} onChangeText={setEmergClinic} />
+            <LabeledPlacesInput
+              label="Clinic"
+              placeholder="Search clinic name"
+              value={emergClinic}
+              onChangeText={setEmergClinic}
+              onSelectPlace={(p) => { setEmergClinic(p.name); if (p.phone) setEmergPhone(p.phone); }}
+            />
             <LabeledInput label="Phone" placeholder="Phone" keyboardType="phone-pad" value={emergPhone} onChangeText={setEmergPhone} />
           </View>
         </Card>
