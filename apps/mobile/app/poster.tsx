@@ -96,13 +96,14 @@ export default function MissingPoster() {
     setLoading(false);
   };
 
-  const outputUrl = (key: string) => {
+  const outputUrl = (key: string, preview = false) => {
     const params = new URLSearchParams({
       token: profile!.token,
       format: key,
       lastSeenArea,
       lastSeenDate,
       lookFor: whatToLookFor,
+      ...(preview ? { preview: "1" } : {}),
     });
     return `${WEB_URL}/api/generate-poster?${params.toString()}`;
   };
@@ -257,7 +258,7 @@ export default function MissingPoster() {
               )}
               <View>
                 <Image
-                  source={{ uri: previews[f.key] ?? outputUrl(f.key) }}
+                  source={{ uri: previews[f.key] ?? outputUrl(f.key, true) }}
                   style={{ width: "100%", aspectRatio: f.aspect, borderRadius: 8, backgroundColor: colors.secondary }}
                   resizeMode="contain"
                 />

@@ -159,11 +159,19 @@ function PhoneFooter({
 }
 
 function Photo({ uri, style }: { uri: string | null; style: Record<string, unknown> }) {
+  // The image lives inside a wrapper that carries the layout sizing (which may
+  // be flex-derived, e.g. the 9:16 middle band). Satori only resolves
+  // objectFit:cover correctly when the <img> has a fully-determined box — so we
+  // give the wrapper the caller's style and let the img fill it 100%×100%.
   if (!uri) {
     return <div style={{ ...style, backgroundColor: "#E5BEC4", display: "flex" }} />;
   }
-  // eslint-disable-next-line @next/next/no-img-element
-  return <img src={uri} alt="" style={{ ...style, objectFit: "cover", objectPosition: "center top" }} />;
+  return (
+    <div style={{ ...style, display: "flex", overflow: "hidden" }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={uri} alt="" width="100%" height="100%" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }} />
+    </div>
+  );
 }
 
 // ── Poster (A4 print) ─────────────────────────────────────────────────────────

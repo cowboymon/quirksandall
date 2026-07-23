@@ -39,8 +39,10 @@ async function photoToDataUri(url: string): Promise<string | null> {
     const res = await fetch(url);
     if (!res.ok) return null;
     const buf = Buffer.from(await res.arrayBuffer());
-    // Normalise + bound size so Satori stays fast and memory stays sane
-    const jpeg = await sharp(buf).rotate().resize(1400, 1400, { fit: "inside", withoutEnlargement: true }).jpeg({ quality: 88 }).toBuffer();
+    // Normalise + bound size. Cap at 2500 so the hero photo stays crisp at the
+    // 2× output scale (the poster photo band is ~2480px wide at 300dpi) without
+    // letting an unbounded upload blow up memory.
+    const jpeg = await sharp(buf).rotate().resize(2500, 2500, { fit: "inside", withoutEnlargement: true }).jpeg({ quality: 88 }).toBuffer();
     return `data:image/jpeg;base64,${jpeg.toString("base64")}`;
   } catch {
     return null;
@@ -54,6 +56,9 @@ type Params = {
   lastSeenDate: string;
   lookFor: string | null;
   photoDataUri: string | null;
+  // On-screen thumbnail → render at 1× so it downloads fast. Save/share omits
+  // this and gets the full 2× (300dpi) export.
+  preview: boolean;
 };
 
 async function generate(params: Params): Promise<Response> {
@@ -62,6 +67,10 @@ async function generate(params: Params): Promise<Response> {
   if (!(format in FORMATS)) {
     return Response.json({ error: "format must be poster | 1x1 | 4x5 | 9x16" }, { status: 400 });
   }
+
+  // Kick off the font read now so it overlaps the DB lookups and photo fetch
+  // rather than blocking after them. (Cached after the first request.)
+  const fontsPromise = loadFonts();
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -120,15 +129,25 @@ async function generate(params: Params): Promise<Response> {
   };
 
   const { width, height } = FORMATS[format];
-  const fonts = await loadFonts();
+  const fonts = await fontsPromise;
+  // Satori renders at the template's design coordinates; sharp then rasterises
+  // the *vector* SVG at scale so text stays razor-sharp (a re-render, not a
+  // bitmap upscale). Full export → 2× (poster 2480×3508 / 300dpi A4, tiles
+  // 2160px); on-screen thumbnails → 1× so they download fast.
+  const SCALE = params.preview ? 1 : 2;
   const svg = await satori(renderTemplate(format, data), { width, height, fonts });
-  const png = await sharp(Buffer.from(svg)).png().toBuffer();
+  const png = await sharp(Buffer.from(svg))
+    .resize(width * SCALE, height * SCALE)
+    .png()
+    .toBuffer();
 
   return new Response(new Uint8Array(png), {
     headers: {
       "Content-Type": "image/png",
       "Content-Disposition": `attachment; filename="${pet.name.toLowerCase()}-missing-${format}.png"`,
-      "Cache-Control": "no-store",
+      // Thumbnails are re-requested as the user toggles views, so let the client
+      // cache them briefly; the full export is always fresh.
+      "Cache-Control": params.preview ? "private, max-age=300" : "no-store",
     },
   });
 }
@@ -142,6 +161,7 @@ export async function GET(req: Request) {
     lastSeenDate: url.searchParams.get("lastSeenDate") ?? "",
     lookFor: url.searchParams.get("lookFor"),
     photoDataUri: null,
+    preview: url.searchParams.get("preview") === "1",
   });
 }
 
@@ -154,5 +174,6 @@ export async function POST(req: Request) {
     lastSeenDate: body.lastSeenDate ?? "",
     lookFor: body.lookFor ?? null,
     photoDataUri: body.photoDataUri ?? null,
+    preview: body.preview ?? false,
   });
 }
