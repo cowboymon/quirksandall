@@ -82,13 +82,13 @@ export default function PINEditor({ petId, autoStart }: Props) {
     <Card style={{ borderColor: "rgba(184,58,82,0.35)" }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
         <Ionicons name="key-outline" size={16} color={colors.primary} />
-        <Eyebrow bold>PIN for emergency contacts</Eyebrow>
+        <Eyebrow bold>For if you're ever not there</Eyebrow>
       </View>
 
       {stage === "idle" && (
         <>
           <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 6, marginBottom: 12, fontFamily: "Satoshi-Light" }}>
-            The link's the door. The PIN's the key. Send them separately.
+            Anyone with the link sees the profile. This part waits for the PIN.
           </Text>
           <TouchableOpacity
             onPress={() => setStage("set")}
