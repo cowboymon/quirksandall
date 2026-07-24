@@ -6,11 +6,24 @@ import RecipientView from "./RecipientView";
 // Never cache the recipient page — a revoked link or freshly edited profile must
 // take effect immediately.
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+// Supabase reads go through fetch(); Next's Data Cache would otherwise memoize
+// those GETs and serve a point-in-time snapshot of the profile even on a dynamic
+// route. Opt every fetch out so the recipient page always reflects live data.
+export const fetchCache = "force-no-store";
+
+// A Supabase client whose underlying fetch never hits Next's Data Cache. Without
+// this, an edited profile keeps rendering the version cached at first view.
+function liveClient() {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_KEY!, {
+    global: { fetch: (input: any, init?: any) => fetch(input, { ...init, cache: "no-store" }) },
+  });
+}
 
 // Names for the "no longer available" screen — resolved even for a
 // revoked/expired link or archived pet so the message can be personalised.
 async function unavailableInfo(token: string): Promise<{ petName: string; ownerName: string }> {
-  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_KEY!);
+  const supabase = liveClient();
   const { data: link } = await supabase.from("share_links").select("pet_id").eq("token", token).maybeSingle();
   if (!link) return { petName: "", ownerName: "" };
   const { data: pet } = await supabase.from("pets").select("name, owner_id").eq("id", link.pet_id).maybeSingle();
@@ -20,10 +33,7 @@ async function unavailableInfo(token: string): Promise<{ petName: string; ownerN
 }
 
 async function fetchProfile(token: string, logView = true, preview = false): Promise<RecipientProfile | null> {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_KEY!
-  );
+  const supabase = liveClient();
 
   // Resolve the share link
   const { data: link } = await supabase

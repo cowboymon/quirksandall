@@ -112,15 +112,31 @@ export default function Preview() {
   );
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={{ paddingTop: 56, paddingBottom: 48 }}>
-      {/* Dashboard back */}
-      <View style={{ paddingHorizontal: 24, paddingBottom: 8 }}>
-        <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      {/* Sticky header — persistent back-to-Dashboard nav, matching the edit
+          screens (#73). Stays put while the sheet scrolls beneath it. */}
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: 20,
+          paddingTop: 58,
+          paddingBottom: 12,
+          backgroundColor: colors.background,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        }}
+      >
+        <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} style={{ minWidth: 96, flexDirection: "row", alignItems: "center", gap: 4 }}>
           <Ionicons name="chevron-back" size={16} color={colors.textMuted} />
-          <Text style={{ color: colors.textMuted, fontSize: 14 }}>Dashboard</Text>
+          <Text style={{ color: colors.textMuted, fontSize: 15 }}>Dashboard</Text>
         </TouchableOpacity>
+        <Text numberOfLines={1} style={{ flex: 1, textAlign: "center", fontFamily: "Satoshi-Bold", fontSize: 16, color: colors.textDark }}>Preview</Text>
+        <View style={{ minWidth: 96 }} />
       </View>
 
+      <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={{ paddingTop: 20, paddingBottom: 48 }}>
       <View style={{ paddingHorizontal: 24 }}>
         {/* Identity */}
         <View style={{ flexDirection: "row", alignItems: "center", gap: 16, marginTop: 12, marginBottom: 16 }}>
@@ -306,7 +322,8 @@ export default function Preview() {
           <Text style={{ color: colors.textDark, fontSize: 11, textAlign: "center", marginTop: 4, fontFamily: "Satoshi-Medium" }}>Quirks & All · quirksandall.itshypothetical.com</Text>
         </View>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 

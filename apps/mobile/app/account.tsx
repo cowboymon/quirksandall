@@ -182,9 +182,14 @@ export default function Account() {
         <Text style={{ color: "#F8ECEE", fontSize: 15, fontFamily: "Satoshi-Medium", letterSpacing: 0.3 }}>Sign out</Text>
       </TouchableOpacity>
 
-      {/* Delete account — the quieter treatment Sign out used to have, right below */}
-      <TouchableOpacity onPress={deleteAccount} style={{ marginTop: 14, alignItems: "center", paddingVertical: 6 }}>
-        <Text style={{ color: colors.danger, fontSize: 14 }}>Delete account</Text>
+      {/* Delete account — takes the outlined treatment Sign out used to have (#69),
+          a clear standalone button directly beneath the primary Sign out. */}
+      <TouchableOpacity
+        onPress={deleteAccount}
+        activeOpacity={0.85}
+        style={{ marginTop: 14, height: 50, borderRadius: 12, borderWidth: 1, borderColor: colors.danger, backgroundColor: "transparent", alignItems: "center", justifyContent: "center" }}
+      >
+        <Text style={{ color: colors.danger, fontSize: 15, fontFamily: "Satoshi-Medium", letterSpacing: 0.3 }}>Delete account</Text>
       </TouchableOpacity>
     </EditShell>
   );
