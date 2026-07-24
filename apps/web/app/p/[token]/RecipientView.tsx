@@ -243,33 +243,11 @@ export default function RecipientView({ profile, token }: Props) {
                     >
                       <td className="px-3 py-2 font-semibold" style={{ color: BODY }}>
                         {cmd.word}
-                        {cmd.howToCue?.trim() && (
-                          // How-to-cue wasn't in the original table design, so keep it
-                          // subtle: a hint icon that reveals the cue on hover (desktop)
-                          // and an always-visible line beneath (mobile / no-hover).
-                          <span
-                            className="group relative ml-1 inline-flex cursor-help align-middle"
-                            title={`How to cue: ${cmd.howToCue}`}
-                          >
-                            <span
-                              className="inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold"
-                              style={{ backgroundColor: BORDER, color: CRIMSON }}
-                            >
-                              ?
-                            </span>
-                            <span
-                              className="pointer-events-none absolute left-0 top-5 z-10 hidden w-44 rounded-card px-3 py-2 text-xs font-light leading-snug shadow-lg group-hover:block"
-                              style={{ backgroundColor: CRIMSON, color: BLUSH }}
-                            >
-                              {cmd.howToCue}
-                            </span>
-                          </span>
-                        )}
                       </td>
                       <td className="px-3 py-2 text-text-muted">
                         {cmd.meaning}
                         {cmd.howToCue?.trim() && (
-                          <span className="mt-1 block text-xs font-light italic md:hidden" style={{ color: MUTED }}>
+                          <span className="mt-1 block text-xs font-light italic" style={{ color: MUTED }}>
                             Cue: {cmd.howToCue}
                           </span>
                         )}
