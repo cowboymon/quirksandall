@@ -6,6 +6,10 @@ import { supabase } from "../lib/supabase";
 import { purchasePro, restorePurchases } from "../lib/purchases";
 import { colors } from "@quirksandall/shared";
 
+// Flip to true once the redemption backend (redemption_codes table +
+// validate-code Edge Function → RevenueCat Promotional Entitlement) ships.
+const REDEMPTION_ENABLED = false;
+
 const FEATURES = [
   { label: "The soft stuff, too", sub: "Scared of, steers clear of, and what they're really like" },
   { label: "Routine, beyond feeding", sub: "Walks, sleep, and the bathroom routine" },
@@ -174,6 +178,28 @@ export default function Upgrade() {
             <TouchableOpacity onPress={handleRestore} disabled={loading} style={{ paddingVertical: 4 }}>
               <Text style={{ color: colors.textMuted, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Restore purchases</Text>
             </TouchableOpacity>
+
+            {/* Batch-licensing redemption (breeders, insurance partners). Present
+                now so the paywall layout is future-proof; the flow is built later.
+                Intended architecture: code lives in a redemption_codes table →
+                a Supabase Edge Function validates it → the function calls the
+                RevenueCat API to grant a Promotional Entitlement to this user's
+                RC customer ID (bypasses StoreKit/Play Billing, so one shared
+                code works on both platforms). Do NOT use Apple/Google promo
+                codes — they're platform-specific. Flip REDEMPTION_ENABLED on
+                once the backend exists. */}
+            {REDEMPTION_ENABLED ? (
+              <TouchableOpacity onPress={() => router.push("/redeem")} style={{ paddingVertical: 4 }}>
+                <Text style={{ color: colors.textMuted, fontSize: 13, fontFamily: "Satoshi" }}>Have a code?</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                onPress={() => Alert.alert("Coming soon", "Code redemption isn't available yet — it's on the way for group and partner licences.")}
+                style={{ paddingVertical: 4 }}
+              >
+                <Text style={{ color: colors.textMuted, fontSize: 13, fontFamily: "Satoshi" }}>Have a code?</Text>
+              </TouchableOpacity>
+            )}
 
             <Text style={{ color: colors.textMuted, fontSize: 10, fontFamily: "Satoshi-Light", textAlign: "center", lineHeight: 15 }}>
               Charged to your App Store / Google Play account. Unlocks account-wide — every pet you add, covered.
