@@ -21,7 +21,7 @@ function RoutineMeal({ label, time, amount, onTime, onAmount, divider }: {
   return (
     <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8, borderBottomWidth: divider ? 1 : 0, borderBottomColor: colors.border }}>
       <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.textDark }}>{label}</Text>
-      <TimeInput style={mealInput} placeholder="Time — HH:MM" value={time} onChangeText={onTime} />
+      <TimeInput style={mealInput} placeholder="7:30" value={time} onChangeText={onTime} />
       <TextInput style={mealInput} placeholder="Amount & brand" placeholderTextColor={colors.dashedBorder} value={amount} onChangeText={onAmount} />
     </View>
   );

@@ -2,7 +2,7 @@
 // Mirrors the prototype's primitives.tsx (fonts, buttons, dots, inputs).
 import { useState } from "react";
 import { Text, TouchableOpacity, View, TextInput, Modal, type TextInputProps, type ViewProps } from "react-native";
-import { colors, radius, capitalizeFirst } from "@quirksandall/shared";
+import { colors, radius, capitalizeFirst, formatPhone } from "@quirksandall/shared";
 
 // Keyboard types where sentence-casing the first char would be wrong.
 const NON_TEXT_KEYBOARDS = ["numeric", "number-pad", "decimal-pad", "phone-pad", "email-address"];
@@ -56,15 +56,16 @@ export function LabeledInput({
   label,
   style,
   onChangeText,
+  phone,
   ...props
-}: TextInputProps & { label: string }) {
+}: TextInputProps & { label: string; phone?: boolean }) {
   const [focused, setFocused] = useState(false);
   return (
     <View>
       <FieldLabel>{label}</FieldLabel>
       <TextInput
         autoCapitalize="sentences"
-        onChangeText={sentenceCased(props.keyboardType, onChangeText)}
+        onChangeText={phone && onChangeText ? (t) => onChangeText(formatPhone(t)) : sentenceCased(props.keyboardType, onChangeText)}
         style={[
           {
             minHeight: 40, borderRadius: 8, borderWidth: 1,
@@ -107,27 +108,68 @@ export function DateInput({ value, onChangeText, style, ...props }: TextInputPro
   );
 }
 
-// Masked 24-hour time field (HH:MM). Digits only; auto-inserts the colon and
-// clamps hours to 23 / minutes to 59. Stores the "HH:MM" string.
-export function TimeInput({ value, onChangeText, style, placeholder, ...props }: TextInputProps & { onChangeText: (v: string) => void }) {
-  const handle = (raw: string) => {
-    const d = raw.replace(/\D/g, "").slice(0, 4);
-    let hh = d.slice(0, 2);
-    let mm = d.slice(2, 4);
-    if (hh.length === 2) hh = String(Math.min(parseInt(hh, 10), 23)).padStart(2, "0");
-    if (mm.length === 2) mm = String(Math.min(parseInt(mm, 10), 59)).padStart(2, "0");
-    onChangeText(d.length > 2 ? `${hh}:${mm}` : hh);
-  };
+// Parse a stored time string into a 12-hour "h:mm" part + AM/PM period.
+// Accepts "7:30 AM" and legacy 24-hour "07:30" / "19:30".
+function parseTime12(value?: string | null): { hhmm: string; period: "AM" | "PM" } {
+  const v = (value ?? "").trim();
+  const ap = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(v);
+  if (ap) return { hhmm: `${parseInt(ap[1], 10)}:${ap[2]}`, period: ap[3].toUpperCase() as "AM" | "PM" };
+  const t = /^(\d{1,2}):(\d{2})$/.exec(v);
+  if (t) {
+    const H = parseInt(t[1], 10);
+    if (H >= 13 || H === 0) return { hhmm: `${H % 12 || 12}:${t[2]}`, period: H >= 12 ? "PM" : "AM" };
+    if (H === 12) return { hhmm: `12:${t[2]}`, period: "PM" };
+    return { hhmm: `${H}:${t[2]}`, period: "AM" };
+  }
+  return { hhmm: "", period: "AM" };
+}
+
+// Mask raw digits into a 12-hour "h:mm". First digit 2–9 → single-digit hour;
+// a leading 1 stays a two-digit hour only while it reads 10–12.
+function maskTime12(raw: string): string {
+  const d = raw.replace(/\D/g, "").slice(0, 4);
+  if (!d) return "";
+  if (d[0] === "1" && d.length === 1) return "1";
+  let hourLen: number;
+  if (d[0] >= "2") hourLen = 1;
+  else if (d[0] === "1" && +d.slice(0, 2) >= 10 && +d.slice(0, 2) <= 12) hourLen = 2;
+  else hourLen = 1;
+  let h = parseInt(d.slice(0, hourLen), 10);
+  if (h === 0 || h > 12) h = 12;
+  const mm = d.slice(hourLen, hourLen + 2);
+  if (!mm.length) return String(h);
+  const m = mm.length === 2 ? String(Math.min(parseInt(mm, 10), 59)).padStart(2, "0") : mm;
+  return `${h}:${m}`;
+}
+
+// 12-hour time field with an AM/PM toggle. Stores "h:mm AM" / "h:mm PM".
+export function TimeInput({ value, onChangeText, style, placeholder }: { value: string; onChangeText: (v: string) => void; style?: TextInputProps["style"]; placeholder?: string }) {
+  const { hhmm, period } = parseTime12(value);
+  const commit = (nextHhmm: string, nextPeriod: "AM" | "PM") =>
+    onChangeText(nextHhmm ? `${nextHhmm} ${nextPeriod}` : "");
   return (
-    <Input
-      value={value}
-      onChangeText={handle}
-      placeholder={placeholder ?? "HH:MM"}
-      keyboardType="number-pad"
-      maxLength={5}
-      style={style}
-      {...props}
-    />
+    <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+      <View style={{ flex: 1 }}>
+        <Input
+          value={hhmm}
+          onChangeText={(raw) => commit(maskTime12(raw), period)}
+          placeholder={placeholder ?? "7:30"}
+          keyboardType="number-pad"
+          maxLength={5}
+          style={style}
+        />
+      </View>
+      <View style={{ flexDirection: "row", borderWidth: 1, borderColor: colors.border, borderRadius: 8, overflow: "hidden" }}>
+        {(["AM", "PM"] as const).map((p) => {
+          const active = period === p;
+          return (
+            <TouchableOpacity key={p} onPress={() => commit(hhmm, p)} style={{ paddingHorizontal: 12, paddingVertical: 9, backgroundColor: active ? colors.cardDark : "#FFFFFF" }}>
+              <Text style={{ fontSize: 13, fontFamily: "Satoshi-Medium", color: active ? colors.cardDarkText : colors.textMuted }}>{p}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </View>
   );
 }
 
@@ -203,14 +245,14 @@ export function Card({ children, style, ...props }: ViewProps) {
 
 // Single-line input. `filled` uses the blush surface the prototype uses inside
 // emergency/routine cards; default is white with a rose focus border.
-export function Input({ style, filled, onFocus, onBlur, onChangeText, ...props }: TextInputProps & { filled?: boolean }) {
+export function Input({ style, filled, phone, onFocus, onBlur, onChangeText, ...props }: TextInputProps & { filled?: boolean; phone?: boolean }) {
   const [focused, setFocused] = useState(false);
   return (
     <TextInput
       // Sentence-case the first char programmatically so it works regardless of
       // the device's keyboard auto-capitalize setting (text fields only).
       autoCapitalize="sentences"
-      onChangeText={sentenceCased(props.keyboardType, onChangeText)}
+      onChangeText={phone && onChangeText ? (t) => onChangeText(formatPhone(t)) : sentenceCased(props.keyboardType, onChangeText)}
       style={[
         {
           minHeight: 46,

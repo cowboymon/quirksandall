@@ -40,7 +40,7 @@ export default function Step2() {
               onChangeText={(v) => setPet({ vetClinic: v })}
               onSelectPlace={(p) => setPet({ vetClinic: p.name, ...(p.phone ? { vetPhone: p.phone } : {}) })}
             />
-            <LabeledInput label="Phone" placeholder="Phone" keyboardType="phone-pad" value={pet.vetPhone ?? ""} onChangeText={(v) => setPet({ vetPhone: v })} />
+            <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={pet.vetPhone ?? ""} onChangeText={(v) => setPet({ vetPhone: v })} />
           </View>
         </Card>
 
@@ -48,7 +48,7 @@ export default function Step2() {
           <Eyebrow bold>Emergency vet</Eyebrow>
           <View style={{ gap: 8, marginTop: 12 }}>
             <LabeledInput label="Clinic" placeholder="Clinic name" value={pet.emergVetClinic ?? ""} onChangeText={(v) => setPet({ emergVetClinic: v })} />
-            <LabeledInput label="Phone" placeholder="Phone" keyboardType="phone-pad" value={pet.emergVetPhone ?? ""} onChangeText={(v) => setPet({ emergVetPhone: v })} />
+            <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={pet.emergVetPhone ?? ""} onChangeText={(v) => setPet({ emergVetPhone: v })} />
           </View>
         </Card>
 
@@ -65,7 +65,7 @@ export default function Step2() {
           <View style={{ gap: 8, marginTop: 12 }}>
             <LabeledInput label="Name" placeholder="Name" value={pet.backupName ?? ""} onChangeText={(v) => setPet({ backupName: v })} />
             <LabeledInput label="Relationship" placeholder="e.g. sister" value={pet.backupRelationship ?? ""} onChangeText={(v) => setPet({ backupRelationship: v })} />
-            <LabeledInput label="Phone" placeholder="Phone" keyboardType="phone-pad" value={pet.backupPhone ?? ""} onChangeText={(v) => setPet({ backupPhone: v })} />
+            <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={pet.backupPhone ?? ""} onChangeText={(v) => setPet({ backupPhone: v })} />
           </View>
           <CheckboxRow
             label="I have permission to share this person's contact info."
@@ -89,7 +89,7 @@ export default function Step2() {
             <View style={{ gap: 8, marginTop: 12 }}>
               <LabeledInput label="Name" placeholder="Name" value={pet.backup2Name ?? ""} onChangeText={(v) => setPet({ backup2Name: v })} />
               <LabeledInput label="Relationship" placeholder="e.g. neighbour" value={pet.backup2Relationship ?? ""} onChangeText={(v) => setPet({ backup2Relationship: v })} />
-              <LabeledInput label="Phone" placeholder="Phone" keyboardType="phone-pad" value={pet.backup2Phone ?? ""} onChangeText={(v) => setPet({ backup2Phone: v })} />
+              <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={pet.backup2Phone ?? ""} onChangeText={(v) => setPet({ backup2Phone: v })} />
             </View>
             <CheckboxRow
               label="I have permission to share this person's contact info."

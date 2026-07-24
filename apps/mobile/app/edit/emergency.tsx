@@ -123,7 +123,7 @@ export default function EditEmergency() {
               onSelectPlace={(p) => { setVetClinic(p.name); if (p.phone) setVetPhone(p.phone); if (p.address) setVetAddress(p.address); }}
             />
             <LabeledInput label="Address" placeholder="Address" value={vetAddress} onChangeText={setVetAddress} />
-            <LabeledInput label="Phone" placeholder="Phone" keyboardType="phone-pad" value={vetPhone} onChangeText={setVetPhone} />
+            <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={vetPhone} onChangeText={setVetPhone} />
           </View>
           <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 8, fontFamily: "Satoshi-Light" }}>
             Consider pre-authorising your sitter directly with your vet by phone or through their online portal.
@@ -140,7 +140,7 @@ export default function EditEmergency() {
               onChangeText={setEmergClinic}
               onSelectPlace={(p) => { setEmergClinic(p.name); if (p.phone) setEmergPhone(p.phone); }}
             />
-            <LabeledInput label="Phone" placeholder="Phone" keyboardType="phone-pad" value={emergPhone} onChangeText={setEmergPhone} />
+            <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={emergPhone} onChangeText={setEmergPhone} />
           </View>
         </Card>
 
@@ -158,7 +158,7 @@ export default function EditEmergency() {
           <View style={{ gap: 8, marginTop: 12 }}>
             <LabeledInput label="Name" placeholder="Name" value={backupName} onChangeText={setBackupName} />
             <LabeledInput label="Relationship" placeholder="e.g. sister" value={backupRel} onChangeText={setBackupRel} />
-            <LabeledInput label="Phone" placeholder="Phone" keyboardType="phone-pad" value={backupPhone} onChangeText={setBackupPhone} />
+            <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={backupPhone} onChangeText={setBackupPhone} />
           </View>
           <CheckboxRow
             label="I have permission to share this person's contact info."
@@ -182,7 +182,7 @@ export default function EditEmergency() {
             <View style={{ gap: 8, marginTop: 12 }}>
               <LabeledInput label="Name" placeholder="Name" value={backup2Name} onChangeText={setBackup2Name} />
               <LabeledInput label="Relationship" placeholder="e.g. neighbour" value={backup2Rel} onChangeText={setBackup2Rel} />
-              <LabeledInput label="Phone" placeholder="Phone" keyboardType="phone-pad" value={backup2Phone} onChangeText={setBackup2Phone} />
+              <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={backup2Phone} onChangeText={setBackup2Phone} />
             </View>
             <CheckboxRow
               label="I have permission to share this person's contact info."

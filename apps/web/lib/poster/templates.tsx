@@ -4,6 +4,8 @@
 //
 // Every multi-child div must declare display:flex (Satori requirement).
 
+import { formatPhone } from "@quirksandall/shared";
+
 export type PosterData = {
   name: string;
   breed: string;
@@ -147,7 +149,7 @@ function PhoneFooter({
         If you see {d.name}, {please ? "please call" : "call"}
       </span>
       <span style={{ fontFamily: "Tanker", fontSize: 36 * scale, lineHeight: 1, color: BLUSH, letterSpacing: "-0.01em" }}>
-        {d.ownerPhone || "—"}
+        {formatPhone(d.ownerPhone) || "—"}
       </span>
       {showOwnerName && d.ownerName ? (
         <span style={{ color: "rgba(248,236,238,0.35)", fontSize: 10 * scale, fontFamily: "Satoshi", marginTop: 6 * scale }}>
@@ -247,7 +249,7 @@ export function PosterTemplate(d: PosterData) {
       >
         <span style={{ ...eyebrowStyle(24, "rgba(248,236,238,0.6)"), marginBottom: 10 }}>If you see {d.name}, call</span>
         <span style={{ fontFamily: "Tanker", fontSize: 120, lineHeight: 1, color: BLUSH, letterSpacing: "-0.01em" }}>
-          {d.ownerPhone || "—"}
+          {formatPhone(d.ownerPhone) || "—"}
         </span>
         {d.ownerName ? (
           <span style={{ color: "rgba(248,236,238,0.5)", fontSize: 26, marginTop: 12 }}>{d.ownerName}</span>
