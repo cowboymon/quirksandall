@@ -144,15 +144,22 @@ export default function EditPet() {
   const doDelete = async () => {
     if (!petId) return;
     // Soft-archive: keeps history, and the dashboard only shows active pets.
-    await supabase.from("pets").update({ status: "archived" }).eq("id", petId);
-    await supabase.from("share_links").update({ revoked: true }).eq("pet_id", petId);
-    // Route to the next active pet, or onboarding if none remain.
+    // Revoke the pet's links so they stop resolving immediately. Surface any
+    // failure rather than leaving the pet/links live (#57/#65).
+    const { error: petErr } = await supabase.from("pets").update({ status: "archived" }).eq("id", petId);
+    const { error: linkErr } = await supabase.from("share_links").update({ revoked: true }).eq("pet_id", petId);
+    if (petErr || linkErr) {
+      Alert.alert("Couldn't delete", (petErr ?? linkErr)!.message);
+      return;
+    }
+    // Route to the next active pet, or onboarding if none remain. Exclude the
+    // just-archived pet explicitly to avoid any read-after-write race.
     const { data: { user } } = await supabase.auth.getUser();
     const { data: next } = await supabase
-      .from("pets").select("id").eq("owner_id", user!.id).eq("status", "active").limit(1).maybeSingle();
+      .from("pets").select("id").eq("owner_id", user!.id).eq("status", "active").neq("id", petId).limit(1).maybeSingle();
     setShowDelete(false);
     if (next?.id) setPetId(next.id);
-    router.replace(next ? "/dashboard" : "/onboarding/step1");
+    router.replace(next?.id ? "/dashboard" : "/onboarding/step1");
   };
 
   const dobISO = displayDateToISO(dob);
@@ -207,8 +214,18 @@ export default function EditPet() {
 
         <Card>
           <Eyebrow>Species</Eyebrow>
-          <View style={{ marginTop: 4 }}>
-            <Select value={species} onValueChange={setSpecies} options={SPECIES_OPTIONS} placeholder="Select species" />
+          <View style={{ marginTop: 4, gap: 8 }}>
+            {(() => {
+              const isOther = species === "Other" || (!!species && !["Dog", "Cat", "Bird", "Rabbit"].includes(species));
+              return (
+                <>
+                  <Select value={isOther ? "Other" : species} onValueChange={setSpecies} options={SPECIES_OPTIONS} placeholder="Select species" />
+                  {isOther && (
+                    <Input placeholder="Which species?" value={species === "Other" ? "" : species} onChangeText={(v) => setSpecies(v || "Other")} />
+                  )}
+                </>
+              );
+            })()}
           </View>
         </Card>
 

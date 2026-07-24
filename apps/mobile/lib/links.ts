@@ -61,6 +61,7 @@ export async function renameLink(id: string, label: string): Promise<void> {
   await supabase.from("share_links").update({ label }).eq("id", id);
 }
 
-export async function revokeLink(id: string): Promise<void> {
-  await supabase.from("share_links").update({ revoked: true }).eq("id", id);
+export async function revokeLink(id: string): Promise<{ error: string | null }> {
+  const { error } = await supabase.from("share_links").update({ revoked: true }).eq("id", id);
+  return { error: error?.message ?? null };
 }
