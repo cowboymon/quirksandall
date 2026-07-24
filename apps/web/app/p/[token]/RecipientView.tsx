@@ -127,7 +127,20 @@ export default function RecipientView({ profile, token }: Props) {
                 aria-expanded={emergencyOpen}
               >
                 <span className="text-[11px] font-bold uppercase tracking-wide" style={{ color: BLUSH }}>In an emergency</span>
-                <span className="text-xs" style={{ color: "rgba(248,236,238,0.5)" }}>{emergencyOpen ? "Hide ▲" : "Show ▼"}</span>
+                {/* Chevron matching the app's nav — rotates on expand */}
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke={BLUSH}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{ opacity: 0.6, transition: "transform 0.2s ease", transform: emergencyOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
               </button>
               <div className="flex flex-col gap-4" style={{ display: emergencyOpen ? "flex" : "none" }}>
                 {(emergencyContacts.primaryVet.contactName || emergencyContacts.primaryVet.clinic || emergencyContacts.primaryVet.phone) && (
