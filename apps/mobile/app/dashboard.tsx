@@ -244,16 +244,23 @@ export default function Dashboard() {
                   {viewedLabel(link.last_viewed_at)}
                 </Text>
               </View>
-              <TouchableOpacity
-                onPress={() => (isPaid ? shareLinkUrl(link) : router.push("/upgrade"))}
-                style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}
-              >
-                <Ionicons
-                  name={!isPaid ? "lock-closed" : copiedId === link.id ? "checkmark" : "share-outline"}
-                  size={15}
-                  color={!isPaid ? "rgba(248,236,238,0.4)" : copiedId === link.id ? colors.success : colors.cardDarkText}
-                />
-              </TouchableOpacity>
+              {/* The first (main) link is always shareable — free tier gets
+                  preview + link 1. Only additional links need the paid unlock. */}
+              {(() => {
+                const linkLocked = !isPaid && i > 0;
+                return (
+                  <TouchableOpacity
+                    onPress={() => (linkLocked ? router.push("/upgrade") : shareLinkUrl(link))}
+                    style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}
+                  >
+                    <Ionicons
+                      name={linkLocked ? "lock-closed" : copiedId === link.id ? "checkmark" : "share-outline"}
+                      size={15}
+                      color={linkLocked ? "rgba(248,236,238,0.4)" : copiedId === link.id ? colors.success : colors.cardDarkText}
+                    />
+                  </TouchableOpacity>
+                );
+              })()}
               <TouchableOpacity onPress={() => confirmRevoke(link)} style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}>
                 <Ionicons name="trash-outline" size={15} color="rgba(248,236,238,0.5)" />
               </TouchableOpacity>

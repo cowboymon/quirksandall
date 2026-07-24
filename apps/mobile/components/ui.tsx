@@ -40,6 +40,28 @@ export function Eyebrow({ children, ochre, bold }: { children: React.ReactNode; 
 
 // 10px medium uppercase micro-label sitting above an individual input,
 // matching the prototype's field labels inside emergency cards.
+// Field tier badge (matches the prototype's FieldTier):
+//   free → warm blush pill "Always shared"
+//   paid → crimson-tinted pill "Unlock to share"
+export function FieldTier({ variant }: { variant: "free" | "paid" }) {
+  const paid = variant === "paid";
+  return (
+    <View
+      style={{
+        alignSelf: "flex-start",
+        backgroundColor: paid ? "rgba(81,0,0,0.08)" : "rgba(229,190,196,0.8)",
+        borderRadius: 999,
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+      }}
+    >
+      <Text style={{ fontSize: 9, fontFamily: "Satoshi-Medium", letterSpacing: 0.36, color: paid ? "rgba(81,0,0,0.5)" : "#987080" }}>
+        {paid ? "Unlock to share" : "Always shared"}
+      </Text>
+    </View>
+  );
+}
+
 export function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
     <Text

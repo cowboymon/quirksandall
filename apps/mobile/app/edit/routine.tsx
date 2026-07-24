@@ -5,7 +5,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
-import { Input, Eyebrow, Card, InlineNote, TimeInput } from "../../components/ui";
+import { Input, Eyebrow, Card, InlineNote, TimeInput, FieldTier } from "../../components/ui";
 import { colors } from "@quirksandall/shared";
 
 const mealInput = {
@@ -143,7 +143,7 @@ export default function EditRoutine() {
   const PaidBadge = () =>
     !isPaid ? (
       <TouchableOpacity onPress={() => router.push("/upgrade")} style={{ marginLeft: 8 }}>
-        <Text style={{ fontSize: 11, color: colors.caution, fontFamily: "Satoshi-Medium" }}>🔒 Paid</Text>
+        <FieldTier variant="paid" />
       </TouchableOpacity>
     ) : null;
 
@@ -164,7 +164,7 @@ export default function EditRoutine() {
       <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 10, overflow: "hidden", marginBottom: 12 }}>
         <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: colors.border, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <Eyebrow ochre>Feeding</Eyebrow>
-          <Text style={{ fontSize: 11, color: colors.success, fontFamily: "Satoshi-Medium" }}>Always shown</Text>
+          <FieldTier variant="free" />
         </View>
         <RoutineMeal label="Breakfast" time={breakfastTime} amount={breakfastAmount} onTime={setBreakfastTime} onAmount={setBreakfastAmount} divider />
         <RoutineMeal label="Lunch" time={lunchTime} amount={lunchAmount} onTime={setLunchTime} onAmount={setLunchAmount} divider />
@@ -243,7 +243,7 @@ export default function EditRoutine() {
       <Card style={{ marginBottom: 12, borderColor: colors.success }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <Eyebrow>Allergies</Eyebrow>
-          <Text style={{ fontSize: 11, color: colors.success, fontFamily: "Satoshi-Medium" }}>Always shown</Text>
+          <FieldTier variant="free" />
         </View>
         <Input
           className="mt-2"
