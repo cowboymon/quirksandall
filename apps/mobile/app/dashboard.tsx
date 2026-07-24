@@ -96,7 +96,7 @@ export default function Dashboard() {
       isPaid,
       sections: [
         { label: "Pet Basics", detail: `${pet.breed ?? ""}${pet.breed && pet.sex ? " · " : ""}${pet.sex ?? ""}`.trim() || "Name, breed, photo", status: pet.breed ? "done" : "empty", route: "/edit/pet" },
-        { label: "Emergency Contacts", detail: "Vet, emergency vet, backup", status: "done", route: "/edit/emergency" },
+        { label: "In an Emergency", detail: "Vet, emergency vet, backup", status: "done", route: "/edit/emergency" },
         { label: "Commands", detail: commandCount ? `${commandCount} command${commandCount === 1 ? "" : "s"} saved` : "None saved yet", status: commandCount ? "done" : "empty", route: "/edit/behavior" },
         { label: "Quirks & Triggers", detail: "Escape risk, fears, off-limits zones", status: "done", route: "/edit/behavior?section=quirks" },
         { label: "Routine", detail: isPaid ? "Shown to sitters" : "Saved — not shown to sitters yet", status: "saved", route: "/edit/routine" },
@@ -344,16 +344,28 @@ export default function Dashboard() {
           <Eyebrow>Profile sections</Eyebrow>
           <View style={{ gap: 8, marginTop: 12 }}>
             {sections.map((s) => (
-              <TouchableOpacity key={s.label} onPress={() => router.push(s.route as any)}>
-                <Card style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: statusDot[s.status] }} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>{s.label}</Text>
-                    <Text style={{ color: statusColor[s.status], fontSize: 11, marginTop: 2 }}>{s.detail}</Text>
-                  </View>
-                  <Ionicons name="pencil" size={14} color={colors.dashedBorder} />
-                </Card>
-              </TouchableOpacity>
+              <View key={s.label}>
+                <TouchableOpacity onPress={() => router.push(s.route as any)}>
+                  <Card style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: statusDot[s.status] }} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>{s.label}</Text>
+                      <Text style={{ color: statusColor[s.status], fontSize: 11, marginTop: 2 }}>{s.detail}</Text>
+                    </View>
+                    <Ionicons name="pencil" size={14} color={colors.dashedBorder} />
+                  </Card>
+                </TouchableOpacity>
+                {/* Quick access to the PIN, directly under the emergency row */}
+                {s.label === "In an Emergency" && (
+                  <TouchableOpacity
+                    onPress={() => router.push("/edit/emergency?section=pin")}
+                    style={{ flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start", marginTop: 6, marginLeft: 20, paddingVertical: 4 }}
+                  >
+                    <Ionicons name="key-outline" size={13} color={colors.primary} />
+                    <Text style={{ color: colors.primary, fontSize: 12, fontFamily: "Satoshi-Medium" }}>Change PIN →</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             ))}
           </View>
         </View>

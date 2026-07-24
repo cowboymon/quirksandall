@@ -143,7 +143,7 @@ export default function EditRoutine() {
   const PaidBadge = () =>
     !isPaid ? (
       <TouchableOpacity onPress={() => router.push("/upgrade")} style={{ marginLeft: 8 }}>
-        <FieldTier variant="paid" />
+        <FieldTier />
       </TouchableOpacity>
     ) : null;
 
@@ -164,7 +164,6 @@ export default function EditRoutine() {
       <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 10, overflow: "hidden", marginBottom: 12 }}>
         <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: colors.border, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <Eyebrow ochre>Feeding</Eyebrow>
-          <FieldTier variant="free" />
         </View>
         <RoutineMeal label="Breakfast" time={breakfastTime} amount={breakfastAmount} onTime={setBreakfastTime} onAmount={setBreakfastAmount} divider />
         <RoutineMeal label="Lunch" time={lunchTime} amount={lunchAmount} onTime={setLunchTime} onAmount={setLunchAmount} divider />
@@ -243,7 +242,6 @@ export default function EditRoutine() {
       <Card style={{ marginBottom: 12, borderColor: colors.success }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <Eyebrow>Allergies</Eyebrow>
-          <FieldTier variant="free" />
         </View>
         <Input
           className="mt-2"

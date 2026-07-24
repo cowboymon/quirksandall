@@ -1,6 +1,6 @@
 // Edit emergency contacts + PIN
-import { useState, useEffect } from "react";
-import { View, Text, Alert, TouchableOpacity } from "react-native";
+import { useState, useEffect, useRef } from "react";
+import { View, Text, Alert, TouchableOpacity, ScrollView } from "react-native";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
@@ -9,10 +9,21 @@ import { LabeledPlacesInput } from "../../components/PlacesInput";
 import CheckboxRow from "../../components/CheckboxRow";
 import PINEditor from "../../components/PINEditor";
 import { colors } from "@quirksandall/shared";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 
 export default function EditEmergency() {
   const { petId, loading } = useActivePet();
+  const { section } = useLocalSearchParams<{ section?: string }>();
+  const scrollRef = useRef<ScrollView>(null);
+  const pinY = useRef(0);
+
+  // Deep-link from the dashboard "Change PIN" quick action → scroll to (and
+  // open) the PIN editor.
+  useEffect(() => {
+    if (loading || section !== "pin") return;
+    const t = setTimeout(() => scrollRef.current?.scrollTo({ y: pinY.current, animated: true }), 400);
+    return () => clearTimeout(t);
+  }, [loading, section]);
 
   const [vetContactName, setVetContactName] = useState("");
   const [vetClinic, setVetClinic] = useState("");
@@ -104,7 +115,7 @@ export default function EditEmergency() {
   };
 
   return (
-    <EditShell title="Emergency Contacts" onSave={save} saving={saving} loading={loading}>
+    <EditShell title="In an Emergency" onSave={save} saving={saving} loading={loading} scrollRef={scrollRef}>
       {/* Voice carve-out reminder — plain register for this section */}
       <View style={{ marginBottom: 16 }}>
         <InlineNote>Recipients see this block only after entering your PIN. No personality here — plain labels, clear numbers.</InlineNote>
@@ -217,7 +228,9 @@ export default function EditEmergency() {
         </TouchableOpacity>
 
         {/* PIN editor */}
-        <PINEditor petId={petId} />
+        <View onLayout={(e) => { pinY.current = e.nativeEvent.layout.y; }}>
+          <PINEditor petId={petId} autoStart={section === "pin"} />
+        </View>
       </View>
     </EditShell>
   );

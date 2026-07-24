@@ -1,16 +1,17 @@
 // Inline PIN change component — used in the emergency contacts edit screen
 import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabase";
 import { colors } from "@quirksandall/shared";
 import { Eyebrow, Card } from "./ui";
 
-type Props = { petId: string | null };
+type Props = { petId: string | null; autoStart?: boolean };
 
 type Stage = "idle" | "set" | "confirm";
 
-export default function PINEditor({ petId }: Props) {
-  const [stage, setStage] = useState<Stage>("idle");
+export default function PINEditor({ petId, autoStart }: Props) {
+  const [stage, setStage] = useState<Stage>(autoStart ? "set" : "idle");
   const [pin, setPin] = useState("");
   const [confirm, setConfirm] = useState("");
   const [mismatch, setMismatch] = useState(false);
@@ -78,20 +79,25 @@ export default function PINEditor({ petId }: Props) {
   };
 
   return (
-    <Card>
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-        <Eyebrow>PIN for emergency contacts</Eyebrow>
-        {stage === "idle" && (
-          <TouchableOpacity onPress={() => setStage("set")}>
-            <Text style={{ color: colors.accent, fontSize: 13, fontFamily: "Satoshi-Medium" }}>Change PIN</Text>
-          </TouchableOpacity>
-        )}
+    <Card style={{ borderColor: "rgba(184,58,82,0.35)" }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+        <Ionicons name="key-outline" size={16} color={colors.primary} />
+        <Eyebrow bold>PIN for emergency contacts</Eyebrow>
       </View>
 
       {stage === "idle" && (
-        <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 6 }}>
-          The link's the door. The PIN's the key. Send them separately.
-        </Text>
+        <>
+          <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 6, marginBottom: 12, fontFamily: "Satoshi-Light" }}>
+            The link's the door. The PIN's the key. Send them separately.
+          </Text>
+          <TouchableOpacity
+            onPress={() => setStage("set")}
+            style={{ height: 44, borderRadius: 10, backgroundColor: colors.primary, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }}
+          >
+            <Ionicons name="lock-closed" size={15} color="#F8ECEE" />
+            <Text style={{ color: "#F8ECEE", fontSize: 14, fontFamily: "Satoshi-Bold" }}>Change PIN</Text>
+          </TouchableOpacity>
+        </>
       )}
 
       {stage !== "idle" && (

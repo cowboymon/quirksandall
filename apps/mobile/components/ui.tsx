@@ -2,6 +2,7 @@
 // Mirrors the prototype's primitives.tsx (fonts, buttons, dots, inputs).
 import { useState } from "react";
 import { Text, TouchableOpacity, View, TextInput, Modal, type TextInputProps, type ViewProps } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, capitalizeFirst, formatPhone } from "@quirksandall/shared";
 
 // Keyboard types where sentence-casing the first char would be wrong.
@@ -40,24 +41,24 @@ export function Eyebrow({ children, ochre, bold }: { children: React.ReactNode; 
 
 // 10px medium uppercase micro-label sitting above an individual input,
 // matching the prototype's field labels inside emergency cards.
-// Field tier badge (matches the prototype's FieldTier):
-//   free → warm blush pill "Always shared"
-//   paid → crimson-tinted pill "Unlock to share"
-export function FieldTier({ variant }: { variant: "free" | "paid" }) {
-  const paid = variant === "paid";
+// "Unlock to share" pill for paid-gated fields. Free/always-visible fields carry
+// no label. Rose lock icon + text (#B83A52) to sit in the brand palette.
+export function FieldTier() {
   return (
     <View
       style={{
         alignSelf: "flex-start",
-        backgroundColor: paid ? "rgba(81,0,0,0.08)" : "rgba(229,190,196,0.8)",
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 4,
+        backgroundColor: "rgba(184,58,82,0.12)",
         borderRadius: 999,
         paddingHorizontal: 8,
-        paddingVertical: 2,
+        paddingVertical: 3,
       }}
     >
-      <Text style={{ fontSize: 9, fontFamily: "Satoshi-Medium", letterSpacing: 0.36, color: paid ? "rgba(81,0,0,0.5)" : "#987080" }}>
-        {paid ? "Unlock to share" : "Always shared"}
-      </Text>
+      <Ionicons name="lock-closed" size={10} color="#B83A52" />
+      <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", letterSpacing: 0.2, color: "#B83A52" }}>Unlock to share</Text>
     </View>
   );
 }
