@@ -18,9 +18,12 @@ type DashboardData = {
   ownerInitials: string;
   links: OwnerLink[];
   firstCommand: string | null;
+  needsReview: boolean;
   sections: Section[];
   isPaid: boolean;
 };
+
+const REVIEW_INTERVAL_MS = 21 * 24 * 60 * 60 * 1000; // 21 days
 
 const statusColor = { done: colors.success, saved: colors.caution, empty: colors.textMuted } as const;
 const statusDot = { done: colors.success, saved: colors.caution, empty: colors.border } as const;
@@ -87,12 +90,18 @@ export default function Dashboard() {
 
     const isPaid = ownerData?.purchase_status === "paid";
     const commandCount = behavior?.commands?.length ?? 0;
+    // 21-day freshness cadence (#54): the nudge reappears when no command has
+    // been confirmed (i.e. the behavior screen saved) within the window.
+    const lastConfirmed = (behavior?.commands ?? [])
+      .map((c: any) => c.lastConfirmedAt).filter(Boolean).sort().pop() as string | undefined;
+    const needsReview = commandCount > 0 && (!lastConfirmed || Date.now() - new Date(lastConfirmed).getTime() > REVIEW_INTERVAL_MS);
 
     setData({
       pet: { ...pet, age: computeAge(pet.dob, pet.dob_is_estimated) },
       ownerInitials: initialsOf(ownerData?.name),
       links,
       firstCommand: behavior?.commands?.[0]?.word ?? null,
+      needsReview,
       isPaid,
       sections: [
         { label: "Pet Basics", detail: `${pet.breed ?? ""}${pet.breed && pet.sex ? " · " : ""}${pet.sex ?? ""}`.trim() || "Name, breed, photo", status: pet.breed ? "done" : "empty", route: "/edit/pet" },
@@ -166,7 +175,7 @@ export default function Dashboard() {
     return <View className="flex-1 bg-background items-center justify-center"><Text className="text-text-muted">Loading…</Text></View>;
   }
 
-  const { pet, ownerInitials, links, firstCommand, sections, isPaid } = data;
+  const { pet, ownerInitials, links, firstCommand, needsReview, sections, isPaid } = data;
 
   return (
     <ScrollView className="flex-1 bg-background" contentContainerStyle={{ paddingBottom: 40 }}>
@@ -237,7 +246,7 @@ export default function Dashboard() {
                     <Text style={{ color: colors.cardDarkText, fontSize: 13, fontFamily: "Satoshi-Medium" }} numberOfLines={1}>
                       {link.label || "Untitled link"}
                     </Text>
-                    <Ionicons name="pencil" size={11} color="rgba(248,236,238,0.4)" />
+                    <Ionicons name="create-outline" size={14} color="rgba(248,236,238,0.55)" />
                   </TouchableOpacity>
                 )}
                 <Text style={{ color: "rgba(248,236,238,0.4)", fontSize: 11, marginTop: 2, fontFamily: "Satoshi-Light" }}>
@@ -318,8 +327,8 @@ export default function Dashboard() {
           </TouchableOpacity>
         )}
 
-        {/* Command freshness nudge — dismissible */}
-        {firstCommand && !nudgeDismissed && (
+        {/* Command freshness nudge — 21-day cadence, dismissible for the session */}
+        {firstCommand && needsReview && !nudgeDismissed && (
           <Card style={{ borderColor: "rgba(184,58,82,0.4)", flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
             <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: "rgba(184,58,82,0.15)", alignItems: "center", justifyContent: "center", marginTop: 1 }}>
               <Ionicons name="notifications-outline" size={15} color={colors.primary} />
@@ -352,7 +361,7 @@ export default function Dashboard() {
                       <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>{s.label}</Text>
                       <Text style={{ color: statusColor[s.status], fontSize: 11, marginTop: 2 }}>{s.detail}</Text>
                     </View>
-                    <Ionicons name="pencil" size={14} color={colors.dashedBorder} />
+                    <Ionicons name="create-outline" size={16} color={colors.textMuted} />
                   </Card>
                 </TouchableOpacity>
                 {/* Quick access to the PIN, directly under the emergency row */}

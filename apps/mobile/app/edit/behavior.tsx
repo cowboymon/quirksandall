@@ -4,7 +4,7 @@ import { View, Text, TouchableOpacity, Alert, ScrollView } from "react-native";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
-import { Input, Eyebrow, Card } from "../../components/ui";
+import { Input, Eyebrow, Card, FieldTier } from "../../components/ui";
 import { colors } from "@quirksandall/shared";
 import type { Command } from "@quirksandall/shared";
 import { router, useLocalSearchParams } from "expo-router";
@@ -20,7 +20,10 @@ export default function EditBehavior() {
   const [noGo, setNoGo] = useState("");
   const [flightRisk, setFlightRisk] = useState("");
   const [temperament, setTemperament] = useState("");
+  const [isPaid, setIsPaid] = useState(false);
   const [saving, setSaving] = useState(false);
+  // Paid-gated fields carry the "Unlock to share" pill for free owners.
+  const softLocked = !isPaid;
 
   // Deep-link from the dashboard "Quirks & Triggers" row → scroll to that block.
   useEffect(() => {
@@ -31,21 +34,22 @@ export default function EditBehavior() {
 
   useEffect(() => {
     if (!petId) return;
-    supabase
-      .from("pet_behavior")
-      .select("commands, scared, no_go, flight_risk, temperament_summary")
-      .eq("pet_id", petId)
-      .single()
-      .then(({ data }) => {
-        if (!data) return;
-        setCommands(
-          (data.commands ?? []).map((c: any, i: number) => ({ ...c, id: c.id ?? String(i + 1) }))
-        );
-        setScared(data.scared ?? "");
-        setNoGo(data.no_go ?? "");
-        setFlightRisk(data.flight_risk ?? "");
-        setTemperament(data.temperament_summary ?? "");
-      });
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const [{ data }, { data: owner }] = await Promise.all([
+        supabase.from("pet_behavior").select("commands, scared, no_go, flight_risk, temperament_summary").eq("pet_id", petId).single(),
+        supabase.from("owners").select("purchase_status").eq("id", user!.id).single(),
+      ]);
+      setIsPaid(owner?.purchase_status === "paid");
+      if (!data) return;
+      setCommands(
+        (data.commands ?? []).map((c: any, i: number) => ({ ...c, id: c.id ?? String(i + 1) }))
+      );
+      setScared(data.scared ?? "");
+      setNoGo(data.no_go ?? "");
+      setFlightRisk(data.flight_risk ?? "");
+      setTemperament(data.temperament_summary ?? "");
+    })();
   }, [petId]);
 
   const addCommand = () =>
@@ -61,9 +65,13 @@ export default function EditBehavior() {
     if (!petId) return;
     setSaving(true);
     try {
+      // Saving is an implicit "still accurate" confirmation — stamp each command
+      // so the dashboard's 21-day freshness nudge resets (#54).
+      const now = new Date().toISOString();
+      const stamped = commands.map((c) => ({ ...c, lastConfirmedAt: now }));
       const { error } = await supabase.from("pet_behavior").upsert({
         pet_id: petId,
-        commands,
+        commands: stamped,
         scared,
         no_go: noGo,
         flight_risk: flightRisk,
@@ -89,11 +97,8 @@ export default function EditBehavior() {
       >
         Commands
       </Text>
-      <Text style={{ color: colors.textMuted, fontSize: 13, marginBottom: 16 }}>
-        Commands your sitter needs to know — word, what it means, what the reward is.
-      </Text>
 
-      <View style={{ gap: 10 }}>
+      <View style={{ gap: 10, marginTop: 12 }}>
         {commands.map((cmd, i) => (
           <Card key={cmd.id}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
@@ -149,12 +154,12 @@ export default function EditBehavior() {
         >
           Quirks & Triggers
         </Text>
-        <Text style={{ color: colors.textMuted, fontSize: 12, lineHeight: 17, marginBottom: 4, fontFamily: "Satoshi-Light" }}>
-          Flight risk shows to everyone — it's a safety note. Scared-of, no-go zones and temperament unlock with the full view.
-        </Text>
 
         <Card>
-          <Eyebrow>Scared of anything?</Eyebrow>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <Eyebrow>Scared of anything?</Eyebrow>
+            {softLocked && <FieldTier />}
+          </View>
           <Input
             className="mt-2"
             placeholder={`Skateboards — ${petName} will lunge.`}
@@ -166,7 +171,10 @@ export default function EditBehavior() {
         </Card>
 
         <Card>
-          <Eyebrow>Anywhere they shouldn't go?</Eyebrow>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <Eyebrow>Anywhere they shouldn't go?</Eyebrow>
+            {softLocked && <FieldTier />}
+          </View>
           <Input
             className="mt-2"
             placeholder="The back bedroom…"
@@ -190,7 +198,10 @@ export default function EditBehavior() {
         </Card>
 
         <Card>
-          <Eyebrow>What's their temperament like?</Eyebrow>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <Eyebrow>What's their temperament like?</Eyebrow>
+            {softLocked && <FieldTier />}
+          </View>
           <Input
             className="mt-2"
             placeholder="Friendly but anxious with strangers. Needs 10 minutes to settle."

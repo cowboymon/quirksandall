@@ -35,14 +35,11 @@ export default function PINSetup() {
 
   return (
     <View className="flex-1 bg-background px-6 pt-16">
-      <Headline>Lock the emergency contacts.</Headline>
-      <Text className="text-text-muted text-sm leading-relaxed mt-2 mb-3">
-        Only people with the PIN can see that block. The link still works without it.
-      </Text>
-      <View style={{ backgroundColor: colors.cardDark, borderRadius: 10, padding: 12, marginBottom: 24 }}>
+      <Headline>For if you're ever not there.</Headline>
+      <View style={{ backgroundColor: colors.cardDark, borderRadius: 10, padding: 12, marginTop: 12, marginBottom: 24 }}>
         <Text style={{ color: "rgba(248,236,238,0.8)", fontSize: 12, lineHeight: 18 }}>
-          The link's the door. The PIN's the key.{" "}
-          <Text style={{ color: "#F8ECEE", fontFamily: "Satoshi-Medium" }}>Send them separately.</Text>
+          Anyone with the link sees the profile.{" "}
+          <Text style={{ color: "#F8ECEE", fontFamily: "Satoshi-Medium" }}>This part waits for the PIN.</Text>
         </Text>
       </View>
 

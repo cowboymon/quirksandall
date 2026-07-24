@@ -131,20 +131,27 @@ export function DateInput({ value, onChangeText, style, ...props }: TextInputPro
   );
 }
 
-// Parse a stored time string into a 12-hour "h:mm" part + AM/PM period.
-// Accepts "7:30 AM" and legacy 24-hour "07:30" / "19:30".
+// Parse a stored time string into a 12-hour "h:mm" part + AM/PM period. Must be
+// tolerant of PARTIAL entry ("7", "7:3") so a half-typed value round-trips back
+// into the field instead of being wiped. Also converts legacy 24-hour values.
 function parseTime12(value?: string | null): { hhmm: string; period: "AM" | "PM" } {
   const v = (value ?? "").trim();
-  const ap = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(v);
-  if (ap) return { hhmm: `${parseInt(ap[1], 10)}:${ap[2]}`, period: ap[3].toUpperCase() as "AM" | "PM" };
-  const t = /^(\d{1,2}):(\d{2})$/.exec(v);
-  if (t) {
-    const H = parseInt(t[1], 10);
-    if (H >= 13 || H === 0) return { hhmm: `${H % 12 || 12}:${t[2]}`, period: H >= 12 ? "PM" : "AM" };
-    if (H === 12) return { hhmm: `12:${t[2]}`, period: "PM" };
-    return { hhmm: `${H}:${t[2]}`, period: "AM" };
+  if (!v) return { hhmm: "", period: "AM" };
+  const hasPeriod = /[ap]m/i.test(v);
+  const period: "AM" | "PM" = /pm/i.test(v) ? "PM" : "AM";
+  // digits + optional colon, before any AM/PM
+  const core = v.replace(/\s*(am|pm)\s*$/i, "").trim();
+  // A full 24-hour "HH:MM" with no period → convert to 12-hour.
+  if (!hasPeriod) {
+    const t = /^(\d{1,2}):(\d{2})$/.exec(core);
+    if (t) {
+      const H = parseInt(t[1], 10);
+      if (H >= 13 || H === 0) return { hhmm: `${H % 12 || 12}:${t[2]}`, period: H >= 12 ? "PM" : "AM" };
+      if (H === 12) return { hhmm: `12:${t[2]}`, period: "PM" };
+      return { hhmm: `${H}:${t[2]}`, period: "AM" };
+    }
   }
-  return { hhmm: "", period: "AM" };
+  return { hhmm: core, period };
 }
 
 // Mask raw digits into a 12-hour "h:mm". First digit 2–9 → single-digit hour;

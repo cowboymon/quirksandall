@@ -239,7 +239,7 @@ export default function EditRoutine() {
       </Text>
 
       {/* Allergies — always visible, free */}
-      <Card style={{ marginBottom: 12, borderColor: colors.success }}>
+      <Card style={{ marginBottom: 12 }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <Eyebrow>Allergies</Eyebrow>
         </View>
@@ -251,9 +251,6 @@ export default function EditRoutine() {
           multiline
           style={{ height: 60, paddingTop: 10, textAlignVertical: "top" }}
         />
-        <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4 }}>
-          Comma-separate multiple allergies. Safety override — visible to all recipients regardless of tier.
-        </Text>
       </Card>
 
       {/* Conditions — paid only */}
