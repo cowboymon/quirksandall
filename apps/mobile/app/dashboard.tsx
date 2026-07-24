@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Share, TextInput, Alert, Platform } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Share, TextInput, Alert, Platform, ActivityIndicator } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import Svg, { Path } from "react-native-svg";
@@ -61,6 +61,7 @@ export default function Dashboard() {
   const [renameValue, setRenameValue] = useState("");
   const [showNewLink, setShowNewLink] = useState(false);
   const [newLinkName, setNewLinkName] = useState("");
+  const [creatingLink, setCreatingLink] = useState(false);
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [deletionScheduled, setDeletionScheduled] = useState(false);
 
@@ -183,11 +184,18 @@ export default function Dashboard() {
 
   const handleAddLink = async () => {
     const name = newLinkName.trim();
-    if (!name || !data) return;
-    await createLink(data.pet.id, name);
-    setNewLinkName("");
-    setShowNewLink(false);
-    loadDashboard();
+    // Guard against the double-tap that was creating duplicate "New link" rows:
+    // once a create is in flight, ignore further taps until it resolves.
+    if (!name || !data || creatingLink) return;
+    setCreatingLink(true);
+    try {
+      await createLink(data.pet.id, name);
+      setNewLinkName("");
+      setShowNewLink(false);
+      await loadDashboard();
+    } finally {
+      setCreatingLink(false);
+    }
   };
 
   const preview = () => {
@@ -267,17 +275,23 @@ export default function Dashboard() {
                     style={{ color: colors.cardDarkText, fontSize: 13, fontFamily: "Satoshi-Medium", borderBottomWidth: 1, borderBottomColor: "rgba(248,236,238,0.3)", paddingBottom: 2 }}
                   />
                 ) : (
-                  <TouchableOpacity onPress={() => { setRenamingId(link.id); setRenameValue(link.label ?? ""); }} style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-                    <Text style={{ color: colors.cardDarkText, fontSize: 13, fontFamily: "Satoshi-Medium" }} numberOfLines={1}>
-                      {link.label || "Untitled link"}
-                    </Text>
-                    <PencilLine size={14} color="rgba(248,236,238,0.7)" strokeWidth={2.25} />
-                  </TouchableOpacity>
+                  <Text style={{ color: colors.cardDarkText, fontSize: 13, fontFamily: "Satoshi-Medium" }} numberOfLines={1}>
+                    {link.label || "Untitled link"}
+                  </Text>
                 )}
                 <Text style={{ color: "rgba(248,236,238,0.4)", fontSize: 11, marginTop: 2, fontFamily: "Satoshi-Light" }}>
                   {viewedLabel(link.last_viewed_at)}
                 </Text>
               </View>
+              {/* Action row, left→right: Edit → Share → Delete (#71). Edit is a
+                  standalone button (renames inline) rather than a pencil hung off
+                  the link name. */}
+              <TouchableOpacity
+                onPress={() => { setRenamingId(link.id); setRenameValue(link.label ?? ""); }}
+                style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}
+              >
+                <PencilLine size={15} color={colors.cardDarkText} strokeWidth={2.25} />
+              </TouchableOpacity>
               {/* The first (main) link is always shareable — free tier gets
                   preview + link 1. Only additional links need the paid unlock. */}
               {(() => {
@@ -314,8 +328,12 @@ export default function Dashboard() {
                   placeholderTextColor="rgba(248,236,238,0.3)"
                   style={{ flex: 1, height: 36, paddingHorizontal: 12, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", color: colors.cardDarkText, fontSize: 13, fontFamily: "Satoshi" }}
                 />
-                <TouchableOpacity onPress={handleAddLink} disabled={!newLinkName.trim()} style={{ height: 36, paddingHorizontal: 16, borderRadius: 8, backgroundColor: colors.cardDarkText, alignItems: "center", justifyContent: "center", opacity: newLinkName.trim() ? 1 : 0.4 }}>
-                  <Text style={{ color: colors.cardDark, fontSize: 13, fontFamily: "Satoshi-Bold" }}>Create</Text>
+                <TouchableOpacity onPress={handleAddLink} disabled={!newLinkName.trim() || creatingLink} style={{ height: 36, paddingHorizontal: 16, borderRadius: 8, backgroundColor: colors.cardDarkText, alignItems: "center", justifyContent: "center", minWidth: 74, opacity: newLinkName.trim() && !creatingLink ? 1 : 0.4 }}>
+                  {creatingLink ? (
+                    <ActivityIndicator size="small" color={colors.cardDark} />
+                  ) : (
+                    <Text style={{ color: colors.cardDark, fontSize: 13, fontFamily: "Satoshi-Bold" }}>Create</Text>
+                  )}
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => { setShowNewLink(false); setNewLinkName(""); }} style={{ width: 36, height: 36, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}>
                   <Ionicons name="close" size={15} color="rgba(248,236,238,0.6)" />
