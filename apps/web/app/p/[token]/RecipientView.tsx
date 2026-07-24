@@ -123,7 +123,13 @@ export default function RecipientView({ profile, token }: Props) {
                 style={{ marginBottom: emergencyOpen ? 16 : 0 }}
                 aria-expanded={emergencyOpen}
               >
-                <span className="eyebrow" style={{ color: "rgba(248,236,238,0.5)" }}>Emergency contacts</span>
+                <span className="flex items-center gap-2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={BLUSH} strokeWidth="2" style={{ opacity: 0.85 }}>
+                    <rect x="3" y="11" width="18" height="11" rx="2" />
+                    <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+                  </svg>
+                  <span className="text-[11px] font-bold uppercase tracking-wide" style={{ color: BLUSH }}>In an emergency</span>
+                </span>
                 <span className="text-xs" style={{ color: "rgba(248,236,238,0.5)" }}>{emergencyOpen ? "Hide ▲" : "Show ▼"}</span>
               </button>
               <div className="flex flex-col gap-4" style={{ display: emergencyOpen ? "flex" : "none" }}>
