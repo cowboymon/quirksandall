@@ -49,80 +49,68 @@ export default function PINGate({ token, onUnlocked }: Props) {
 
   return (
     // Same dark crimson card as the unlocked emergency block, so the locked
-    // state reads as part of the same app — just with a closed padlock and
-    // skeleton "lines" standing in for the hidden contacts.
+    // state reads as part of the same app — just with a closed padlock and the
+    // PIN entry.
     <section className="rounded-card p-5" style={{ backgroundColor: "#510000" }}>
       <div className="flex items-center justify-between" style={{ marginBottom: 16 }}>
         <span className="flex items-center gap-2">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F8ECEE" strokeWidth="2" style={{ opacity: 0.85 }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F8ECEE" strokeWidth="2" className="shrink-0" style={{ opacity: 0.85 }}>
             <rect x="3" y="11" width="18" height="11" rx="2" />
             <path d="M7 11V7a5 5 0 0 1 10 0v4" />
           </svg>
-          <span className="text-[11px] font-bold uppercase tracking-wide" style={{ color: "#F8ECEE" }}>In an emergency</span>
+          <span className="eyebrow" style={{ color: "#F8ECEE", fontWeight: 700 }}>In an emergency</span>
         </span>
         <span className="text-xs" style={{ color: "rgba(248,236,238,0.5)" }}>PIN-protected</span>
       </div>
 
-      {/* Skeleton lines — hint at the contacts waiting behind the PIN */}
-      <div className="flex flex-col gap-4" style={{ marginBottom: 20 }} aria-hidden>
-        {[0, 1, 2].map((i) => (
-          <div key={i} className="flex flex-col gap-1.5">
-            <div style={{ height: 7, width: 56, borderRadius: 4, backgroundColor: "rgba(248,236,238,0.18)" }} />
-            <div style={{ height: 11, width: i === 1 ? "55%" : "72%", borderRadius: 4, backgroundColor: "rgba(248,236,238,0.1)" }} />
-          </div>
-        ))}
-      </div>
-
       {/* PIN entry — restyled for the dark card */}
-      <div style={{ borderTop: "1px solid rgba(248,236,238,0.12)", paddingTop: 16 }}>
-        <p className="text-[11px] font-medium uppercase tracking-wide mb-3" style={{ color: "rgba(248,236,238,0.6)" }}>
-          Enter PIN to view
+      <p className="eyebrow mb-3" style={{ color: "rgba(248,236,238,0.6)" }}>
+        Enter PIN to view
+      </p>
+
+      {error && (
+        <p className="text-sm mb-3 font-light leading-relaxed" style={{ color: "#F0A0B0" }}>
+          {error}
         </p>
+      )}
 
-        {error && (
-          <p className="text-sm mb-3 font-light leading-relaxed" style={{ color: "#F0A0B0" }}>
-            {error}
-          </p>
-        )}
-
-        <div className="relative flex gap-2">
-          {[0, 1, 2, 3].map((i) => {
-            const filled = i < pin.length;
-            const isCurrent = i === pin.length && !error;
-            return (
-              <div
-                key={i}
-                className="flex-1 h-[52px] rounded-button border-2 flex items-center justify-center transition-all duration-200"
-                style={{
-                  borderColor: error
-                    ? "#F0A0B0"
-                    : filled
-                    ? "#F8ECEE"
-                    : isCurrent
-                    ? "#F0A0B0"
-                    : "rgba(248,236,238,0.25)",
-                  backgroundColor: error
-                    ? "rgba(240,160,176,0.12)"
-                    : filled
-                    ? "#F8ECEE"
-                    : "transparent",
-                }}
-              >
-                {filled && <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#510000" }} />}
-              </div>
-            );
-          })}
-          <input
-            type="tel"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            maxLength={4}
-            value={pin}
-            onChange={(e) => !cooldown && !loading && handleChange(e.target.value)}
-            className="absolute inset-0 opacity-0 w-full h-full cursor-text"
-            disabled={cooldown || loading}
-          />
-        </div>
+      <div className="relative flex gap-2.5">
+        {[0, 1, 2, 3].map((i) => {
+          const filled = i < pin.length;
+          const isCurrent = i === pin.length && !error;
+          return (
+            <div
+              key={i}
+              className="h-[52px] w-[52px] rounded-button border-2 flex items-center justify-center transition-all duration-200"
+              style={{
+                borderColor: error
+                  ? "#F0A0B0"
+                  : filled
+                  ? "#F8ECEE"
+                  : isCurrent
+                  ? "#F0A0B0"
+                  : "rgba(248,236,238,0.25)",
+                backgroundColor: error
+                  ? "rgba(240,160,176,0.12)"
+                  : filled
+                  ? "#F8ECEE"
+                  : "transparent",
+              }}
+            >
+              {filled && <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#510000" }} />}
+            </div>
+          );
+        })}
+        <input
+          type="tel"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          maxLength={4}
+          value={pin}
+          onChange={(e) => !cooldown && !loading && handleChange(e.target.value)}
+          className="absolute inset-0 opacity-0 w-full h-full cursor-text"
+          disabled={cooldown || loading}
+        />
       </div>
     </section>
   );
