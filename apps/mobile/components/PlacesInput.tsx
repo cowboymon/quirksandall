@@ -71,7 +71,7 @@ export function LabeledPlacesInput({
         onFocus={() => setFocused(true)}
         onBlur={() => setTimeout(() => setFocused(false), 150)}
         placeholder={placeholder}
-        placeholderTextColor={colors.dashedBorder}
+        placeholderTextColor={colors.textMuted}
         autoCapitalize="words"
         style={{
           minHeight: 40, borderRadius: 8, borderWidth: 1,

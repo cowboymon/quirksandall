@@ -61,7 +61,7 @@ export default function Upgrade() {
         {/* ── Dark hero ─────────────────────────────── */}
         <View style={{ paddingHorizontal: 24, paddingTop: 60, paddingBottom: 36 }}>
           <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 36 }}>
-            <Text style={{ color: "rgba(248,236,238,0.5)", fontSize: 13, fontFamily: "Satoshi-Medium" }}>‹ Back</Text>
+            <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 13, fontFamily: "Satoshi-Medium" }}>‹ Back</Text>
           </TouchableOpacity>
 
           <Text style={{ fontFamily: "Tanker", fontSize: 42, lineHeight: 42, color: "#F8ECEE", marginBottom: 14 }}>
@@ -87,7 +87,7 @@ export default function Upgrade() {
             }}
           >
             <Text style={{ fontFamily: "Tanker", fontSize: 30, color: "#F8ECEE" }}>$7.99</Text>
-            <Text style={{ color: "rgba(248,236,238,0.5)", fontSize: 12, fontFamily: "Satoshi-Light" }}>once, forever</Text>
+            <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, fontFamily: "Satoshi-Light" }}>once, forever</Text>
           </View>
         </View>
 
@@ -175,7 +175,7 @@ export default function Upgrade() {
               <Text style={{ color: colors.textMuted, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Restore purchases</Text>
             </TouchableOpacity>
 
-            <Text style={{ color: "rgba(152,112,128,0.6)", fontSize: 10, fontFamily: "Satoshi-Light", textAlign: "center", lineHeight: 15 }}>
+            <Text style={{ color: colors.textMuted, fontSize: 10, fontFamily: "Satoshi-Light", textAlign: "center", lineHeight: 15 }}>
               Charged to your App Store / Google Play account. Unlocks account-wide — every pet you add, covered.
             </Text>
           </View>

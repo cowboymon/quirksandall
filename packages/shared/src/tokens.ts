@@ -9,13 +9,13 @@ export const colors = {
   background: "#F8ECEE",    // warm blush — app background, never pure white
   foreground: "#510000",    // deep crimson — primary text
   textDark: "#510000",
-  textMuted: "#987080",
+  textMuted: "#74555D",     // deepened mauve — meets WCAG AA on blush + white
   secondary: "#F2E4E6",     // light blush — secondary surfaces
   border: "#E5BEC4",        // hairline borders
-  success: "#5A8A60",       // done green
-  caution: "#A07848",       // amber — saved/caution state
-  danger: "#B87070",        // revoke, danger states
-  dashedBorder: "#D8B0B8",  // add/skip affordances
+  success: "#467049",       // done green (AA)
+  caution: "#7F5A30",       // amber — saved/caution state (AA)
+  danger: "#9A5050",        // revoke, danger states (AA)
+  dashedBorder: "#D8B0B8",  // add/skip affordances (borders only, not text)
   // Buttons — Figma primary button is deep crimson, hover #3E0000
   button: "#510000",
   buttonPressed: "#3E0000",

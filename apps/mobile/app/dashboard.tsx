@@ -270,7 +270,7 @@ export default function Dashboard() {
                     {link.label || "Untitled link"}
                   </Text>
                 )}
-                <Text style={{ color: "rgba(248,236,238,0.4)", fontSize: 11, marginTop: 2, fontFamily: "Satoshi-Light" }}>
+                <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 11, marginTop: 2, fontFamily: "Satoshi-Light" }}>
                   {viewedLabel(link.last_viewed_at)}
                 </Text>
               </View>
