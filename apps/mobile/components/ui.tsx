@@ -239,10 +239,11 @@ export function PrimaryButton({
   );
 }
 
-export function SkipButton({ label, onPress }: { label: string; onPress: () => void }) {
+export function SkipButton({ label, onPress, disabled }: { label: string; onPress: () => void; disabled?: boolean }) {
   return (
     <TouchableOpacity
       onPress={onPress}
+      disabled={disabled}
       style={{
         height: 40,
         borderRadius: radius.button,
@@ -251,6 +252,7 @@ export function SkipButton({ label, onPress }: { label: string; onPress: () => v
         borderStyle: "dashed",
         alignItems: "center",
         justifyContent: "center",
+        opacity: disabled ? 0.4 : 1,
       }}
       activeOpacity={0.7}
     >

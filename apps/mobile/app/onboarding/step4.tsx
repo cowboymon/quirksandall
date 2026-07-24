@@ -41,6 +41,9 @@ export default function Step4() {
   const [saving, setSaving] = useState(false);
 
   const finish = async () => {
+    // Both "Finish" and "Skip" call this — guard so a double-tap can't create
+    // the pet twice.
+    if (saving) return;
     setSaving(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -209,7 +212,9 @@ export default function Step4() {
 
       <View style={{ marginTop: 28, gap: 10 }}>
         <PrimaryButton label={saving ? "Saving…" : "Finish profile"} onPress={finish} disabled={saving} />
-        <SkipButton label={`${pet.name ?? "Their"}'s link already works — skip for now`} onPress={() => router.replace("/dashboard")} />
+        {/* Skip still creates the pet + link — it just leaves routine/medical
+            empty. Previously it navigated away without saving anything. */}
+        <SkipButton label={`Skip for now — save ${pet.name ? `${pet.name}'s` : "their"} profile`} onPress={finish} disabled={saving} />
       </View>
     </ScrollView>
   );
