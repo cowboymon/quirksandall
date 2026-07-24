@@ -215,7 +215,7 @@ export default function Preview() {
               {d.vetPreAuth && (
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(248,236,238,0.1)", borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 }}>
                   <Ionicons name="checkmark-circle" size={14} color="#88C888" />
-                  <Text style={{ color: "rgba(248,236,238,0.8)", fontSize: 12, flex: 1, lineHeight: 16 }}>Vet pre-authorised — backup contact can approve treatment</Text>
+                  <Text style={{ color: "rgba(248,236,238,0.8)", fontSize: 12, flex: 1, lineHeight: 16 }}>Vet pre-authorised — {d.backupName && d.backup2Name ? "backup contacts" : "backup contact"} can approve treatment</Text>
                 </View>
               )}
             </View>

@@ -164,7 +164,9 @@ export default function RecipientView({ profile, token }: Props) {
                   <div className="flex items-center gap-2 rounded-card px-3 py-2" style={{ backgroundColor: "rgba(248,236,238,0.1)" }}>
                     <span style={{ color: "#88C888" }}>✓</span>
                     <p className="text-xs leading-snug" style={{ color: "rgba(248,236,238,0.8)" }}>
-                      Vet pre-authorised — backup contact can approve treatment
+                      {emergencyContacts.backupContacts.filter((c) => c.name).length > 1
+                        ? "Vet pre-authorised — backup contacts can approve treatment"
+                        : "Vet pre-authorised — backup contact can approve treatment"}
                     </p>
                   </div>
                 )}
