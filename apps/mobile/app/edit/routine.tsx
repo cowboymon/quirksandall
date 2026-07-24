@@ -6,7 +6,7 @@ import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
 import { Input, Eyebrow, Card, InlineNote, TimeInput, FieldTier } from "../../components/ui";
-import { colors } from "@quirksandall/shared";
+import { colors, capitalizeFirst } from "@quirksandall/shared";
 
 const mealInput = {
   minHeight: 38, borderRadius: 8, borderWidth: 1, borderColor: colors.border,
@@ -22,7 +22,7 @@ function RoutineMeal({ label, time, amount, onTime, onAmount, divider }: {
     <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8, borderBottomWidth: divider ? 1 : 0, borderBottomColor: colors.border }}>
       <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.textDark }}>{label}</Text>
       <TimeInput style={mealInput} placeholder="7:30" value={time} onChangeText={onTime} />
-      <TextInput style={mealInput} placeholder="Amount & brand" placeholderTextColor={colors.dashedBorder} value={amount} onChangeText={onAmount} />
+      <TextInput style={mealInput} placeholder="Amount & brand" placeholderTextColor={colors.dashedBorder} autoCapitalize="sentences" value={amount} onChangeText={(v) => onAmount(capitalizeFirst(v))} />
     </View>
   );
 }
@@ -170,15 +170,16 @@ export default function EditRoutine() {
         <RoutineMeal label="Dinner" time={dinnerTime} amount={dinnerAmount} onTime={setDinnerTime} onAmount={setDinnerAmount} divider />
         <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8, borderBottomWidth: 1, borderBottomColor: colors.border }}>
           <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.textDark }}>Treats</Text>
-          <TextInput style={mealInput} placeholder="Type / brand" placeholderTextColor={colors.dashedBorder} value={treatsType} onChangeText={setTreatsType} />
-          <TextInput style={mealInput} placeholder="Daily limit — e.g. max 3 per day" placeholderTextColor={colors.dashedBorder} value={treatsLimit} onChangeText={setTreatsLimit} />
+          <TextInput style={mealInput} placeholder="Type / brand" placeholderTextColor={colors.dashedBorder} autoCapitalize="sentences" value={treatsType} onChangeText={(v) => setTreatsType(capitalizeFirst(v))} />
+          <TextInput style={mealInput} placeholder="Daily limit — e.g. max 3 per day" placeholderTextColor={colors.dashedBorder} autoCapitalize="sentences" value={treatsLimit} onChangeText={(v) => setTreatsLimit(capitalizeFirst(v))} />
         </View>
         <TextInput
           style={{ paddingHorizontal: 16, paddingVertical: 12, fontSize: 13, fontFamily: "Satoshi", color: colors.textMuted }}
           placeholder="Notes — slow feeder, timing, anything else…"
           placeholderTextColor={colors.dashedBorder}
+          autoCapitalize="sentences"
           value={feedingNotes}
-          onChangeText={setFeedingNotes}
+          onChangeText={(v) => setFeedingNotes(capitalizeFirst(v))}
         />
       </View>
 
