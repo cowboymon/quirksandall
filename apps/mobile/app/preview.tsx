@@ -7,7 +7,6 @@ import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabase";
 import { useActivePetStore } from "../stores/activePet";
-import { Underlined } from "../components/Underlined";
 import { colors, computeAge, formatWeight, formatPhone, formatVetName, possessive } from "@quirksandall/shared";
 
 type Data = {
@@ -25,15 +24,12 @@ type Data = {
   updatedAt: string;
 };
 
-// Tanker section header, with a squiggle-underlined tail.
+// Tanker section header (no squiggle on the recipient/preview view — #45).
 function SectionHeader({ lead, underline, badge }: { lead: string; underline: string; badge?: boolean }) {
   const style = { fontFamily: "Tanker", fontSize: 22, lineHeight: 26, color: colors.textDark } as const;
   return (
     <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", marginBottom: 12, gap: 8 }}>
-      <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-end" }}>
-        <Text style={style}>{lead} </Text>
-        <Underlined><Text style={style}>{underline}</Text></Underlined>
-      </View>
+      <Text style={style}>{lead} {underline}</Text>
       {badge ? <PaidBadge /> : null}
     </View>
   );
@@ -118,7 +114,7 @@ export default function Preview() {
   const CreamLink = ({ icon, text, onPress, bold }: { icon: "location" | "call"; text: string; onPress: () => void; bold?: boolean }) => (
     <TouchableOpacity onPress={onPress} style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 }}>
       <Ionicons name={icon === "location" ? "location-outline" : "call-outline"} size={13} color="rgba(248,236,238,0.8)" />
-      <Text style={{ color: "rgba(248,236,238,0.85)", fontSize: 14, fontFamily: bold ? "Satoshi-Bold" : "Satoshi", textDecorationLine: "underline" }}>{text}</Text>
+      <Text style={{ color: "rgba(248,236,238,0.85)", fontSize: 14, fontFamily: bold ? "Satoshi-Bold" : "Satoshi", textDecorationLine: icon === "location" ? "underline" : "none" }}>{text}</Text>
     </TouchableOpacity>
   );
 

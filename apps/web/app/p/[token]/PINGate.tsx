@@ -59,9 +59,9 @@ export default function PINGate({ token, onUnlocked }: Props) {
           <path d="M7 11V7a5 5 0 0 1 10 0v4" />
         </svg>
         <div>
-          <p className="text-sm font-bold" style={{ color: "#F8ECEE" }}>Emergency contacts</p>
+          <p className="text-sm font-bold uppercase tracking-wide" style={{ color: "#F8ECEE" }}>Emergency contacts</p>
           <p className="text-xs font-light mt-0.5" style={{ color: "rgba(248,236,238,0.5)" }}>
-            PIN required to view
+            PIN-protected · enter below to view
           </p>
         </div>
       </div>
@@ -111,7 +111,6 @@ export default function PINGate({ token, onUnlocked }: Props) {
             value={pin}
             onChange={(e) => !cooldown && !loading && handleChange(e.target.value)}
             className="absolute inset-0 opacity-0 w-full h-full cursor-text"
-            autoFocus
             disabled={cooldown || loading}
           />
         </div>

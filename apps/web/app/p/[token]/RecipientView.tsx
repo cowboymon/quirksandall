@@ -358,7 +358,7 @@ function DarkContact({ label, name, place, phone }: { label: string; name?: stri
         </a>
       )}
       {phone && (
-        <a href={`tel:${phone}`} className="text-sm underline" style={{ color: "rgba(248,236,238,0.85)" }}>
+        <a href={`tel:${phone}`} className="text-sm" style={{ color: "rgba(248,236,238,0.85)" }}>
           {formatPhone(phone)}
         </a>
       )}

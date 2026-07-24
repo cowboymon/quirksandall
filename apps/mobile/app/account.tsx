@@ -126,7 +126,7 @@ export default function Account() {
         </View>
         <View>
           <Eyebrow>Mobile number</Eyebrow>
-          <Input style={{ marginTop: 4 }} placeholder="e.g. 0412 345 678" keyboardType="phone-pad" value={phone} onChangeText={setPhone} />
+          <Input style={{ marginTop: 4 }} placeholder="e.g. 0412 345 678" phone keyboardType="phone-pad" value={phone} onChangeText={setPhone} />
         </View>
         <View>
           <Eyebrow>Email address</Eyebrow>

@@ -68,7 +68,7 @@ export default function OwnerSetup() {
         </View>
         <View>
           <Eyebrow>Mobile number *</Eyebrow>
-          <Input className="mt-1" placeholder="e.g. 0412 345 678" keyboardType="phone-pad" value={phone} onChangeText={setPhone} />
+          <Input className="mt-1" placeholder="e.g. 0412 345 678" phone keyboardType="phone-pad" value={phone} onChangeText={setPhone} />
         </View>
         <View>
           <Eyebrow>Email address</Eyebrow>
