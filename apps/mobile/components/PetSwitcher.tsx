@@ -58,12 +58,12 @@ export default function PetSwitcher({ isPaid }: { isPaid: boolean }) {
               <View
                 style={{
                   width: 56, height: 56, borderRadius: 28,
-                  backgroundColor: colors.secondary,
+                  backgroundColor: "#E5BEC4",
                   borderWidth: 2, borderColor: active ? colors.cardDark : colors.border,
                   alignItems: "center", justifyContent: "center",
                 }}
               >
-                <Text style={{ fontFamily: "Tanker", fontSize: 20, color: colors.textMuted }}>
+                <Text style={{ fontFamily: "Satoshi-Bold", fontSize: 18, color: colors.textDark }}>
                   {p.name?.[0]?.toUpperCase() ?? "?"}
                 </Text>
               </View>
