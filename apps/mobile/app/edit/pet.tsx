@@ -1,6 +1,7 @@
 // Edit pet basics: photo, name, breed/species, DOB, sex, weight, microchip
 import { useState, useEffect } from "react";
-import { View, Text, Image, TouchableOpacity, Alert, Modal, Share } from "react-native";
+import { View, Text, Image, TouchableOpacity, Alert, Modal, Share, Platform } from "react-native";
+import * as FileSystem from "expo-file-system/legacy";
 import * as ImagePicker from "expo-image-picker";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
@@ -9,10 +10,98 @@ import { useActivePet } from "../../hooks/useActivePet";
 import { useActivePetStore } from "../../stores/activePet";
 import EditShell from "../../components/EditShell";
 import { Input, Eyebrow, Card, Select, DateInput, WeightInput } from "../../components/ui";
-import { computeAge, colors, isoToDisplayDate, displayDateToISO, capitalizeFirst } from "@quirksandall/shared";
+import { computeAge, colors, isoToDisplayDate, displayDateToISO, capitalizeFirst, formatWeight, formatPhone, formatVetName } from "@quirksandall/shared";
 
 const SPECIES_OPTIONS = ["Dog", "Cat", "Bird", "Rabbit", "Other"];
 import { uploadPetPhoto } from "../../lib/uploadPhoto";
+
+// Turn the pet's stored records into a readable plain-text profile the owner can
+// keep after deleting. Every field is optional — empty ones are skipped.
+function buildProfileSummary(d: { pet: any; behavior: any; routine: any; medical: any; vet: any; owner: any }): string {
+  const p = d.pet ?? {}, b = d.behavior ?? {}, r = d.routine ?? {}, m = d.medical ?? {}, v = d.vet ?? {}, o = d.owner ?? {};
+  const out: string[] = [];
+  const H = (t: string) => out.push("", t.toUpperCase(), "─".repeat(Math.min(t.length, 32)));
+  const L = (label: string, val?: string | null) => { if (val && String(val).trim()) out.push(`${label}: ${val}`); };
+
+  const today = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  out.push(`${(p.name ?? "Pet").toUpperCase()} — QUIRKS & ALL PROFILE`, `Exported ${today}`);
+
+  H("Basics");
+  L("Name", p.name);
+  L("Species", p.species);
+  L("Breed", p.breed);
+  if (p.dob) L("Date of birth", `${isoToDisplayDate(p.dob)}${p.dob_is_estimated ? " (estimated)" : ""} — ${computeAge(p.dob, p.dob_is_estimated)}`);
+  L("Sex", p.sex);
+  if (p.weight) L("Weight", formatWeight(p.weight));
+  L("Colour & markings", p.color_markings);
+  L("Microchip", p.microchip_number);
+  L("Description", p.description_for_id);
+
+  H("In an emergency");
+  if (v.primary_vet) {
+    L("Vet", v.primary_vet.contact_name ? formatVetName(v.primary_vet.contact_name) : null);
+    L("  Clinic", v.primary_vet.clinic);
+    L("  Address", v.primary_vet.address);
+    L("  Phone", v.primary_vet.phone ? formatPhone(v.primary_vet.phone) : null);
+  }
+  if (v.emergency_vet) {
+    L("Emergency vet", v.emergency_vet.clinic);
+    L("  Phone", v.emergency_vet.phone ? formatPhone(v.emergency_vet.phone) : null);
+  }
+  if (v.insurance) L("Insurance", [v.insurance.provider, v.insurance.policy_number].filter(Boolean).join(" · "));
+  if (v.vet_pre_auth) out.push("Vet pre-authorised for treatment");
+  (o.backup_contacts ?? []).forEach((c: any, i: number) => {
+    if (!c?.name) return;
+    L(i === 0 ? "Backup contact" : "Second backup", `${c.name}${c.relationship ? ` (${c.relationship})` : ""}${c.phone ? ` — ${formatPhone(c.phone)}` : ""}`);
+  });
+
+  if ((b.commands ?? []).length) {
+    H("Commands");
+    b.commands.forEach((c: any) => {
+      out.push(`• "${c.word}" — ${c.meaning ?? ""}${c.reward ? ` (reward: ${c.reward})` : ""}${c.howToCue ? `\n    cue: ${c.howToCue}` : ""}`);
+    });
+  }
+
+  if (b.flight_risk || b.scared || b.no_go || b.temperament_summary) {
+    H("Quirks & triggers");
+    L("Flight risk", b.flight_risk);
+    L("Scared of", b.scared);
+    L("No-go zones", b.no_go);
+    L("Temperament", b.temperament_summary);
+  }
+
+  const f = r.feeding ?? {};
+  if (f.breakfast || f.lunch || f.dinner || f.treats || f.notes || r.walks || r.sleep || r.bathroom_habits) {
+    H("Routine");
+    const meal = (label: string, s: any) => { if (s && (s.time || s.amount)) L(label, [s.time, s.amount].filter(Boolean).join(" — ")); };
+    meal("Breakfast", f.breakfast);
+    meal("Lunch", f.lunch);
+    meal("Dinner", f.dinner);
+    if (f.treats && (f.treats.type || f.treats.limit)) L("Treats", [f.treats.type, f.treats.limit].filter(Boolean).join(" — "));
+    L("Feeding notes", f.notes);
+    L("Walks", r.walks);
+    L("Sleep", r.sleep);
+    L("Bathroom", r.bathroom_habits);
+  }
+
+  const allergies = (m.allergies ?? []).join(", ");
+  const conditions = (m.conditions ?? []).join(", ");
+  const meds = (m.medications ?? []).map((x: any) => [x.name, x.dose].filter(Boolean).join(" ")).filter(Boolean).join("; ");
+  if (allergies || conditions || meds) {
+    H("Medical");
+    L("Allergies", allergies);
+    L("Conditions", conditions);
+    L("Medications", meds);
+  }
+
+  H("Owner");
+  L("Name", o.name);
+  L("Phone", o.primary_phone ? formatPhone(o.primary_phone) : null);
+  L("Email", o.primary_email);
+
+  out.push("", "─".repeat(32), "Kept from Quirks & All · quirksandall.itshypothetical.com");
+  return out.join("\n");
+}
 
 export default function EditPet() {
   const { pet, petId, loading } = useActivePet();
@@ -103,14 +192,14 @@ export default function EditPet() {
     }
   };
 
-  // Pull everything we hold on this pet into a single JSON payload the owner
-  // can keep (Files, Notes, email…) before deleting.
+  // Pull everything we hold on this pet into a single readable text summary the
+  // owner can keep (Files, Notes, email…) before deleting — not raw JSON.
   const exportPetData = async () => {
     if (!petId) return;
     setExporting(true);
     try {
       const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
-      const [petRow, behavior, routine, medical, vet, owner] = await Promise.all([
+      const [petRow, behaviorRow, routineRow, medicalRow, vetRow, ownerRow] = await Promise.all([
         supabase.from("pets").select("*").eq("id", petId).single(),
         supabase.from("pet_behavior").select("*").eq("pet_id", petId).maybeSingle(),
         supabase.from("pet_routine").select("*").eq("pet_id", petId).maybeSingle(),
@@ -119,21 +208,23 @@ export default function EditPet() {
         supabase.from("owners").select("name, primary_phone, primary_email, backup_contacts").eq("id", user!.id).single(),
       ]);
 
-      const payload = {
-        exported_at: new Date().toISOString(),
-        app: "Quirks & All",
-        pet: petRow.data,
-        behavior: behavior.data,
-        routine: routine.data,
-        medical: medical.data,
-        vet_info: vet.data,
-        owner: owner.data,
-      };
-
-      await Share.share({
-        title: `${name || "Pet"} — Quirks & All export`,
-        message: JSON.stringify(payload, null, 2),
+      const summary = buildProfileSummary({
+        pet: petRow.data, behavior: behaviorRow.data, routine: routineRow.data,
+        medical: medicalRow.data, vet: vetRow.data, owner: ownerRow.data,
       });
+
+      // Write a real .txt file so it can be saved to Files / emailed as an
+      // attachment, then hand it to the share sheet.
+      const safe = (name || "pet").replace(/[^a-z0-9]+/gi, "-").toLowerCase();
+      const fileUri = `${FileSystem.cacheDirectory}${safe}-quirksandall.txt`;
+      await FileSystem.writeAsStringAsync(fileUri, summary, { encoding: FileSystem.EncodingType.UTF8 });
+
+      // iOS shares the file URL (savable to Files); Android reads the text body.
+      await Share.share(
+        Platform.OS === "ios"
+          ? { url: fileUri, title: `${name || "Pet"} — Quirks & All` }
+          : { message: summary, title: `${name || "Pet"} — Quirks & All` }
+      );
     } catch (e: any) {
       Alert.alert("Couldn't export", e.message);
     } finally {
