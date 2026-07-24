@@ -239,6 +239,20 @@ export default function EditRoutine() {
         />
       </Card>
 
+      {/* Toileting frequency — directly under bathroom habits */}
+      <Card style={{ marginBottom: 20 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+          <Eyebrow>How often do they toilet?</Eyebrow>
+          <PaidBadge />
+        </View>
+        <Input
+          className="mt-2"
+          placeholder="e.g. Every 4–6 hours, and after meals"
+          value={toileting}
+          onChangeText={(v) => setToileting(capitalizeFirst(v))}
+        />
+      </Card>
+
       {/* Can they be left alone? */}
       <Card style={{ marginBottom: 20 }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
@@ -255,20 +269,6 @@ export default function EditRoutine() {
           onChangeText={(v) => setLeftAloneDetail(capitalizeFirst(v))}
           multiline
           style={{ height: 64, paddingTop: 10, textAlignVertical: "top" }}
-        />
-      </Card>
-
-      {/* Toileting frequency */}
-      <Card style={{ marginBottom: 20 }}>
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <Eyebrow>How often do they toilet?</Eyebrow>
-          <PaidBadge />
-        </View>
-        <Input
-          className="mt-2"
-          placeholder="e.g. Every 4–6 hours, and after meals"
-          value={toileting}
-          onChangeText={(v) => setToileting(capitalizeFirst(v))}
         />
       </Card>
 
