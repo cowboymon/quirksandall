@@ -11,6 +11,9 @@ const BLUSH = "#F8ECEE";
 const CRIMSON = "#510000";
 const BORDER = "#E5BEC4";
 const MUTED = "#987080";
+// Light rose surface — the segmented Quick/Full toggle track. Matches
+// colors.secondary in the shared tokens (and the native preview toggle).
+const SECONDARY = "#F2E4E6";
 // Body/content copy renders near-black; crimson and rose are reserved for
 // titles and eyebrow labels only.
 const BODY = "#1F1A17";
@@ -89,7 +92,7 @@ export default function RecipientView({ profile, token }: Props) {
 
         {/* Quick / Full toggle — only where there's paid content to toggle */}
         {showToggle && (
-          <div className="flex gap-1 rounded-card p-1" style={{ backgroundColor: "#EFE7D8" }}>
+          <div className="flex gap-1 rounded-card p-1" style={{ backgroundColor: SECONDARY }}>
             {(["quick", "full"] as const).map((v) => (
               <button
                 key={v}
