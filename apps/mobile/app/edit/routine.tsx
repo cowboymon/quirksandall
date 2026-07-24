@@ -14,14 +14,14 @@ const mealInput = {
   fontSize: 14, fontFamily: "Satoshi", color: colors.textDark,
 } as const;
 
-function RoutineMeal({ label, time, amount, onTime, onAmount, divider }: {
+function RoutineMeal({ label, time, amount, onTime, onAmount, divider, defaultPeriod }: {
   label: string; time: string; amount: string;
-  onTime: (v: string) => void; onAmount: (v: string) => void; divider: boolean;
+  onTime: (v: string) => void; onAmount: (v: string) => void; divider: boolean; defaultPeriod?: "AM" | "PM";
 }) {
   return (
     <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8, borderBottomWidth: divider ? 1 : 0, borderBottomColor: colors.border }}>
       <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.textDark }}>{label}</Text>
-      <TimeInput style={mealInput} placeholder="7:30" value={time} onChangeText={onTime} />
+      <TimeInput style={mealInput} placeholder="7:30" value={time} onChangeText={onTime} defaultPeriod={defaultPeriod} />
       <TextInput style={mealInput} placeholder="Amount & brand" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" value={amount} onChangeText={(v) => onAmount(capitalizeFirst(v))} />
     </View>
   );
@@ -175,7 +175,7 @@ export default function EditRoutine() {
         </View>
         <RoutineMeal label="Breakfast" time={breakfastTime} amount={breakfastAmount} onTime={setBreakfastTime} onAmount={setBreakfastAmount} divider />
         <RoutineMeal label="Lunch" time={lunchTime} amount={lunchAmount} onTime={setLunchTime} onAmount={setLunchAmount} divider />
-        <RoutineMeal label="Dinner" time={dinnerTime} amount={dinnerAmount} onTime={setDinnerTime} onAmount={setDinnerAmount} divider />
+        <RoutineMeal label="Dinner" time={dinnerTime} amount={dinnerAmount} onTime={setDinnerTime} onAmount={setDinnerAmount} divider defaultPeriod="PM" />
         <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8, borderBottomWidth: 1, borderBottomColor: colors.border }}>
           <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.textDark }}>Treats</Text>
           <TextInput style={mealInput} placeholder="Type / brand" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" value={treatsType} onChangeText={(v) => setTreatsType(capitalizeFirst(v))} />
