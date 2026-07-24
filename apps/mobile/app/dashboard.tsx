@@ -127,7 +127,7 @@ export default function Dashboard() {
       isPaid,
       sections: [
         { label: "Pet Basics", detail: `${pet.breed ?? ""}${pet.breed && pet.sex ? " · " : ""}${pet.sex ?? ""}`.trim() || "Name, breed, photo", status: pet.breed ? "done" : "empty", route: "/edit/pet" },
-        { label: "In an Emergency", detail: "Vet, emergency vet, backup", status: "done", route: "/edit/emergency" },
+        { label: "In an Emergency", detail: "Vet, emergency vet, emergency contacts", status: "done", route: "/edit/emergency" },
         { label: "Commands", detail: commandCount ? `${commandCount} command${commandCount === 1 ? "" : "s"} saved` : "None saved yet", status: commandCount ? "done" : "empty", route: "/edit/behavior" },
         { label: "Quirks & Triggers", detail: "Escape risk, fears, off-limits zones", status: "done", route: "/edit/behavior?section=quirks" },
         { label: "Routine", detail: isPaid ? "Shown to sitters" : "Saved — not shown to sitters yet", status: "saved", route: "/edit/routine" },
