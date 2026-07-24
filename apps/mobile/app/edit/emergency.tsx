@@ -33,7 +33,6 @@ export default function EditEmergency() {
   const [emergPhone, setEmergPhone] = useState("");
   const [insuranceProvider, setInsuranceProvider] = useState("");
   const [insurancePolicy, setInsurancePolicy] = useState("");
-  const [insuranceClaims, setInsuranceClaims] = useState("");
   const [backupName, setBackupName] = useState("");
   const [backupRel, setBackupRel] = useState("");
   const [backupPhone, setBackupPhone] = useState("");
@@ -63,7 +62,6 @@ export default function EditEmergency() {
         setEmergPhone(vet.emergency_vet?.phone ?? "");
         setInsuranceProvider(vet.insurance?.provider ?? "");
         setInsurancePolicy(vet.insurance?.policy_number ?? "");
-        setInsuranceClaims(vet.insurance?.claims_contact ?? "");
         setVetPreAuth(vet.vet_pre_auth ?? false);
       }
       if (owner) {
@@ -96,7 +94,7 @@ export default function EditEmergency() {
           pet_id: petId,
           primary_vet: { contact_name: vetContactName, clinic: vetClinic, address: vetAddress, phone: vetPhone },
           emergency_vet: { clinic: emergClinic, phone: emergPhone },
-          insurance: { provider: insuranceProvider, policy_number: insurancePolicy, claims_contact: insuranceClaims },
+          insurance: { provider: insuranceProvider, policy_number: insurancePolicy },
           vet_pre_auth: vetPreAuth,
         }, { onConflict: "pet_id" }),
         supabase.from("owners").update({
@@ -160,7 +158,6 @@ export default function EditEmergency() {
           <View style={{ gap: 8, marginTop: 12 }}>
             <LabeledInput label="Provider" placeholder="Provider" value={insuranceProvider} onChangeText={setInsuranceProvider} />
             <LabeledInput label="Policy number" placeholder="Policy number" value={insurancePolicy} onChangeText={setInsurancePolicy} />
-            <LabeledInput label="Claims contact" placeholder="Claims contact / phone" value={insuranceClaims} onChangeText={setInsuranceClaims} />
           </View>
         </Card>
 
