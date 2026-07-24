@@ -421,7 +421,7 @@ export default function Dashboard() {
             <Ionicons name="alert-circle-outline" size={18} color="rgba(248,236,238,0.85)" />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={{ color: colors.cardDarkText, fontSize: 14, fontFamily: "Satoshi-Medium" }}>If {pet.name} ever goes missing —</Text>
+            <Text style={{ color: colors.cardDarkText, fontSize: 14, fontFamily: "Satoshi-Medium" }}>If {pet.name} ever goes missing</Text>
             <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 11, marginTop: 2, fontFamily: "Satoshi-Light" }}>
               One tap. Something to share, something to print. Free, always. Here if you ever need it.
             </Text>

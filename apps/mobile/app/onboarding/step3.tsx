@@ -33,7 +33,7 @@ export default function Step3() {
   const filled = commands.filter((c) => c.word.trim()).length;
 
   return (
-    <ScrollView className="flex-1 bg-background" keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 24, paddingTop: 60 }}>
+    <ScrollView className="flex-1 bg-background" keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 24, paddingTop: 60, width: "100%", maxWidth: 600, alignSelf: "center" }}>
       <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 16 }}>
         <Text style={{ color: colors.textMuted, fontSize: 14 }}>‹ Back</Text>
       </TouchableOpacity>

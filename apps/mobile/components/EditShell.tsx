@@ -61,7 +61,10 @@ export default function EditShell({ title, subtitle, children, onSave, saving, s
       ) : (
         <ScrollView
           ref={scrollRef}
-          contentContainerStyle={{ padding: 24, paddingBottom: 60 }}
+          // Cap the content column so fields don't stretch edge-to-edge on wide
+          // screens (tablets/large devices); on phones this sits above the
+          // screen width so it flexes down and has no effect.
+          contentContainerStyle={{ padding: 24, paddingBottom: 60, width: "100%", maxWidth: 600, alignSelf: "center" }}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="interactive"
           automaticallyAdjustKeyboardInsets
