@@ -1,7 +1,7 @@
 // Shared primitive UI components for the mobile app.
 // Mirrors the prototype's primitives.tsx (fonts, buttons, dots, inputs).
-import { useState } from "react";
-import { Text, TouchableOpacity, View, TextInput, Modal, type TextInputProps, type ViewProps } from "react-native";
+import { useState, useRef } from "react";
+import { Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, capitalizeFirst, formatPhone } from "@quirksandall/shared";
 
@@ -420,10 +420,31 @@ export function Select({
   placeholder?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [anchor, setAnchor] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const triggerRef = useRef<View>(null);
+  const screenH = Dimensions.get("window").height;
+
+  const openMenu = () => {
+    triggerRef.current?.measureInWindow((x, y, width, height) => {
+      setAnchor({ x, y, width, height });
+      setOpen(true);
+    });
+  };
+
+  // Position the menu directly under the trigger, or above it when there isn't
+  // room below — so it stays attached to the field rather than floating.
+  const openUp = anchor ? anchor.y + anchor.height + 8 > screenH * 0.6 : false;
+  const menuStyle = anchor
+    ? openUp
+      ? { position: "absolute" as const, left: anchor.x, width: anchor.width, bottom: screenH - anchor.y + 4 }
+      : { position: "absolute" as const, left: anchor.x, width: anchor.width, top: anchor.y + anchor.height + 4 }
+    : {};
+
   return (
     <>
       <TouchableOpacity
-        onPress={() => setOpen(true)}
+        ref={triggerRef}
+        onPress={openMenu}
         activeOpacity={0.7}
         style={{
           minHeight: 46, borderRadius: radius.input, borderWidth: 1, borderColor: colors.border,
@@ -437,18 +458,19 @@ export function Select({
         <Text style={{ color: colors.textMuted, fontSize: 12 }}>▾</Text>
       </TouchableOpacity>
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={() => setOpen(false)}
-          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "center", padding: 32 }}
-        >
-          <View style={{ backgroundColor: "#FFFFFF", borderRadius: radius.card, overflow: "hidden" }}>
+        <TouchableOpacity activeOpacity={1} onPress={() => setOpen(false)} style={{ flex: 1 }}>
+          <View
+            style={[
+              { backgroundColor: "#FFFFFF", borderRadius: radius.card, borderWidth: 1, borderColor: colors.border, overflow: "hidden", shadowColor: "#000", shadowOpacity: 0.15, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 6 },
+              menuStyle,
+            ]}
+          >
             {options.map((opt, i) => (
               <TouchableOpacity
                 key={opt}
                 onPress={() => { onValueChange(opt); setOpen(false); }}
                 style={{
-                  paddingHorizontal: 20, paddingVertical: 16,
+                  paddingHorizontal: 16, paddingVertical: 13,
                   borderTopWidth: i === 0 ? 0 : 1, borderTopColor: colors.border,
                   backgroundColor: value === opt ? colors.secondary : "#FFFFFF",
                 }}

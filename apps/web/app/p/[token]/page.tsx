@@ -3,6 +3,22 @@ import type { RecipientProfile } from "@quirksandall/shared";
 import LinkUnavailable from "../../components/LinkUnavailable";
 import RecipientView from "./RecipientView";
 
+// Never cache the recipient page — a revoked link or freshly edited profile must
+// take effect immediately.
+export const dynamic = "force-dynamic";
+
+// Names for the "no longer available" screen — resolved even for a
+// revoked/expired link or archived pet so the message can be personalised.
+async function unavailableInfo(token: string): Promise<{ petName: string; ownerName: string }> {
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_KEY!);
+  const { data: link } = await supabase.from("share_links").select("pet_id").eq("token", token).maybeSingle();
+  if (!link) return { petName: "", ownerName: "" };
+  const { data: pet } = await supabase.from("pets").select("name, owner_id").eq("id", link.pet_id).maybeSingle();
+  if (!pet) return { petName: "", ownerName: "" };
+  const { data: owner } = await supabase.from("owners").select("name").eq("id", (pet as any).owner_id).maybeSingle();
+  return { petName: (pet as any).name ?? "", ownerName: (owner as any)?.name ?? "" };
+}
+
 async function fetchProfile(token: string, logView = true, preview = false): Promise<RecipientProfile | null> {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -24,11 +40,12 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
   // DB, so nothing but identity rendered — separate reads are robust.
   const { data: pet } = await supabase
     .from("pets")
-    .select("id, name, species, breed, dob, dob_is_estimated, sex, weight, color_markings, photo_url, microchip_number, updated_at, owner_id")
+    .select("id, name, species, breed, dob, dob_is_estimated, sex, weight, color_markings, photo_url, microchip_number, updated_at, owner_id, status")
     .eq("id", link.pet_id)
     .single();
 
-  if (!pet) return null;
+  // A deleted (archived) pet's links must stop working, like a revoked link.
+  if (!pet || (pet as any).status === "archived") return null;
 
   const [{ data: ownerRow }, { data: behaviorRow }, { data: medicalRow }, { data: routineRow }, { data: vetRow }] = await Promise.all([
     supabase.from("owners").select("purchase_status, name, primary_phone, backup_contacts").eq("id", pet.owner_id).single(),
@@ -154,10 +171,12 @@ export default async function RecipientPage({
   params: { token: string };
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
-  const preview = searchParams.preview === "1";
-  const profile = await fetchProfile(params.token, true, preview);
+  // ?preview=1 is deliberately NOT honored on the web recipient page — it would
+  // let anyone un-gate paid content. The owner previews in the native app.
+  const profile = await fetchProfile(params.token, true, false);
   if (!profile) {
-    return <LinkUnavailable />;
+    const info = await unavailableInfo(params.token);
+    return <LinkUnavailable petName={info.petName} ownerName={info.ownerName} />;
   }
   return <RecipientView profile={profile} token={params.token} />;
 }

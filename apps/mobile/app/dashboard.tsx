@@ -146,7 +146,11 @@ export default function Dashboard() {
   const confirmRevoke = (link: OwnerLink) => {
     Alert.alert("Revoke this link?", "It stops working immediately for anyone who has it.", [
       { text: "Cancel", style: "cancel" },
-      { text: "Revoke", style: "destructive", onPress: async () => { await revokeLink(link.id); loadDashboard(); } },
+      { text: "Revoke", style: "destructive", onPress: async () => {
+        const { error } = await revokeLink(link.id);
+        if (error) { Alert.alert("Couldn't revoke", error); return; }
+        loadDashboard();
+      } },
     ]);
   };
 

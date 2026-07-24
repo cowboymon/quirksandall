@@ -84,8 +84,28 @@ export default function Step1() {
 
         <View>
           <Eyebrow>Species</Eyebrow>
-          <View style={{ marginTop: 4 }}>
-            <Select value={pet.species ?? ""} onValueChange={(v) => setPet({ species: v })} options={SPECIES_OPTIONS} placeholder="Select species" />
+          <View style={{ marginTop: 4, gap: 8 }}>
+            {(() => {
+              const sp = pet.species ?? "";
+              const isOther = sp === "Other" || (!!sp && !["Dog", "Cat", "Bird", "Rabbit"].includes(sp));
+              return (
+                <>
+                  <Select
+                    value={isOther ? "Other" : sp}
+                    onValueChange={(v) => setPet({ species: v })}
+                    options={SPECIES_OPTIONS}
+                    placeholder="Select species"
+                  />
+                  {isOther && (
+                    <Input
+                      placeholder="Which species?"
+                      value={sp === "Other" ? "" : sp}
+                      onChangeText={(v) => setPet({ species: v || "Other" })}
+                    />
+                  )}
+                </>
+              );
+            })()}
           </View>
         </View>
 
