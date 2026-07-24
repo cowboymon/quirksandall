@@ -70,6 +70,8 @@ export type PetRoutine = {
   walks: string;
   sleep: string;
   bathroomHabits: string;
+  leftAlone: string;
+  toileting: string;
 };
 
 export type Command = {

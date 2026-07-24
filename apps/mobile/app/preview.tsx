@@ -21,7 +21,7 @@ type Data = {
   commands: any[];
   scared: string; noGo: string; flightRisk: string; temperament: string;
   allergies: string; conditions: string; medications: string;
-  feeding: any; walks: string; sleep: string; bathroom: string;
+  feeding: any; walks: string; sleep: string; bathroom: string; leftAlone: string; toileting: string;
   updatedAt: string;
 };
 
@@ -85,6 +85,8 @@ export default function Preview() {
         scared: behavior?.scared ?? "", noGo: behavior?.no_go ?? "", flightRisk: behavior?.flight_risk ?? "", temperament: behavior?.temperament_summary ?? "",
         allergies: (medical?.allergies ?? []).join(", "), conditions: (medical?.conditions ?? []).join(", "), medications: meds,
         feeding: routine?.feeding ?? null, walks: routine?.walks ?? "", sleep: routine?.sleep ?? "", bathroom: routine?.bathroom_habits ?? "",
+        leftAlone: routine?.left_alone?.ok ? (routine.left_alone.detail ? `${routine.left_alone.ok} — ${routine.left_alone.detail}` : routine.left_alone.ok) : "",
+        toileting: routine?.toileting_frequency ?? "",
         updatedAt: pet.updated_at,
       });
       setLoading(false);
@@ -222,7 +224,7 @@ export default function Preview() {
 
           {/* Order (#15): Daily Routine → Medication → Allergies → Commands → Triggers.
               Feeding is free at every tier; walks/sleep/bathroom are paid. */}
-          {(hasFeeding || (showFull && (d.walks || d.sleep || d.bathroom))) && (
+          {(hasFeeding || (showFull && (d.walks || d.sleep || d.bathroom || d.leftAlone || d.toileting))) && (
             <View>
               <SectionHeader lead={possessive(d.name)} underline="Daily Routine" />
               <View style={{ gap: 12 }}>
@@ -253,6 +255,8 @@ export default function Preview() {
                 {showFull && d.walks ? <InfoCard label="Walks" text={d.walks} locked={locked} /> : null}
                 {showFull && d.sleep ? <InfoCard label="Sleep" text={d.sleep} locked={locked} /> : null}
                 {showFull && d.bathroom ? <InfoCard label="Bathroom" text={d.bathroom} locked={locked} /> : null}
+                {showFull && d.leftAlone ? <InfoCard label="Left alone" text={d.leftAlone} locked={locked} /> : null}
+                {showFull && d.toileting ? <InfoCard label="Toileting" text={d.toileting} locked={locked} /> : null}
               </View>
             </View>
           )}

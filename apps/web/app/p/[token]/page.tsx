@@ -61,7 +61,7 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
     supabase.from("owners").select("purchase_status, name, primary_phone, backup_contacts").eq("id", pet.owner_id).single(),
     supabase.from("pet_behavior").select("commands, quirks_triggers, escape_risk, scared, no_go, flight_risk, temperament_summary").eq("pet_id", pet.id).maybeSingle(),
     supabase.from("pet_medical").select("allergies, conditions, medications").eq("pet_id", pet.id).maybeSingle(),
-    supabase.from("pet_routine").select("feeding, walks, sleep, bathroom_habits").eq("pet_id", pet.id).maybeSingle(),
+    supabase.from("pet_routine").select("feeding, walks, sleep, bathroom_habits, left_alone, toileting_frequency").eq("pet_id", pet.id).maybeSingle(),
     supabase.from("pet_vet_info").select("primary_vet, emergency_vet, insurance, vet_pre_auth").eq("pet_id", pet.id).maybeSingle(),
   ]);
 
@@ -148,6 +148,8 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
             walks: canSeePaid ? routine.walks ?? "" : "",
             sleep: canSeePaid ? routine.sleep ?? "" : "",
             bathroomHabits: canSeePaid ? routine.bathroom_habits ?? "" : "",
+            leftAlone: canSeePaid ? (routine.left_alone?.ok ? (routine.left_alone.detail ? `${routine.left_alone.ok} — ${routine.left_alone.detail}` : routine.left_alone.ok) : "") : "",
+            toileting: canSeePaid ? routine.toileting_frequency ?? "" : "",
           },
         }
       : {}),

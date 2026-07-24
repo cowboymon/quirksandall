@@ -392,6 +392,25 @@ export default function MissingPoster() {
           Add a photo to {profile.name}'s profile first.
         </Text>
       )}
+
+      {/* First steps if the worst happens */}
+      <View style={{ marginTop: 32, backgroundColor: colors.cardBg, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 18 }}>
+        <Eyebrow ochre>If they've gone missing — first steps</Eyebrow>
+        <View style={{ gap: 14, marginTop: 14 }}>
+          {[
+            "Call your vet and make sure your pet's microchip details are up to date.",
+            "Ask your vet to add your pet to their lost-pet database.",
+            "Post in your suburb's community Facebook groups (and neighbouring ones) so people can share it around.",
+          ].map((step, i) => (
+            <View key={i} style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
+              <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: colors.secondary, alignItems: "center", justifyContent: "center", marginTop: 1 }}>
+                <Text style={{ color: colors.textDark, fontSize: 11, fontFamily: "Satoshi-Bold" }}>{i + 1}</Text>
+              </View>
+              <Text style={{ flex: 1, color: colors.textDark, fontSize: 13, lineHeight: 19 }}>{step}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
     </ScrollView>
   );
 }
