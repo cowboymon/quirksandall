@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Share, TextInput, Alert, Platform, ActivityIndicator } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import Entypo from "@expo/vector-icons/Entypo";
 import { supabase } from "../lib/supabase";
 import { registerForPushNotifications, scheduleTrickNudge } from "../lib/notifications";
 import { Eyebrow, Card } from "../components/ui";
@@ -279,7 +280,7 @@ export default function Dashboard() {
                 onPress={() => { setRenamingId(link.id); setRenameValue(link.label ?? ""); }}
                 style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}
               >
-                <Ionicons name="pencil-outline" size={15} color={colors.cardDarkText} />
+                <Entypo name="pencil" size={15} color={colors.cardDarkText} />
               </TouchableOpacity>
               {/* The first (main) link is always shareable — free tier gets
                   preview + link 1. Only additional links need the paid unlock. */}
@@ -393,7 +394,7 @@ export default function Dashboard() {
                       <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>{s.label}</Text>
                       <Text style={{ color: statusColor[s.status], fontSize: 11, marginTop: 2 }}>{s.detail}</Text>
                     </View>
-                    <Ionicons name="pencil-outline" size={16} color={colors.textMuted} />
+                    <Entypo name="pencil" size={16} color={colors.textMuted} />
                   </Card>
                 </TouchableOpacity>
                 {/* Quick access to the PIN, directly under the emergency row */}
