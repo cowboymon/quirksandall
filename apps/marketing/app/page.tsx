@@ -1,59 +1,63 @@
-import Link from "next/link";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { site } from "./site";
 
-const STEPS = [
-  {
-    n: "01",
-    title: "Write down their quirks",
-    body: "Name, breed, the command words that actually work, what scares them, allergies, meds, vet — all in a few taps.",
-  },
-  {
-    n: "02",
-    title: "Share one link",
-    body: "The sitter, dog-walker or neighbour opens a link. No app, no login. Emergency contacts stay behind a PIN.",
-  },
-  {
-    n: "03",
-    title: "They just know",
-    body: "They see the same picture of your pet you'd give them in person — without you hovering over the group chat.",
-  },
-];
-
 const FEATURES = [
   {
-    title: "The cheat sheet",
-    body: "A clean, mobile-first page of everything that matters. Quick view for the essentials, full view for the whole day.",
+    title: "Commands & quirks",
+    body: "The words they know, what they mean, and what earns the reward. The stuff that makes them them — not a form.",
   },
   {
-    title: "Command words that work",
-    body: "“Sit” means nothing if the dog only knows “park it.” List the words, what they mean and the reward.",
+    title: "Emergency contacts, protected",
+    body: "Vet, insurance, backup contacts — there when it matters, with a PIN on the sensitive stuff.",
   },
   {
-    title: "Quirks & triggers",
-    body: "Scared of the hoover, bolts at open doors, off the sofa — the stuff that turns a good sitter into a great one.",
-  },
-  {
-    title: "PIN-gated emergencies",
-    body: "Vet, after-hours clinic, insurance and backup contacts sit behind a PIN, so a link is never a leak.",
-  },
-  {
-    title: "A printable poster",
-    body: "Generate a fridge-door poster with the QR code and the basics, for whoever's in the house.",
+    title: "Routine, when you need it shown",
+    body: "Feeding, walks, sleep, medications — as detailed as the situation calls for.",
   },
   {
     title: "Always current",
-    body: "Change something in the app and every link updates. The sitter always sees today's version, not last summer's.",
+    body: "Update the profile, the link updates too. No new PDF to re-send.",
+  },
+  {
+    title: "If they ever go missing",
+    body: "Generate a print-ready poster and a social tile in one tap. Free, always. Here if you ever need it.",
+  },
+  {
+    title: "You control the link",
+    body: "Revoke access anytime. See when it was last viewed. Nothing lingers longer than you want it to.",
   },
 ];
 
-const PRO = [
-  "Routine visible to sitters — feeding, walks, sleep, bathroom",
-  "Medications & conditions, with where they're stored",
-  "Add as many pets as you need",
-  "Rotate the share link — old one stops working instantly",
-  "Push nudges for trick reinforcement",
+const FAQS = [
+  {
+    q: "Do they need the app to see my pet's profile?",
+    a: "No. They open a link in their browser. Nothing to download, nothing to sign up for.",
+  },
+  {
+    q: "Is my pet's information safe?",
+    a: "Emergency contacts and insurance details sit behind a PIN you set. You control every link — see when it was last viewed, revoke it anytime.",
+  },
+  {
+    q: "What happens if I revoke a link?",
+    a: "It stops working immediately. It won't un-show anything someone already saw, but no one can open it again.",
+  },
+  {
+    q: "Does this work for cats? Rabbits? Anything that isn't a dog?",
+    a: "Yes. Commands, routines, and quirks work for any pet — the words might just be different.",
+  },
+  {
+    q: "What's actually free?",
+    a: "Identity, commands, quirks, emergency contacts, feeding, and allergies. Always. Routines beyond feeding, medications, and unlimited pets are a one-time $7.99.",
+  },
+  {
+    q: "Can I use this for more than one pet?",
+    a: "One pet is free. Unlock unlimited pets for $7.99, once.",
+  },
+  {
+    q: "What's the missing poster thing?",
+    a: "One tap generates a print-ready poster and a social tile from your pet's existing profile. Free, always. Here if you ever need it.",
+  },
 ];
 
 export default function Home() {
@@ -66,7 +70,7 @@ export default function Home() {
         <section className="mx-auto max-w-5xl px-6 pt-16 pb-14 sm:pt-24 sm:pb-20">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
-              <p className="eyebrow text-primary">For anyone who leaves their pet with someone else</p>
+              <p className="eyebrow text-primary">A pet profile that travels with them</p>
               <h1 className="mt-4 font-tanker text-4xl leading-[1.05] text-foreground sm:text-6xl">
                 Away,<br />but known.
               </h1>
@@ -79,18 +83,20 @@ export default function Home() {
                   href={site.appStoreUrl}
                   className="rounded-button bg-button px-5 py-3 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed"
                 >
-                  Download for iOS
+                  Download free
                 </a>
                 <a
-                  href={site.playStoreUrl}
+                  href="#how"
                   className="rounded-button border border-border bg-card-bg px-5 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary"
                 >
-                  Get it on Android
+                  See how it works ↓
                 </a>
               </div>
-              <p className="mt-4 text-sm text-text-muted">
-                Free to start · one-time {site.proPrice} unlock, no subscription
-              </p>
+
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                <StoreBadge kind="apple" href={site.appStoreUrl} />
+                <StoreBadge kind="google" href={site.playStoreUrl} />
+              </div>
             </div>
 
             {/* Cheat-sheet mock */}
@@ -100,89 +106,90 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Problem / promise */}
+        {/* Section 1 — The problem */}
         <section className="border-y border-border/70 bg-secondary/50">
           <div className="mx-auto max-w-3xl px-6 py-16 text-center sm:py-20">
             <h2 className="font-tanker text-2xl leading-tight text-foreground sm:text-3xl">
-              You know your pet by heart. The sitter is guessing.
+              The old way was a text at 11pm.
             </h2>
+            <p className="mt-5 text-lg leading-relaxed text-text-muted">
+              &ldquo;What time does she eat?&rdquo; &ldquo;Is he allowed on the couch?&rdquo;
+              &ldquo;What&apos;s the vet&apos;s number again?&rdquo;
+            </p>
             <p className="mt-4 text-lg leading-relaxed text-text-muted">
-              The rushed note on the counter. The three follow-up texts from the airport. The thing you
-              forgot to mention that only comes up at 9pm. Quirks &amp; All puts everything a carer needs
-              in one link they can actually open — so being away doesn&apos;t mean being out of the loop.
+              A printed page goes out of date the moment you update it. A group chat gets buried.
+              Quirks &amp; All is one link, always current, with everything a sitter, walker, or family
+              member actually needs.
             </p>
           </div>
         </section>
 
-        {/* How it works */}
+        {/* Section 2 — Features */}
         <section id="how" className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
-          <p className="eyebrow text-primary">How it works</p>
+          <p className="eyebrow text-primary">What&apos;s inside</p>
           <h2 className="mt-3 max-w-xl font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
-            Three steps, then you can stop worrying.
+            Everything they need. Nothing you have to repeat.
           </h2>
 
-          <div className="mt-12 grid gap-6 sm:grid-cols-3">
-            {STEPS.map((s) => (
-              <div key={s.n} className="rounded-card border border-border bg-card-bg p-6">
-                <span className="font-tanker text-2xl text-primary">{s.n}</span>
-                <h3 className="mt-3 text-lg font-bold text-foreground">{s.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-text-muted">{s.body}</p>
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {FEATURES.map((f) => (
+              <div key={f.title} className="rounded-card border border-border bg-card-bg p-6">
+                <h3 className="text-base font-bold text-foreground">{f.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-text-muted">{f.body}</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Features */}
-        <section id="features" className="border-t border-border/70 bg-secondary/40">
-          <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
-            <p className="eyebrow text-primary">What&apos;s inside</p>
-            <h2 className="mt-3 max-w-xl font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
-              Everything they&apos;d ask you — before they have to.
+        {/* Section 3 — Who it's for */}
+        <section className="border-t border-border/70 bg-secondary/40">
+          <div className="mx-auto max-w-3xl px-6 py-16 text-center sm:py-20">
+            <h2 className="font-tanker text-2xl leading-tight text-foreground sm:text-3xl">
+              For whoever&apos;s holding the lead.
             </h2>
-
-            <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {FEATURES.map((f) => (
-                <div key={f.title} className="rounded-card border border-border bg-card-bg p-6">
-                  <h3 className="text-base font-bold text-foreground">{f.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-text-muted">{f.body}</p>
-                </div>
-              ))}
-            </div>
+            <p className="mt-5 text-lg leading-relaxed text-text-muted">
+              A weekend sitter. A regular dog walker. A boarding stay. Your mum, who means well but forgets
+              the vacuum thing. One profile works for all of them — you decide what each link shows.
+            </p>
           </div>
         </section>
 
-        {/* Pricing */}
+        {/* Section 4 — Pricing */}
         <section id="pricing" className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
           <p className="eyebrow text-primary">Pricing</p>
-          <h2 className="mt-3 max-w-xl font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
-            Free where it counts. One payment for the rest.
+          <h2 className="mt-3 max-w-2xl font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
+            Free to start. {site.proPrice} to unlock the rest.
           </h2>
+          <p className="mt-4 max-w-xl text-lg leading-relaxed text-text-muted">
+            Identity, emergency contacts, commands, quirks, feeding, and allergies — free, always. Unlock
+            routines, medications, and unlimited pets for a one-time {site.proPrice}. No subscription.
+          </p>
 
           <div className="mt-12 grid gap-6 md:grid-cols-2">
             {/* Free */}
             <div className="flex flex-col rounded-card border border-border bg-card-bg p-8">
               <h3 className="text-lg font-bold text-foreground">Free</h3>
               <p className="mt-1 text-sm text-text-muted">Everything you need to hand off one pet.</p>
-              <p className="mt-6 font-tanker text-4xl text-foreground">£0</p>
+              <p className="mt-6 font-tanker text-4xl text-foreground">$0</p>
               <ul className="mt-6 flex flex-col gap-3 text-sm text-text-muted">
-                <Check>Shareable cheat-sheet link</Check>
-                <Check>Quirks, triggers &amp; command words</Check>
-                <Check>Allergies, always shown</Check>
+                <Check>Identity &amp; shareable profile link</Check>
+                <Check>Commands, quirks &amp; triggers</Check>
+                <Check>Feeding &amp; allergies, always shown</Check>
                 <Check>PIN-gated emergency contacts</Check>
-                <Check>Printable QR poster</Check>
+                <Check>Print-ready missing poster &amp; social tile</Check>
               </ul>
               <a
                 href={site.appStoreUrl}
                 className="mt-8 rounded-button border border-border bg-background px-5 py-3 text-center text-sm font-medium text-foreground transition-colors hover:border-primary"
               >
-                Start free
+                Download free
               </a>
             </div>
 
-            {/* Pro */}
+            {/* Unlock */}
             <div className="flex flex-col rounded-card border border-transparent bg-card-dark p-8 text-card-dark-text">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold">Pro</h3>
+                <h3 className="text-lg font-bold">Unlock the rest</h3>
                 <span className="eyebrow rounded-full bg-card-dark-deep px-2.5 py-1 text-card-dark-label">
                   One-time
                 </span>
@@ -190,17 +197,16 @@ export default function Home() {
               <p className="mt-1 text-sm text-card-dark-label">One payment, all your pets, forever.</p>
               <p className="mt-6 font-tanker text-4xl">{site.proPrice}</p>
               <ul className="mt-6 flex flex-col gap-3 text-sm text-card-dark-text/90">
-                {PRO.map((item) => (
-                  <Check key={item} light>
-                    {item}
-                  </Check>
-                ))}
+                <Check light>Routines — walks, sleep, bathroom, more</Check>
+                <Check light>Medications &amp; conditions</Check>
+                <Check light>Unlimited pets</Check>
+                <Check light>Everything in Free, always included</Check>
               </ul>
               <a
                 href={site.appStoreUrl}
                 className="mt-8 rounded-button bg-background px-5 py-3 text-center text-sm font-medium text-foreground transition-colors hover:bg-secondary"
               >
-                Unlock Pro
+                Unlock for {site.proPrice}
               </a>
               <p className="mt-4 text-center text-xs text-card-dark-label">
                 No subscription. Purchased in-app, unlocks account-wide.
@@ -209,25 +215,56 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Final CTA */}
+        {/* Section 5 — FAQ */}
+        <section id="faq" className="border-t border-border/70 bg-secondary/40">
+          <div className="mx-auto max-w-3xl px-6 py-16 sm:py-20">
+            <p className="eyebrow text-primary">FAQ</p>
+            <h2 className="mt-3 font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
+              Questions, answered plainly.
+            </h2>
+
+            <div className="mt-10 flex flex-col gap-3">
+              {FAQS.map((f) => (
+                <details
+                  key={f.q}
+                  className="group rounded-card border border-border bg-card-bg px-5 py-4 [&_summary::-webkit-details-marker]:hidden"
+                >
+                  <summary className="flex cursor-pointer items-center justify-between gap-4 text-base font-bold text-foreground">
+                    {f.q}
+                    <span
+                      className="shrink-0 text-primary transition-transform duration-200 group-open:rotate-45"
+                      aria-hidden
+                    >
+                      +
+                    </span>
+                  </summary>
+                  <p className="mt-3 text-sm leading-relaxed text-text-muted">{f.a}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Section 6 — Final CTA */}
         <section className="border-t border-border/70">
           <div className="mx-auto max-w-3xl px-6 py-20 text-center">
             <h2 className="font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
-              Write them down before someone else has to guess.
+              Away, but known.
             </h2>
+            <p className="mt-4 text-lg leading-relaxed text-text-muted">
+              Download Quirks &amp; All and fill in your pet&apos;s profile in under five minutes.
+            </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <a
                 href={site.appStoreUrl}
                 className="rounded-button bg-button px-5 py-3 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed"
               >
-                Download for iOS
+                Download free
               </a>
-              <a
-                href={site.playStoreUrl}
-                className="rounded-button border border-border bg-card-bg px-5 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary"
-              >
-                Get it on Android
-              </a>
+            </div>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <StoreBadge kind="apple" href={site.appStoreUrl} />
+              <StoreBadge kind="google" href={site.playStoreUrl} />
             </div>
           </div>
         </section>
@@ -246,6 +283,36 @@ function Check({ children, light }: { children: React.ReactNode; light?: boolean
       </span>
       <span>{children}</span>
     </li>
+  );
+}
+
+/* App store badges. Placeholder store links until the real listings are live. */
+function StoreBadge({ kind, href }: { kind: "apple" | "google"; href: string }) {
+  const isApple = kind === "apple";
+  return (
+    <a
+      href={href}
+      aria-label={isApple ? "Download on the App Store" : "Get it on Google Play"}
+      className="flex items-center gap-2.5 rounded-button bg-button px-4 py-2.5 text-card-dark-text transition-colors hover:bg-button-pressed"
+    >
+      <span aria-hidden className="shrink-0">
+        {isApple ? (
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.05 12.53c-.02-2.02 1.65-2.99 1.72-3.04-.94-1.37-2.4-1.56-2.92-1.58-1.24-.13-2.42.73-3.05.73-.63 0-1.6-.71-2.63-.69-1.35.02-2.6.78-3.29 1.99-1.4 2.44-.36 6.04 1 8.02.67.97 1.47 2.06 2.51 2.02 1.01-.04 1.39-.65 2.61-.65 1.22 0 1.56.65 2.63.63 1.09-.02 1.78-.99 2.44-1.96.77-1.12 1.09-2.21 1.11-2.27-.02-.01-2.13-.82-2.15-3.23zM15.03 6.5c.56-.68.94-1.62.83-2.56-.81.03-1.79.54-2.37 1.21-.52.6-.97 1.56-.85 2.48.9.07 1.83-.46 2.39-1.13z" />
+          </svg>
+        ) : (
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3.6 2.4c-.24.25-.38.63-.38 1.13v16.94c0 .5.14.88.39 1.12l.06.06L13.1 12v-.22L3.66 2.34l-.06.06zM16.24 15.14L13.1 12v-.22l3.14-3.14.07.04 3.72 2.11c1.06.6 1.06 1.59 0 2.2l-3.72 2.11-.07.04zM15.9 15.5L12.68 12.3 3.6 21.4c.35.37.93.42 1.58.05l10.72-6.09M15.9 8.5L5.18 2.4C4.53 2.06 3.95 2.1 3.6 2.48l9.08 9.08L15.9 8.5z" />
+          </svg>
+        )}
+      </span>
+      <span className="flex flex-col leading-tight">
+        <span className="text-[10px] uppercase tracking-wide text-card-dark-label">
+          {isApple ? "Download on the" : "Get it on"}
+        </span>
+        <span className="text-sm font-semibold">{isApple ? "App Store" : "Google Play"}</span>
+      </span>
+    </a>
   );
 }
 

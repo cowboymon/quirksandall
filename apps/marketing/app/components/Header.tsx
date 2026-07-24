@@ -11,13 +11,13 @@ export default function Header() {
 
         <nav className="hidden items-center gap-8 sm:flex">
           <Link href="/#how" className="text-sm text-text-muted transition-colors hover:text-foreground">
-            How it works
-          </Link>
-          <Link href="/#features" className="text-sm text-text-muted transition-colors hover:text-foreground">
             Features
           </Link>
           <Link href="/#pricing" className="text-sm text-text-muted transition-colors hover:text-foreground">
             Pricing
+          </Link>
+          <Link href="/#faq" className="text-sm text-text-muted transition-colors hover:text-foreground">
+            FAQ
           </Link>
         </nav>
 
@@ -25,7 +25,7 @@ export default function Header() {
           href={site.appStoreUrl}
           className="rounded-button bg-button px-4 py-2 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed"
         >
-          Get the app
+          Download free
         </a>
       </div>
     </header>

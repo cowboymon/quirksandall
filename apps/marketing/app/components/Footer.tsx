@@ -11,17 +11,17 @@ export default function Footer() {
         </div>
 
         <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-          <Link href="/#features" className="text-text-muted transition-colors hover:text-foreground">
+          <Link href="/#how" className="text-text-muted transition-colors hover:text-foreground">
             Features
           </Link>
           <Link href="/#pricing" className="text-text-muted transition-colors hover:text-foreground">
             Pricing
           </Link>
           <Link href="/privacy" className="text-text-muted transition-colors hover:text-foreground">
-            Privacy
+            Privacy Policy
           </Link>
           <Link href="/terms" className="text-text-muted transition-colors hover:text-foreground">
-            Terms
+            Terms of Service
           </Link>
           <a
             href={`mailto:${site.contactEmail}`}
@@ -32,7 +32,10 @@ export default function Footer() {
         </nav>
       </div>
 
-      <div className="mx-auto max-w-5xl px-6 pb-10">
+      <div className="mx-auto flex max-w-5xl flex-col gap-1.5 px-6 pb-10">
+        <p className="text-sm text-text-muted">
+          {site.name} is made by {site.maker}, the team behind {site.makerOtherProduct}.
+        </p>
         <p className="eyebrow text-text-muted">
           © {new Date().getFullYear()} {site.operator}. All rights reserved.
         </p>

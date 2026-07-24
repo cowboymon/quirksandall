@@ -4,7 +4,7 @@ export const site = {
   name: "Quirks & All",
   tagline: "Away, but known.",
   description:
-    "Everything a sitter needs to know about your pet, in one link. Quirks, commands, routine, meds and emergency contacts — so whoever's watching them just knows.",
+    "Fill in your pet's profile once. Share a link with whoever's looking after them. No app needed on their end — just everything they need to know.",
   // Placeholder store links — swap for the real listings when published.
   appStoreUrl: "#",
   playStoreUrl: "#",
@@ -12,6 +12,9 @@ export const site = {
   contactEmail: "support@quirksandall.app",
   // Company / operator name shown in legal copy.
   operator: "Quirks & All",
+  // Maker attribution shown in the footer.
+  maker: "Its Hypothetical",
+  makerOtherProduct: "Loud & Fine",
   // Keep in sync when you revise the legal pages.
   legalLastUpdated: "22 July 2026",
   proPrice: "$7.99",
