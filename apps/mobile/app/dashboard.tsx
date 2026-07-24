@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Share, TextInput, Alert } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Share, TextInput, Alert, Platform } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabase";
@@ -98,9 +98,9 @@ export default function Dashboard() {
         { label: "Pet Basics", detail: `${pet.breed ?? ""}${pet.breed && pet.sex ? " · " : ""}${pet.sex ?? ""}`.trim() || "Name, breed, photo", status: pet.breed ? "done" : "empty", route: "/edit/pet" },
         { label: "Emergency Contacts", detail: "Vet, emergency vet, backup", status: "done", route: "/edit/emergency" },
         { label: "Commands", detail: commandCount ? `${commandCount} command${commandCount === 1 ? "" : "s"} saved` : "None saved yet", status: commandCount ? "done" : "empty", route: "/edit/behavior" },
-        { label: "Quirks & Triggers", detail: "Escape risk, fears, off-limits zones", status: "done", route: "/edit/behavior" },
+        { label: "Quirks & Triggers", detail: "Escape risk, fears, off-limits zones", status: "done", route: "/edit/behavior?section=quirks" },
         { label: "Routine", detail: isPaid ? "Shown to sitters" : "Saved — not shown to sitters yet", status: "saved", route: "/edit/routine" },
-        { label: "Medical", detail: isPaid ? "Shown to sitters" : "Saved — not shown to sitters yet", status: "saved", route: "/edit/routine" },
+        { label: "Medical", detail: isPaid ? "Shown to sitters" : "Saved — not shown to sitters yet", status: "saved", route: "/edit/routine?section=medical" },
       ],
     });
     setLoading(false);
@@ -119,7 +119,10 @@ export default function Dashboard() {
 
   const shareLinkUrl = async (link: OwnerLink) => {
     const url = `${WEB_URL}/p/${link.token}`;
-    await Share.share({ message: url, url });
+    // Pass ONE representation of the link. Sending both `message` and `url`
+    // makes iOS surface the link twice in the share sheet (#41). iOS prefers a
+    // real `url` (rich preview); Android only reads `message`.
+    await Share.share(Platform.OS === "ios" ? { url } : { message: url });
     setCopiedId(link.id);
     setTimeout(() => setCopiedId((id) => (id === link.id ? null : id)), 2000);
   };
@@ -241,8 +244,15 @@ export default function Dashboard() {
                   {viewedLabel(link.last_viewed_at)}
                 </Text>
               </View>
-              <TouchableOpacity onPress={() => shareLinkUrl(link)} style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}>
-                <Ionicons name={copiedId === link.id ? "checkmark" : "share-outline"} size={15} color={copiedId === link.id ? colors.success : colors.cardDarkText} />
+              <TouchableOpacity
+                onPress={() => (isPaid ? shareLinkUrl(link) : router.push("/upgrade"))}
+                style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}
+              >
+                <Ionicons
+                  name={!isPaid ? "lock-closed" : copiedId === link.id ? "checkmark" : "share-outline"}
+                  size={15}
+                  color={!isPaid ? "rgba(248,236,238,0.4)" : copiedId === link.id ? colors.success : colors.cardDarkText}
+                />
               </TouchableOpacity>
               <TouchableOpacity onPress={() => confirmRevoke(link)} style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}>
                 <Ionicons name="trash-outline" size={15} color="rgba(248,236,238,0.5)" />

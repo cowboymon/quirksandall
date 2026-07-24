@@ -1,7 +1,7 @@
 // Edit routine + medical. Tier-aware: shows lock indicator on paid-gated sections for free users.
-import { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, TextInput, Alert } from "react-native";
-import { router } from "expo-router";
+import { useState, useEffect, useRef } from "react";
+import { View, Text, TouchableOpacity, TextInput, Alert, ScrollView } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
@@ -29,6 +29,16 @@ function RoutineMeal({ label, time, amount, onTime, onAmount, divider }: {
 
 export default function EditRoutine() {
   const { petId, pet, loading } = useActivePet();
+  const { section } = useLocalSearchParams<{ section?: string }>();
+  const scrollRef = useRef<ScrollView>(null);
+  const medicalY = useRef(0);
+
+  // Deep-link from the dashboard "Medical" row → scroll to the medical block.
+  useEffect(() => {
+    if (loading || section !== "medical") return;
+    const t = setTimeout(() => scrollRef.current?.scrollTo({ y: medicalY.current, animated: true }), 350);
+    return () => clearTimeout(t);
+  }, [loading, section]);
 
   // Routine
   const [feedingBrand, setFeedingBrand] = useState("");
@@ -138,7 +148,7 @@ export default function EditRoutine() {
     ) : null;
 
   return (
-    <EditShell title="Routine & Medical" onSave={save} saving={saving} loading={loading}>
+    <EditShell title="Routine & Medical" onSave={save} saving={saving} loading={loading} scrollRef={scrollRef}>
       {!isPaid && (
         <View style={{ marginBottom: 16 }}>
           <InlineNote variant="paywall" cta="Unlock for $7.99" onCta={() => router.push("/upgrade")}>
@@ -222,7 +232,12 @@ export default function EditRoutine() {
       </Card>
 
       {/* Medical section title */}
-      <Text style={{ fontFamily: "Tanker", fontSize: 24, lineHeight: 28, color: colors.textDark, marginTop: 8, marginBottom: 12 }}>Medical</Text>
+      <Text
+        onLayout={(e) => { medicalY.current = e.nativeEvent.layout.y; }}
+        style={{ fontFamily: "Tanker", fontSize: 24, lineHeight: 28, color: colors.textDark, marginTop: 8, marginBottom: 12 }}
+      >
+        Medical
+      </Text>
 
       {/* Allergies — always visible, free */}
       <Card style={{ marginBottom: 12, borderColor: colors.success }}>

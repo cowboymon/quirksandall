@@ -14,9 +14,11 @@ type Props = {
   loading?: boolean;
   // Hide the top-right Save (for screens that render their own bottom button).
   hideSave?: boolean;
+  // Lets a screen scroll its own content (e.g. deep-linking to a section).
+  scrollRef?: React.RefObject<ScrollView | null>;
 };
 
-export default function EditShell({ title, subtitle, children, onSave, saving, saveLabel = "Save", loading, hideSave }: Props) {
+export default function EditShell({ title, subtitle, children, onSave, saving, saveLabel = "Save", loading, hideSave, scrollRef }: Props) {
   return (
     <View style={{ flex: 1, backgroundColor: "#F8ECEE" }}>
       {/* Sticky header — Back + Tanker title + Save */}
@@ -58,6 +60,7 @@ export default function EditShell({ title, subtitle, children, onSave, saving, s
         </View>
       ) : (
         <ScrollView
+          ref={scrollRef}
           contentContainerStyle={{ padding: 24, paddingBottom: 60 }}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="interactive"
