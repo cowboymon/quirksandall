@@ -4,7 +4,7 @@ import { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Image, Alert } from "react-native";
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { Headline, Input, Select, DateInput, WeightInput, PrimaryButton, ProgressDots, Eyebrow } from "../../components/ui";
+import { Headline, Input, Select, DateInput, WeightInput, PrimaryButton, ProgressDots, Eyebrow, BackButton } from "../../components/ui";
 import { RollingAnimal } from "../../components/Underlined";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { colors, computeAge, displayDateToISO } from "@quirksandall/shared";
@@ -41,6 +41,7 @@ export default function Step1() {
 
   return (
     <ScrollView className="flex-1 bg-background" keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 24, paddingTop: 60, paddingBottom: 48, width: "100%", maxWidth: 600, alignSelf: "center" }}>
+      <BackButton />
       <ProgressDots total={4} current={1} />
 
       <View style={{ marginTop: 28, marginBottom: 6 }}><Eyebrow>Step 1 of 4</Eyebrow></View>

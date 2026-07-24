@@ -1,7 +1,7 @@
 // Screen 4 — Routine & medical
 import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert } from "react-native";
 import { router } from "expo-router";
-import { Headline, Textarea, InlineNote, PrimaryButton, SkipButton, ProgressDots, Eyebrow, TimeInput } from "../../components/ui";
+import { Headline, Textarea, InlineNote, PrimaryButton, SkipButton, ProgressDots, Eyebrow, TimeInput, BackButton } from "../../components/ui";
 import { Underlined } from "../../components/Underlined";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { useActivePetStore } from "../../stores/activePet";
@@ -142,9 +142,7 @@ export default function Step4() {
 
   return (
     <ScrollView className="flex-1 bg-background" keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 24, paddingTop: 60, width: "100%", maxWidth: 600, alignSelf: "center" }}>
-      <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 16 }}>
-        <Text style={{ color: colors.textMuted, fontSize: 14 }}>‹ Back</Text>
-      </TouchableOpacity>
+      <BackButton />
       <ProgressDots total={4} current={4} />
 
       <View style={{ marginTop: 20, marginBottom: 6 }}><Eyebrow>Step 4 of 4</Eyebrow></View>

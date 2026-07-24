@@ -7,6 +7,7 @@ import { supabase } from "../lib/supabase";
 import { registerForPushNotifications, scheduleTrickNudge } from "../lib/notifications";
 import { Eyebrow, Card } from "../components/ui";
 import PetSwitcher from "../components/PetSwitcher";
+import ConfirmModal from "../components/ConfirmModal";
 import { useActivePetStore } from "../stores/activePet";
 import { colors, computeAge, capitalizeFirst } from "@quirksandall/shared";
 import { WEB_URL } from "../lib/config";
@@ -50,6 +51,7 @@ export default function Dashboard() {
   const [showNewLink, setShowNewLink] = useState(false);
   const [newLinkName, setNewLinkName] = useState("");
   const [creatingLink, setCreatingLink] = useState(false);
+  const [revokeTarget, setRevokeTarget] = useState<OwnerLink | null>(null);
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [deletionScheduled, setDeletionScheduled] = useState(false);
 
@@ -153,15 +155,13 @@ export default function Dashboard() {
     loadDashboard();
   };
 
-  const confirmRevoke = (link: OwnerLink) => {
-    Alert.alert("Revoke this link?", "It stops working immediately for anyone who has it.", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Revoke", style: "destructive", onPress: async () => {
-        const { error } = await revokeLink(link.id);
-        if (error) { Alert.alert("Couldn't revoke", error); return; }
-        loadDashboard();
-      } },
-    ]);
+  const doRevoke = async () => {
+    const link = revokeTarget;
+    setRevokeTarget(null);
+    if (!link) return;
+    const { error } = await revokeLink(link.id);
+    if (error) { Alert.alert("Couldn't revoke", error); return; }
+    loadDashboard();
   };
 
   const cancelDeletion = async () => {
@@ -300,7 +300,7 @@ export default function Dashboard() {
                   </TouchableOpacity>
                 );
               })()}
-              <TouchableOpacity onPress={() => confirmRevoke(link)} style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}>
+              <TouchableOpacity onPress={() => setRevokeTarget(link)} style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}>
                 <Ionicons name="trash-outline" size={15} color="rgba(248,236,238,0.5)" />
               </TouchableOpacity>
             </View>
@@ -431,6 +431,16 @@ export default function Dashboard() {
           <Ionicons name="chevron-forward" size={16} color="rgba(248,236,238,0.5)" />
         </TouchableOpacity>
       </View>
+
+      <ConfirmModal
+        visible={!!revokeTarget}
+        title="Delete this link?"
+        message="It stops working immediately for anyone who has it."
+        confirmLabel="Delete"
+        destructive
+        onConfirm={doRevoke}
+        onCancel={() => setRevokeTarget(null)}
+      />
     </ScrollView>
   );
 }
