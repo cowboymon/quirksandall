@@ -5,7 +5,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
-import { Input, Eyebrow, Card, InlineNote, TimeInput, FieldTier } from "../../components/ui";
+import { Input, Eyebrow, Card, InlineNote, TimeInput, FieldTier, Select } from "../../components/ui";
 import { colors, capitalizeFirst } from "@quirksandall/shared";
 
 const mealInput = {
@@ -54,6 +54,9 @@ export default function EditRoutine() {
   const [walks, setWalks] = useState("");
   const [sleep, setSleep] = useState("");
   const [bathroom, setBathroom] = useState("");
+  const [leftAloneOk, setLeftAloneOk] = useState("");
+  const [leftAloneDetail, setLeftAloneDetail] = useState("");
+  const [toileting, setToileting] = useState("");
 
   // Medical
   const [allergies, setAllergies] = useState("");
@@ -90,6 +93,9 @@ export default function EditRoutine() {
         setWalks(routine.walks ?? "");
         setSleep(routine.sleep ?? "");
         setBathroom(routine.bathroom_habits ?? "");
+        setLeftAloneOk(routine.left_alone?.ok ?? "");
+        setLeftAloneDetail(routine.left_alone?.detail ?? "");
+        setToileting(routine.toileting_frequency ?? "");
       }
 
       if (medical) {
@@ -120,6 +126,8 @@ export default function EditRoutine() {
           walks,
           sleep,
           bathroom_habits: bathroom,
+          left_alone: { ok: leftAloneOk, detail: leftAloneDetail },
+          toileting_frequency: toileting,
         }, { onConflict: "pet_id" }),
         supabase.from("pet_medical").upsert({
           pet_id: petId,
@@ -228,6 +236,39 @@ export default function EditRoutine() {
           onChangeText={setBathroom}
           multiline
           style={{ height: 72, paddingTop: 10, textAlignVertical: "top" }}
+        />
+      </Card>
+
+      {/* Can they be left alone? */}
+      <Card style={{ marginBottom: 20 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+          <Eyebrow>Can they be left alone?</Eyebrow>
+          <PaidBadge />
+        </View>
+        <View style={{ marginTop: 8 }}>
+          <Select value={leftAloneOk} onValueChange={setLeftAloneOk} options={["Yes", "No"]} placeholder="Select" />
+        </View>
+        <Input
+          className="mt-2"
+          placeholder="e.g. Up to 4 hours, crated with a chew"
+          value={leftAloneDetail}
+          onChangeText={(v) => setLeftAloneDetail(capitalizeFirst(v))}
+          multiline
+          style={{ height: 64, paddingTop: 10, textAlignVertical: "top" }}
+        />
+      </Card>
+
+      {/* Toileting frequency */}
+      <Card style={{ marginBottom: 20 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+          <Eyebrow>How often do they toilet?</Eyebrow>
+          <PaidBadge />
+        </View>
+        <Input
+          className="mt-2"
+          placeholder="e.g. Every 4–6 hours, and after meals"
+          value={toileting}
+          onChangeText={(v) => setToileting(capitalizeFirst(v))}
         />
       </Card>
 

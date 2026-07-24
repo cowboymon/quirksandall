@@ -186,7 +186,7 @@ export default function RecipientView({ profile, token }: Props) {
         )}
 
         {/* Daily Routine — feeding is free; walks/sleep/bathroom are paid */}
-        {routine && (hasFeeding(routine.feeding) || (paidVisible && (routine.walks || routine.sleep || routine.bathroomHabits))) && (
+        {routine && (hasFeeding(routine.feeding) || (paidVisible && (routine.walks || routine.sleep || routine.bathroomHabits || routine.leftAlone || routine.toileting))) && (
           <section>
             <SectionTitle name={name} tail="Daily Routine" />
             <div className="flex flex-col gap-2">
@@ -194,6 +194,8 @@ export default function RecipientView({ profile, token }: Props) {
               {paidVisible && routine.walks && <InfoCard label="Walks" text={routine.walks} locked={lockedPreview} />}
               {paidVisible && routine.sleep && <InfoCard label="Sleep" text={routine.sleep} locked={lockedPreview} />}
               {paidVisible && routine.bathroomHabits && <InfoCard label="Bathroom" text={routine.bathroomHabits} locked={lockedPreview} />}
+              {paidVisible && routine.leftAlone && <InfoCard label="Left alone" text={routine.leftAlone} locked={lockedPreview} />}
+              {paidVisible && routine.toileting && <InfoCard label="Toileting" text={routine.toileting} locked={lockedPreview} />}
             </div>
           </section>
         )}

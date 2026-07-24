@@ -409,6 +409,16 @@ export default function Dashboard() {
                     <Text style={{ color: colors.primary, fontSize: 12, fontFamily: "Satoshi-Medium" }}>Change PIN →</Text>
                   </TouchableOpacity>
                 )}
+                {/* Delete pet — a clear callout under Pet Basics, mirroring Change PIN */}
+                {s.label === "Pet Basics" && (
+                  <TouchableOpacity
+                    onPress={() => router.push("/edit/pet")}
+                    style={{ flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start", marginTop: 6, marginLeft: 20, paddingVertical: 4 }}
+                  >
+                    <Ionicons name="trash-outline" size={13} color={colors.danger} />
+                    <Text style={{ color: colors.danger, fontSize: 12, fontFamily: "Satoshi-Medium" }}>Delete pet →</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             ))}
           </View>
