@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { router } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { checkEntitlement, purchasePro, restorePurchases } from "../lib/purchases";
+import { REDEMPTION_ENABLED } from "../lib/config";
 import { colors } from "@quirksandall/shared";
 import { Eyebrow, Input } from "../components/ui";
 import EditShell from "../components/EditShell";
@@ -163,6 +164,11 @@ export default function Account() {
           <TouchableOpacity onPress={handleRestore} disabled={loading} style={{ alignItems: "center", marginTop: 10, paddingVertical: 4 }}>
             <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, fontFamily: "Satoshi" }}>Restore purchases</Text>
           </TouchableOpacity>
+          {REDEMPTION_ENABLED && (
+            <TouchableOpacity onPress={() => router.push("/redeem")} style={{ alignItems: "center", marginTop: 8, paddingVertical: 4 }}>
+              <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, fontFamily: "Satoshi" }}>Have a code?</Text>
+            </TouchableOpacity>
+          )}
         </View>
       ) : (
         <View style={{ marginTop: 24, backgroundColor: "#510000", borderRadius: 14, paddingHorizontal: 20, paddingVertical: 20 }}>

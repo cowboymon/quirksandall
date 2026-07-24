@@ -5,11 +5,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "../lib/supabase";
 import { purchasePro, restorePurchases } from "../lib/purchases";
 import { colors } from "@quirksandall/shared";
-
-// Flip to true once the redemption backend (redemption_codes table +
-// validate-code Edge Function → RevenueCat Promotional Entitlement) ships.
-// Currently ON to preview the screen — the redeem flow is UI-only for now.
-const REDEMPTION_ENABLED = true;
+import { REDEMPTION_ENABLED } from "../lib/config";
 
 const FEATURES = [
   { label: "The soft stuff, too", sub: "Scared of, steers clear of, and what they're really like" },
