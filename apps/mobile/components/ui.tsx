@@ -197,8 +197,12 @@ function maskTime12(raw: string): string {
 }
 
 // 12-hour time field with an AM/PM toggle. Stores "h:mm AM" / "h:mm PM".
-export function TimeInput({ value, onChangeText, style, placeholder }: { value: string; onChangeText: (v: string) => void; style?: TextInputProps["style"]; placeholder?: string }) {
-  const { hhmm, period } = parseTime12(value);
+export function TimeInput({ value, onChangeText, style, placeholder, defaultPeriod }: { value: string; onChangeText: (v: string) => void; style?: TextInputProps["style"]; placeholder?: string; defaultPeriod?: "AM" | "PM" }) {
+  const parsed = parseTime12(value);
+  const hhmm = parsed.hhmm;
+  // Empty field pre-selects defaultPeriod (e.g. PM for the dinner slot) so the
+  // owner doesn't have to switch it; once they've typed a value its own period wins.
+  const period = value && value.trim() ? parsed.period : (defaultPeriod ?? parsed.period);
   const commit = (nextHhmm: string, nextPeriod: "AM" | "PM") =>
     onChangeText(nextHhmm ? `${nextHhmm} ${nextPeriod}` : "");
   return (

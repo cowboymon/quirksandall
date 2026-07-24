@@ -395,11 +395,12 @@ export default function MissingPoster() {
 
       {/* First steps if the worst happens */}
       <View style={{ marginTop: 32, backgroundColor: colors.cardBg, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 18 }}>
-        <Eyebrow ochre>If they've gone missing — first steps</Eyebrow>
+        <Eyebrow ochre>First steps</Eyebrow>
         <View style={{ gap: 14, marginTop: 14 }}>
           {[
-            "Call your vet and make sure your pet's microchip details are up to date.",
-            "Ask your vet to add your pet to their lost-pet database.",
+            `Call your vet — confirm that ${profile.name}'s microchip details are current.`,
+            `Ask your vet to add ${profile.name} to their lost-pet database.`,
+            "Share the poster and tile you just made — starting with your own group chats.",
             "Post in your suburb's community Facebook groups (and neighbouring ones) so people can share it around.",
           ].map((step, i) => (
             <View key={i} style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>

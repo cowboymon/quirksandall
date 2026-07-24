@@ -44,6 +44,7 @@ export default function RootLayout() {
       <Stack.Screen name="account" />
       <Stack.Screen name="poster" />
       <Stack.Screen name="upgrade" />
+      <Stack.Screen name="redeem" />
     </Stack>
   );
 }

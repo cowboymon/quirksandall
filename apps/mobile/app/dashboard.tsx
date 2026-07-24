@@ -9,7 +9,7 @@ import { Eyebrow, Card } from "../components/ui";
 import PetSwitcher from "../components/PetSwitcher";
 import ConfirmModal from "../components/ConfirmModal";
 import { useActivePetStore } from "../stores/activePet";
-import { colors, computeAge, capitalizeFirst, orderedCommands } from "@quirksandall/shared";
+import { colors, computeAge, capitalizeFirst, orderedCommands, possessive } from "@quirksandall/shared";
 import { WEB_URL } from "../lib/config";
 import { listLinks, createLink, renameLink, revokeLink, type OwnerLink } from "../lib/links";
 import type { Pet } from "@quirksandall/shared";
@@ -419,7 +419,7 @@ export default function Dashboard() {
                     style={{ flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start", marginTop: 6, marginLeft: 20, paddingVertical: 4 }}
                   >
                     <Ionicons name="trash-outline" size={13} color={colors.danger} />
-                    <Text style={{ color: colors.danger, fontSize: 12, fontFamily: "Satoshi-Medium" }}>Delete pet →</Text>
+                    <Text style={{ color: colors.danger, fontSize: 12, fontFamily: "Satoshi-Medium" }}>Delete {possessive(pet.name)} profile?</Text>
                   </TouchableOpacity>
                 )}
               </View>
