@@ -272,7 +272,9 @@ export default function Dashboard() {
                     onChangeText={setRenameValue}
                     onBlur={() => commitRename(link)}
                     onSubmitEditing={() => commitRename(link)}
-                    style={{ color: colors.cardDarkText, fontSize: 13, fontFamily: "Satoshi-Medium", borderBottomWidth: 1, borderBottomColor: "rgba(248,236,238,0.3)", paddingBottom: 2 }}
+                    // No underline / extra padding — it changed the row height vs the
+                    // plain label and jumped the text up when entering edit mode.
+                    style={{ color: colors.cardDarkText, fontSize: 13, fontFamily: "Satoshi-Medium", padding: 0 }}
                   />
                 ) : (
                   <Text style={{ color: colors.cardDarkText, fontSize: 13, fontFamily: "Satoshi-Medium" }} numberOfLines={1}>
