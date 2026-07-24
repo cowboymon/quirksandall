@@ -173,23 +173,18 @@ export default function Account() {
         </View>
       )}
 
-      {/* Sign out — promoted to the primary "Save"-style button */}
+      {/* Sign out — outlined standalone button (the treatment Delete used to have). */}
       <TouchableOpacity
         onPress={signOut}
         activeOpacity={0.85}
-        style={{ marginTop: 28, height: 50, borderRadius: 12, backgroundColor: "#510000", alignItems: "center", justifyContent: "center" }}
+        style={{ marginTop: 28, height: 50, borderRadius: 12, borderWidth: 1, borderColor: colors.textDark, backgroundColor: "transparent", alignItems: "center", justifyContent: "center" }}
       >
-        <Text style={{ color: "#F8ECEE", fontSize: 15, fontFamily: "Satoshi-Medium", letterSpacing: 0.3 }}>Sign out</Text>
+        <Text style={{ color: colors.textDark, fontSize: 15, fontFamily: "Satoshi-Medium", letterSpacing: 0.3 }}>Sign out</Text>
       </TouchableOpacity>
 
-      {/* Delete account — takes the outlined treatment Sign out used to have (#69),
-          a clear standalone button directly beneath the primary Sign out. */}
-      <TouchableOpacity
-        onPress={deleteAccount}
-        activeOpacity={0.85}
-        style={{ marginTop: 14, height: 50, borderRadius: 12, borderWidth: 1, borderColor: colors.danger, backgroundColor: "transparent", alignItems: "center", justifyContent: "center" }}
-      >
-        <Text style={{ color: colors.danger, fontSize: 15, fontFamily: "Satoshi-Medium", letterSpacing: 0.3 }}>Delete account</Text>
+      {/* Delete account — the quiet text link, beneath Sign out. */}
+      <TouchableOpacity onPress={deleteAccount} style={{ marginTop: 14, alignItems: "center", paddingVertical: 6 }}>
+        <Text style={{ color: colors.danger, fontSize: 14 }}>Delete account</Text>
       </TouchableOpacity>
     </EditShell>
   );
