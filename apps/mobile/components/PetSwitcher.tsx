@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { ScrollView, TouchableOpacity, View, Text, Image } from "react-native";
 import { supabase } from "../lib/supabase";
 import { useActivePetStore } from "../stores/activePet";
 import { colors } from "@quirksandall/shared";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 
 type PetSummary = { id: string; name: string; photo_url: string | null };
 
@@ -13,19 +13,24 @@ export default function PetSwitcher({ isPaid }: { isPaid: boolean }) {
   const { petId, setPetId } = useActivePetStore();
   const [pets, setPets] = useState<PetSummary[]>([]);
 
-  useEffect(() => {
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data } = await supabase
-        .from("pets")
-        .select("id, name, photo_url")
-        .eq("owner_id", user.id)
-        .eq("status", "active")
-        .order("created_at");
-      setPets(data ?? []);
-    })();
-  }, []);
+  // Re-fetch on focus (not just mount) so a photo/name added on the edit screen
+  // shows up when returning to the dashboard.
+  useFocusEffect(
+    useCallback(() => {
+      (async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        const user = session?.user ?? null;
+        if (!user) return;
+        const { data } = await supabase
+          .from("pets")
+          .select("id, name, photo_url")
+          .eq("owner_id", user.id)
+          .eq("status", "active")
+          .order("created_at");
+        setPets(data ?? []);
+      })();
+    }, [])
+  );
 
   const activeId = petId ?? pets[0]?.id;
 
