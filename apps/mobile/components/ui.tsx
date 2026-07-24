@@ -458,7 +458,9 @@ export function Select({
         <Text style={{ color: colors.textMuted, fontSize: 12 }}>▾</Text>
       </TouchableOpacity>
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
-        <TouchableOpacity activeOpacity={1} onPress={() => setOpen(false)} style={{ flex: 1 }}>
+        {/* Dim scrim so the fields behind the dropdown recede instead of showing
+            through — the menu stays anchored to its trigger on top of it. */}
+        <TouchableOpacity activeOpacity={1} onPress={() => setOpen(false)} style={{ flex: 1, backgroundColor: "rgba(31,26,23,0.4)" }}>
           <View
             style={[
               { backgroundColor: "#FFFFFF", borderRadius: radius.card, borderWidth: 1, borderColor: colors.border, overflow: "hidden", shadowColor: "#000", shadowOpacity: 0.15, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 6 },
