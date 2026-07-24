@@ -280,7 +280,7 @@ export default function Dashboard() {
                 onPress={() => { setRenamingId(link.id); setRenameValue(link.label ?? ""); }}
                 style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}
               >
-                <Entypo name="pencil" size={15} color={colors.cardDarkText} />
+                <Entypo name="edit" size={15} color={colors.cardDarkText} />
               </TouchableOpacity>
               {/* The first (main) link is always shareable — free tier gets
                   preview + link 1. Only additional links need the paid unlock. */}
@@ -394,7 +394,7 @@ export default function Dashboard() {
                       <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>{s.label}</Text>
                       <Text style={{ color: statusColor[s.status], fontSize: 11, marginTop: 2 }}>{s.detail}</Text>
                     </View>
-                    <Entypo name="pencil" size={16} color={colors.textMuted} />
+                    <Entypo name="edit" size={16} color={colors.textMuted} />
                   </Card>
                 </TouchableOpacity>
                 {/* Quick access to the PIN, directly under the emergency row */}
