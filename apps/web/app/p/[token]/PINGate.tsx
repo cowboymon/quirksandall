@@ -63,10 +63,21 @@ export default function PINGate({ token, onUnlocked }: Props) {
         <span className="text-xs" style={{ color: "rgba(248,236,238,0.5)" }}>PIN-protected</span>
       </div>
 
+      {/* Two skeleton rows — hint at the contacts waiting behind the PIN */}
+      <div className="flex flex-col gap-4" style={{ marginBottom: 20 }} aria-hidden>
+        {[0, 1].map((i) => (
+          <div key={i} className="flex flex-col gap-1.5">
+            <div style={{ height: 7, width: 56, borderRadius: 4, backgroundColor: "rgba(248,236,238,0.18)" }} />
+            <div style={{ height: 11, width: i === 1 ? "55%" : "72%", borderRadius: 4, backgroundColor: "rgba(248,236,238,0.1)" }} />
+          </div>
+        ))}
+      </div>
+
       {/* PIN entry — restyled for the dark card */}
-      <p className="eyebrow mb-3" style={{ color: "rgba(248,236,238,0.6)" }}>
-        Enter PIN to view
-      </p>
+      <div style={{ borderTop: "1px solid rgba(248,236,238,0.12)", paddingTop: 16 }}>
+        <p className="eyebrow mb-3" style={{ color: "rgba(248,236,238,0.6)" }}>
+          Enter PIN to view
+        </p>
 
       {error && (
         <p className="text-sm mb-3 font-light leading-relaxed" style={{ color: "#F0A0B0" }}>
@@ -111,6 +122,7 @@ export default function PINGate({ token, onUnlocked }: Props) {
           className="absolute inset-0 opacity-0 w-full h-full cursor-text"
           disabled={cooldown || loading}
         />
+      </div>
       </div>
     </section>
   );

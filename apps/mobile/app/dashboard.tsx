@@ -2,19 +2,6 @@ import { useCallback, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Share, TextInput, Alert, Platform, ActivityIndicator } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import Svg, { Path } from "react-native-svg";
-
-// "Pencil line" edit icon (Lucide-style) as an inline SVG so we control the
-// stroke weight — font icons (Ionicons/Feather) bake theirs in. Bump strokeWidth
-// for a thicker, more proportional look.
-function PencilLine({ size = 14, color = "#000000", strokeWidth = 2 }: { size?: number; color?: string; strokeWidth?: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-      <Path d="M12 20h9" />
-      <Path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
-    </Svg>
-  );
-}
 import { supabase } from "../lib/supabase";
 import { registerForPushNotifications, scheduleTrickNudge } from "../lib/notifications";
 import { Eyebrow, Card } from "../components/ui";
@@ -292,7 +279,7 @@ export default function Dashboard() {
                 onPress={() => { setRenamingId(link.id); setRenameValue(link.label ?? ""); }}
                 style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}
               >
-                <PencilLine size={15} color={colors.cardDarkText} strokeWidth={2.25} />
+                <Ionicons name="pencil-outline" size={15} color={colors.cardDarkText} />
               </TouchableOpacity>
               {/* The first (main) link is always shareable — free tier gets
                   preview + link 1. Only additional links need the paid unlock. */}
@@ -406,7 +393,7 @@ export default function Dashboard() {
                       <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>{s.label}</Text>
                       <Text style={{ color: statusColor[s.status], fontSize: 11, marginTop: 2 }}>{s.detail}</Text>
                     </View>
-                    <Ionicons name="create-outline" size={16} color={colors.textMuted} />
+                    <Ionicons name="pencil-outline" size={16} color={colors.textMuted} />
                   </Card>
                 </TouchableOpacity>
                 {/* Quick access to the PIN, directly under the emergency row */}
