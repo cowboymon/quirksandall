@@ -209,7 +209,7 @@ export default function EditPet() {
       <View style={{ gap: 12 }}>
         <Card>
           <Eyebrow>Name</Eyebrow>
-          <Input className="mt-1" placeholder="Biscuit" value={name} onChangeText={setName} />
+          <Input name className="mt-1" placeholder="Biscuit" value={name} onChangeText={setName} />
         </Card>
 
         <Card>

@@ -122,7 +122,7 @@ export default function Account() {
       <View style={{ gap: 16 }}>
         <View>
           <Eyebrow>Your name</Eyebrow>
-          <Input style={{ marginTop: 4 }} placeholder="e.g. Jamie Nguyen" value={name} onChangeText={setName} />
+          <Input name style={{ marginTop: 4 }} placeholder="e.g. Jamie Nguyen" value={name} onChangeText={setName} />
         </View>
         <View>
           <Eyebrow>Mobile number</Eyebrow>

@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { colors, radius, capitalizeFirst, formatPhone } from "@quirksandall/shared";
+import { colors, radius, capitalizeFirst, capitalizeWords, formatPhone } from "@quirksandall/shared";
 
 // Keyboard types where sentence-casing the first char would be wrong.
 const NON_TEXT_KEYBOARDS = ["numeric", "number-pad", "decimal-pad", "phone-pad", "email-address"];
@@ -11,6 +11,11 @@ function sentenceCased(keyboardType: TextInputProps["keyboardType"], onChangeTex
   if (!onChangeText) return undefined;
   if (keyboardType && NON_TEXT_KEYBOARDS.includes(keyboardType)) return onChangeText;
   return (t: string) => onChangeText(capitalizeFirst(t));
+}
+// Title-case each word — for person/pet name fields ("monica ralph" → "Monica Ralph").
+function wordCased(onChangeText?: (t: string) => void) {
+  if (!onChangeText) return undefined;
+  return (t: string) => onChangeText(capitalizeWords(t));
 }
 
 export function Headline({ children, className }: { children: React.ReactNode; className?: string }) {
@@ -80,15 +85,16 @@ export function LabeledInput({
   style,
   onChangeText,
   phone,
+  name,
   ...props
-}: TextInputProps & { label: string; phone?: boolean }) {
+}: TextInputProps & { label: string; phone?: boolean; name?: boolean }) {
   const [focused, setFocused] = useState(false);
   return (
     <View>
       <FieldLabel>{label}</FieldLabel>
       <TextInput
-        autoCapitalize="sentences"
-        onChangeText={phone && onChangeText ? (t) => onChangeText(formatPhone(t)) : sentenceCased(props.keyboardType, onChangeText)}
+        autoCapitalize={name ? "words" : "sentences"}
+        onChangeText={phone && onChangeText ? (t) => onChangeText(formatPhone(t)) : name ? wordCased(onChangeText) : sentenceCased(props.keyboardType, onChangeText)}
         style={[
           {
             minHeight: 40, borderRadius: 8, borderWidth: 1,
@@ -275,14 +281,15 @@ export function Card({ children, style, ...props }: ViewProps) {
 
 // Single-line input. `filled` uses the blush surface the prototype uses inside
 // emergency/routine cards; default is white with a rose focus border.
-export function Input({ style, filled, phone, onFocus, onBlur, onChangeText, ...props }: TextInputProps & { filled?: boolean; phone?: boolean }) {
+export function Input({ style, filled, phone, name, onFocus, onBlur, onChangeText, ...props }: TextInputProps & { filled?: boolean; phone?: boolean; name?: boolean }) {
   const [focused, setFocused] = useState(false);
   return (
     <TextInput
       // Sentence-case the first char programmatically so it works regardless of
-      // the device's keyboard auto-capitalize setting (text fields only).
-      autoCapitalize="sentences"
-      onChangeText={phone && onChangeText ? (t) => onChangeText(formatPhone(t)) : sentenceCased(props.keyboardType, onChangeText)}
+      // the device's keyboard auto-capitalize setting (text fields only). Name
+      // fields title-case every word instead ("monica ralph" → "Monica Ralph").
+      autoCapitalize={name ? "words" : "sentences"}
+      onChangeText={phone && onChangeText ? (t) => onChangeText(formatPhone(t)) : name ? wordCased(onChangeText) : sentenceCased(props.keyboardType, onChangeText)}
       style={[
         {
           minHeight: 46,

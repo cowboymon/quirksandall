@@ -79,7 +79,7 @@ export default function Step1() {
       <View style={{ gap: 16 }}>
         <View>
           <Eyebrow>Name *</Eyebrow>
-          <Input className="mt-1" placeholder="e.g. Biscuit" value={pet.name ?? ""} onChangeText={(v) => setPet({ name: v })} autoFocus autoComplete="off" textContentType="none" />
+          <Input name className="mt-1" placeholder="e.g. Biscuit" value={pet.name ?? ""} onChangeText={(v) => setPet({ name: v })} autoFocus autoComplete="off" textContentType="none" />
         </View>
 
         <View>
