@@ -8,7 +8,7 @@ import { registerForPushNotifications, scheduleTrickNudge } from "../lib/notific
 import { Eyebrow, Card } from "../components/ui";
 import PetSwitcher from "../components/PetSwitcher";
 import { useActivePetStore } from "../stores/activePet";
-import { colors, computeAge } from "@quirksandall/shared";
+import { colors, computeAge, capitalizeFirst } from "@quirksandall/shared";
 import { WEB_URL } from "../lib/config";
 import { listLinks, createLink, renameLink, revokeLink, type OwnerLink } from "../lib/links";
 import type { Pet } from "@quirksandall/shared";
@@ -257,7 +257,8 @@ export default function Dashboard() {
                   <TextInput
                     autoFocus
                     value={renameValue}
-                    onChangeText={setRenameValue}
+                    autoCapitalize="sentences"
+                    onChangeText={(v) => setRenameValue(capitalizeFirst(v))}
                     onBlur={() => commitRename(link)}
                     onSubmitEditing={() => commitRename(link)}
                     // No underline / extra padding — it changed the row height vs the
@@ -280,7 +281,7 @@ export default function Dashboard() {
                 onPress={() => { setRenamingId(link.id); setRenameValue(link.label ?? ""); }}
                 style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}
               >
-                <Entypo name="edit" size={15} color={colors.cardDarkText} />
+                <Entypo name="edit" size={13} color={colors.cardDarkText} />
               </TouchableOpacity>
               {/* The first (main) link is always shareable — free tier gets
                   preview + link 1. Only additional links need the paid unlock. */}
@@ -312,7 +313,8 @@ export default function Dashboard() {
                 <TextInput
                   autoFocus
                   value={newLinkName}
-                  onChangeText={setNewLinkName}
+                  autoCapitalize="sentences"
+                  onChangeText={(v) => setNewLinkName(capitalizeFirst(v))}
                   onSubmitEditing={handleAddLink}
                   placeholder="Who's this for?"
                   placeholderTextColor="rgba(248,236,238,0.3)"
