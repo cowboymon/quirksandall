@@ -3,6 +3,8 @@ import { useEffect } from "react";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import Entypo from "@expo/vector-icons/Entypo";
 import { initRevenueCat } from "../lib/purchases";
 import { configureNotifications, registerForPushNotifications } from "../lib/notifications";
 
@@ -15,6 +17,11 @@ export default function RootLayout() {
     "Satoshi-Light": require("../assets/fonts/Satoshi-Light.ttf"),
     "Satoshi-Medium": require("../assets/fonts/Satoshi-Medium.ttf"),
     "Satoshi-Bold": require("../assets/fonts/Satoshi-Bold.ttf"),
+    // Preload the icon-set fonts too — the app gates all rendering on
+    // fontsLoaded, and lazily-loaded vector-icon fonts (esp. a newly added set
+    // like Entypo) can otherwise render blank on first paint.
+    ...Ionicons.font,
+    ...Entypo.font,
   });
 
   useEffect(() => {
