@@ -109,7 +109,7 @@ export default function EditPet() {
     if (!petId) return;
     setExporting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       const [petRow, behavior, routine, medical, vet, owner] = await Promise.all([
         supabase.from("pets").select("*").eq("id", petId).single(),
         supabase.from("pet_behavior").select("*").eq("pet_id", petId).maybeSingle(),
@@ -154,7 +154,7 @@ export default function EditPet() {
     }
     // Route to the next active pet, or onboarding if none remain. Exclude the
     // just-archived pet explicitly to avoid any read-after-write race.
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
     const { data: next } = await supabase
       .from("pets").select("id").eq("owner_id", user!.id).eq("status", "active").neq("id", petId).limit(1).maybeSingle();
     setShowDelete(false);

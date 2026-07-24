@@ -173,12 +173,18 @@ export default function Account() {
         </View>
       )}
 
-      <TouchableOpacity onPress={signOut} style={{ marginTop: 24, alignItems: "center" }}>
-        <Text style={{ color: colors.danger, fontSize: 14 }}>Sign out</Text>
+      {/* Sign out — promoted to the primary "Save"-style button */}
+      <TouchableOpacity
+        onPress={signOut}
+        activeOpacity={0.85}
+        style={{ marginTop: 28, height: 50, borderRadius: 12, backgroundColor: "#510000", alignItems: "center", justifyContent: "center" }}
+      >
+        <Text style={{ color: "#F8ECEE", fontSize: 15, fontFamily: "Satoshi-Medium", letterSpacing: 0.3 }}>Sign out</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={deleteAccount} style={{ marginTop: 20, alignItems: "center" }}>
-        <Text style={{ color: colors.textMuted, fontSize: 13, fontFamily: "Satoshi-Light" }}>Delete account</Text>
+      {/* Delete account — the quieter treatment Sign out used to have, right below */}
+      <TouchableOpacity onPress={deleteAccount} style={{ marginTop: 14, alignItems: "center", paddingVertical: 6 }}>
+        <Text style={{ color: colors.danger, fontSize: 14 }}>Delete account</Text>
       </TouchableOpacity>
     </EditShell>
   );

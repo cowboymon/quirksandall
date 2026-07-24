@@ -28,7 +28,7 @@ export function useActivePet() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) { setError("Not logged in"); setLoading(false); return; }
 
       let query = supabase.from("pets").select("*").eq("owner_id", user.id).eq("status", "active");
