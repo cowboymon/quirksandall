@@ -52,7 +52,7 @@ export default function EditEmergency() {
     (async () => {
       const [{ data: vet }, { data: owner }] = await Promise.all([
         supabase.from("pet_vet_info").select("*").eq("pet_id", petId).single(),
-        supabase.from("owners").select("backup_contacts").eq("id", (await supabase.auth.getUser()).data.user!.id).single(),
+        supabase.from("owners").select("backup_contacts").eq("id", (await supabase.auth.getSession()).data.session!.user.id).single(),
       ]);
       if (vet) {
         setVetContactName(vet.primary_vet?.contact_name ?? "");
@@ -90,7 +90,7 @@ export default function EditEmergency() {
     if (!petId) return;
     setSaving(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       await Promise.all([
         supabase.from("pet_vet_info").upsert({
           pet_id: petId,

@@ -66,7 +66,7 @@ export default function EditRoutine() {
   useEffect(() => {
     if (!petId) return;
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       const [{ data: owner }, { data: routine }, { data: medical }] = await Promise.all([
         supabase.from("owners").select("purchase_status").eq("id", user!.id).single(),
         supabase.from("pet_routine").select("*").eq("pet_id", petId).single(),

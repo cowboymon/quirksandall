@@ -35,7 +35,7 @@ export default function EditBehavior() {
   useEffect(() => {
     if (!petId) return;
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       const [{ data }, { data: owner }] = await Promise.all([
         supabase.from("pet_behavior").select("commands, scared, no_go, flight_risk, temperament_summary").eq("pet_id", petId).single(),
         supabase.from("owners").select("purchase_status").eq("id", user!.id).single(),
