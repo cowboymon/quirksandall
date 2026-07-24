@@ -171,8 +171,7 @@ export default function Preview() {
         <View style={{ gap: 20 }}>
           {/* Emergency contacts — dark card (un-gated for the owner's preview) */}
           <View style={{ backgroundColor: colors.cardDark, borderRadius: 12, padding: 20 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 16 }}>
-              <Ionicons name="lock-open-outline" size={14} color={colors.cardDarkText} />
+            <View style={{ marginBottom: 16 }}>
               <Text style={{ color: colors.cardDarkText, fontSize: 11, fontFamily: "Satoshi-Bold", textTransform: "uppercase", letterSpacing: 0.5 }}>In an emergency</Text>
             </View>
             <View style={{ gap: 16 }}>
