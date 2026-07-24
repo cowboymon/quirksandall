@@ -53,7 +53,7 @@ export default function OwnerSetup() {
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="interactive"
       automaticallyAdjustKeyboardInsets
-      contentContainerStyle={{ padding: 24, paddingTop: 72, paddingBottom: 40 }}
+      contentContainerStyle={{ padding: 24, paddingTop: 72, paddingBottom: 40, width: "100%", maxWidth: 600, alignSelf: "center" }}
     >
       <Eyebrow>Welcome</Eyebrow>
       <Headline className="mt-1.5">First, a bit about you.</Headline>

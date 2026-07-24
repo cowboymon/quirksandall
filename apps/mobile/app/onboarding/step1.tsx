@@ -40,7 +40,7 @@ export default function Step1() {
   const ageLabel = dobISO ? computeAge(dobISO, pet.dobIsEstimated ?? false) : null;
 
   return (
-    <ScrollView className="flex-1 bg-background" keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 24, paddingTop: 60, paddingBottom: 48 }}>
+    <ScrollView className="flex-1 bg-background" keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 24, paddingTop: 60, paddingBottom: 48, width: "100%", maxWidth: 600, alignSelf: "center" }}>
       <ProgressDots total={4} current={1} />
 
       <View style={{ marginTop: 28, marginBottom: 6 }}><Eyebrow>Step 1 of 4</Eyebrow></View>
