@@ -316,7 +316,7 @@ export default function Preview() {
         {/* Footer */}
         <View style={{ marginTop: 32, paddingTop: 20, borderTopWidth: 1, borderTopColor: colors.border }}>
           <Text style={{ color: colors.textMuted, fontSize: 12, textAlign: "center", fontFamily: "Satoshi-Light" }}>
-            Made with love by {possessive(d.name)} owner · updated {new Date(d.updatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+            Made with love by {possessive(d.name)} person · updated {new Date(d.updatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
           </Text>
           <Text style={{ color: colors.textDark, fontSize: 11, textAlign: "center", marginTop: 4, fontFamily: "Satoshi-Medium" }}>Quirks & All · quirksandall.itshypothetical.com</Text>
         </View>

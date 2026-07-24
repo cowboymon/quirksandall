@@ -286,7 +286,7 @@ export default function RecipientView({ profile, token }: Props) {
 
         <footer className="mt-2 pb-8 border-t pt-5" style={{ borderColor: BORDER }}>
           <p className="text-text-muted text-xs text-center font-light">
-            Made with love by {possessive(name)} owner · updated{" "}
+            Made with love by {possessive(name)} person · updated{" "}
             {new Date(lastUpdatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
           </p>
           <p className="text-foreground text-[11px] text-center mt-1 font-medium">
