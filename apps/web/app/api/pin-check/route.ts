@@ -58,19 +58,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false });
   }
 
-  // Fetch emergency contacts
+  // Fetch emergency contacts. Use a single owners embed — two owners!inner
+  // embeds made the query fail, which returned empty contacts and rendered
+  // nothing after unlock.
   const { data: pet } = await supabase
     .from("pets")
     .select(`
-      owners!inner(name, primary_phone),
-      pet_vet_info(primary_vet, emergency_vet, insurance, vet_pre_auth),
-      owners_backup_contacts:owners!inner(backup_contacts)
+      owners!inner(name, primary_phone, backup_contacts),
+      pet_vet_info(primary_vet, emergency_vet, insurance, vet_pre_auth)
     `)
     .eq("id", link.pet_id)
     .single();
 
   const vetInfo = (pet as any)?.pet_vet_info?.[0] ?? {};
   const owner = (pet as any)?.owners ?? {};
+  const ins = vetInfo.insurance ?? {};
 
   return NextResponse.json({
     success: true,
@@ -81,7 +83,7 @@ export async function POST(req: NextRequest) {
         phone: vetInfo.primary_vet?.phone ?? "",
       },
       emergencyVet: vetInfo.emergency_vet ?? {},
-      insurance: vetInfo.insurance ?? {},
+      insurance: { provider: ins.provider ?? "", policyNumber: ins.policy_number ?? "", claimsContact: ins.claims_contact ?? "" },
       ownerContact: { name: owner.name ?? "", phone: owner.primary_phone ?? "" },
       backupContacts: owner.backup_contacts ?? [],
       vetPreAuth: vetInfo.vet_pre_auth ?? false,

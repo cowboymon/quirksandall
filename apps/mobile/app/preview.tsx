@@ -7,6 +7,7 @@ import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabase";
 import { useActivePetStore } from "../stores/activePet";
+import { FieldTier } from "../components/ui";
 import { colors, computeAge, formatWeight, formatPhone, formatVetName, possessive } from "@quirksandall/shared";
 
 type Data = {
@@ -25,21 +26,13 @@ type Data = {
 };
 
 // Tanker section header (no squiggle on the recipient/preview view — #45).
-function SectionHeader({ lead, underline, badge }: { lead: string; underline: string; badge?: boolean }) {
+// An optional tier pill sits right-aligned beside the title.
+function SectionHeader({ lead, underline, tier }: { lead: string; underline: string; tier?: "free" | "paid" }) {
   const style = { fontFamily: "Tanker", fontSize: 22, lineHeight: 26, color: colors.textDark } as const;
   return (
-    <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", marginBottom: 12, gap: 8 }}>
-      <Text style={style}>{lead} {underline}</Text>
-      {badge ? <PaidBadge /> : null}
-    </View>
-  );
-}
-
-// Owner-preview only: marks a field the sitter can't see until the owner unlocks.
-function PaidBadge() {
-  return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 3, backgroundColor: "rgba(184,58,82,0.12)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 }}>
-      <Text style={{ fontSize: 10, color: colors.primary, fontFamily: "Satoshi-Medium" }}>🔒 Sitters unlock this</Text>
+    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 8 }}>
+      <Text style={[style, { flexShrink: 1 }]}>{lead} {underline}</Text>
+      {tier ? <FieldTier variant={tier} /> : null}
     </View>
   );
 }
@@ -164,11 +157,8 @@ export default function Preview() {
           <View style={{ backgroundColor: colors.cardDark, borderRadius: 12, padding: 20 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 16 }}>
               <Ionicons name="lock-open-outline" size={14} color={colors.cardDarkText} />
-              <Text style={{ color: colors.cardDarkText, fontSize: 11, fontFamily: "Satoshi-Bold", textTransform: "uppercase", letterSpacing: 0.5 }}>Emergency contacts</Text>
+              <Text style={{ color: colors.cardDarkText, fontSize: 11, fontFamily: "Satoshi-Bold", textTransform: "uppercase", letterSpacing: 0.5 }}>In an emergency</Text>
             </View>
-            <Text style={{ color: "rgba(248,236,238,0.5)", fontSize: 11, fontFamily: "Satoshi-Light", marginBottom: 16 }}>
-              🔒 Sitters enter your PIN to see this. Shown here for your preview.
-            </Text>
             <View style={{ gap: 16 }}>
               {(d.vetContactName || d.vetClinic || d.vetPhone) && (
                 <View>
@@ -223,8 +213,9 @@ export default function Preview() {
               <View style={{ gap: 12 }}>
                 {hasFeeding && (
                   <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden" }}>
-                    <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
+                    <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                       <Text style={{ ...microLabel, color: colors.primary }}>Feeding</Text>
+                      <FieldTier variant="free" />
                     </View>
                     {[["Breakfast", f.breakfast], ["Lunch", f.lunch], ["Dinner", f.dinner]].map(([label, slot]: any, i) => (
                       <MealRow key={label} label={label} time={slot?.time} amount={slot?.amount} divider={i < 2} />
@@ -245,16 +236,16 @@ export default function Preview() {
                     ) : null}
                   </View>
                 )}
-                {showFull && d.walks ? <InfoCard label="Walks" text={d.walks} locked={locked} /> : null}
-                {showFull && d.sleep ? <InfoCard label="Sleep" text={d.sleep} locked={locked} /> : null}
-                {showFull && d.bathroom ? <InfoCard label="Bathroom" text={d.bathroom} locked={locked} /> : null}
+                {showFull && d.walks ? <InfoCard label="Walks" text={d.walks} tier={locked ? "paid" : undefined} /> : null}
+                {showFull && d.sleep ? <InfoCard label="Sleep" text={d.sleep} tier={locked ? "paid" : undefined} /> : null}
+                {showFull && d.bathroom ? <InfoCard label="Bathroom" text={d.bathroom} tier={locked ? "paid" : undefined} /> : null}
               </View>
             </View>
           )}
 
           {showFull && (d.medications || d.conditions) && (
             <View>
-              <SectionHeader lead={possessive(d.name)} underline="Medication" badge={locked} />
+              <SectionHeader lead={possessive(d.name)} underline="Medication" tier={locked ? "paid" : undefined} />
               <View style={{ gap: 12 }}>
                 {d.conditions ? <InfoCard label="Conditions" text={d.conditions} /> : null}
                 {d.medications ? <InfoCard label="Medications" text={d.medications} /> : null}
@@ -264,7 +255,7 @@ export default function Preview() {
 
           {d.allergies ? (
             <View>
-              <SectionHeader lead={possessive(d.name)} underline="Allergies" />
+              <SectionHeader lead={possessive(d.name)} underline="Allergies" tier="free" />
               <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 16 }}>
                 <Text style={{ color: BODY, fontSize: 14, lineHeight: 20 }}>{d.allergies}</Text>
               </View>
@@ -273,7 +264,7 @@ export default function Preview() {
 
           {d.commands.length > 0 && (
             <View>
-              <SectionHeader lead={possessive(d.name)} underline="Commands" />
+              <SectionHeader lead={possessive(d.name)} underline="Commands" tier="free" />
               <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden" }}>
                 <View style={{ flexDirection: "row", backgroundColor: colors.secondary, paddingHorizontal: 12, paddingVertical: 8 }}>
                   <Text style={{ width: "26%", ...microLabel, color: colors.textMuted }}>Word</Text>
@@ -299,10 +290,10 @@ export default function Preview() {
               <SectionHeader lead={possessive(d.name)} underline="Triggers" />
               <View style={{ gap: 12 }}>
                 {/* Flight risk is a safety override — free at every tier */}
-                {d.flightRisk ? <InfoCard label="Flight risk" text={d.flightRisk} /> : null}
-                {showFull && d.scared ? <InfoCard label="Scared of" text={d.scared} locked={locked} /> : null}
-                {showFull && d.noGo ? <InfoCard label="No-go zones" text={d.noGo} locked={locked} /> : null}
-                {showFull && d.temperament ? <InfoCard label="Temperament" text={d.temperament} locked={locked} /> : null}
+                {d.flightRisk ? <InfoCard label="Flight risk" text={d.flightRisk} tier="free" /> : null}
+                {showFull && d.scared ? <InfoCard label="Scared of" text={d.scared} tier={locked ? "paid" : undefined} /> : null}
+                {showFull && d.noGo ? <InfoCard label="No-go zones" text={d.noGo} tier={locked ? "paid" : undefined} /> : null}
+                {showFull && d.temperament ? <InfoCard label="Temperament" text={d.temperament} tier={locked ? "paid" : undefined} /> : null}
               </View>
             </View>
           )}
@@ -335,12 +326,12 @@ function MealRow({ label, time, amount, divider }: { label: string; time?: strin
   );
 }
 
-function InfoCard({ label, text, locked }: { label: string; text: string; locked?: boolean }) {
+function InfoCard({ label, text, tier }: { label: string; text: string; tier?: "free" | "paid" }) {
   return (
     <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 16 }}>
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
         <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.primary }}>{label}</Text>
-        {locked ? <PaidBadge /> : null}
+        {tier ? <FieldTier variant={tier} /> : null}
       </View>
       <Text style={{ color: BODY, fontSize: 14, marginTop: 6, lineHeight: 20 }}>{text}</Text>
     </View>

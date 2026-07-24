@@ -185,7 +185,7 @@ export default function EditRoutine() {
 
       {/* Walks */}
       <Card style={{ marginBottom: 12 }}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <Eyebrow>Walks</Eyebrow>
           <PaidBadge />
         </View>
@@ -201,7 +201,7 @@ export default function EditRoutine() {
 
       {/* Sleep */}
       <Card style={{ marginBottom: 12 }}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <Eyebrow>Sleep</Eyebrow>
           <PaidBadge />
         </View>
@@ -217,7 +217,7 @@ export default function EditRoutine() {
 
       {/* Bathroom */}
       <Card style={{ marginBottom: 20 }}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <Eyebrow>Bathroom habits</Eyebrow>
           <PaidBadge />
         </View>
@@ -260,7 +260,7 @@ export default function EditRoutine() {
 
       {/* Conditions — paid only */}
       <Card style={{ marginBottom: 12 }}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <Eyebrow>Medical conditions</Eyebrow>
           <PaidBadge />
         </View>
@@ -276,7 +276,7 @@ export default function EditRoutine() {
 
       {/* Medications — paid only */}
       <Card>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <Eyebrow>Medications</Eyebrow>
           <PaidBadge />
         </View>

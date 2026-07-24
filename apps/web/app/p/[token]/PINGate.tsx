@@ -59,7 +59,7 @@ export default function PINGate({ token, onUnlocked }: Props) {
           <path d="M7 11V7a5 5 0 0 1 10 0v4" />
         </svg>
         <div>
-          <p className="text-sm font-bold uppercase tracking-wide" style={{ color: "#F8ECEE" }}>Emergency contacts</p>
+          <p className="text-sm font-bold uppercase tracking-wide" style={{ color: "#F8ECEE" }}>In an emergency</p>
           <p className="text-xs font-light mt-0.5" style={{ color: "rgba(248,236,238,0.5)" }}>
             PIN-protected · enter below to view
           </p>

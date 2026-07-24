@@ -100,7 +100,7 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
               phone: vetInfo?.primary_vet?.phone ?? "",
             },
             emergencyVet: vetInfo?.emergency_vet ?? {},
-            insurance: vetInfo?.insurance ?? {},
+            insurance: { provider: vetInfo?.insurance?.provider ?? "", policyNumber: vetInfo?.insurance?.policy_number ?? "", claimsContact: vetInfo?.insurance?.claims_contact ?? "" },
             ownerContact: { name: owner.name ?? "", phone: owner.primary_phone ?? "" },
             backupContacts: owner.backup_contacts ?? [],
             vetPreAuth: vetInfo?.vet_pre_auth ?? false,
