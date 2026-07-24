@@ -19,15 +19,21 @@ export type ActivePet = {
 };
 
 export function useActivePet() {
-  const { petId: storedPetId, setPetId } = useActivePetStore();
-  const [pet, setPet] = useState<ActivePet | null>(null);
-  const [petId, setPetIdLocal] = useState<string | null>(storedPetId);
-  const [loading, setLoading] = useState(true);
+  const { petId: storedPetId, setPetId, cachedPet, setCachedPet } = useActivePetStore();
+
+  // Seed from the dashboard's cache when it matches the current selection so
+  // edit screens render instantly instead of blocking on a fresh round-trip.
+  const seeded = cachedPet && (!storedPetId || cachedPet.id === storedPetId) ? cachedPet : null;
+  const [pet, setPet] = useState<ActivePet | null>(seeded);
+  const [petId, setPetIdLocal] = useState<string | null>(seeded?.id ?? storedPetId);
+  const [loading, setLoading] = useState(!seeded);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
-      setLoading(true);
+      // Only show the blocking spinner when we have nothing cached to render;
+      // otherwise revalidate silently behind the already-visible content.
+      if (!seeded) setLoading(true);
       const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) { setError("Not logged in"); setLoading(false); return; }
 
@@ -45,9 +51,11 @@ export function useActivePet() {
       if (e || !data) { setError(e?.message ?? "No pet found"); setLoading(false); return; }
       setPet(data);
       setPetIdLocal(data.id);
+      setCachedPet(data); // keep the shared cache fresh for the next screen
       if (!storedPetId) setPetId(data.id); // persist first-pet selection
       setLoading(false);
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storedPetId]);
 
   return { pet, petId, loading, error };

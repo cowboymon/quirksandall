@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Share, TextInput, Alert, Platform } from "react-native";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import Svg, { Path } from "react-native-svg";
 
@@ -53,7 +53,7 @@ function viewedLabel(iso: string | null) {
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const { petId: selectedPetId } = useActivePetStore();
+  const { petId: selectedPetId, setCachedPet } = useActivePetStore();
 
   // Named-link manager UI state
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -64,9 +64,13 @@ export default function Dashboard() {
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [deletionScheduled, setDeletionScheduled] = useState(false);
 
-  useEffect(() => {
-    loadDashboard();
-  }, [selectedPetId]);
+  // Reload every time the dashboard regains focus (e.g. returning from an edit
+  // screen) so counts/status reflect the latest saves — not just on pet switch.
+  useFocusEffect(
+    useCallback(() => {
+      loadDashboard();
+    }, [selectedPetId])
+  );
 
   const loadDashboard = async () => {
     const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
@@ -95,6 +99,10 @@ export default function Dashboard() {
     }
     // New user with no pets → start onboarding at the owner-details step.
     if (!pet) { router.replace("/onboarding/owner"); return; }
+
+    // Seed the shared cache so edit screens render the pet instantly instead of
+    // blocking on their own round-trip.
+    setCachedPet(pet);
 
     const [links, { data: behavior }] = await Promise.all([
       listLinks(pet.id),
