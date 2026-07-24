@@ -58,20 +58,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false });
   }
 
-  // Fetch emergency contacts. Use a single owners embed — two owners!inner
-  // embeds made the query fail, which returned empty contacts and rendered
-  // nothing after unlock.
-  const { data: pet } = await supabase
-    .from("pets")
-    .select(`
-      owners!inner(name, primary_phone, backup_contacts),
-      pet_vet_info(primary_vet, emergency_vet, insurance, vet_pre_auth)
-    `)
-    .eq("id", link.pet_id)
-    .single();
-
-  const vetInfo = (pet as any)?.pet_vet_info?.[0] ?? {};
-  const owner = (pet as any)?.owners ?? {};
+  // Fetch emergency contacts with separate reads (embeds were returning empty
+  // relations, which surfaced nothing after unlock).
+  const { data: pet } = await supabase.from("pets").select("owner_id").eq("id", link.pet_id).single();
+  const [{ data: ownerRow }, { data: vetRow }] = await Promise.all([
+    supabase.from("owners").select("name, primary_phone, backup_contacts").eq("id", pet?.owner_id).single(),
+    supabase.from("pet_vet_info").select("primary_vet, emergency_vet, insurance, vet_pre_auth").eq("pet_id", link.pet_id).maybeSingle(),
+  ]);
+  const vetInfo = (vetRow ?? {}) as any;
+  const owner = (ownerRow ?? {}) as any;
   const ins = vetInfo.insurance ?? {};
 
   return NextResponse.json({

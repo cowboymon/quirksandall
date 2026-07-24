@@ -19,29 +19,31 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
   if (!link || link.revoked) return null;
   if (link.expires_at && new Date(link.expires_at) < new Date()) return null;
 
-  // Fetch pet + owner purchase status
+  // Fetch identity from the pets table, then each child table separately. A
+  // single multi-embed query was silently returning empty relations on the live
+  // DB, so nothing but identity rendered — separate reads are robust.
   const { data: pet } = await supabase
     .from("pets")
-    .select(`
-      id, name, species, breed, dob, dob_is_estimated, sex, weight,
-      color_markings, photo_url, microchip_number, updated_at,
-      owners!inner(purchase_status, name, primary_phone, backup_contacts),
-      pet_behavior(commands, quirks_triggers, escape_risk, scared, no_go, flight_risk, temperament_summary),
-      pet_medical(allergies, conditions, medications),
-      pet_routine(feeding, walks, sleep, bathroom_habits),
-      pet_vet_info(primary_vet, emergency_vet, insurance, vet_pre_auth)
-    `)
+    .select("id, name, species, breed, dob, dob_is_estimated, sex, weight, color_markings, photo_url, microchip_number, updated_at, owner_id")
     .eq("id", link.pet_id)
     .single();
 
   if (!pet) return null;
 
-  const owner = (pet as any).owners ?? {};
+  const [{ data: ownerRow }, { data: behaviorRow }, { data: medicalRow }, { data: routineRow }, { data: vetRow }] = await Promise.all([
+    supabase.from("owners").select("purchase_status, name, primary_phone, backup_contacts").eq("id", pet.owner_id).single(),
+    supabase.from("pet_behavior").select("commands, quirks_triggers, escape_risk, scared, no_go, flight_risk, temperament_summary").eq("pet_id", pet.id).maybeSingle(),
+    supabase.from("pet_medical").select("allergies, conditions, medications").eq("pet_id", pet.id).maybeSingle(),
+    supabase.from("pet_routine").select("feeding, walks, sleep, bathroom_habits").eq("pet_id", pet.id).maybeSingle(),
+    supabase.from("pet_vet_info").select("primary_vet, emergency_vet, insurance, vet_pre_auth").eq("pet_id", pet.id).maybeSingle(),
+  ]);
+
+  const owner = (ownerRow ?? {}) as any;
   const isPaid = owner.purchase_status === "paid";
-  const behavior = (pet as any).pet_behavior?.[0] ?? {};
-  const medical = (pet as any).pet_medical?.[0] ?? {};
-  const routine = (pet as any).pet_routine?.[0] ?? null;
-  const vetInfo = (pet as any).pet_vet_info?.[0] ?? null;
+  const behavior = (behaviorRow ?? {}) as any;
+  const medical = (medicalRow ?? {}) as any;
+  const routine = routineRow as any;
+  const vetInfo = vetRow as any;
   const pinSet = !!link.pin_hash;
   // Paid unlock: soft triggers, routine-rest (walks/sleep/bathroom), medical.
   // Feeding, flight risk, commands and allergies stay free at every tier. The
