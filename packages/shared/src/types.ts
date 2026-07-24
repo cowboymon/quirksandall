@@ -81,6 +81,10 @@ export type Command = {
   howToCue: string;
   reward: string;
   lastConfirmedAt?: string;
+  // Paid organisation. Array order is the canonical order; favourites pin to the
+  // top; hidden commands are kept but withheld from the recipient/dashboard.
+  favourite?: boolean;
+  hidden?: boolean;
 };
 
 export type PetBehavior = {

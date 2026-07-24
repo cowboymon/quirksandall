@@ -9,7 +9,7 @@ import { Eyebrow, Card } from "../components/ui";
 import PetSwitcher from "../components/PetSwitcher";
 import ConfirmModal from "../components/ConfirmModal";
 import { useActivePetStore } from "../stores/activePet";
-import { colors, computeAge, capitalizeFirst } from "@quirksandall/shared";
+import { colors, computeAge, capitalizeFirst, orderedCommands } from "@quirksandall/shared";
 import { WEB_URL } from "../lib/config";
 import { listLinks, createLink, renameLink, revokeLink, type OwnerLink } from "../lib/links";
 import type { Pet } from "@quirksandall/shared";
@@ -101,7 +101,10 @@ export default function Dashboard() {
     ]);
 
     const isPaid = ownerData?.purchase_status === "paid";
-    const commandCount = behavior?.commands?.length ?? 0;
+    // Same visible/ordered list a recipient sees (favourites first, hidden
+    // withheld for paid) so the dashboard count/preview never disagree.
+    const visibleCommands = orderedCommands((behavior?.commands ?? []) as any[], isPaid, false);
+    const commandCount = visibleCommands.length;
     // 21-day freshness cadence (#54): the nudge reappears when no command has
     // been confirmed (i.e. the behavior screen saved) within the window.
     const lastConfirmed = (behavior?.commands ?? [])
@@ -112,7 +115,7 @@ export default function Dashboard() {
       pet: { ...pet, age: computeAge(pet.dob, pet.dob_is_estimated) },
       ownerInitials: initialsOf(ownerData?.name),
       links,
-      firstCommand: behavior?.commands?.[0]?.word ?? null,
+      firstCommand: visibleCommands[0]?.word ?? null,
       needsReview,
       isPaid,
       sections: [

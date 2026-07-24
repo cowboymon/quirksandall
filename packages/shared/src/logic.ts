@@ -98,6 +98,27 @@ export function capitalizeWords(s: string): string {
 }
 
 /**
+ * The single canonical command order, used identically on the dashboard, the
+ * edit screen, and the recipient page so they never disagree.
+ *
+ * Free tier: chronological — the stored array order, all commands shown.
+ * Paid tier: favourites pinned to the top (preserving array order within each
+ * group); hidden commands withheld unless `includeHidden` (the edit screen,
+ * where hidden ones show at the bottom so the owner can un-hide them).
+ */
+export function orderedCommands<T extends { favourite?: boolean; hidden?: boolean }>(
+  commands: T[],
+  isPaid: boolean,
+  includeHidden = false,
+): T[] {
+  if (!isPaid) return commands.slice();
+  const shown = commands.filter((c) => !c.hidden);
+  const ordered = [...shown.filter((c) => c.favourite), ...shown.filter((c) => !c.favourite)];
+  if (includeHidden) return [...ordered, ...commands.filter((c) => c.hidden)];
+  return ordered;
+}
+
+/**
  * Format a weight value for display. Stored values are usually a bare number
  * ("15"); append " kg" unless the value already carries a unit/letter.
  */
