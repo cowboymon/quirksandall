@@ -35,7 +35,10 @@ export async function uploadPetPhoto(petId: string, localUri: string): Promise<s
 
   if (error) throw error;
 
-  // Return the public URL
+  // Return the public URL with a cache-busting version param. The storage path
+  // is stable (we upsert to the same {petId}.{ext}), so without this a replaced
+  // photo keeps its old URL — and both RN's Image cache and the CDN would keep
+  // serving the previous image. `?v=<timestamp>` makes each save a distinct URL.
   const { data } = supabase.storage.from("pet-photos").getPublicUrl(path);
-  return data.publicUrl;
+  return `${data.publicUrl}?v=${Date.now()}`;
 }
