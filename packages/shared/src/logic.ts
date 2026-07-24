@@ -87,6 +87,17 @@ export function capitalizeFirst(s: string): string {
 }
 
 /**
+ * Title-case a person/pet name for input fields ("monica ralph" → "Monica
+ * Ralph"). Only uppercases the first letter of each word — after a space,
+ * apostrophe, or hyphen ("o'brien" → "O'Brien", "mary-jane" → "Mary-Jane") —
+ * and never touches interior or already-capitalised letters, so intentional
+ * casing like "McDonald" is preserved. Safe to run on every keystroke.
+ */
+export function capitalizeWords(s: string): string {
+  return s.replace(/(?:^|[\s'-])[a-z]/g, (m) => m.toUpperCase());
+}
+
+/**
  * Format a weight value for display. Stored values are usually a bare number
  * ("15"); append " kg" unless the value already carries a unit/letter.
  */

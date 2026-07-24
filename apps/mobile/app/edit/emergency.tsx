@@ -125,7 +125,7 @@ export default function EditEmergency() {
         <Card>
           <Eyebrow bold>Vet</Eyebrow>
           <View style={{ gap: 8, marginTop: 12 }}>
-            <LabeledInput label="Vet name" placeholder="e.g. Dr. Sarah Mitchell" value={vetContactName} onChangeText={setVetContactName} />
+            <LabeledInput name label="Vet name" placeholder="e.g. Dr. Sarah Mitchell" value={vetContactName} onChangeText={setVetContactName} />
             <LabeledPlacesInput
               label="Clinic"
               placeholder="Search clinic name"
@@ -167,7 +167,7 @@ export default function EditEmergency() {
         <Card>
           <Eyebrow bold>Backup contact</Eyebrow>
           <View style={{ gap: 8, marginTop: 12 }}>
-            <LabeledInput label="Name" placeholder="Name" value={backupName} onChangeText={setBackupName} />
+            <LabeledInput name label="Name" placeholder="Name" value={backupName} onChangeText={setBackupName} />
             <LabeledInput label="Relationship" placeholder="e.g. sister" value={backupRel} onChangeText={setBackupRel} />
             <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={backupPhone} onChangeText={setBackupPhone} />
           </View>
@@ -191,7 +191,7 @@ export default function EditEmergency() {
           <Card>
             <Eyebrow bold>Second backup contact</Eyebrow>
             <View style={{ gap: 8, marginTop: 12 }}>
-              <LabeledInput label="Name" placeholder="Name" value={backup2Name} onChangeText={setBackup2Name} />
+              <LabeledInput name label="Name" placeholder="Name" value={backup2Name} onChangeText={setBackup2Name} />
               <LabeledInput label="Relationship" placeholder="e.g. neighbour" value={backup2Rel} onChangeText={setBackup2Rel} />
               <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={backup2Phone} onChangeText={setBackup2Phone} />
             </View>

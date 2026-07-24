@@ -64,7 +64,7 @@ export default function OwnerSetup() {
       <View style={{ gap: 16 }}>
         <View>
           <Eyebrow>Your name *</Eyebrow>
-          <Input className="mt-1" placeholder="e.g. Jamie Nguyen" value={name} onChangeText={setName} autoFocus autoComplete="off" textContentType="none" />
+          <Input name className="mt-1" placeholder="e.g. Jamie Nguyen" value={name} onChangeText={setName} autoFocus autoComplete="off" textContentType="none" />
         </View>
         <View>
           <Eyebrow>Mobile number *</Eyebrow>
