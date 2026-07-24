@@ -290,7 +290,7 @@ export default function RecipientView({ profile, token }: Props) {
             <SectionTitle name={name} tail="Triggers" />
             <div className="flex flex-col gap-2">
               {(behavior.flightRisk || behavior.escapeRisk.flag) && (
-                <InfoCard label="Flight risk" text={behavior.flightRisk || behavior.escapeRisk.notes} highlight />
+                <InfoCard label="Flight risk" text={behavior.flightRisk || behavior.escapeRisk.notes} />
               )}
               {paidVisible && behavior.scared && <InfoCard label="Scared of" text={behavior.scared} locked={lockedPreview} />}
               {paidVisible && behavior.noGo && <InfoCard label="No-go zones" text={behavior.noGo} locked={lockedPreview} />}
@@ -381,11 +381,11 @@ function DarkContact({ label, name, place, phone }: { label: string; name?: stri
   );
 }
 
-function InfoCard({ label, text, highlight, locked }: { label: string; text: string; highlight?: boolean; locked?: boolean }) {
+function InfoCard({ label, text, locked }: { label: string; text: string; locked?: boolean }) {
   return (
-    <div className="bg-white border rounded-card px-4 py-3" style={{ borderColor: highlight ? "#A07848" : BORDER }}>
+    <div className="bg-white border rounded-card px-4 py-3" style={{ borderColor: BORDER }}>
       <div className="flex items-center justify-between mb-1">
-        <p className="eyebrow" style={{ color: highlight ? "#A07848" : "#B83A52" }}>{label}</p>
+        <p className="eyebrow" style={{ color: "#B83A52" }}>{label}</p>
         {locked && <PaidBadge />}
       </div>
       <p className="text-sm leading-relaxed" style={{ color: BODY }}>{text}</p>
