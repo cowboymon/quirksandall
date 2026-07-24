@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from "react-native";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { supabase } from "../lib/supabase";
 
 // Mobile sign-in uses a 6-digit email code (OTP) rather than a magic link.
@@ -11,6 +11,11 @@ export default function AuthScreen() {
   const [code, setCode] = useState("");
   const [stage, setStage] = useState<"email" | "code">("email");
   const [loading, setLoading] = useState(false);
+  // Bumped whenever the screen regains focus so the code field remounts fresh —
+  // iOS otherwise shows the alpha keyboard on refocus instead of the numeric one
+  // the field asks for (keyboardType only reliably applies on mount).
+  const [focusKey, setFocusKey] = useState(0);
+  useFocusEffect(useCallback(() => { setFocusKey((k) => k + 1); }, []));
 
   const sendCode = async () => {
     if (!email.trim()) return;
@@ -86,6 +91,7 @@ export default function AuthScreen() {
         ) : (
           <>
             <TextInput
+              key={`otp-${focusKey}`}
               className="h-[52px] rounded-button border bg-input-bg px-4 text-foreground text-[22px] tracking-[8px] text-center mb-4"
               style={{ borderColor: "#E5BEC4", fontFamily: "Satoshi-Bold" }}
               placeholder="000000"
