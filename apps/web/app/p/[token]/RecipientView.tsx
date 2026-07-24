@@ -126,13 +126,7 @@ export default function RecipientView({ profile, token }: Props) {
                 style={{ marginBottom: emergencyOpen ? 16 : 0 }}
                 aria-expanded={emergencyOpen}
               >
-                <span className="flex items-center gap-2">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={BLUSH} strokeWidth="2" style={{ opacity: 0.85 }}>
-                    <rect x="3" y="11" width="18" height="11" rx="2" />
-                    <path d="M7 11V7a5 5 0 0 1 9.9-1" />
-                  </svg>
-                  <span className="text-[11px] font-bold uppercase tracking-wide" style={{ color: BLUSH }}>In an emergency</span>
-                </span>
+                <span className="text-[11px] font-bold uppercase tracking-wide" style={{ color: BLUSH }}>In an emergency</span>
                 <span className="text-xs" style={{ color: "rgba(248,236,238,0.5)" }}>{emergencyOpen ? "Hide ▲" : "Show ▼"}</span>
               </button>
               <div className="flex flex-col gap-4" style={{ display: emergencyOpen ? "flex" : "none" }}>
@@ -200,7 +194,7 @@ export default function RecipientView({ profile, token }: Props) {
               {medical.medications?.map((med, i) => (
                 <div key={i} className="bg-white border rounded-card px-4 py-3" style={{ borderColor: BORDER }}>
                   <p className="eyebrow text-primary mb-1">Medication</p>
-                  <p className="text-sm font-semibold" style={{ color: BODY }}>{[med.name, med.dose].filter(Boolean).join(" — ")}</p>
+                  <p className="text-sm font-semibold whitespace-pre-line" style={{ color: BODY }}>{[med.name, med.dose].filter(Boolean).join(" — ")}</p>
                   {(med.frequency || med.locationStored) && (
                     <p className="text-text-muted text-xs mt-0.5">{[med.frequency, med.locationStored && `Stored: ${med.locationStored}`].filter(Boolean).join(" · ")}</p>
                   )}
@@ -366,7 +360,7 @@ function InfoCard({ label, text, locked }: { label: string; text: string; locked
         <p className="eyebrow" style={{ color: "#B83A52" }}>{label}</p>
         {locked && <PaidBadge />}
       </div>
-      <p className="text-sm leading-relaxed" style={{ color: BODY }}>{text}</p>
+      <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: BODY }}>{text}</p>
     </div>
   );
 }
