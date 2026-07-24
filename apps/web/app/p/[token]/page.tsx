@@ -147,6 +147,32 @@ export async function generateMetadata({ params }: { params: { token: string } }
   };
 }
 
+// TEMP diagnostic — reports what the service-key reads return for a token
+// (counts only, no content). Remove once the recipient-render bug is resolved.
+async function debugReport(token: string) {
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_KEY!);
+  const serviceKeyLen = (process.env.SUPABASE_SERVICE_KEY ?? "").length;
+  const { data: link, error: linkErr } = await supabase.from("share_links").select("id, pet_id, revoked").eq("token", token).single();
+  if (!link) return { serviceKeyLen, linkFound: false, linkErr: linkErr?.message ?? null };
+  const petId = link.pet_id;
+  const { data: pet } = await supabase.from("pets").select("id, name, status, owner_id").eq("id", petId).single();
+  const [b, m, r] = await Promise.all([
+    supabase.from("pet_behavior").select("commands, scared, flight_risk").eq("pet_id", petId).maybeSingle(),
+    supabase.from("pet_medical").select("allergies").eq("pet_id", petId).maybeSingle(),
+    supabase.from("pet_routine").select("feeding, walks").eq("pet_id", petId).maybeSingle(),
+  ]);
+  return {
+    serviceKeyLen,
+    linkRevoked: link.revoked,
+    petId,
+    petName: (pet as any)?.name ?? null,
+    petStatus: (pet as any)?.status ?? null,
+    behavior: { found: !!b.data, error: b.error?.message ?? null, commandsCount: Array.isArray((b.data as any)?.commands) ? (b.data as any).commands.length : null, flightRisk: (b.data as any)?.flight_risk ?? null },
+    medical: { found: !!m.data, error: m.error?.message ?? null, allergiesCount: Array.isArray((m.data as any)?.allergies) ? (m.data as any).allergies.length : null },
+    routine: { found: !!r.data, error: r.error?.message ?? null, feedingKeys: (r.data as any)?.feeding ? Object.keys((r.data as any).feeding) : null, walks: (r.data as any)?.walks ?? null },
+  };
+}
+
 export default async function RecipientPage({
   params,
   searchParams,
@@ -154,6 +180,10 @@ export default async function RecipientPage({
   params: { token: string };
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
+  if (searchParams.debug === "1") {
+    const report = await debugReport(params.token);
+    return <pre style={{ padding: 16, fontSize: 12, whiteSpace: "pre-wrap" }}>{JSON.stringify(report, null, 2)}</pre>;
+  }
   const preview = searchParams.preview === "1";
   const profile = await fetchProfile(params.token, true, preview);
   if (!profile) {
