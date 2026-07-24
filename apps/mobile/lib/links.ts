@@ -15,7 +15,7 @@ export type OwnerLink = {
   pin_hash: string | null;
 };
 
-function randomToken(): string {
+export function randomToken(): string {
   const bytes = Crypto.getRandomBytes(24);
   // base64url without padding
   let bin = "";

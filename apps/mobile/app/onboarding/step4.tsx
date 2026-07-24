@@ -7,6 +7,7 @@ import { useOnboardingStore } from "../../stores/onboarding";
 import { useActivePetStore } from "../../stores/activePet";
 import { supabase } from "../../lib/supabase";
 import { uploadPetPhoto } from "../../lib/uploadPhoto";
+import { randomToken } from "../../lib/links";
 import { colors, displayDateToISO, capitalizeFirst } from "@quirksandall/shared";
 import { useState } from "react";
 
@@ -103,7 +104,10 @@ export default function Step4() {
         walks: pet.walks, sleep: pet.sleep, bathroom_habits: pet.bathroomHabits,
       });
 
-      const token = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      // Crypto-random token (same source as every other link) — never
+      // Math.random(), which is predictable and would make the main link
+      // guessable.
+      const token = randomToken();
       const { data: newLink } = await supabase
         .from("share_links")
         .insert({ pet_id: newPet.id, token, label: "Main link", pin_hash: null, mode: "full", revoked: false })
