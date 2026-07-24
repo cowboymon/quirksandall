@@ -1,7 +1,7 @@
 // Inline PIN change component — used in the emergency contacts edit screen
 import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "../lib/supabase";
 import { colors } from "@quirksandall/shared";
 import { Eyebrow, Card } from "./ui";

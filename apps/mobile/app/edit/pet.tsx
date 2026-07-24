@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { View, Text, Image, TouchableOpacity, Alert, Modal, Share } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
