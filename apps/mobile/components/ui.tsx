@@ -105,7 +105,7 @@ export function LabeledInput({
           },
           style,
         ]}
-        placeholderTextColor={colors.dashedBorder}
+        placeholderTextColor={colors.textMuted}
         onFocus={(e) => { setFocused(true); props.onFocus?.(e); }}
         onBlur={(e) => { setFocused(false); props.onBlur?.(e); }}
         {...props}

@@ -152,7 +152,7 @@ export default function Account() {
           </Text>
           <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6, marginTop: 8, marginBottom: 16 }}>
             <Text style={{ fontFamily: "Tanker", fontSize: 20, lineHeight: 20, color: "#F8ECEE" }}>$7.99</Text>
-            <Text style={{ color: "rgba(248,236,238,0.5)", fontSize: 11, fontFamily: "Satoshi-Light" }}>once, forever</Text>
+            <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 11, fontFamily: "Satoshi-Light" }}>once, forever</Text>
           </View>
           <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, lineHeight: 17, fontFamily: "Satoshi-Light", marginBottom: 20 }}>
             The full picture — routines, medical needs, and the softer stuff that makes the handoff feel like you. Unlimited pets, too.
@@ -161,14 +161,14 @@ export default function Account() {
             <Text style={{ color: "#510000", fontSize: 14, fontFamily: "Satoshi-Medium" }}>{loading ? "Working…" : "Unlock for $7.99"}</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={handleRestore} disabled={loading} style={{ alignItems: "center", marginTop: 10, paddingVertical: 4 }}>
-            <Text style={{ color: "rgba(248,236,238,0.4)", fontSize: 12, fontFamily: "Satoshi" }}>Restore purchases</Text>
+            <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, fontFamily: "Satoshi" }}>Restore purchases</Text>
           </TouchableOpacity>
         </View>
       ) : (
         <View style={{ marginTop: 24, backgroundColor: "#510000", borderRadius: 14, paddingHorizontal: 20, paddingVertical: 20 }}>
           <Text style={{ color: "#F8ECEE", fontFamily: "Satoshi-Medium", fontSize: 15 }}>You're in. For good.</Text>
           <TouchableOpacity onPress={handleRestore} disabled={loading} style={{ marginTop: 8 }}>
-            <Text style={{ color: "rgba(248,236,238,0.4)", fontSize: 12, fontFamily: "Satoshi" }}>Restore purchases</Text>
+            <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, fontFamily: "Satoshi" }}>Restore purchases</Text>
           </TouchableOpacity>
         </View>
       )}

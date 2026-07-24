@@ -10,7 +10,7 @@ type Props = { profile: RecipientProfile; token: string };
 const BLUSH = "#F8ECEE";
 const CRIMSON = "#510000";
 const BORDER = "#E5BEC4";
-const MUTED = "#987080";
+const MUTED = "#74555D";
 // Light rose surface — the segmented Quick/Full toggle track. Matches
 // colors.secondary in the shared tokens (and the native preview toggle).
 const SECONDARY = "#F2E4E6";

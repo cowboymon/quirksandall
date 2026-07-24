@@ -177,7 +177,7 @@ export default function Preview() {
             <View style={{ gap: 16 }}>
               {(d.vetContactName || d.vetClinic || d.vetPhone) && (
                 <View>
-                  <Text style={{ ...microLabel, color: "rgba(248,236,238,0.5)" }}>Vet</Text>
+                  <Text style={{ ...microLabel, color: "rgba(248,236,238,0.6)" }}>Vet</Text>
                   {d.vetContactName ? <Text style={{ color: colors.cardDarkText, fontSize: 14, fontFamily: "Satoshi-Bold", marginTop: 2 }}>{formatVetName(d.vetContactName)}</Text> : null}
                   {d.vetClinic ? <CreamLink icon="location" text={d.vetClinic} onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(d.vetClinic)}`)} /> : null}
                   {d.vetPhone ? <CreamLink icon="call" text={formatPhone(d.vetPhone)} onPress={() => Linking.openURL(`tel:${d.vetPhone}`)} /> : null}
@@ -185,27 +185,27 @@ export default function Preview() {
               )}
               {(d.emergVetClinic || d.emergVetPhone) && (
                 <View>
-                  <Text style={{ ...microLabel, color: "rgba(248,236,238,0.5)" }}>Emergency vet</Text>
+                  <Text style={{ ...microLabel, color: "rgba(248,236,238,0.6)" }}>Emergency vet</Text>
                   {d.emergVetClinic ? <CreamLink icon="location" text={d.emergVetClinic} bold onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(d.emergVetClinic)}`)} /> : null}
                   {d.emergVetPhone ? <CreamLink icon="call" text={formatPhone(d.emergVetPhone)} onPress={() => Linking.openURL(`tel:${d.emergVetPhone}`)} /> : null}
                 </View>
               )}
               {(d.insuranceProvider || d.insurancePolicy) && (
                 <View>
-                  <Text style={{ ...microLabel, color: "rgba(248,236,238,0.5)" }}>Insurance</Text>
+                  <Text style={{ ...microLabel, color: "rgba(248,236,238,0.6)" }}>Insurance</Text>
                   <Text style={{ color: colors.cardDarkText, fontSize: 14, marginTop: 2 }}>{[d.insuranceProvider, d.insurancePolicy].filter(Boolean).join(" · ")}</Text>
                 </View>
               )}
               {d.backupName ? (
                 <View>
-                  <Text style={{ ...microLabel, color: "rgba(248,236,238,0.5)" }}>{d.backupRel ? `Backup — ${d.backupRel}` : "Backup contact"}</Text>
+                  <Text style={{ ...microLabel, color: "rgba(248,236,238,0.6)" }}>{d.backupRel ? `Backup — ${d.backupRel}` : "Backup contact"}</Text>
                   <Text style={{ color: colors.cardDarkText, fontSize: 14, fontFamily: "Satoshi-Bold", marginTop: 2 }}>{d.backupName}</Text>
                   {d.backupPhone ? <CreamLink icon="call" text={formatPhone(d.backupPhone)} onPress={() => Linking.openURL(`tel:${d.backupPhone}`)} /> : null}
                 </View>
               ) : null}
               {d.backup2Name ? (
                 <View>
-                  <Text style={{ ...microLabel, color: "rgba(248,236,238,0.5)" }}>{d.backup2Rel ? `Second backup — ${d.backup2Rel}` : "Second backup"}</Text>
+                  <Text style={{ ...microLabel, color: "rgba(248,236,238,0.6)" }}>{d.backup2Rel ? `Second backup — ${d.backup2Rel}` : "Second backup"}</Text>
                   <Text style={{ color: colors.cardDarkText, fontSize: 14, fontFamily: "Satoshi-Bold", marginTop: 2 }}>{d.backup2Name}</Text>
                   {d.backup2Phone ? <CreamLink icon="call" text={formatPhone(d.backup2Phone)} onPress={() => Linking.openURL(`tel:${d.backup2Phone}`)} /> : null}
                 </View>
