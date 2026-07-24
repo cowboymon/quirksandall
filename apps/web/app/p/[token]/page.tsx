@@ -88,7 +88,7 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
   }
 
   // Compute age
-  const { computeAge } = await import("@quirksandall/shared");
+  const { computeAge, orderedCommands } = await import("@quirksandall/shared");
   const age = computeAge(pet.dob, pet.dob_is_estimated);
 
   const profile: RecipientProfile = {
@@ -104,7 +104,7 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
     },
     age,
     behavior: {
-      commands: behavior.commands ?? [],
+      commands: orderedCommands(behavior.commands ?? [], isPaid, false),
       quirksTriggers: behavior.quirks_triggers ?? [],
       // Flight/escape risk is a safety override — always free.
       escapeRisk: behavior.escape_risk ?? { flag: false, notes: "" },

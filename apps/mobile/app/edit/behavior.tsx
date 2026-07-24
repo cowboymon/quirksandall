@@ -4,8 +4,9 @@ import { View, Text, TouchableOpacity, Alert, ScrollView } from "react-native";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { Input, Eyebrow, Card, FieldTier } from "../../components/ui";
-import { colors } from "@quirksandall/shared";
+import { colors, orderedCommands } from "@quirksandall/shared";
 import type { Command } from "@quirksandall/shared";
 import { router, useLocalSearchParams } from "expo-router";
 
@@ -61,6 +62,27 @@ export default function EditBehavior() {
   const removeCmd = (id: string) =>
     setCommands((prev) => prev.filter((c) => c.id !== id));
 
+  // Paid organisation controls.
+  const toggleFav = (id: string) =>
+    setCommands((prev) => prev.map((c) => (c.id === id ? { ...c, favourite: !c.favourite } : c)));
+  const toggleHide = (id: string) =>
+    setCommands((prev) => prev.map((c) => (c.id === id ? { ...c, hidden: !c.hidden } : c)));
+  // Move a command up/down within its favourite group (favourites always sit on
+  // top, so you reorder within the pinned set or within the rest).
+  const move = (id: string, dir: -1 | 1) =>
+    setCommands((prev) => {
+      const vis = orderedCommands(prev, true, false);
+      const i = vis.findIndex((c) => c.id === id);
+      const j = i + dir;
+      if (i < 0 || j < 0 || j >= vis.length) return prev;
+      if (!!vis[i].favourite !== !!vis[j].favourite) return prev; // don't cross groups
+      const arr = prev.slice();
+      const ai = arr.findIndex((c) => c.id === vis[i].id);
+      const aj = arr.findIndex((c) => c.id === vis[j].id);
+      [arr[ai], arr[aj]] = [arr[aj], arr[ai]];
+      return arr;
+    });
+
   const save = async () => {
     if (!petId) return;
     setSaving(true);
@@ -98,16 +120,47 @@ export default function EditBehavior() {
         Commands
       </Text>
 
+      {/* Free owners can add unlimited commands, but organising them
+          (favourite / reorder / hide) is a paid control. */}
+      {!isPaid && commands.length > 1 && (
+        <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 6, fontFamily: "Satoshi-Light" }}>
+          Shown oldest-first. Unlock to favourite, reorder, and hide commands.
+        </Text>
+      )}
+
       <View style={{ gap: 10, marginTop: 12 }}>
-        {commands.map((cmd, i) => (
-          <Card key={cmd.id}>
+        {orderedCommands(commands, isPaid, true).map((cmd, i) => {
+          const visible = orderedCommands(commands, isPaid, false);
+          const vi = visible.findIndex((c) => c.id === cmd.id);
+          const canUp = isPaid && vi > 0 && !!visible[vi - 1]?.favourite === !!cmd.favourite;
+          const canDown = isPaid && vi >= 0 && vi < visible.length - 1 && !!visible[vi + 1]?.favourite === !!cmd.favourite;
+          return (
+          <Card key={cmd.id} style={cmd.hidden ? { opacity: 0.55 } : undefined}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <Eyebrow>Command {i + 1}</Eyebrow>
-              {commands.length > 0 && (
+              <Eyebrow>{cmd.hidden ? "Hidden from sitters" : cmd.favourite ? "Favourite" : `Command ${i + 1}`}</Eyebrow>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                {isPaid && !cmd.hidden && (
+                  <>
+                    <TouchableOpacity onPress={() => move(cmd.id, -1)} disabled={!canUp} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                      <Ionicons name="chevron-up" size={18} color={canUp ? colors.textMuted : colors.border} />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => move(cmd.id, 1)} disabled={!canDown} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                      <Ionicons name="chevron-down" size={18} color={canDown ? colors.textMuted : colors.border} />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => toggleFav(cmd.id)} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                      <Ionicons name={cmd.favourite ? "star" : "star-outline"} size={17} color={cmd.favourite ? colors.primary : colors.textMuted} />
+                    </TouchableOpacity>
+                  </>
+                )}
+                {isPaid && (
+                  <TouchableOpacity onPress={() => toggleHide(cmd.id)} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                    <Ionicons name={cmd.hidden ? "eye-off-outline" : "eye-outline"} size={17} color={colors.textMuted} />
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity onPress={() => removeCmd(cmd.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                   <Text style={{ color: colors.danger, fontSize: 20, lineHeight: 20 }}>×</Text>
                 </TouchableOpacity>
-              )}
+              </View>
             </View>
             <Input
               placeholder="Word (e.g. Settle)"
@@ -133,7 +186,8 @@ export default function EditBehavior() {
               onChangeText={(v) => updateCmd(cmd.id, "reward", v)}
             />
           </Card>
-        ))}
+          );
+        })}
       </View>
 
       <TouchableOpacity

@@ -8,7 +8,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "../lib/supabase";
 import { useActivePetStore } from "../stores/activePet";
 import { FieldTier } from "../components/ui";
-import { colors, computeAge, formatWeight, formatPhone, formatVetName, possessive } from "@quirksandall/shared";
+import { colors, computeAge, formatWeight, formatPhone, formatVetName, possessive, orderedCommands } from "@quirksandall/shared";
 
 type Data = {
   name: string; breed: string; age: string; photoUrl: string | null;
@@ -69,7 +69,8 @@ export default function Preview() {
         supabase.from("owners").select("backup_contacts, purchase_status").eq("id", user.id).single(),
       ]);
 
-      setIsPaid(owner?.purchase_status === "paid");
+      const paid = owner?.purchase_status === "paid";
+      setIsPaid(paid);
       const backups = owner?.backup_contacts ?? [];
       const meds = (medical?.medications ?? []).map((m: any) => [m.name, m.dose].filter(Boolean).join(" ")).filter(Boolean).join("; ");
 
@@ -81,7 +82,7 @@ export default function Preview() {
         vetPreAuth: vet?.vet_pre_auth ?? false, insuranceProvider: vet?.insurance?.provider ?? "", insurancePolicy: vet?.insurance?.policy_number ?? "",
         backupName: backups[0]?.name ?? "", backupPhone: backups[0]?.phone ?? "", backupRel: backups[0]?.relationship ?? "",
         backup2Name: backups[1]?.name ?? "", backup2Phone: backups[1]?.phone ?? "", backup2Rel: backups[1]?.relationship ?? "",
-        commands: behavior?.commands ?? [],
+        commands: orderedCommands(behavior?.commands ?? [], paid, false),
         scared: behavior?.scared ?? "", noGo: behavior?.no_go ?? "", flightRisk: behavior?.flight_risk ?? "", temperament: behavior?.temperament_summary ?? "",
         allergies: (medical?.allergies ?? []).join(", "), conditions: (medical?.conditions ?? []).join(", "), medications: meds,
         feeding: routine?.feeding ?? null, walks: routine?.walks ?? "", sleep: routine?.sleep ?? "", bathroom: routine?.bathroom_habits ?? "",
