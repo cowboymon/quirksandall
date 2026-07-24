@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
         phone: vetInfo.primary_vet?.phone ?? "",
       },
       emergencyVet: vetInfo.emergency_vet ?? {},
-      insurance: { provider: ins.provider ?? "", policyNumber: ins.policy_number ?? "", claimsContact: ins.claims_contact ?? "" },
+      insurance: { provider: ins.provider ?? "", policyNumber: ins.policy_number ?? "" },
       ownerContact: { name: owner.name ?? "", phone: owner.primary_phone ?? "" },
       backupContacts: owner.backup_contacts ?? [],
       vetPreAuth: vetInfo.vet_pre_auth ?? false,
