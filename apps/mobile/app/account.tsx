@@ -166,7 +166,7 @@ export default function Account() {
         </View>
       ) : (
         <View style={{ marginTop: 24, backgroundColor: "#510000", borderRadius: 14, paddingHorizontal: 20, paddingVertical: 20 }}>
-          <Text style={{ color: "#F8ECEE", fontFamily: "Satoshi-Medium", fontSize: 15 }}>Full access active</Text>
+          <Text style={{ color: "#F8ECEE", fontFamily: "Satoshi-Medium", fontSize: 15 }}>You're in. For good.</Text>
           <TouchableOpacity onPress={handleRestore} disabled={loading} style={{ marginTop: 8 }}>
             <Text style={{ color: "rgba(248,236,238,0.4)", fontSize: 12, fontFamily: "Satoshi" }}>Restore purchases</Text>
           </TouchableOpacity>
