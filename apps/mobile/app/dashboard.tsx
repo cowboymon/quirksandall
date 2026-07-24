@@ -2,6 +2,19 @@ import { useEffect, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Share, TextInput, Alert, Platform } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import Svg, { Path } from "react-native-svg";
+
+// "Pencil line" edit icon (Lucide-style) as an inline SVG so we control the
+// stroke weight — font icons (Ionicons/Feather) bake theirs in. Bump strokeWidth
+// for a thicker, more proportional look.
+function PencilLine({ size = 14, color = "#000000", strokeWidth = 2 }: { size?: number; color?: string; strokeWidth?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M12 20h9" />
+      <Path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </Svg>
+  );
+}
 import { supabase } from "../lib/supabase";
 import { registerForPushNotifications, scheduleTrickNudge } from "../lib/notifications";
 import { Eyebrow, Card } from "../components/ui";
@@ -250,7 +263,7 @@ export default function Dashboard() {
                     <Text style={{ color: colors.cardDarkText, fontSize: 13, fontFamily: "Satoshi-Medium" }} numberOfLines={1}>
                       {link.label || "Untitled link"}
                     </Text>
-                    <Ionicons name="create-outline" size={14} color="rgba(248,236,238,0.55)" />
+                    <PencilLine size={14} color="rgba(248,236,238,0.7)" strokeWidth={2.25} />
                   </TouchableOpacity>
                 )}
                 <Text style={{ color: "rgba(248,236,238,0.4)", fontSize: 11, marginTop: 2, fontFamily: "Satoshi-Light" }}>
