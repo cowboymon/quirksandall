@@ -11,6 +11,9 @@ const BLUSH = "#F8ECEE";
 const CRIMSON = "#510000";
 const BORDER = "#E5BEC4";
 const MUTED = "#987080";
+// Body/content copy renders near-black; crimson and rose are reserved for
+// titles and eyebrow labels only.
+const BODY = "#1F1A17";
 
 export default function RecipientView({ profile, token }: Props) {
   const { pet, age, behavior, allergies, routine, medical, lastUpdatedAt, isPaid, pinSet, preview } = profile;
@@ -78,7 +81,7 @@ export default function RecipientView({ profile, token }: Props) {
             {idTiles.map(([label, val]) => (
               <div key={label} className="bg-white border rounded-card px-3 py-2.5" style={{ borderColor: BORDER }}>
                 <p className="eyebrow text-text-muted">{label}</p>
-                <p className="text-primary text-xs font-medium mt-0.5 truncate">{val}</p>
+                <p className="text-xs font-medium mt-0.5 truncate" style={{ color: BODY }}>{val}</p>
               </div>
             ))}
           </div>
@@ -186,7 +189,7 @@ export default function RecipientView({ profile, token }: Props) {
               {medical.medications?.map((med, i) => (
                 <div key={i} className="bg-white border rounded-card px-4 py-3" style={{ borderColor: BORDER }}>
                   <p className="eyebrow text-primary mb-1">Medication</p>
-                  <p className="text-primary text-sm font-semibold">{[med.name, med.dose].filter(Boolean).join(" — ")}</p>
+                  <p className="text-sm font-semibold" style={{ color: BODY }}>{[med.name, med.dose].filter(Boolean).join(" — ")}</p>
                   {(med.frequency || med.locationStored) && (
                     <p className="text-text-muted text-xs mt-0.5">{[med.frequency, med.locationStored && `Stored: ${med.locationStored}`].filter(Boolean).join(" · ")}</p>
                   )}
@@ -202,7 +205,7 @@ export default function RecipientView({ profile, token }: Props) {
           <section>
             <SectionTitle name={name} tail="Allergies" />
             <div className="bg-white border rounded-card px-4 py-3" style={{ borderColor: BORDER }}>
-              <p className="text-primary text-sm">{allergies.join(", ")}</p>
+              <p className="text-sm" style={{ color: BODY }}>{allergies.join(", ")}</p>
             </div>
           </section>
         )}
@@ -227,7 +230,7 @@ export default function RecipientView({ profile, token }: Props) {
                       className="border-t align-top"
                       style={{ borderColor: BORDER, backgroundColor: i % 2 === 0 ? "#FFFFFF" : BLUSH }}
                     >
-                      <td className="px-3 py-2 font-semibold text-primary">
+                      <td className="px-3 py-2 font-semibold" style={{ color: BODY }}>
                         {cmd.word}
                         {cmd.howToCue?.trim() && (
                           // How-to-cue wasn't in the original table design, so keep it
@@ -370,7 +373,7 @@ function InfoCard({ label, text, highlight, locked }: { label: string; text: str
         <p className="eyebrow" style={{ color: highlight ? "#A07848" : "#B83A52" }}>{label}</p>
         {locked && <PaidBadge />}
       </div>
-      <p className="text-primary text-sm leading-relaxed">{text}</p>
+      <p className="text-sm leading-relaxed" style={{ color: BODY }}>{text}</p>
     </div>
   );
 }
@@ -394,7 +397,7 @@ function FeedingCard({ feeding }: { feeding: NonNullable<RecipientProfile["routi
           style={{ borderTop: i === 0 ? undefined : `1px solid ${BORDER}` }}
         >
           <span className="text-sm font-medium w-20 shrink-0" style={{ color: MUTED }}>{label}</span>
-          <span className="text-sm text-primary">
+          <span className="text-sm" style={{ color: BODY }}>
             {slot?.time && <span className="font-medium">{slot.time}</span>}
             {slot?.time && slot?.amount ? " · " : ""}
             {slot?.amount}
@@ -404,7 +407,7 @@ function FeedingCard({ feeding }: { feeding: NonNullable<RecipientProfile["routi
       {(feeding.treats?.type || feeding.treats?.limit) && (
         <div className="flex px-4 py-2 gap-3" style={{ borderTop: `1px solid ${BORDER}` }}>
           <span className="text-sm font-medium w-20 shrink-0" style={{ color: MUTED }}>Treats</span>
-          <span className="text-sm text-primary">
+          <span className="text-sm" style={{ color: BODY }}>
             {feeding.treats.type}
             {feeding.treats.limit && <span className="block text-xs font-light" style={{ color: MUTED }}>{feeding.treats.limit}</span>}
           </span>

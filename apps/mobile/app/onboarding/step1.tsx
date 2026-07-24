@@ -10,6 +10,7 @@ import { useOnboardingStore } from "../../stores/onboarding";
 import { colors, computeAge, displayDateToISO } from "@quirksandall/shared";
 
 const SEX_OPTIONS = ["Male", "Male, desexed", "Female", "Female, desexed"];
+const SPECIES_OPTIONS = ["Dog", "Cat", "Bird", "Rabbit", "Other"];
 
 export default function Step1() {
   const { pet, setPet } = useOnboardingStore();
@@ -82,7 +83,14 @@ export default function Step1() {
         </View>
 
         <View>
-          <Eyebrow>Breed / species</Eyebrow>
+          <Eyebrow>Species</Eyebrow>
+          <View style={{ marginTop: 4 }}>
+            <Select value={pet.species ?? ""} onValueChange={(v) => setPet({ species: v })} options={SPECIES_OPTIONS} placeholder="Select species" />
+          </View>
+        </View>
+
+        <View>
+          <Eyebrow>Breed</Eyebrow>
           <Input className="mt-1" placeholder="e.g. Golden Retriever mix" value={pet.breed ?? ""} onChangeText={(v) => setPet({ breed: v })} />
         </View>
 

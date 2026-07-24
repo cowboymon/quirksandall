@@ -1,16 +1,19 @@
 // Edit commands, quirks, escape risk
-import { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Alert } from "react-native";
+import { useState, useEffect, useRef } from "react";
+import { View, Text, TouchableOpacity, Alert, ScrollView } from "react-native";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
 import { Input, Eyebrow, Card } from "../../components/ui";
 import { colors } from "@quirksandall/shared";
 import type { Command } from "@quirksandall/shared";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 
 export default function EditBehavior() {
   const { petId, pet, loading } = useActivePet();
+  const { section } = useLocalSearchParams<{ section?: string }>();
+  const scrollRef = useRef<ScrollView>(null);
+  const quirksY = useRef(0);
 
   const [commands, setCommands] = useState<Command[]>([]);
   const [scared, setScared] = useState("");
@@ -18,6 +21,13 @@ export default function EditBehavior() {
   const [flightRisk, setFlightRisk] = useState("");
   const [temperament, setTemperament] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // Deep-link from the dashboard "Quirks & Triggers" row → scroll to that block.
+  useEffect(() => {
+    if (loading || section !== "quirks") return;
+    const t = setTimeout(() => scrollRef.current?.scrollTo({ y: quirksY.current, animated: true }), 350);
+    return () => clearTimeout(t);
+  }, [loading, section]);
 
   useEffect(() => {
     if (!petId) return;
@@ -72,7 +82,7 @@ export default function EditBehavior() {
   const petName = pet?.name ?? "your pet";
 
   return (
-    <EditShell title="Commands & Quirks" onSave={save} saving={saving} loading={loading}>
+    <EditShell title="Commands & Quirks" onSave={save} saving={saving} loading={loading} scrollRef={scrollRef}>
       {/* Commands section */}
       <Text
         style={{ fontFamily: "Tanker", fontSize: 24, lineHeight: 28, color: colors.textDark, marginBottom: 4 }}
@@ -133,7 +143,7 @@ export default function EditBehavior() {
       </TouchableOpacity>
 
       {/* Quirks section */}
-      <View style={{ marginTop: 28, gap: 12 }}>
+      <View style={{ marginTop: 28, gap: 12 }} onLayout={(e) => { quirksY.current = e.nativeEvent.layout.y; }}>
         <Text
           style={{ fontFamily: "Tanker", fontSize: 24, lineHeight: 28, color: colors.textDark, marginBottom: 4 }}
         >

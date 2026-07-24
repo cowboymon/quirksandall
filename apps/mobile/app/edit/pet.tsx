@@ -2,13 +2,16 @@
 import { useState, useEffect } from "react";
 import { View, Text, Image, TouchableOpacity, Alert, Modal, Share } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import { useActivePetStore } from "../../stores/activePet";
 import EditShell from "../../components/EditShell";
 import { Input, Eyebrow, Card, Select, DateInput, WeightInput } from "../../components/ui";
-import { computeAge, colors, isoToDisplayDate, displayDateToISO } from "@quirksandall/shared";
+import { computeAge, colors, isoToDisplayDate, displayDateToISO, capitalizeFirst } from "@quirksandall/shared";
+
+const SPECIES_OPTIONS = ["Dog", "Cat", "Bird", "Rabbit", "Other"];
 import { uploadPetPhoto } from "../../lib/uploadPhoto";
 
 export default function EditPet() {
@@ -17,7 +20,7 @@ export default function EditPet() {
 
   const [name, setName] = useState("");
   const [breed, setBreed] = useState("");
-  const [species, setSpecies] = useState("dog");
+  const [species, setSpecies] = useState("");
   const [dob, setDob] = useState("");
   const [dobIsEstimated, setDobIsEstimated] = useState(false);
   const [sex, setSex] = useState("");
@@ -34,7 +37,9 @@ export default function EditPet() {
     if (!pet) return;
     setName(pet.name ?? "");
     setBreed(pet.breed ?? "");
-    setSpecies(pet.species ?? "dog");
+    // Show what was actually stored (capitalised to match the Select options),
+    // never a guessed default — species is an explicit choice, not derived.
+    setSpecies(pet.species ? capitalizeFirst(pet.species) : "");
     setDob(isoToDisplayDate(pet.dob));
     setDobIsEstimated(pet.dob_is_estimated ?? false);
     setSex(pet.sex ?? "");
@@ -75,7 +80,9 @@ export default function EditPet() {
         .update({
           name,
           breed: breed || null,
-          species,
+          // NOT NULL column — fall back to the stored value if left unset,
+          // rather than silently forcing a species the owner didn't pick.
+          species: species || pet?.species || "dog",
           // dob is NOT NULL — keep the stored value if the field is cleared/invalid
           dob: displayDateToISO(dob) ?? pet?.dob,
           dob_is_estimated: dobIsEstimated,
@@ -152,30 +159,45 @@ export default function EditPet() {
   const age = dobISO ? computeAge(dobISO, dobIsEstimated) : null;
 
   return (
-    <EditShell title="Pet Basics" onSave={save} saving={saving} loading={loading} hideSave>
-      {/* Photo */}
-      <TouchableOpacity onPress={pickPhoto} style={{ alignSelf: "center", marginBottom: 24 }}>
-        {photoUri ? (
-          <Image
-            source={{ uri: photoUri }}
-            style={{ width: 96, height: 96, borderRadius: 48, borderWidth: 2, borderColor: colors.border }}
-          />
-        ) : (
-          <View
-            style={{
-              width: 96, height: 96, borderRadius: 48,
-              backgroundColor: "#FFFFFF",
-              borderWidth: 2, borderColor: colors.dashedBorder, borderStyle: "dashed",
-              alignItems: "center", justifyContent: "center",
-            }}
-          >
-            <Text style={{ color: colors.textMuted, fontSize: 11, textAlign: "center" }}>Change{"\n"}photo</Text>
-          </View>
-        )}
+    <EditShell title="Pet Basics" onSave={save} saving={saving} loading={loading} saveLabel="Save">
+      {/* Photo — with a delete affordance overlaid on the corner */}
+      <View style={{ alignSelf: "center", marginBottom: 24, width: 96, height: 96 }}>
+        <TouchableOpacity onPress={pickPhoto} activeOpacity={0.85}>
+          {photoUri ? (
+            <Image
+              source={{ uri: photoUri }}
+              style={{ width: 96, height: 96, borderRadius: 48, borderWidth: 2, borderColor: colors.border }}
+            />
+          ) : (
+            <View
+              style={{
+                width: 96, height: 96, borderRadius: 48,
+                backgroundColor: "#FFFFFF",
+                borderWidth: 2, borderColor: colors.dashedBorder, borderStyle: "dashed",
+                alignItems: "center", justifyContent: "center",
+              }}
+            >
+              <Text style={{ color: colors.textMuted, fontSize: 11, textAlign: "center" }}>Add{"\n"}photo</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+        {/* Delete pet — overlaid on the profile photo */}
+        <TouchableOpacity
+          onPress={() => setShowDelete(true)}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          style={{
+            position: "absolute", top: -4, right: -4,
+            width: 30, height: 30, borderRadius: 15,
+            backgroundColor: colors.primary, alignItems: "center", justifyContent: "center",
+            borderWidth: 2, borderColor: "#F8ECEE",
+          }}
+        >
+          <Ionicons name="trash-outline" size={14} color="#F8ECEE" />
+        </TouchableOpacity>
         <Text style={{ color: colors.accent, fontSize: 12, textAlign: "center", marginTop: 6 }}>
           {photoUri ? "Change photo" : "Add photo"}
         </Text>
-      </TouchableOpacity>
+      </View>
 
       <View style={{ gap: 12 }}>
         <Card>
@@ -184,9 +206,15 @@ export default function EditPet() {
         </Card>
 
         <Card>
-          <Eyebrow>Breed / species</Eyebrow>
+          <Eyebrow>Species</Eyebrow>
+          <View style={{ marginTop: 4 }}>
+            <Select value={species} onValueChange={setSpecies} options={SPECIES_OPTIONS} placeholder="Select species" />
+          </View>
+        </Card>
+
+        <Card>
+          <Eyebrow>Breed</Eyebrow>
           <Input className="mt-1" placeholder="Golden Retriever mix" value={breed} onChangeText={setBreed} />
-          <Input className="mt-2" placeholder="Species (dog, cat…)" value={species} onChangeText={setSpecies} />
         </Card>
 
         <Card>
@@ -243,28 +271,6 @@ export default function EditPet() {
             Always shown to recipients — safety override.
           </Text>
         </Card>
-
-        {/* Save changes — full-width at the bottom */}
-        <TouchableOpacity
-          onPress={save}
-          disabled={saving}
-          activeOpacity={0.85}
-          style={{ marginTop: 24, height: 52, borderRadius: 12, backgroundColor: "#510000", alignItems: "center", justifyContent: "center", opacity: saving ? 0.5 : 1 }}
-        >
-          <Text style={{ color: "#F8ECEE", fontSize: 15, fontFamily: "Satoshi-Medium", letterSpacing: 0.3 }}>
-            {saving ? "Saving…" : "Save changes"}
-          </Text>
-        </TouchableOpacity>
-
-        {/* Delete link beneath */}
-        <TouchableOpacity
-          onPress={() => setShowDelete(true)}
-          style={{ marginTop: 14, alignItems: "center", paddingVertical: 6 }}
-        >
-          <Text style={{ color: colors.textMuted, fontSize: 13, fontFamily: "Satoshi-Medium" }}>
-            Delete {name || "this pet"}'s profile
-          </Text>
-        </TouchableOpacity>
       </View>
 
       {/* Delete confirmation — bottom sheet, matching the prototype */}

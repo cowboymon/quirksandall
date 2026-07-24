@@ -49,6 +49,9 @@ function PaidBadge() {
 }
 
 const microLabel = { fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6 } as const;
+// Body/content copy renders in a neutral near-black; the crimson (textDark) and
+// rose (primary) brand colours are reserved for titles and eyebrow labels.
+const BODY = "#1F1A17";
 
 export default function Preview() {
   const { petId: selectedPetId } = useActivePetStore();
@@ -145,7 +148,7 @@ export default function Preview() {
             {idTiles.map(([label, val]) => (
               <View key={label} style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, width: "47.5%" }}>
                 <Text style={{ ...microLabel, color: colors.textMuted }}>{label}</Text>
-                <Text numberOfLines={1} style={{ color: colors.primary, fontSize: 13, fontFamily: "Satoshi-Medium", marginTop: 2 }}>{val}</Text>
+                <Text numberOfLines={1} style={{ color: BODY, fontSize: 13, fontFamily: "Satoshi-Medium", marginTop: 2 }}>{val}</Text>
               </View>
             ))}
           </View>
@@ -234,7 +237,7 @@ export default function Preview() {
                       <View style={{ flexDirection: "row", paddingHorizontal: 16, paddingVertical: 8, borderTopWidth: 1, borderTopColor: colors.border, alignItems: "flex-start" }}>
                         <Text style={{ width: 64, fontSize: 13, fontFamily: "Satoshi-Medium", color: colors.textMuted }}>Treats</Text>
                         <View style={{ flex: 1 }}>
-                          {f.treats?.type ? <Text style={{ fontSize: 13, color: colors.textDark }}>{f.treats.type}</Text> : null}
+                          {f.treats?.type ? <Text style={{ fontSize: 13, color: BODY }}>{f.treats.type}</Text> : null}
                           {f.treats?.limit ? <Text style={{ fontSize: 11, color: colors.textMuted, fontFamily: "Satoshi-Light", marginTop: 2 }}>{f.treats.limit}</Text> : null}
                         </View>
                       </View>
@@ -267,7 +270,7 @@ export default function Preview() {
             <View>
               <SectionHeader lead={possessive(d.name)} underline="Allergies" />
               <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 16 }}>
-                <Text style={{ color: colors.primary, fontSize: 14, lineHeight: 20 }}>{d.allergies}</Text>
+                <Text style={{ color: BODY, fontSize: 14, lineHeight: 20 }}>{d.allergies}</Text>
               </View>
             </View>
           ) : null}
@@ -283,9 +286,9 @@ export default function Preview() {
                 </View>
                 {d.commands.map((cmd, i) => (
                   <View key={cmd.id ?? i} style={{ flexDirection: "row", paddingHorizontal: 12, paddingVertical: 10, backgroundColor: i % 2 === 0 ? "#FFFFFF" : colors.background, alignItems: "flex-start" }}>
-                    <Text style={{ width: "26%", fontSize: 13, fontFamily: "Satoshi-Bold", color: colors.textDark }}>"{cmd.word}"</Text>
+                    <Text style={{ width: "26%", fontSize: 13, fontFamily: "Satoshi-Bold", color: BODY }}>"{cmd.word}"</Text>
                     <View style={{ flex: 1, paddingRight: 8 }}>
-                      <Text style={{ fontSize: 13, color: colors.textDark }}>{cmd.meaning}</Text>
+                      <Text style={{ fontSize: 13, color: BODY }}>{cmd.meaning}</Text>
                       {cmd.howToCue ? <Text style={{ fontSize: 11, color: colors.textMuted, fontStyle: "italic", marginTop: 2 }}>Cue: {cmd.howToCue}</Text> : null}
                     </View>
                     <Text style={{ width: "26%", fontSize: 12, color: colors.textMuted }}>{cmd.reward}</Text>
@@ -326,7 +329,7 @@ function MealRow({ label, time, amount, divider }: { label: string; time?: strin
     <View style={{ flexDirection: "row", paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: divider ? 1 : 0, borderBottomColor: colors.border, alignItems: "baseline" }}>
       <Text style={{ width: 64, fontSize: 13, fontFamily: "Satoshi-Medium", color: colors.textMuted }}>{label}</Text>
       {time || amount ? (
-        <Text style={{ flex: 1, fontSize: 13, color: colors.textDark }}>
+        <Text style={{ flex: 1, fontSize: 13, color: BODY }}>
           {time ? <Text style={{ fontFamily: "Satoshi-Medium" }}>{time}</Text> : null}{time && amount ? " · " : ""}{amount}
         </Text>
       ) : (
@@ -343,7 +346,7 @@ function InfoCard({ label, text, locked }: { label: string; text: string; locked
         <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.primary }}>{label}</Text>
         {locked ? <PaidBadge /> : null}
       </View>
-      <Text style={{ color: colors.primary, fontSize: 14, marginTop: 6, lineHeight: 20 }}>{text}</Text>
+      <Text style={{ color: BODY, fontSize: 14, marginTop: 6, lineHeight: 20 }}>{text}</Text>
     </View>
   );
 }

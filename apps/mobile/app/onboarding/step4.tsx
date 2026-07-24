@@ -51,7 +51,7 @@ export default function Step4() {
       const { data: newPet } = await supabase
         .from("pets")
         .insert({
-          owner_id: user.id, name: pet.name, breed: pet.breed, species: pet.species ?? "dog",
+          owner_id: user.id, name: pet.name, breed: pet.breed, species: pet.species || "dog",
           dob: displayDateToISO(pet.dob) ?? new Date().toISOString().slice(0, 10), dob_is_estimated: pet.dobIsEstimated ?? false,
           sex: pet.sex, weight: pet.weight, color_markings: pet.colorMarkings, microchip_number: pet.microchipNumber, photo_url: null,
         })
