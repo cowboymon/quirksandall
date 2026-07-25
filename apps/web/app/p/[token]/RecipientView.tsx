@@ -24,14 +24,31 @@ export default function RecipientView({ profile, token }: Props) {
   // paid links and the owner's own preview. A free sitter gets one fixed view.
   const showToggle = isPaid || preview;
   const [view, setView] = useState<"quick" | "full">(showToggle ? "full" : "quick");
-  // No PIN set → nothing to gate; the contacts are already in the profile.
-  const [pinUnlocked, setPinUnlocked] = useState(!pinSet);
+  // Unlocked when there's no PIN to gate, or when the emergency contacts already
+  // arrived — either openly (no PIN) or via a persisted device unlock (#87),
+  // which the server resolves before render so there's no flash of the gate.
+  const [pinUnlocked, setPinUnlocked] = useState(!pinSet || !!profile.emergencyContacts);
   const [emergencyContacts, setEmergencyContacts] = useState<RecipientProfile["emergencyContacts"] | null>(
     profile.emergencyContacts ?? null
   );
   // Once shown, the emergency block can be collapsed — it's a long list a sitter
   // only needs in a pinch, so let them fold it away after a first read.
   const [emergencyOpen, setEmergencyOpen] = useState(true);
+
+  // "Lock again on this device" (#87) — clears the persisted-unlock cookie
+  // server-side (it's httpOnly), then re-gates the block behind the PIN.
+  const relock = async () => {
+    try {
+      await fetch("/api/pin-lock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+    } catch {}
+    setEmergencyContacts(null);
+    setPinUnlocked(false);
+    setEmergencyOpen(true);
+  };
 
   // Paid-tier fields (soft triggers, routine-rest, medical) are visible in the
   // Full view. In the owner's preview on a free plan we still show them but with
@@ -179,6 +196,17 @@ export default function RecipientView({ profile, token }: Props) {
                         : "Vet pre-authorised — backup contact can approve treatment"}
                     </p>
                   </div>
+                )}
+                {/* Only meaningful when a PIN gates this block — on a shared or
+                    borrowed device, drop the 30-day remembered unlock. */}
+                {pinSet && (
+                  <button
+                    onClick={relock}
+                    className="self-start text-xs underline"
+                    style={{ color: "rgba(248,236,238,0.55)" }}
+                  >
+                    Lock again on this device
+                  </button>
                 )}
               </div>
             </section>

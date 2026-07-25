@@ -1,7 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
+import { cookies } from "next/headers";
 import type { RecipientProfile } from "@quirksandall/shared";
 import LinkUnavailable from "../../components/LinkUnavailable";
 import RecipientView from "./RecipientView";
+import { fetchEmergencyContacts } from "../../lib/emergency";
+import { unlockCookieName, verifyUnlock } from "../../lib/unlock";
 
 // Never cache the recipient page — a revoked link or freshly edited profile must
 // take effect immediately.
@@ -78,6 +81,16 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
   // client badges them, so a free owner sees what they'd be unlocking.
   const canSeePaid = isPaid || preview;
 
+  // Persisted unlock (#87): if this device previously entered the correct PIN it
+  // holds a signed httpOnly cookie, so render the emergency block already
+  // unlocked — no flash of the PIN gate. Re-verified here against the current
+  // PIN hash on the (already non-revoked) link, so a revoked link or changed PIN
+  // re-locks immediately.
+  let unlockedContacts: Awaited<ReturnType<typeof fetchEmergencyContacts>> | null = null;
+  if (pinSet && verifyUnlock(token, link.pin_hash!, cookies().get(unlockCookieName(token))?.value)) {
+    unlockedContacts = await fetchEmergencyContacts(supabase, pet.id);
+  }
+
   // Log view (fire and forget) — never count an owner preview as a real view
   if (logView && !preview) {
     supabase
@@ -117,10 +130,11 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
     allergies: medical.allergies ?? [],
     pinSet,
     // When a PIN is set, emergencyContacts is populated client-side only after
-    // the sitter enters it (via the pin-check route). When NO pin is set there
-    // is nothing to protect, so we surface the contacts openly here.
+    // the sitter enters it (via the pin-check route) — unless this device has a
+    // persisted unlock (#87), in which case we surface it server-side here. When
+    // NO pin is set there is nothing to protect, so we surface it openly.
     ...(pinSet
-      ? {}
+      ? (unlockedContacts ? { emergencyContacts: unlockedContacts } : {})
       : {
           emergencyContacts: {
             primaryVet: {
