@@ -262,9 +262,12 @@ export default function Preview() {
             </View>
           )}
 
-          {showFull && (d.medications || d.conditions) && (
+          {/* Medication & conditions — free at every tier (#87 follow-up): a
+              sitter dosing the wrong thing because the owner hadn't paid is a
+              safety failure. Shows in both quick and full view, like allergies. */}
+          {(d.medications || d.conditions) && (
             <View>
-              <SectionHeader lead={possessive(d.name)} underline="Medication" locked={locked} />
+              <SectionHeader lead={possessive(d.name)} underline="Medication" />
               <View style={{ gap: 12 }}>
                 {d.conditions ? <InfoCard label="Conditions" text={d.conditions} /> : null}
                 {d.medications ? <InfoCard label="Medications" text={d.medications} /> : null}

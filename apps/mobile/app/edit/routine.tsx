@@ -6,7 +6,7 @@ import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
 import { Input, Eyebrow, Card, InlineNote, TimeInput, FieldTier, Select } from "../../components/ui";
-import { colors, capitalizeFirst } from "@quirksandall/shared";
+import { colors, capitalizeFirst, PRICE } from "@quirksandall/shared";
 
 const mealInput = {
   minHeight: 38, borderRadius: 8, borderWidth: 1, borderColor: colors.border,
@@ -159,8 +159,8 @@ export default function EditRoutine() {
     <EditShell title="Routine & Medical" onSave={save} saving={saving} loading={loading} scrollRef={scrollRef}>
       {!isPaid && (
         <View style={{ marginBottom: 16 }}>
-          <InlineNote variant="paywall" cta="Unlock for $7.99" onCta={() => router.push("/upgrade")}>
-            Feeding shows on every link. Walks, sleep and medical stay saved until you unlock.
+          <InlineNote variant="paywall" cta={`Unlock for ${PRICE}`} onCta={() => router.push("/upgrade")}>
+            Feeding shows on every link. The rest of the routine stays saved until you unlock.
           </InlineNote>
         </View>
       )}

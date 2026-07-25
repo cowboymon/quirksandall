@@ -53,3 +53,11 @@ export const typography = {
 } as const;
 
 export const buttonHeight = 44;
+
+// Pricing — single source of truth for the one-time unlock, shown across the
+// mobile paywall/account screens and the marketing site. Change PRICE here to
+// run a price update everywhere at once (a future increase is one edit).
+// NOTE: this is the *display* string only. The amount actually charged is set
+// by the store product (RevenueCat → App Store / Play). When the price changes,
+// update the store product price too so the two stay in sync.
+export const PRICE = "$7.99";

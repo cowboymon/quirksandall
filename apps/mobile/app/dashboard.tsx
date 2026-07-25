@@ -9,7 +9,7 @@ import { Eyebrow, Card } from "../components/ui";
 import PetSwitcher from "../components/PetSwitcher";
 import ConfirmModal from "../components/ConfirmModal";
 import { useActivePetStore } from "../stores/activePet";
-import { colors, computeAge, capitalizeFirst, orderedCommands, possessive } from "@quirksandall/shared";
+import { colors, computeAge, capitalizeFirst, orderedCommands, possessive, PRICE } from "@quirksandall/shared";
 import { WEB_URL } from "../lib/config";
 import { listLinks, createLink, renameLink, revokeLink, type OwnerLink } from "../lib/links";
 import type { Pet } from "@quirksandall/shared";
@@ -354,10 +354,10 @@ export default function Dashboard() {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium", lineHeight: 19 }}>
-                  Routine &amp; medical are saved, not shared yet.
+                  {pet.name}'s routine is saved, not shared yet.
                 </Text>
                 <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 3, fontFamily: "Satoshi-Light" }}>
-                  Unlock so sitters get {pet.name}'s full day — $7.99, once.
+                  Unlock so sitters get {pet.name}'s full day — {PRICE}, once.
                 </Text>
                 <Text style={{ color: colors.primary, fontSize: 12, marginTop: 6, fontFamily: "Satoshi-Medium" }}>Unlock full access →</Text>
               </View>
