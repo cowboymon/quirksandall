@@ -61,3 +61,10 @@ export const buttonHeight = 44;
 // by the store product (RevenueCat → App Store / Play). When the price changes,
 // update the store product price too so the two stay in sync.
 export const PRICE = "$7.99";
+
+// Stamped onto every consent record (owners.consent_policy_version + each
+// consent_log row) so we can prove which privacy-policy version a user agreed
+// to. PLACEHOLDER until legal finalises the policy — bump this string when the
+// real policy is published, and every subsequent consent write records the new
+// version. Existing rows keep the version that was current when they were made.
+export const CONSENT_POLICY_VERSION = "draft-2026-07";

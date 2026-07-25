@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TouchableOpacity, Alert, Switch } from "react-native";
 import { router } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { checkEntitlement, purchasePro, restorePurchases } from "../lib/purchases";
 import { REDEMPTION_ENABLED } from "../lib/config";
-import { colors, PRICE } from "@quirksandall/shared";
+import { colors, PRICE, CONSENT_POLICY_VERSION } from "@quirksandall/shared";
 import { Eyebrow, Input } from "../components/ui";
 import EditShell from "../components/EditShell";
 
@@ -17,6 +17,10 @@ export default function Account() {
   const [isPaid, setIsPaid] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  // null = not yet read from the DB. The toggle stays disabled until we've
+  // hydrated the real value, so we never render "off" as if it were authoritative
+  // before the source of truth has loaded.
+  const [insuranceConsent, setInsuranceConsent] = useState<boolean | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -24,16 +28,50 @@ export default function Account() {
       if (!user) { router.replace("/auth"); return; }
       const { data: owner } = await supabase
         .from("owners")
-        .select("name, primary_phone, primary_email, purchase_status")
+        .select("name, primary_phone, primary_email, purchase_status, consent_insurance_offers")
         .eq("id", user.id)
         .single();
       setName(owner?.name ?? "");
       setPhone(owner?.primary_phone ?? "");
       setEmail(owner?.primary_email ?? user.email ?? "");
       setIsPaid(owner?.purchase_status === "paid");
+      // Read the consent state back from the source of truth every time the
+      // screen opens — reflects changes made on another device or a withdrawal.
+      setInsuranceConsent(owner?.consent_insurance_offers ?? false);
     })();
     checkEntitlement().then((v) => v && setIsPaid(true)).catch(() => {});
   }, []);
+
+  // Flip consent: writes the current-state column AND appends an audit row, both
+  // stamped with the policy version. On failure, revert the toggle so it keeps
+  // matching what's actually stored.
+  const setInsuranceOffers = async (next: boolean) => {
+    const prev = insuranceConsent;
+    setInsuranceConsent(next);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { error } = await supabase
+      .from("owners")
+      .update({
+        consent_insurance_offers: next,
+        consent_updated_at: new Date().toISOString(),
+        consent_policy_version: CONSENT_POLICY_VERSION,
+      })
+      .eq("id", user.id);
+    if (error) {
+      setInsuranceConsent(prev);
+      Alert.alert("Couldn't save that", error.message);
+      return;
+    }
+    // Append-only audit trail. A failure here isn't surfaced to the user (the
+    // current-state write already succeeded), but it should be rare.
+    await supabase.from("consent_log").insert({
+      owner_id: user.id,
+      consent_type: "insurance_offers",
+      granted: next,
+      policy_version: CONSENT_POLICY_VERSION,
+    });
+  };
 
   const save = async () => {
     setSaving(true);
@@ -143,6 +181,32 @@ export default function Account() {
           Changing your email requires contacting support at{" "}
           <Text style={{ color: colors.textDark, fontFamily: "Satoshi-Medium" }}>{SUPPORT_EMAIL}</Text>
         </Text>
+      </View>
+
+      {/* Consent (Spec §8.4) — own section, plain register (not deadpan). Opt-in,
+          off by default, revocable in one tap. The toggle reflects the value
+          stored in the DB, hydrated on open. */}
+      <View style={{ marginTop: 24, paddingTop: 20, borderTopWidth: 1, borderTopColor: colors.border }}>
+        <Text style={{ fontSize: 11, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.7, color: colors.textMuted }}>
+          What we can contact you about
+        </Text>
+        <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginTop: 14 }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: colors.textDark, fontSize: 15, fontFamily: "Satoshi-Medium" }}>Insurance offers</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 12, lineHeight: 17, fontFamily: "Satoshi-Light", marginTop: 3 }}>
+              Occasional offers from pet insurance partners, matched to your pet's details. Off unless you say so. Change your mind anytime.
+            </Text>
+          </View>
+          <Switch
+            value={insuranceConsent ?? false}
+            onValueChange={setInsuranceOffers}
+            disabled={insuranceConsent === null}
+            trackColor={{ false: colors.border, true: colors.primary }}
+            thumbColor="#FFFFFF"
+            ios_backgroundColor={colors.border}
+            style={{ marginTop: 2 }}
+          />
+        </View>
       </View>
 
       {/* Unlock module — dark card, matching the paywall hero */}
