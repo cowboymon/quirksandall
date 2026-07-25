@@ -92,10 +92,11 @@ export default function PINEditor({ petId, autoStart }: Props) {
           </Text>
           <TouchableOpacity
             onPress={() => setStage("set")}
-            style={{ height: 44, borderRadius: 10, backgroundColor: colors.primary, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }}
+            activeOpacity={0.85}
+            style={{ height: 46, borderRadius: 12, backgroundColor: colors.button, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }}
           >
-            <Ionicons name="lock-closed" size={15} color="#F8ECEE" />
-            <Text style={{ color: "#F8ECEE", fontSize: 14, fontFamily: "Satoshi-Bold" }}>Change PIN</Text>
+            <Ionicons name="lock-closed" size={15} color={colors.buttonText} />
+            <Text style={{ color: colors.buttonText, fontSize: 15, fontFamily: "Satoshi-Medium", letterSpacing: 0.3 }}>Change PIN</Text>
           </TouchableOpacity>
         </>
       )}
