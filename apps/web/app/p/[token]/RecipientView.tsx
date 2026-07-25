@@ -228,10 +228,11 @@ export default function RecipientView({ profile, token }: Props) {
           </section>
         )}
 
-        {/* Medication — paid tier + full view only */}
-        {paidVisible && medical && (medical.conditions?.length > 0 || medical.medications?.length > 0) && (
+        {/* Medication — free at every tier, like allergies. A sitter needs the
+            dose whether or not the owner has paid, so it shows in both views. */}
+        {medical && (medical.conditions?.length > 0 || medical.medications?.length > 0) && (
           <section>
-            <SectionTitle name={name} tail="Medication" locked={lockedPreview} />
+            <SectionTitle name={name} tail="Medication" />
             <div className="flex flex-col gap-2">
               {medical.conditions?.length > 0 && <InfoCard label="Conditions" text={medical.conditions.join(", ")} />}
               {medical.medications?.map((med, i) => (

@@ -8,7 +8,7 @@ import { useActivePetStore } from "../../stores/activePet";
 import { supabase } from "../../lib/supabase";
 import { uploadPetPhoto } from "../../lib/uploadPhoto";
 import { randomToken } from "../../lib/links";
-import { colors, displayDateToISO, capitalizeFirst } from "@quirksandall/shared";
+import { colors, displayDateToISO, capitalizeFirst, PRICE } from "@quirksandall/shared";
 import { useState, useEffect } from "react";
 
 const mealInput = {
@@ -167,7 +167,7 @@ export default function Step4() {
       {/* Paywall only for free owners — paid access is account-wide (#86). */}
       {!isPaid && (
         <View style={{ marginTop: 12 }}>
-          <InlineNote variant="paywall" cta="Unlock for $7.99" onCta={() => router.push("/upgrade")}>
+          <InlineNote variant="paywall" cta={`Unlock for ${PRICE}`} onCta={() => router.push("/upgrade")}>
             Routine's saved. Sitters won't see it until you unlock.
           </InlineNote>
         </View>

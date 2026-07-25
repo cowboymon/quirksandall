@@ -6,7 +6,7 @@
 import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { router } from "expo-router";
-import { colors } from "@quirksandall/shared";
+import { colors, PRICE } from "@quirksandall/shared";
 
 export default function Redeem() {
   const [code, setCode] = useState("");
@@ -76,7 +76,7 @@ export default function Redeem() {
       </TouchableOpacity>
 
       <Text style={{ color: colors.textMuted, fontSize: 12, lineHeight: 18, marginTop: 16, fontFamily: "Satoshi-Light" }}>
-        No code? Head back and unlock for $7.99 — once, forever.
+        No code? Head back and unlock for {PRICE} — once, forever.
       </Text>
     </ScrollView>
   );

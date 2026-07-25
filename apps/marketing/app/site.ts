@@ -1,5 +1,7 @@
 // Central place for the handful of values the marketing site references.
 // Update these when the real store listings / contact address are live.
+import { PRICE } from "@quirksandall/shared";
+
 export const site = {
   name: "Quirks & All",
   tagline: "Away, but known.",
@@ -14,5 +16,5 @@ export const site = {
   operator: "Quirks & All",
   // Keep in sync when you revise the legal pages.
   legalLastUpdated: "22 July 2026",
-  proPrice: "$7.99",
+  proPrice: PRICE,
 } as const;

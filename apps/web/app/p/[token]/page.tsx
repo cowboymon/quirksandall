@@ -167,8 +167,10 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
           },
         }
       : {}),
-    // Medical (conditions + medications) — paid tier only.
-    ...(canSeePaid && medical ? { medical: { conditions: medical.conditions ?? [], medications: medical.medications ?? [] } } : {}),
+    // Medical (conditions + medications) — free at every tier. Withholding a
+    // dog's medication from a sitter because the owner hasn't paid is a
+    // safety failure (harm test), so it ships in the free payload like allergies.
+    ...(medical ? { medical: { conditions: medical.conditions ?? [], medications: medical.medications ?? [] } } : {}),
   };
 
   return profile;

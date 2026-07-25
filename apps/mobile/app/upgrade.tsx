@@ -4,13 +4,12 @@ import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "../lib/supabase";
 import { purchasePro, restorePurchases } from "../lib/purchases";
-import { colors } from "@quirksandall/shared";
+import { colors, PRICE } from "@quirksandall/shared";
 import { REDEMPTION_ENABLED } from "../lib/config";
 
 const FEATURES = [
   { label: "The soft stuff, too", sub: "Scared of, steers clear of, and what they're really like" },
   { label: "Routine, beyond feeding", sub: "Walks, sleep, and the bathroom routine" },
-  { label: "Medications & conditions", sub: "Down to the dose — nothing left to guess" },
   { label: "Unlimited pets", sub: "Add as many as you need" },
   { label: "Rotate share links", sub: "Get a new link whenever you want. The old one won't work again." },
 ];
@@ -27,7 +26,7 @@ export default function Upgrade() {
         await supabase.from("owners").update({ purchase_status: "paid" }).eq("id", user!.id);
         Alert.alert(
           "Unlocked.",
-          "The full picture is live now — routines, medical, and the softer stuff.",
+          "The full picture is live now — routines and the softer stuff.",
           [{ text: "Got it", onPress: () => router.back() }]
         );
       }
@@ -69,7 +68,7 @@ export default function Upgrade() {
             Unlock the full picture.
           </Text>
           <Text style={{ color: "rgba(248,236,238,0.7)", fontSize: 15, lineHeight: 22, fontFamily: "Satoshi-Light", marginBottom: 24 }}>
-            Routines, medical needs, and the softer stuff that makes the handoff feel less like a stranger and more like you.
+            Routines and the softer stuff that makes the handoff feel less like a stranger and more like you.
           </Text>
 
           {/* Price pill */}
@@ -87,7 +86,7 @@ export default function Upgrade() {
               paddingVertical: 10,
             }}
           >
-            <Text style={{ fontFamily: "Tanker", fontSize: 30, color: "#F8ECEE" }}>$7.99</Text>
+            <Text style={{ fontFamily: "Tanker", fontSize: 30, color: "#F8ECEE" }}>{PRICE}</Text>
             <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, fontFamily: "Satoshi-Light" }}>once, forever</Text>
           </View>
         </View>
@@ -168,7 +167,7 @@ export default function Upgrade() {
               }}
             >
               <Text style={{ color: "#F8ECEE", fontSize: 15, fontFamily: "Satoshi-Medium", letterSpacing: 0.3 }}>
-                {loading ? "Working…" : "Unlock for $7.99"}
+                {loading ? "Working…" : `Unlock for ${PRICE}`}
               </Text>
             </TouchableOpacity>
 
