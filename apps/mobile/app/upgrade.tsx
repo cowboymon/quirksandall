@@ -11,8 +11,8 @@ import { track, AnalyticsEvent } from "../lib/analytics";
 const FEATURES = [
   { label: "The soft stuff, too", sub: "Scared of, steers clear of, and what they're really like" },
   { label: "Routine, beyond feeding", sub: "Walks, sleep, and the bathroom routine" },
+  { label: "A link for every sitter", sub: "Share several at once — a separate live link per sitter or kennel, each revocable on its own" },
   { label: "Unlimited pets", sub: "Add as many as you need" },
-  { label: "Rotate share links", sub: "Get a new link whenever you want. The old one won't work again." },
 ];
 
 export default function Upgrade() {
