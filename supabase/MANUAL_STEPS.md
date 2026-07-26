@@ -11,6 +11,10 @@ you go. Newest work is at the top of each section.
 
 ## ▶️ Run now
 
+- [ ] **`20260725000004_consent_marketing.sql`** — adds `consent_marketing` to
+  `owners` for the "Product news & tips" opt-in. **Required before that toggle
+  works.**
+
 - [ ] **`20260725000003_share_link_duration.sql`** — adds `duration_preset` +
   `ends_at` to `share_links` for stay duration (§5.1). **Required before the
   "stay length" control + recipient banner work.**

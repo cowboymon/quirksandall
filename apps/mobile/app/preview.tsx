@@ -20,7 +20,7 @@ type Data = {
   backup2Name: string; backup2Phone: string; backup2Rel: string;
   commands: any[];
   scared: string; noGo: string; flightRisk: string; temperament: string;
-  allergies: string; conditions: string; medications: string;
+  allergies: string; conditions: string; meds: { name: string; dose: string; withMeal?: string }[];
   feeding: any; walks: string; sleep: string; bathroom: string; leftAlone: string; toileting: string;
   updatedAt: string;
 };
@@ -72,10 +72,7 @@ export default function Preview() {
       const paid = owner?.purchase_status === "paid";
       setIsPaid(paid);
       const backups = owner?.backup_contacts ?? [];
-      const meds = (medical?.medications ?? [])
-        .map((m: any) => [m.name, m.dose, mealSlotLabel(m.with_meal)].filter(Boolean).join(" · "))
-        .filter(Boolean)
-        .join("\n");
+      const meds = (medical?.medications ?? []).map((m: any) => ({ name: m.name ?? "", dose: m.dose ?? "", withMeal: m.with_meal ?? undefined }));
 
       setData({
         name: (pet.name ?? "").trim(), breed: pet.breed ?? "", age: computeAge(pet.dob, pet.dob_is_estimated), photoUrl: pet.photo_url,
@@ -87,7 +84,7 @@ export default function Preview() {
         backup2Name: backups[1]?.name ?? "", backup2Phone: backups[1]?.phone ?? "", backup2Rel: backups[1]?.relationship ?? "",
         commands: orderedCommands(behavior?.commands ?? [], paid, false),
         scared: behavior?.scared ?? "", noGo: behavior?.no_go ?? "", flightRisk: behavior?.flight_risk ?? "", temperament: behavior?.temperament_summary ?? "",
-        allergies: (medical?.allergies ?? []).join(", "), conditions: (medical?.conditions ?? []).join(", "), medications: meds,
+        allergies: (medical?.allergies ?? []).join(", "), conditions: (medical?.conditions ?? []).join(", "), meds,
         feeding: routine?.feeding ?? null, walks: routine?.walks ?? "", sleep: routine?.sleep ?? "", bathroom: routine?.bathroom_habits ?? "",
         leftAlone: routine?.left_alone?.ok ? (routine.left_alone.detail ? `${routine.left_alone.ok} — ${routine.left_alone.detail}` : routine.left_alone.ok) : "",
         toileting: routine?.toileting_frequency ?? "",
@@ -110,8 +107,12 @@ export default function Preview() {
   const locked = !isPaid;
   // A meal needs both time and amount to render (#93). Bare times aren't useful.
   const mealComplete = (slot: any) => !!(slot?.time && slot?.amount);
-  const meals = [["Breakfast", f.breakfast], ["Lunch", f.lunch], ["Dinner", f.dinner]].filter(([, slot]: any) => mealComplete(slot));
+  const meals = [["Breakfast", "breakfast", f.breakfast], ["Lunch", "lunch", f.lunch], ["Dinner", "dinner", f.dinner]].filter(([, , slot]: any) => mealComplete(slot));
   const hasFeeding = !!(meals.length || f.treats?.type || f.notes);
+  // Meds tied to a shown meal render in the routine; the rest go in the
+  // Medication section (#94 follow-up).
+  const shownMealKeys = new Set(meals.map(([, key]: any) => key));
+  const looseMeds = d.meds.filter((m) => !(m.withMeal && m.withMeal !== "anytime" && shownMealKeys.has(m.withMeal)));
 
   const CreamLink = ({ icon, text, onPress, bold }: { icon: "location" | "call"; text: string; onPress: () => void; bold?: boolean }) => (
     <TouchableOpacity onPress={onPress} style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 }}>
@@ -240,9 +241,19 @@ export default function Preview() {
                     <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
                       <Text style={{ ...microLabel, color: colors.primary }}>Feeding</Text>
                     </View>
-                    {meals.map(([label, slot]: any, i) => (
-                      <MealRow key={label} label={label} time={slot?.time} amount={slot?.amount} divider={i < meals.length - 1} />
-                    ))}
+                    {meals.map(([label, key, slot]: any, i) => {
+                      const tied = d.meds.filter((m) => m.withMeal === key);
+                      return (
+                        <View key={label} style={{ borderBottomWidth: i < meals.length - 1 ? 1 : 0, borderBottomColor: colors.border }}>
+                          <MealRow label={label} time={slot?.time} amount={slot?.amount} divider={false} />
+                          {tied.map((m, mi) => (
+                            <Text key={mi} style={{ color: colors.primary, fontSize: 12, fontFamily: "Satoshi-Medium", paddingLeft: 80, paddingRight: 16, paddingBottom: 8 }}>
+                              + {[m.name, m.dose].filter(Boolean).join(" ")}
+                            </Text>
+                          ))}
+                        </View>
+                      );
+                    })}
                     {(f.treats?.type || f.treats?.limit) ? (
                       <View style={{ flexDirection: "row", paddingHorizontal: 16, paddingVertical: 8, borderTopWidth: 1, borderTopColor: colors.border, alignItems: "flex-start" }}>
                         <Text style={{ width: 64, fontSize: 13, fontFamily: "Satoshi-Medium", color: colors.textMuted }}>Treats</Text>
@@ -271,12 +282,17 @@ export default function Preview() {
           {/* Medication & conditions — free at every tier (#87 follow-up): a
               sitter dosing the wrong thing because the owner hadn't paid is a
               safety failure. Shows in both quick and full view, like allergies. */}
-          {(d.medications || d.conditions) && (
+          {(looseMeds.length > 0 || d.conditions) && (
             <View>
               <SectionHeader lead={possessive(d.name)} underline="Medication" />
               <View style={{ gap: 12 }}>
                 {d.conditions ? <InfoCard label="Conditions" text={d.conditions} /> : null}
-                {d.medications ? <InfoCard label="Medications" text={d.medications} /> : null}
+                {looseMeds.length > 0 ? (
+                  <InfoCard
+                    label="Medications"
+                    text={looseMeds.map((m) => [m.name, m.dose, mealSlotLabel(m.withMeal)].filter(Boolean).join(" · ")).join("\n")}
+                  />
+                ) : null}
               </View>
             </View>
           )}
