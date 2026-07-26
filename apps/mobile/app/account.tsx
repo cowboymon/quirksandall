@@ -5,6 +5,8 @@ import { supabase } from "../lib/supabase";
 import { checkEntitlement, purchasePro, restorePurchases } from "../lib/purchases";
 import { REDEMPTION_ENABLED } from "../lib/config";
 import { colors, PRICE, CONSENT_POLICY_VERSION } from "@quirksandall/shared";
+import { Platform } from "react-native";
+import { track, resetAnalytics, AnalyticsEvent } from "../lib/analytics";
 import { Eyebrow, Input } from "../components/ui";
 import EditShell from "../components/EditShell";
 
@@ -85,8 +87,10 @@ export default function Account() {
 
   const handlePurchase = async () => {
     setLoading(true);
+    track(AnalyticsEvent.PurchaseStarted, { source: "account" });
     try {
       if (await purchasePro()) {
+        track(AnalyticsEvent.PurchaseCompleted, { source: "account" });
         const { data: { user } } = await supabase.auth.getUser();
         if (user) await supabase.from("owners").update({ purchase_status: "paid" }).eq("id", user.id);
         setIsPaid(true);
@@ -103,6 +107,7 @@ export default function Account() {
     setLoading(true);
     try {
       if (await restorePurchases()) {
+        track(AnalyticsEvent.PurchaseRestored, { source: "account" });
         const { data: { user } } = await supabase.auth.getUser();
         if (user) await supabase.from("owners").update({ purchase_status: "paid" }).eq("id", user.id);
         setIsPaid(true);
@@ -118,6 +123,7 @@ export default function Account() {
   };
 
   const signOut = async () => {
+    resetAnalytics(); // clear identity so the next account isn't merged into this one
     await supabase.auth.signOut();
     router.replace("/auth");
   };

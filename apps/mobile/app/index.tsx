@@ -2,11 +2,14 @@ import { useEffect } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
 import { supabase } from "../lib/supabase";
+import { initAnalytics, identify } from "../lib/analytics";
 
 export default function Index() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
+        // Attribute events to this owner once analytics is ready.
+        initAnalytics().then(() => identify(session.user.id));
         router.replace("/dashboard");
       } else {
         router.replace("/auth");

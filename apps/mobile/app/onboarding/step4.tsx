@@ -1,6 +1,7 @@
 // Screen 4 — Routine & medical
-import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert } from "react-native";
+import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert, Platform } from "react-native";
 import { router } from "expo-router";
+import { track, AnalyticsEvent } from "../../lib/analytics";
 import { Headline, Textarea, InlineNote, PrimaryButton, SkipButton, ProgressDots, Eyebrow, TimeInput, BackButton } from "../../components/ui";
 import { Underlined } from "../../components/Underlined";
 import { useOnboardingStore } from "../../stores/onboarding";
@@ -72,6 +73,7 @@ export default function Step4() {
         })
         .select("id").single();
       if (!newPet) throw new Error("Failed to create pet");
+      track(AnalyticsEvent.PetCreated, { platform: Platform.OS });
 
       if (pet.photoUri?.startsWith("file://")) {
         const photoUrl = await uploadPetPhoto(newPet.id, pet.photoUri);
@@ -124,6 +126,8 @@ export default function Step4() {
         .insert({ pet_id: newPet.id, token, label: "Main link", pin_hash: null, mode: "full", revoked: false })
         .select("id")
         .single();
+      // Value Moment — onboarding leaves the pet with a shareable link ready.
+      track(AnalyticsEvent.ShareLinkCreated, { context: "onboarding", platform: Platform.OS });
 
       // Persist the PIN the owner chose during onboarding. Hashing happens
       // server-side in the set-pin edge function so we never store it plaintext.

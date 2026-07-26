@@ -3,7 +3,9 @@
 // crypto-random source so they're unguessable; the DB unique constraint guards
 // the (astronomically unlikely) collision.
 import * as Crypto from "expo-crypto";
+import { Platform } from "react-native";
 import { supabase } from "./supabase";
+import { track, AnalyticsEvent } from "./analytics";
 
 export type OwnerLink = {
   id: string;
@@ -50,7 +52,11 @@ export async function createLink(petId: string, label: string): Promise<OwnerLin
       .insert({ pet_id: petId, token: randomToken(), label, pin_hash: existing?.pin_hash ?? null })
       .select("id, token, label, revoked, last_viewed_at, created_at, pin_hash")
       .single();
-    if (!error && data) return data;
+    if (!error && data) {
+      // Value Moment — a shareable link now exists for this pet.
+      track(AnalyticsEvent.ShareLinkCreated, { context: "dashboard", platform: Platform.OS });
+      return data;
+    }
     // 23505 = unique_violation on token — retry with a fresh token
     if (error && (error as { code?: string }).code !== "23505") break;
   }
