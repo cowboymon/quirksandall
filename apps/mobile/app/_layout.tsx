@@ -7,6 +7,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import Entypo from "@expo/vector-icons/Entypo";
 import { initRevenueCat } from "../lib/purchases";
 import { configureNotifications, registerForPushNotifications } from "../lib/notifications";
+import { initAnalytics } from "../lib/analytics";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -28,6 +29,7 @@ export default function RootLayout() {
     if (fontsLoaded) {
       SplashScreen.hideAsync();
       initRevenueCat();
+      initAnalytics();
       configureNotifications();
     }
   }, [fontsLoaded]);

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -6,6 +6,7 @@ import { supabase } from "../lib/supabase";
 import { purchasePro, restorePurchases } from "../lib/purchases";
 import { colors, PRICE } from "@quirksandall/shared";
 import { REDEMPTION_ENABLED } from "../lib/config";
+import { track, AnalyticsEvent } from "../lib/analytics";
 
 const FEATURES = [
   { label: "The soft stuff, too", sub: "Scared of, steers clear of, and what they're really like" },
@@ -17,11 +18,15 @@ const FEATURES = [
 export default function Upgrade() {
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => { track(AnalyticsEvent.PaywallViewed, { source: "upgrade" }); }, []);
+
   const handlePurchase = async () => {
     setLoading(true);
+    track(AnalyticsEvent.PurchaseStarted, { source: "upgrade" });
     try {
       const success = await purchasePro();
       if (success) {
+        track(AnalyticsEvent.PurchaseCompleted, { source: "upgrade" });
         const { data: { user } } = await supabase.auth.getUser();
         await supabase.from("owners").update({ purchase_status: "paid" }).eq("id", user!.id);
         Alert.alert(
@@ -42,6 +47,7 @@ export default function Upgrade() {
     try {
       const success = await restorePurchases();
       if (success) {
+        track(AnalyticsEvent.PurchaseRestored, { source: "upgrade" });
         const { data: { user } } = await supabase.auth.getUser();
         await supabase.from("owners").update({ purchase_status: "paid" }).eq("id", user!.id);
         Alert.alert("Restored", "Full access is back.", [{ text: "Got it", onPress: () => router.back() }]);

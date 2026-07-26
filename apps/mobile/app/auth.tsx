@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { supabase } from "../lib/supabase";
+import { initAnalytics, identify, setUserProps, track, AnalyticsEvent } from "../lib/analytics";
 
 // Mobile sign-in uses a 6-digit email code (OTP) rather than a magic link.
 // Deep-linking a magic link back into the app is unreliable in Expo Go and
@@ -35,7 +36,7 @@ export default function AuthScreen() {
   const verifyCode = async () => {
     if (code.trim().length < 6) return;
     setLoading(true);
-    const { error } = await supabase.auth.verifyOtp({
+    const { data, error } = await supabase.auth.verifyOtp({
       email: email.trim(),
       token: code.trim(),
       type: "email",
@@ -44,6 +45,19 @@ export default function AuthScreen() {
     if (error) {
       Alert.alert("That code didn't work", "Check it and try again, or request a new one.");
     } else {
+      // Identity + funnel: identify everyone; fire sign_up_completed only for a
+      // brand-new account (created within the last minute), AFTER identify so
+      // it's attributed correctly.
+      const user = data.user;
+      if (user) {
+        await initAnalytics();
+        identify(user.id);
+        const isNew = !!user.created_at && Date.now() - new Date(user.created_at).getTime() < 60_000;
+        if (isNew) {
+          setUserProps({ signup_platform: Platform.OS });
+          track(AnalyticsEvent.SignUpCompleted, { platform: Platform.OS, sign_up_method: "otp" });
+        }
+      }
       router.replace("/dashboard");
     }
   };

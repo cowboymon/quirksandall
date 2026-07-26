@@ -40,8 +40,8 @@ you go. Newest work is at the top of each section.
   retention. Depends on the §7.1 `share_links` column extension
   (`write_closes_at` etc.) landing first.
 
-- [ ] **Analytics vendor** — once PostHog/Mixpanel is chosen, add it to the
-  privacy-policy third-party table before publishing.
+- [ ] **Mixpanel → privacy policy** — Mixpanel is now wired (mobile + web).
+  Before publishing the privacy policy, add Mixpanel to the third-party table.
 
 - [ ] **Legal → policy version** — when the consent / secondary-use section of
   the privacy policy is finalised, bump `CONSENT_POLICY_VERSION` in
@@ -49,8 +49,13 @@ you go. Newest work is at the top of each section.
   version. Every consent write after that records the new version; existing
   `consent_log` rows keep the version they were made under.
 
-## ⚙️ Optional env
+## ⚙️ Env
 
+- [ ] **`EXPO_PUBLIC_MIXPANEL_TOKEN`** (mobile env / EAS build) =
+  `55b7deb128adfacb3ba5c8846f4ddfd5` — Mixpanel project token. Public client
+  token; analytics is a no-op until it's set.
+- [ ] **`NEXT_PUBLIC_MIXPANEL_TOKEN`** (Vercel env) = same value — for the web
+  recipient page's `recipient_page_viewed` event.
 - [ ] **`PIN_UNLOCK_SECRET`** (Vercel/Supabase env) — dedicated signing secret
   for the persisted-PIN-unlock cookie (#87). **Optional** — it falls back to
   `SUPABASE_SERVICE_KEY` if unset, so nothing breaks without it.

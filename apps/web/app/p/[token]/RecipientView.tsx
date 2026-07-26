@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { RecipientProfile } from "@quirksandall/shared";
 import { formatWeight, formatPhone, formatVetName, possessive } from "@quirksandall/shared";
 import PINGate from "./PINGate";
+import { trackWeb, WebAnalyticsEvent } from "../../lib/analytics";
 
 type Props = { profile: RecipientProfile; token: string };
 
@@ -49,6 +50,14 @@ export default function RecipientView({ profile, token }: Props) {
     setPinUnlocked(false);
     setEmergencyOpen(true);
   };
+
+  // Growth-engine signal (§3.2): a shared link was actually opened. Anonymous —
+  // the viewer is a sitter/vet, not a signed-up user. Skip the owner's own
+  // preview so it doesn't count as a real recipient view.
+  useEffect(() => {
+    if (preview) return;
+    trackWeb(WebAnalyticsEvent.RecipientPageViewed, { pin_gated: pinSet, tier: isPaid ? "paid" : "free" });
+  }, [preview, pinSet, isPaid]);
 
   // Paid-tier fields (soft triggers, routine-rest, medical) are visible in the
   // Full view. In the owner's preview on a free plan we still show them but with
