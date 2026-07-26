@@ -95,13 +95,10 @@ export default function RecipientView({ profile, token }: Props) {
           the plan at a glance. */}
       {stayNote && (
         <div
-          className="mt-4 flex items-center gap-2 rounded-card px-4 py-2.5 text-sm font-medium"
+          className="mt-4 rounded-card px-4 py-2.5 text-sm font-medium"
           style={{ backgroundColor: SECONDARY, color: CRIMSON }}
         >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={CRIMSON} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-            <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
-          </svg>
-          <span>{possessive(pet.name?.trim() ?? "")} with you {stayNote}.</span>
+          {possessive(pet.name?.trim() ?? "")} with you {stayNote}.
         </div>
       )}
 
@@ -312,7 +309,7 @@ export default function RecipientView({ profile, token }: Props) {
                       <td className="px-3 py-2 font-semibold" style={{ color: BODY }}>
                         {cmd.word}
                         {commandStrengthLabel(cmd.strength) && (
-                          <span className="mt-1 inline-block rounded-full px-1.5 py-0.5 text-[10px] font-medium" style={{ backgroundColor: SECONDARY, color: MUTED }}>
+                          <span className="mt-0.5 block text-[10px] font-medium" style={{ color: MUTED }}>
                             {commandStrengthLabel(cmd.strength)}
                           </span>
                         )}
