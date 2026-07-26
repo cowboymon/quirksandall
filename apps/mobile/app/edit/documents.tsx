@@ -1,0 +1,177 @@
+// Document vault (§5.4) — the owner uploads vaccination / flea-worm records so
+// they're never lost the night before a kennel stay. Files are private; viewing
+// opens a short-lived signed URL.
+import { useCallback, useState } from "react";
+import { View, Text, TouchableOpacity, Alert, ActivityIndicator, Linking } from "react-native";
+import { useFocusEffect } from "expo-router";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
+import EditShell from "../../components/EditShell";
+import { colors } from "@quirksandall/shared";
+import { useActivePetStore } from "../../stores/activePet";
+import { listDocuments, uploadDocument, removeDocument, documentSignedUrl, type NewDocument } from "../../lib/documents";
+
+const KINDS = [
+  { key: "vaccination", label: "Vaccination" },
+  { key: "flea_worm", label: "Flea & worm" },
+  { key: "other", label: "Other" },
+] as const;
+const kindLabel = (k: string) => KINDS.find((x) => x.key === k)?.label ?? "Document";
+
+function iconFor(mime?: string): keyof typeof Ionicons.glyphMap {
+  if (!mime) return "document-outline";
+  if (mime === "application/pdf") return "document-text-outline";
+  if (mime.startsWith("image/")) return "image-outline";
+  return "document-outline";
+}
+
+export default function Documents() {
+  const { petId } = useActivePetStore();
+  const [docs, setDocs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(() => {
+    if (!petId) { setLoading(false); return; }
+    listDocuments(petId)
+      .then((d) => { setDocs(d); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [petId]);
+  useFocusEffect(load);
+
+  // Pick the kind after choosing a file — a two-tap flow that avoids a whole
+  // pending-upload form for the common case.
+  const askKindAndUpload = (file: Omit<NewDocument, "kind" | "petId">) => {
+    Alert.alert("What kind of document?", file.fileName, [
+      ...KINDS.map((k) => ({ text: k.label, onPress: () => doUpload({ ...file, kind: k.key }) })),
+      { text: "Cancel", style: "cancel" as const },
+    ]);
+  };
+
+  const doUpload = async (file: Omit<NewDocument, "petId">) => {
+    if (!petId) return;
+    setBusy(true);
+    try {
+      await uploadDocument({ ...file, petId });
+      load();
+    } catch (e: any) {
+      Alert.alert("Upload failed", e.message ?? "Something went wrong.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const pickFile = async () => {
+    const res = await DocumentPicker.getDocumentAsync({ type: ["application/pdf", "image/*"], copyToCacheDirectory: true });
+    if (res.canceled || !res.assets?.[0]) return;
+    const a = res.assets[0];
+    askKindAndUpload({ uri: a.uri, fileName: a.name, mimeType: a.mimeType ?? undefined, sizeBytes: a.size ?? undefined });
+  };
+
+  const takePhoto = async () => {
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) { Alert.alert("Camera access needed", "Allow camera access to photograph a document."); return; }
+    const res = await ImagePicker.launchCameraAsync({ quality: 0.8 });
+    if (res.canceled || !res.assets?.[0]) return;
+    const a = res.assets[0];
+    askKindAndUpload({ uri: a.uri, fileName: a.fileName ?? `photo-${Date.now()}.jpg`, mimeType: a.mimeType ?? "image/jpeg", sizeBytes: a.fileSize ?? undefined });
+  };
+
+  const view = async (storagePath: string) => {
+    try {
+      const url = await documentSignedUrl(storagePath);
+      await Linking.openURL(url);
+    } catch (e: any) {
+      Alert.alert("Couldn't open that", e.message ?? "Try again.");
+    }
+  };
+
+  const confirmRemove = (doc: any) => {
+    Alert.alert("Remove this document?", doc.file_name, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Remove",
+        style: "destructive",
+        onPress: async () => {
+          try { await removeDocument(doc.id, doc.storage_path); load(); }
+          catch (e: any) { Alert.alert("Couldn't remove", e.message); }
+        },
+      },
+    ]);
+  };
+
+  return (
+    <EditShell
+      title="Documents"
+      subtitle="Vaccination certificates, flea & worm records — the proof a kennel asks for. Kept private; only you can see these."
+      onSave={() => {}}
+      hideSave
+      loading={loading}
+    >
+      <View style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>
+        <AddButton icon="document-attach-outline" label="Choose file" onPress={pickFile} disabled={busy} />
+        <AddButton icon="camera-outline" label="Take photo" onPress={takePhoto} disabled={busy} />
+      </View>
+
+      {busy && (
+        <View style={{ marginBottom: 16, alignItems: "center" }}>
+          <ActivityIndicator color={colors.primary} />
+        </View>
+      )}
+
+      {docs.length === 0 ? (
+        <View style={{ alignItems: "center", paddingVertical: 40 }}>
+          <Ionicons name="folder-open-outline" size={40} color={colors.dashedBorder} />
+          <Text style={{ color: colors.textMuted, fontSize: 14, marginTop: 12, fontFamily: "Satoshi-Light", textAlign: "center", lineHeight: 20 }}>
+            No documents yet. Add vaccination or flea & worm records so they're never lost the night before a stay.
+          </Text>
+        </View>
+      ) : (
+        <View style={{ gap: 10 }}>
+          {docs.map((doc) => (
+            <View key={doc.id} style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14 }}>
+              <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: colors.secondary, alignItems: "center", justifyContent: "center" }}>
+                <Ionicons name={iconFor(doc.mime_type)} size={18} color={colors.primary} />
+              </View>
+              <TouchableOpacity style={{ flex: 1 }} onPress={() => view(doc.storage_path)} activeOpacity={0.7}>
+                <Text numberOfLines={1} style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>{doc.title || doc.file_name}</Text>
+                <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 2, fontFamily: "Satoshi-Light" }}>
+                  {kindLabel(doc.kind)} · {new Date(doc.uploaded_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => confirmRemove(doc)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <Ionicons name="trash-outline" size={18} color={colors.danger} />
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+      )}
+    </EditShell>
+  );
+}
+
+function AddButton({ icon, label, onPress, disabled }: { icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void; disabled?: boolean }) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled}
+      activeOpacity={0.85}
+      style={{
+        flex: 1,
+        height: 74,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: colors.dashedBorder,
+        borderStyle: "dashed",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+        opacity: disabled ? 0.5 : 1,
+      }}
+    >
+      <Ionicons name={icon} size={20} color={colors.primary} />
+      <Text style={{ color: colors.textDark, fontSize: 13, fontFamily: "Satoshi-Medium" }}>{label}</Text>
+    </TouchableOpacity>
+  );
+}

@@ -95,10 +95,14 @@ export default function Dashboard() {
     // blocking on their own round-trip.
     setCachedPet(pet);
 
-    const [links, { data: behavior }] = await Promise.all([
+    const [links, { data: behavior }, docCountRes] = await Promise.all([
       listLinks(pet.id),
       supabase.from("pet_behavior").select("commands").eq("pet_id", pet.id).single(),
+      // Defensive: pet_documents may not exist until its migration is applied —
+      // a missing table returns an error (not a throw), so count falls back to 0.
+      supabase.from("pet_documents").select("id", { count: "exact", head: true }).eq("pet_id", pet.id),
     ]);
+    const docCount = docCountRes.count ?? 0;
 
     const isPaid = ownerData?.purchase_status === "paid";
     // Same visible/ordered list a recipient sees (favourites first, hidden
@@ -124,7 +128,8 @@ export default function Dashboard() {
         { label: "Commands", detail: commandCount ? `${commandCount} command${commandCount === 1 ? "" : "s"} saved` : "None saved yet", status: commandCount ? "done" : "empty", route: "/edit/behavior" },
         { label: "Quirks & Triggers", detail: "Escape risk, fears, off-limits zones", status: "done", route: "/edit/behavior?section=quirks" },
         { label: "Routine", detail: isPaid ? "Shown to sitters" : "Saved — not shown to sitters yet", status: "saved", route: "/edit/routine" },
-        { label: "Medical", detail: isPaid ? "Shown to sitters" : "Saved — not shown to sitters yet", status: "saved", route: "/edit/routine?section=medical" },
+        { label: "Medical", detail: "Shown to sitters", status: "done", route: "/edit/routine?section=medical" },
+        { label: "Documents", detail: docCount ? `${docCount} file${docCount === 1 ? "" : "s"}` : "Vaccinations, flea & worm", status: docCount ? "done" : "empty", route: "/edit/documents" },
       ],
     });
     setLoading(false);

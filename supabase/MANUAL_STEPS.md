@@ -11,6 +11,11 @@ you go. Newest work is at the top of each section.
 
 ## ▶️ Run now
 
+- [ ] **`20260725000002_document_vault.sql`** — private `pet-documents` storage
+  bucket + owner-scoped storage RLS + `pet_documents` metadata table + RLS.
+  **Required before the Documents screen works** — uploads/reads hit the new
+  bucket and table.
+
 - [x] **`20260725000001_consent.sql`** — consent columns on `owners` +
   append-only `consent_log` table + RLS. *(Run 26 Jul 2026.)*
 
@@ -29,12 +34,6 @@ you go. Newest work is at the top of each section.
 ---
 
 ## ⏳ Blocked / future (don't run yet)
-
-- [ ] **Document vault** (Spec §5.4, v1 build item) — ships as a migration when
-  the feature is built: a **private** `pet-documents` storage bucket
-  (`public = false` — signed URLs with expiry, never public), owner-scoped
-  storage RLS, and a `pet_documents` metadata table + RLS. Nothing to create
-  by hand; it arrives as SQL like every other migration.
 
 - [ ] **Check-ins** (ships with the sitter-check-in feature) — `check_ins`
   table + `purge_expired_check_ins()` + a daily `pg_cron` schedule for
