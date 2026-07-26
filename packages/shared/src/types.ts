@@ -52,8 +52,24 @@ export type Medication = {
 
 export type PetMedical = {
   allergies: string[]; // always visible to recipients
-  conditions: string[]; // paid-tier only
-  medications: Medication[]; // paid-tier only
+  conditions: string[]; // free — always visible to recipients
+  medications: Medication[]; // free — always visible to recipients
+};
+
+// Document vault (§5.4) — vaccination certs, flea/worm records. Files live in a
+// private storage bucket; this is the metadata row.
+export type PetDocumentKind = "vaccination" | "flea_worm" | "other";
+
+export type PetDocument = {
+  id: string;
+  petId: string;
+  kind: PetDocumentKind;
+  title?: string;
+  fileName: string;
+  storagePath: string;
+  mimeType?: string;
+  sizeBytes?: number;
+  uploadedAt: string;
 };
 
 export type FeedingSlot = { time: string; amount: string };

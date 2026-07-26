@@ -20,8 +20,8 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.itshypothetical.quirksandall",
       "infoPlist": {
-        "NSPhotoLibraryUsageDescription": "Choose a photo for your pet's profile.",
-        "NSCameraUsageDescription": "Take a photo for your pet's profile."
+        "NSPhotoLibraryUsageDescription": "Choose a photo of your pet, or a document like a vaccination record.",
+        "NSCameraUsageDescription": "Take a photo of your pet, or a document like a vaccination record."
       }
     },
     "android": {
