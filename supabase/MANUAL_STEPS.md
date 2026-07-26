@@ -11,17 +11,14 @@ you go. Newest work is at the top of each section.
 
 ## ▶️ Run now
 
-- [ ] **`20260725000001_consent.sql`** — consent columns on `owners` +
-  append-only `consent_log` table + RLS.
-  **Required before the Settings → "What we can contact you about" toggle
-  works** — without it, reading/writing `consent_insurance_offers` errors.
+- [x] **`20260725000001_consent.sql`** — consent columns on `owners` +
+  append-only `consent_log` table + RLS. *(Run 26 Jul 2026.)*
 
-- [ ] **`20260724000002_drop_insurance_claims_contact.sql`** — drops the unused
-  `claims_contact` key from `pet_vet_info.insurance`. *(Run if you haven't
-  already.)*
+- [x] **`20260724000002_drop_insurance_claims_contact.sql`** — drops the unused
+  `claims_contact` key from `pet_vet_info.insurance`. *(Run 26 Jul 2026.)*
 
-- [ ] **`20260724000001_routine_left_alone_toileting.sql`** — adds `left_alone`
-  + `toileting_frequency` to `pet_routine`. *(Run if you haven't already.)*
+- [x] **`20260724000001_routine_left_alone_toileting.sql`** — adds `left_alone`
+  + `toileting_frequency` to `pet_routine`. *(Run 26 Jul 2026.)*
 
 ## ✉️ Auth (dashboard, not SQL)
 
@@ -32,6 +29,12 @@ you go. Newest work is at the top of each section.
 ---
 
 ## ⏳ Blocked / future (don't run yet)
+
+- [ ] **Document vault** (Spec §5.4, v1 build item) — ships as a migration when
+  the feature is built: a **private** `pet-documents` storage bucket
+  (`public = false` — signed URLs with expiry, never public), owner-scoped
+  storage RLS, and a `pet_documents` metadata table + RLS. Nothing to create
+  by hand; it arrives as SQL like every other migration.
 
 - [ ] **Check-ins** (ships with the sitter-check-in feature) — `check_ins`
   table + `purge_expired_check_ins()` + a daily `pg_cron` schedule for
