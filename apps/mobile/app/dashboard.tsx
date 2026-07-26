@@ -107,7 +107,7 @@ export default function Dashboard() {
     const docCount = docCountRes.count ?? 0;
 
     const isPaid = ownerData?.purchase_status === "paid";
-    // Same visible/ordered list a recipient sees (favourites first, hidden
+    // Same visible/ordered list a recipient sees (manual order, hidden
     // withheld for paid) so the dashboard count/preview never disagree.
     const visibleCommands = orderedCommands((behavior?.commands ?? []) as any[], isPaid, false);
     const commandCount = visibleCommands.length;
