@@ -8,6 +8,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import EditShell from "../../components/EditShell";
+import ConfirmModal from "../../components/ConfirmModal";
 import { colors } from "@quirksandall/shared";
 import { useActivePetStore } from "../../stores/activePet";
 import { listDocuments, uploadDocument, removeDocument, documentSignedUrl, type NewDocument } from "../../lib/documents";
@@ -31,6 +32,7 @@ export default function Documents() {
   const [docs, setDocs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [removeTarget, setRemoveTarget] = useState<any>(null);
 
   const load = useCallback(() => {
     if (!petId) { setLoading(false); return; }
@@ -87,18 +89,12 @@ export default function Documents() {
     }
   };
 
-  const confirmRemove = (doc: any) => {
-    Alert.alert("Remove this document?", doc.file_name, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Remove",
-        style: "destructive",
-        onPress: async () => {
-          try { await removeDocument(doc.id, doc.storage_path); load(); }
-          catch (e: any) { Alert.alert("Couldn't remove", e.message); }
-        },
-      },
-    ]);
+  const doRemove = async () => {
+    const doc = removeTarget;
+    setRemoveTarget(null);
+    if (!doc) return;
+    try { await removeDocument(doc.id, doc.storage_path); load(); }
+    catch (e: any) { Alert.alert("Couldn't remove", e.message); }
   };
 
   return (
@@ -140,13 +136,23 @@ export default function Documents() {
                   {kindLabel(doc.kind)} · {new Date(doc.uploaded_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => confirmRemove(doc)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <TouchableOpacity onPress={() => setRemoveTarget(doc)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                 <Ionicons name="trash-outline" size={18} color={colors.danger} />
               </TouchableOpacity>
             </View>
           ))}
         </View>
       )}
+
+      <ConfirmModal
+        visible={!!removeTarget}
+        title="Remove this document?"
+        message={removeTarget?.file_name}
+        confirmLabel="Remove"
+        destructive
+        onConfirm={doRemove}
+        onCancel={() => setRemoveTarget(null)}
+      />
     </EditShell>
   );
 }

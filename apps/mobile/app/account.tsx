@@ -10,6 +10,7 @@ import { Platform } from "react-native";
 import { track, resetAnalytics, AnalyticsEvent } from "../lib/analytics";
 import { Eyebrow, Input } from "../components/ui";
 import EditShell from "../components/EditShell";
+import ConfirmModal from "../components/ConfirmModal";
 
 const SUPPORT_EMAIL = "quirksandall@itshypothetical.com";
 
@@ -24,6 +25,7 @@ export default function Account() {
   // hydrated the real value, so we never render "off" as if it were authoritative
   // before the source of truth has loaded.
   const [insuranceConsent, setInsuranceConsent] = useState<boolean | null>(null);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -141,33 +143,22 @@ export default function Account() {
     else Alert.alert("No mail app", `Email us at ${SUPPORT_EMAIL}.`);
   };
 
-  const deleteAccount = () => {
-    Alert.alert(
-      "Delete your account?",
-      "Your profile and every pet's details stay recoverable for 30 days — sign back in any time before then to cancel. After that, everything is permanently deleted.",
-      [
-        { text: "Keep my account", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-              const { error } = await supabase
-                .from("owners")
-                .update({ deletion_scheduled_at: new Date().toISOString() })
-                .eq("id", user.id);
-              if (error) {
-                Alert.alert("Couldn't schedule deletion", error.message);
-                return;
-              }
-            }
-            await supabase.auth.signOut();
-            router.replace("/auth");
-          },
-        },
-      ]
-    );
+  const doDeleteAccount = async () => {
+    setShowDeleteAccount(false);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { error } = await supabase
+        .from("owners")
+        .update({ deletion_scheduled_at: new Date().toISOString() })
+        .eq("id", user.id);
+      if (error) {
+        Alert.alert("Couldn't schedule deletion", error.message);
+        return;
+      }
+    }
+    resetAnalytics();
+    await supabase.auth.signOut();
+    router.replace("/auth");
   };
 
   return (
@@ -278,9 +269,20 @@ export default function Account() {
       </TouchableOpacity>
 
       {/* Delete account — the quiet text link, beneath Sign out. */}
-      <TouchableOpacity onPress={deleteAccount} style={{ marginTop: 14, alignItems: "center", paddingVertical: 6 }}>
+      <TouchableOpacity onPress={() => setShowDeleteAccount(true)} style={{ marginTop: 14, alignItems: "center", paddingVertical: 6 }}>
         <Text style={{ color: colors.danger, fontSize: 14 }}>Delete account</Text>
       </TouchableOpacity>
+
+      <ConfirmModal
+        visible={showDeleteAccount}
+        title="Delete your account?"
+        message="Your profile and every pet's details stay recoverable for 30 days — sign back in any time before then to cancel. After that, everything is permanently deleted."
+        confirmLabel="Delete"
+        cancelLabel="Keep my account"
+        destructive
+        onConfirm={doDeleteAccount}
+        onCancel={() => setShowDeleteAccount(false)}
+      />
     </EditShell>
   );
 }

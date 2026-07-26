@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { RecipientProfile } from "@quirksandall/shared";
-import { formatWeight, formatPhone, formatVetName, possessive, commandStrengthLabel } from "@quirksandall/shared";
+import { formatWeight, formatPhone, formatVetName, possessive, commandStrengthLabel, mealSlotLabel } from "@quirksandall/shared";
 import PINGate from "./PINGate";
 import { trackWeb, WebAnalyticsEvent } from "../../lib/analytics";
 
@@ -262,8 +262,8 @@ export default function RecipientView({ profile, token }: Props) {
                 <div key={i} className="bg-white border rounded-card px-4 py-3" style={{ borderColor: BORDER }}>
                   <p className="eyebrow text-primary mb-1">Medication</p>
                   <p className="text-sm font-semibold whitespace-pre-line" style={{ color: BODY }}>{[med.name, med.dose].filter(Boolean).join(" — ")}</p>
-                  {(med.frequency || med.locationStored) && (
-                    <p className="text-text-muted text-xs mt-0.5">{[med.frequency, med.locationStored && `Stored: ${med.locationStored}`].filter(Boolean).join(" · ")}</p>
+                  {(mealSlotLabel(med.withMeal) || med.frequency || med.locationStored) && (
+                    <p className="text-text-muted text-xs mt-0.5">{[mealSlotLabel(med.withMeal), med.frequency, med.locationStored && `Stored: ${med.locationStored}`].filter(Boolean).join(" · ")}</p>
                   )}
                   {med.notes && <p className="text-text-muted text-xs mt-0.5">{med.notes}</p>}
                 </div>

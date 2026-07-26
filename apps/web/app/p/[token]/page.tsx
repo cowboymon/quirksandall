@@ -180,7 +180,24 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
     // Medical (conditions + medications) — free at every tier. Withholding a
     // dog's medication from a sitter because the owner hasn't paid is a
     // safety failure (harm test), so it ships in the free payload like allergies.
-    ...(medical ? { medical: { conditions: medical.conditions ?? [], medications: medical.medications ?? [] } } : {}),
+    ...(medical
+      ? {
+          medical: {
+            conditions: medical.conditions ?? [],
+            // Map the stored (snake_case) medication rows to the camelCase type
+            // the view renders, including the meal slot (#94).
+            medications: (medical.medications ?? []).map((m: any) => ({
+              name: m.name ?? "",
+              dose: m.dose ?? "",
+              frequency: m.frequency ?? "",
+              timeOfDay: m.time_of_day ?? "",
+              locationStored: m.location_stored ?? "",
+              notes: m.notes ?? "",
+              withMeal: m.with_meal ?? undefined,
+            })),
+          },
+        }
+      : {}),
   };
 
   return profile;

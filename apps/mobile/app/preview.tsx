@@ -8,7 +8,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "../lib/supabase";
 import { useActivePetStore } from "../stores/activePet";
 import { FieldTier } from "../components/ui";
-import { colors, computeAge, formatWeight, formatPhone, formatVetName, possessive, orderedCommands, commandStrengthLabel } from "@quirksandall/shared";
+import { colors, computeAge, formatWeight, formatPhone, formatVetName, possessive, orderedCommands, commandStrengthLabel, mealSlotLabel } from "@quirksandall/shared";
 
 type Data = {
   name: string; breed: string; age: string; photoUrl: string | null;
@@ -72,7 +72,10 @@ export default function Preview() {
       const paid = owner?.purchase_status === "paid";
       setIsPaid(paid);
       const backups = owner?.backup_contacts ?? [];
-      const meds = (medical?.medications ?? []).map((m: any) => [m.name, m.dose].filter(Boolean).join(" ")).filter(Boolean).join("; ");
+      const meds = (medical?.medications ?? [])
+        .map((m: any) => [m.name, m.dose, mealSlotLabel(m.with_meal)].filter(Boolean).join(" · "))
+        .filter(Boolean)
+        .join("\n");
 
       setData({
         name: (pet.name ?? "").trim(), breed: pet.breed ?? "", age: computeAge(pet.dob, pet.dob_is_estimated), photoUrl: pet.photo_url,
