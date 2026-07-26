@@ -119,6 +119,17 @@ export function orderedCommands<T extends { hidden?: boolean }>(
   return shown;
 }
 
+/** Medication meal-slot label (#94) — e.g. "with breakfast", or null when unset. */
+export function mealSlotLabel(slot?: string | null): string | null {
+  switch (slot) {
+    case "breakfast": return "with breakfast";
+    case "lunch": return "with lunch";
+    case "dinner": return "with dinner";
+    case "anytime": return "anytime";
+    default: return null;
+  }
+}
+
 /** Command "strength" (§#92) — how reliable the command is, shown to sitters as
  * a small tag. Returns the label or null when unset. */
 export function commandStrengthLabel(s?: string | null): string | null {

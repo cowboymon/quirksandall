@@ -41,6 +41,9 @@ export type VetInfo = {
   insurance: { provider: string; policyNumber: string };
 };
 
+// Which feeding slot a medication is given with (#94), or "anytime".
+export type MealSlot = "breakfast" | "lunch" | "dinner" | "anytime";
+
 export type Medication = {
   name: string;
   dose: string;
@@ -48,6 +51,7 @@ export type Medication = {
   timeOfDay: string;
   locationStored: string;
   notes: string;
+  withMeal?: MealSlot;
 };
 
 export type PetMedical = {
