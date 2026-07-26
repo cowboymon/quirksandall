@@ -187,3 +187,24 @@ export function canSeeRoutine(purchaseStatus: "free" | "paid"): boolean {
 export function canSeeMedical(purchaseStatus: "free" | "paid"): boolean {
   return purchaseStatus === "paid";
 }
+
+/** Stay duration at share time (§5.1) — turns a link's preset/end-date into a
+ * short, sitter-facing orientation phrase, or null when nothing is set.
+ * The recipient page composes e.g. "Biscuit is with you {phrase}." */
+export type StayPreset = "hours" | "overnight" | "days" | "longer";
+
+export function stayPhrase(preset?: string | null, endsAt?: string | null): string | null {
+  if (endsAt) {
+    const d = new Date(endsAt);
+    if (!isNaN(d.getTime())) {
+      return `until ${d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}`;
+    }
+  }
+  switch (preset) {
+    case "hours": return "for a few hours";
+    case "overnight": return "overnight";
+    case "days": return "for a few days";
+    case "longer": return "for a little while";
+    default: return null;
+  }
+}

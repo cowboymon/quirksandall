@@ -20,7 +20,7 @@ const SECONDARY = "#F2E4E6";
 const BODY = "#1F1A17";
 
 export default function RecipientView({ profile, token }: Props) {
-  const { pet, age, behavior, allergies, routine, medical, lastUpdatedAt, isPaid, pinSet, preview } = profile;
+  const { pet, age, behavior, allergies, routine, medical, lastUpdatedAt, isPaid, pinSet, preview, stayNote } = profile;
   // The Quick/Full toggle only exists where there is paid content to toggle:
   // paid links and the owner's own preview. A free sitter gets one fixed view.
   const showToggle = isPaid || preview;
@@ -81,6 +81,20 @@ export default function RecipientView({ profile, token }: Props) {
           style={{ backgroundColor: CRIMSON, color: BLUSH }}
         >
           Preview — this is the full picture. {!isPaid && "Sitters see routine & medical only after you unlock."}
+        </div>
+      )}
+
+      {/* Stay-duration orientation (§5.1) — set by the owner, tells the sitter
+          the plan at a glance. */}
+      {stayNote && (
+        <div
+          className="mt-4 flex items-center gap-2 rounded-card px-4 py-2.5 text-sm font-medium"
+          style={{ backgroundColor: SECONDARY, color: CRIMSON }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={CRIMSON} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+            <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+          </svg>
+          <span>{possessive(pet.name?.trim() ?? "")} with you {stayNote}.</span>
         </div>
       )}
 

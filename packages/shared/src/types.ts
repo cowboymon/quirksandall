@@ -160,6 +160,9 @@ export type RecipientProfile = {
   lastUpdatedAt: string;
   mode: ShareLinkMode;
   isPaid: boolean;
+  // Stay-duration orientation phrase (§5.1), e.g. "for a few days" / "until
+  // Sat 3 Aug". Present only when the owner set a duration on this link.
+  stayNote?: string;
   // Owner-only preview (opened from the app with ?preview=1): shows the full
   // picture — including paid-tier routine/medical — regardless of tier. The
   // links sent to sitters never set this, so they stay gated.

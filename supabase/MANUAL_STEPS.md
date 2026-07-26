@@ -11,6 +11,10 @@ you go. Newest work is at the top of each section.
 
 ## ▶️ Run now
 
+- [ ] **`20260725000003_share_link_duration.sql`** — adds `duration_preset` +
+  `ends_at` to `share_links` for stay duration (§5.1). **Required before the
+  "stay length" control + recipient banner work.**
+
 - [ ] **`20260725000002_document_vault.sql`** — private `pet-documents` storage
   bucket + owner-scoped storage RLS + `pet_documents` metadata table + RLS.
   **Required before the Documents screen works** — uploads/reads hit the new
