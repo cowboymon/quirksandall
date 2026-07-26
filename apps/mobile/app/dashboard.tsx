@@ -8,10 +8,11 @@ import { registerForPushNotifications, scheduleTrickNudge } from "../lib/notific
 import { Eyebrow, Card } from "../components/ui";
 import PetSwitcher from "../components/PetSwitcher";
 import ConfirmModal from "../components/ConfirmModal";
+import DurationModal from "../components/DurationModal";
 import { useActivePetStore } from "../stores/activePet";
-import { colors, computeAge, capitalizeFirst, orderedCommands, possessive, PRICE } from "@quirksandall/shared";
+import { colors, computeAge, capitalizeFirst, orderedCommands, possessive, PRICE, stayPhrase } from "@quirksandall/shared";
 import { WEB_URL } from "../lib/config";
-import { listLinks, createLink, renameLink, revokeLink, type OwnerLink } from "../lib/links";
+import { listLinks, createLink, renameLink, revokeLink, setLinkDuration, type OwnerLink } from "../lib/links";
 import type { Pet } from "@quirksandall/shared";
 
 type Section = { label: string; detail: string; status: "done" | "saved" | "empty"; route: string };
@@ -52,6 +53,7 @@ export default function Dashboard() {
   const [newLinkName, setNewLinkName] = useState("");
   const [creatingLink, setCreatingLink] = useState(false);
   const [revokeTarget, setRevokeTarget] = useState<OwnerLink | null>(null);
+  const [durationTarget, setDurationTarget] = useState<OwnerLink | null>(null);
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [deletionScheduled, setDeletionScheduled] = useState(false);
 
@@ -281,6 +283,17 @@ export default function Dashboard() {
                 <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 11, marginTop: 2, fontFamily: "Satoshi-Light" }}>
                   {viewedLabel(link.last_viewed_at)}
                 </Text>
+                {/* Stay duration (§5.1) — tap to set/change how long the pet's
+                    staying. Shows on the recipient page. */}
+                <TouchableOpacity onPress={() => setDurationTarget(link)} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }} style={{ marginTop: 3 }}>
+                  {stayPhrase(link.duration_preset, link.ends_at) ? (
+                    <Text style={{ color: colors.cardDarkLabel, fontSize: 11, fontFamily: "Satoshi-Medium" }} numberOfLines={1}>
+                      Staying {stayPhrase(link.duration_preset, link.ends_at)}
+                    </Text>
+                  ) : (
+                    <Text style={{ color: "rgba(248,236,238,0.4)", fontSize: 11, fontFamily: "Satoshi-Medium" }}>+ Add stay length</Text>
+                  )}
+                </TouchableOpacity>
               </View>
               {/* Action row, left→right: Edit → Share → Delete (#71). Edit is a
                   standalone button (renames inline) rather than a pencil hung off
@@ -459,6 +472,22 @@ export default function Dashboard() {
         onConfirm={doRevoke}
         onCancel={() => setRevokeTarget(null)}
       />
+
+      {durationTarget && (
+        <DurationModal
+          visible={!!durationTarget}
+          petName={data?.pet.name ?? ""}
+          initialPreset={durationTarget.duration_preset}
+          initialEndsAt={durationTarget.ends_at}
+          onSave={async (preset, endsAt) => {
+            const id = durationTarget.id;
+            setDurationTarget(null);
+            await setLinkDuration(id, preset, endsAt);
+            loadDashboard();
+          }}
+          onClose={() => setDurationTarget(null)}
+        />
+      )}
     </ScrollView>
   );
 }
