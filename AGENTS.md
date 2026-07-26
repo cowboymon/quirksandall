@@ -2,6 +2,16 @@
 
 Guidance for AI agents working in this repo.
 
+## Product decisions (v1) — do not reopen without a product call
+
+- **Document vault is owner-side only.** Vaccination / flea-worm documents are
+  NEVER rendered on the recipient page and never exposed to a sitter via signed
+  URL. Rationale: boarding check-in is almost always the owner at the counter
+  with their phone; in-home sitting needs no certificate; sitter-run boarding
+  collects proof at booking through its own platform. Enforced in
+  `apps/web/app/p/[token]/page.tsx` (documents are not added to the recipient
+  profile).
+
 ## Analytics — Mixpanel
 
 Product analytics is **Mixpanel**, wired per the Mixpanel setup skill.
