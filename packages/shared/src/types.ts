@@ -90,6 +90,8 @@ export type PetRoutine = {
   toileting: string;
 };
 
+export type CommandStrength = "learning" | "solid" | "mastered";
+
 export type Command = {
   id: string;
   word: string;
@@ -97,10 +99,11 @@ export type Command = {
   howToCue: string;
   reward: string;
   lastConfirmedAt?: string;
-  // Paid organisation. Array order is the canonical order; favourites pin to the
-  // top; hidden commands are kept but withheld from the recipient/dashboard.
-  favourite?: boolean;
+  // Paid organisation. Array order is canonical; hidden commands are kept but
+  // withheld from the recipient/dashboard.
   hidden?: boolean;
+  // How reliable this command is — shown to sitters as a small tag (#92).
+  strength?: CommandStrength;
 };
 
 export type PetBehavior = {

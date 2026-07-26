@@ -102,20 +102,32 @@ export function capitalizeWords(s: string): string {
  * edit screen, and the recipient page so they never disagree.
  *
  * Free tier: chronological — the stored array order, all commands shown.
- * Paid tier: favourites pinned to the top (preserving array order within each
- * group); hidden commands withheld unless `includeHidden` (the edit screen,
- * where hidden ones show at the bottom so the owner can un-hide them).
+ * Paid tier: the owner's manual array order; hidden commands withheld unless
+ * `includeHidden` (the edit screen, where hidden ones show at the bottom so the
+ * owner can un-hide them).
  */
-export function orderedCommands<T extends { favourite?: boolean; hidden?: boolean }>(
+export function orderedCommands<T extends { hidden?: boolean }>(
   commands: T[],
   isPaid: boolean,
   includeHidden = false,
 ): T[] {
   if (!isPaid) return commands.slice();
   const shown = commands.filter((c) => !c.hidden);
-  const ordered = [...shown.filter((c) => c.favourite), ...shown.filter((c) => !c.favourite)];
-  if (includeHidden) return [...ordered, ...commands.filter((c) => c.hidden)];
-  return ordered;
+  // Manual array order is canonical; hidden commands are withheld from sitters
+  // (appended last only when the owner is editing).
+  if (includeHidden) return [...shown, ...commands.filter((c) => c.hidden)];
+  return shown;
+}
+
+/** Command "strength" (§#92) — how reliable the command is, shown to sitters as
+ * a small tag. Returns the label or null when unset. */
+export function commandStrengthLabel(s?: string | null): string | null {
+  switch (s) {
+    case "learning": return "Still learning";
+    case "solid": return "Solid";
+    case "mastered": return "Mastered";
+    default: return null;
+  }
 }
 
 /**

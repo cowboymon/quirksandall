@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, Alert, Switch } from "react-native";
+import { View, Text, TouchableOpacity, Alert, Switch, Linking } from "react-native";
+import Constants from "expo-constants";
 import { router } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { checkEntitlement, purchasePro, restorePurchases } from "../lib/purchases";
@@ -128,6 +129,18 @@ export default function Account() {
     router.replace("/auth");
   };
 
+  // Feedback / feature requests (#95) — opens a mail draft with a little context
+  // pre-filled so we know which build it came from. No backend needed.
+  const sendFeedback = async () => {
+    const version = Constants.expoConfig?.version ?? "";
+    const subject = encodeURIComponent("Quirks & All — feedback");
+    const body = encodeURIComponent(`\n\n\n———\nSent from Quirks & All ${version} (${Platform.OS})`);
+    const url = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
+    const ok = await Linking.canOpenURL(url).catch(() => false);
+    if (ok) Linking.openURL(url);
+    else Alert.alert("No mail app", `Email us at ${SUPPORT_EMAIL}.`);
+  };
+
   const deleteAccount = () => {
     Alert.alert(
       "Delete your account?",
@@ -249,11 +262,17 @@ export default function Account() {
         </View>
       )}
 
+      {/* Feedback / feature request (#95) — quiet row above sign out. */}
+      <TouchableOpacity onPress={sendFeedback} activeOpacity={0.7} style={{ marginTop: 24, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 4 }}>
+        <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Send feedback or a feature request</Text>
+        <Text style={{ color: colors.textMuted, fontSize: 16 }}>›</Text>
+      </TouchableOpacity>
+
       {/* Sign out — outlined standalone button (the treatment Delete used to have). */}
       <TouchableOpacity
         onPress={signOut}
         activeOpacity={0.85}
-        style={{ marginTop: 28, height: 50, borderRadius: 12, borderWidth: 1, borderColor: colors.textDark, backgroundColor: "transparent", alignItems: "center", justifyContent: "center" }}
+        style={{ marginTop: 16, height: 50, borderRadius: 12, borderWidth: 1, borderColor: colors.textDark, backgroundColor: "transparent", alignItems: "center", justifyContent: "center" }}
       >
         <Text style={{ color: colors.textDark, fontSize: 15, fontFamily: "Satoshi-Medium", letterSpacing: 0.3 }}>Sign out</Text>
       </TouchableOpacity>

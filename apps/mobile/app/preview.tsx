@@ -8,7 +8,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "../lib/supabase";
 import { useActivePetStore } from "../stores/activePet";
 import { FieldTier } from "../components/ui";
-import { colors, computeAge, formatWeight, formatPhone, formatVetName, possessive, orderedCommands } from "@quirksandall/shared";
+import { colors, computeAge, formatWeight, formatPhone, formatVetName, possessive, orderedCommands, commandStrengthLabel } from "@quirksandall/shared";
 
 type Data = {
   name: string; breed: string; age: string; photoUrl: string | null;
@@ -105,7 +105,10 @@ export default function Preview() {
   // Free plan → the paid fields carry a "Paid" badge so the owner sees what a
   // sitter would unlock. Feeding, flight risk, allergies and commands are free.
   const locked = !isPaid;
-  const hasFeeding = !!(f.breakfast?.time || f.breakfast?.amount || f.lunch?.time || f.lunch?.amount || f.dinner?.time || f.dinner?.amount || f.treats?.type || f.notes);
+  // A meal needs both time and amount to render (#93). Bare times aren't useful.
+  const mealComplete = (slot: any) => !!(slot?.time && slot?.amount);
+  const meals = [["Breakfast", f.breakfast], ["Lunch", f.lunch], ["Dinner", f.dinner]].filter(([, slot]: any) => mealComplete(slot));
+  const hasFeeding = !!(meals.length || f.treats?.type || f.notes);
 
   const CreamLink = ({ icon, text, onPress, bold }: { icon: "location" | "call"; text: string; onPress: () => void; bold?: boolean }) => (
     <TouchableOpacity onPress={onPress} style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 }}>
@@ -234,8 +237,8 @@ export default function Preview() {
                     <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
                       <Text style={{ ...microLabel, color: colors.primary }}>Feeding</Text>
                     </View>
-                    {[["Breakfast", f.breakfast], ["Lunch", f.lunch], ["Dinner", f.dinner]].map(([label, slot]: any, i) => (
-                      <MealRow key={label} label={label} time={slot?.time} amount={slot?.amount} divider={i < 2} />
+                    {meals.map(([label, slot]: any, i) => (
+                      <MealRow key={label} label={label} time={slot?.time} amount={slot?.amount} divider={i < meals.length - 1} />
                     ))}
                     {(f.treats?.type || f.treats?.limit) ? (
                       <View style={{ flexDirection: "row", paddingHorizontal: 16, paddingVertical: 8, borderTopWidth: 1, borderTopColor: colors.border, alignItems: "flex-start" }}>
@@ -295,7 +298,12 @@ export default function Preview() {
                 </View>
                 {d.commands.map((cmd, i) => (
                   <View key={cmd.id ?? i} style={{ flexDirection: "row", paddingHorizontal: 12, paddingVertical: 10, backgroundColor: i % 2 === 0 ? "#FFFFFF" : colors.background, alignItems: "flex-start" }}>
-                    <Text style={{ width: "26%", fontSize: 13, fontFamily: "Satoshi-Bold", color: BODY }}>"{cmd.word}"</Text>
+                    <View style={{ width: "26%" }}>
+                      <Text style={{ fontSize: 13, fontFamily: "Satoshi-Bold", color: BODY }}>"{cmd.word}"</Text>
+                      {commandStrengthLabel(cmd.strength) ? (
+                        <Text style={{ fontSize: 10, color: colors.textMuted, marginTop: 2, fontFamily: "Satoshi-Medium" }}>{commandStrengthLabel(cmd.strength)}</Text>
+                      ) : null}
+                    </View>
                     <View style={{ flex: 1, paddingRight: 8 }}>
                       <Text style={{ fontSize: 13, color: BODY }}>{cmd.meaning}</Text>
                       {cmd.howToCue ? <Text style={{ fontSize: 11, color: colors.textMuted, fontStyle: "italic", marginTop: 2 }}>Cue: {cmd.howToCue}</Text> : null}

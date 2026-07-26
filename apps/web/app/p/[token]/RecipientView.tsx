@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { RecipientProfile } from "@quirksandall/shared";
-import { formatWeight, formatPhone, formatVetName, possessive } from "@quirksandall/shared";
+import { formatWeight, formatPhone, formatVetName, possessive, commandStrengthLabel } from "@quirksandall/shared";
 import PINGate from "./PINGate";
 import { trackWeb, WebAnalyticsEvent } from "../../lib/analytics";
 
@@ -304,6 +304,11 @@ export default function RecipientView({ profile, token }: Props) {
                     >
                       <td className="px-3 py-2 font-semibold" style={{ color: BODY }}>
                         {cmd.word}
+                        {commandStrengthLabel(cmd.strength) && (
+                          <span className="mt-1 inline-block rounded-full px-1.5 py-0.5 text-[10px] font-medium" style={{ backgroundColor: SECONDARY, color: MUTED }}>
+                            {commandStrengthLabel(cmd.strength)}
+                          </span>
+                        )}
                       </td>
                       <td className="px-3 py-2 text-text-muted">
                         {cmd.meaning}
@@ -361,8 +366,13 @@ function hasContactData(c: NonNullable<RecipientProfile["emergencyContacts"]>): 
   );
 }
 
+function mealComplete(slot?: { time?: string; amount?: string }): boolean {
+  // A meal needs BOTH a time and an amount to be useful to a sitter (#93) —
+  // a bare "7:30am" with no amount says nothing.
+  return !!(slot?.time && slot?.amount);
+}
 function hasFeeding(f: NonNullable<RecipientProfile["routine"]>["feeding"]): boolean {
-  return !!(f.breakfast?.time || f.breakfast?.amount || f.lunch?.time || f.lunch?.amount || f.dinner?.time || f.dinner?.amount || f.treats?.type || f.notes);
+  return !!(mealComplete(f.breakfast) || mealComplete(f.lunch) || mealComplete(f.dinner) || f.treats?.type || f.notes);
 }
 
 function SectionTitle({ name, tail, locked }: { name: string; tail: string; locked?: boolean }) {
@@ -438,7 +448,7 @@ function FeedingCard({ feeding }: { feeding: NonNullable<RecipientProfile["routi
     ["Lunch", feeding.lunch],
     ["Dinner", feeding.dinner],
   ];
-  const shown = meals.filter(([, slot]) => slot?.time || slot?.amount);
+  const shown = meals.filter(([, slot]) => mealComplete(slot));
   return (
     <div className="bg-white border rounded-card overflow-hidden" style={{ borderColor: BORDER }}>
       <div className="px-4 pt-3 pb-2">
