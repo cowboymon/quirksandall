@@ -4,7 +4,6 @@ import { router, useFocusEffect } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Entypo from "@expo/vector-icons/Entypo";
 import { supabase } from "../lib/supabase";
-import { registerForPushNotifications, scheduleTrickNudge } from "../lib/notifications";
 import { Eyebrow, Card } from "../components/ui";
 import PetSwitcher from "../components/PetSwitcher";
 import ConfirmModal from "../components/ConfirmModal";
@@ -142,10 +141,9 @@ export default function Dashboard() {
       .from("owners").select("deletion_scheduled_at").eq("id", user.id).single();
     setDeletionScheduled(!!(delRow as any)?.deletion_scheduled_at);
 
-    if (isPaid) {
-      registerForPushNotifications();
-      if (behavior?.commands?.[0]?.word && pet.name) scheduleTrickNudge(pet.name, behavior.commands[0].word);
-    }
+    // Notifications (push + the local freshness nudge) are a v1.1 feature —
+    // deliberately not wired in v1 so there's no notification-permission prompt
+    // and no APNs dependency. The lib stays in place for 1.1.
   };
 
   const shareLinkUrl = async (link: OwnerLink) => {
