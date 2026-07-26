@@ -25,6 +25,7 @@ export default function Account() {
   // hydrated the real value, so we never render "off" as if it were authoritative
   // before the source of truth has loaded.
   const [insuranceConsent, setInsuranceConsent] = useState<boolean | null>(null);
+  const [marketingConsent, setMarketingConsent] = useState<boolean | null>(null);
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
 
   useEffect(() => {
@@ -33,7 +34,7 @@ export default function Account() {
       if (!user) { router.replace("/auth"); return; }
       const { data: owner } = await supabase
         .from("owners")
-        .select("name, primary_phone, primary_email, purchase_status, consent_insurance_offers")
+        .select("name, primary_phone, primary_email, purchase_status, consent_insurance_offers, consent_marketing")
         .eq("id", user.id)
         .single();
       setName(owner?.name ?? "");
@@ -43,39 +44,49 @@ export default function Account() {
       // Read the consent state back from the source of truth every time the
       // screen opens — reflects changes made on another device or a withdrawal.
       setInsuranceConsent(owner?.consent_insurance_offers ?? false);
+      setMarketingConsent(owner?.consent_marketing ?? false);
     })();
     checkEntitlement().then((v) => v && setIsPaid(true)).catch(() => {});
   }, []);
 
-  // Flip consent: writes the current-state column AND appends an audit row, both
-  // stamped with the policy version. On failure, revert the toggle so it keeps
-  // matching what's actually stored.
-  const setInsuranceOffers = async (next: boolean) => {
-    const prev = insuranceConsent;
-    setInsuranceConsent(next);
+  // Flip a consent: write the current-state column AND append an audit row, both
+  // stamped with the policy version. On failure, revert the toggle via `revert`
+  // so it keeps matching what's actually stored. Shared by every opt-in.
+  const writeConsent = async (
+    column: "consent_insurance_offers" | "consent_marketing",
+    type: string,
+    next: boolean,
+    revert: () => void,
+  ) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     const { error } = await supabase
       .from("owners")
-      .update({
-        consent_insurance_offers: next,
-        consent_updated_at: new Date().toISOString(),
-        consent_policy_version: CONSENT_POLICY_VERSION,
-      })
+      .update({ [column]: next, consent_updated_at: new Date().toISOString(), consent_policy_version: CONSENT_POLICY_VERSION })
       .eq("id", user.id);
     if (error) {
-      setInsuranceConsent(prev);
+      revert();
       Alert.alert("Couldn't save that", error.message);
       return;
     }
-    // Append-only audit trail. A failure here isn't surfaced to the user (the
-    // current-state write already succeeded), but it should be rare.
+    // Append-only audit trail (the current-state write already succeeded).
     await supabase.from("consent_log").insert({
       owner_id: user.id,
-      consent_type: "insurance_offers",
+      consent_type: type,
       granted: next,
       policy_version: CONSENT_POLICY_VERSION,
     });
+  };
+
+  const setInsuranceOffers = (next: boolean) => {
+    const prev = insuranceConsent;
+    setInsuranceConsent(next);
+    writeConsent("consent_insurance_offers", "insurance_offers", next, () => setInsuranceConsent(prev));
+  };
+  const setMarketing = (next: boolean) => {
+    const prev = marketingConsent;
+    setMarketingConsent(next);
+    writeConsent("consent_marketing", "marketing", next, () => setMarketingConsent(prev));
   };
 
   const save = async () => {
@@ -211,6 +222,23 @@ export default function Account() {
             value={insuranceConsent ?? false}
             onValueChange={setInsuranceOffers}
             disabled={insuranceConsent === null}
+            trackColor={{ false: colors.border, true: colors.primary }}
+            thumbColor="#FFFFFF"
+            ios_backgroundColor={colors.border}
+            style={{ marginTop: 2 }}
+          />
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginTop: 18, paddingTop: 18, borderTopWidth: 1, borderTopColor: colors.border }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: colors.textDark, fontSize: 15, fontFamily: "Satoshi-Medium" }}>Product news &amp; tips</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 12, lineHeight: 17, fontFamily: "Satoshi-Light", marginTop: 3 }}>
+              Occasional emails about new features and getting the most out of Quirks &amp; All. Off unless you say so. Change your mind anytime.
+            </Text>
+          </View>
+          <Switch
+            value={marketingConsent ?? false}
+            onValueChange={setMarketing}
+            disabled={marketingConsent === null}
             trackColor={{ false: colors.border, true: colors.primary }}
             thumbColor="#FFFFFF"
             ios_backgroundColor={colors.border}

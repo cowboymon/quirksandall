@@ -65,6 +65,13 @@ export default function RecipientView({ profile, token }: Props) {
   const lockedPreview = preview && !isPaid;
   const paidVisible = view === "full";
 
+  // Medications tied to a meal render inside the feeding routine (at that meal);
+  // the rest ("anytime"/untied, or tied to a meal that isn't filled in) show in
+  // the standalone Medication section so nothing is ever lost.
+  const allMeds = medical?.medications ?? [];
+  const slotShown = (key: "breakfast" | "lunch" | "dinner") => mealComplete(routine?.feeding?.[key]);
+  const looseMeds = allMeds.filter((m) => !(m.withMeal && m.withMeal !== "anytime" && slotShown(m.withMeal)));
+
   const name = pet.name?.trim() ?? "";
   const idTiles: [string, string][] = [
     ["Weight", formatWeight(pet.weight)],
@@ -241,7 +248,7 @@ export default function RecipientView({ profile, token }: Props) {
           <section>
             <SectionTitle name={name} tail="Daily Routine" />
             <div className="flex flex-col gap-2">
-              {hasFeeding(routine.feeding) && <FeedingCard feeding={routine.feeding} />}
+              {hasFeeding(routine.feeding) && <FeedingCard feeding={routine.feeding} medications={allMeds} />}
               {paidVisible && routine.walks && <InfoCard label="Walks" text={routine.walks} locked={lockedPreview} />}
               {paidVisible && routine.sleep && <InfoCard label="Sleep" text={routine.sleep} locked={lockedPreview} />}
               {paidVisible && routine.bathroomHabits && <InfoCard label="Bathroom" text={routine.bathroomHabits} locked={lockedPreview} />}
@@ -253,12 +260,12 @@ export default function RecipientView({ profile, token }: Props) {
 
         {/* Medication — free at every tier, like allergies. A sitter needs the
             dose whether or not the owner has paid, so it shows in both views. */}
-        {medical && (medical.conditions?.length > 0 || medical.medications?.length > 0) && (
+        {medical && (medical.conditions?.length > 0 || looseMeds.length > 0) && (
           <section>
             <SectionTitle name={name} tail="Medication" />
             <div className="flex flex-col gap-2">
               {medical.conditions?.length > 0 && <InfoCard label="Conditions" text={medical.conditions.join(", ")} />}
-              {medical.medications?.map((med, i) => (
+              {looseMeds.map((med, i) => (
                 <div key={i} className="bg-white border rounded-card px-4 py-3" style={{ borderColor: BORDER }}>
                   <p className="eyebrow text-primary mb-1">Medication</p>
                   <p className="text-sm font-semibold whitespace-pre-line" style={{ color: BODY }}>{[med.name, med.dose].filter(Boolean).join(" — ")}</p>
@@ -442,32 +449,42 @@ function InfoCard({ label, text, locked }: { label: string; text: string; locked
   );
 }
 
-function FeedingCard({ feeding }: { feeding: NonNullable<RecipientProfile["routine"]>["feeding"] }) {
-  const meals: [string, { time?: string; amount?: string } | undefined][] = [
-    ["Breakfast", feeding.breakfast],
-    ["Lunch", feeding.lunch],
-    ["Dinner", feeding.dinner],
+function FeedingCard({ feeding, medications }: { feeding: NonNullable<RecipientProfile["routine"]>["feeding"]; medications: NonNullable<RecipientProfile["medical"]>["medications"] }) {
+  const meals: [string, "breakfast" | "lunch" | "dinner", { time?: string; amount?: string } | undefined][] = [
+    ["Breakfast", "breakfast", feeding.breakfast],
+    ["Lunch", "lunch", feeding.lunch],
+    ["Dinner", "dinner", feeding.dinner],
   ];
-  const shown = meals.filter(([, slot]) => mealComplete(slot));
+  const shown = meals.filter(([, , slot]) => mealComplete(slot));
   return (
     <div className="bg-white border rounded-card overflow-hidden" style={{ borderColor: BORDER }}>
       <div className="px-4 pt-3 pb-2">
         <p className="eyebrow" style={{ color: "#B83A52" }}>Feeding</p>
       </div>
-      {shown.map(([label, slot], i) => (
+      {shown.map(([label, key, slot], i) => {
+        const meds = medications.filter((m) => m.withMeal === key);
+        return (
         <div
           key={label}
           className="flex px-4 py-2 gap-3"
           style={{ borderTop: i === 0 ? undefined : `1px solid ${BORDER}` }}
         >
           <span className="text-sm font-medium w-20 shrink-0" style={{ color: MUTED }}>{label}</span>
-          <span className="text-sm" style={{ color: BODY }}>
-            {slot?.time && <span className="font-medium">{slot.time}</span>}
-            {slot?.time && slot?.amount ? " · " : ""}
-            {slot?.amount}
-          </span>
+          <div className="flex flex-col">
+            <span className="text-sm" style={{ color: BODY }}>
+              {slot?.time && <span className="font-medium">{slot.time}</span>}
+              {slot?.time && slot?.amount ? " · " : ""}
+              {slot?.amount}
+            </span>
+            {meds.map((m, mi) => (
+              <span key={mi} className="text-xs mt-0.5 font-medium" style={{ color: "#B83A52" }}>
+                + {[m.name, m.dose].filter(Boolean).join(" ")}
+              </span>
+            ))}
+          </div>
         </div>
-      ))}
+        );
+      })}
       {(feeding.treats?.type || feeding.treats?.limit) && (
         <div className="flex px-4 py-2 gap-3" style={{ borderTop: `1px solid ${BORDER}` }}>
           <span className="text-sm font-medium w-20 shrink-0" style={{ color: MUTED }}>Treats</span>
