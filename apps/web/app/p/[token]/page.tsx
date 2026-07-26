@@ -104,6 +104,12 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
   const { computeAge, orderedCommands } = await import("@quirksandall/shared");
   const age = computeAge(pet.dob, pet.dob_is_estimated);
 
+  // PRODUCT DECISION (v1, do not reopen without a product call): the document
+  // vault is owner-side only. Vaccination/flea-worm documents are deliberately
+  // NOT added to the recipient profile and never exposed to a sitter via signed
+  // URL — boarding check-in is almost always the owner in person, in-home
+  // sitting needs no certificate, and sitter-run boarding collects proof through
+  // its own booking platform. See AGENTS.md "Product decisions".
   const profile: RecipientProfile = {
     pet: {
       name: pet.name,
