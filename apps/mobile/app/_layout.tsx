@@ -6,7 +6,7 @@ import { useFonts } from "expo-font";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Entypo from "@expo/vector-icons/Entypo";
 import { initRevenueCat } from "../lib/purchases";
-import { configureNotifications, registerForPushNotifications } from "../lib/notifications";
+import { configureNotifications } from "../lib/notifications";
 import { initAnalytics } from "../lib/analytics";
 
 SplashScreen.preventAutoHideAsync();
