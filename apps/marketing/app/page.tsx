@@ -329,8 +329,8 @@ function MarkedHeading({ title, mark }: { title: string; mark?: string }) {
 function PhoneShot({ src, caption }: { src?: string; caption: string }) {
   return (
     <figure className="flex flex-col items-center">
-      <div className="w-full max-w-[220px] rounded-[2.2rem] border-[6px] border-card-dark bg-card-dark p-1.5 shadow-xl shadow-primary/20">
-        <div className="relative aspect-[9/19] overflow-hidden rounded-[1.7rem] bg-card-bg">
+      <div className="w-full max-w-[220px] rounded-[2rem] border-[3px] border-card-dark bg-card-dark p-0.5 shadow-xl shadow-primary/20">
+        <div className="relative aspect-[9/19] overflow-hidden rounded-[1.8rem] bg-card-bg">
           {src ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={src} alt={caption} className="h-full w-full object-cover" />
