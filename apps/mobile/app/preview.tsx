@@ -249,10 +249,10 @@ export default function Preview() {
                       const tied = d.meds.filter((m) => m.withMeal === key);
                       return (
                         <View key={label} style={{ borderBottomWidth: i < meals.length - 1 ? 1 : 0, borderBottomColor: colors.border }}>
-                          <MealRow label={label} time={slot?.time} amount={slot?.amount} divider={false} />
+                          <MealRow label={label} time={slot?.time} amount={slot?.amount} divider={false} medOnly={tied.length > 0 && !mealComplete(slot)} />
                           {tied.map((m, mi) => (
                             <Text key={mi} style={{ color: colors.primary, fontSize: 12, fontFamily: "Satoshi-Medium", paddingLeft: 80, paddingRight: 16, paddingBottom: 8 }}>
-                              + {[m.name, m.dose].filter(Boolean).join(" ")}
+                              + {[m.name, m.dose].filter(Boolean).join(" — ")}
                             </Text>
                           ))}
                           {tied.length > 0 && (
@@ -296,12 +296,18 @@ export default function Preview() {
               <SectionHeader lead={possessive(d.name)} underline="Medication" />
               <View style={{ gap: 12 }}>
                 {d.conditions ? <InfoCard label="Conditions" text={d.conditions} /> : null}
-                {d.meds.length > 0 ? (
-                  <InfoCard
-                    label="Medications"
-                    text={d.meds.map((m) => [m.name, m.dose, mealSlotLabel(m.withMeal), m.notes].filter(Boolean).join(" · ")).join("\n")}
-                  />
-                ) : null}
+                {d.meds.map((m, i) => (
+                  <View key={i} style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 16 }}>
+                    <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.primary }}>Medication</Text>
+                    <Text style={{ color: BODY, fontSize: 14, fontFamily: "Satoshi-Bold", marginTop: 6 }}>{[m.name, m.dose].filter(Boolean).join(" — ")}</Text>
+                    {mealSlotLabel(m.withMeal) ? (
+                      <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>{mealSlotLabel(m.withMeal)}</Text>
+                    ) : null}
+                    {m.notes ? (
+                      <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>{m.notes}</Text>
+                    ) : null}
+                  </View>
+                ))}
               </View>
             </View>
           )}
@@ -370,7 +376,7 @@ export default function Preview() {
   );
 }
 
-function MealRow({ label, time, amount, divider }: { label: string; time?: string; amount?: string; divider: boolean }) {
+function MealRow({ label, time, amount, divider, medOnly }: { label: string; time?: string; amount?: string; divider: boolean; medOnly?: boolean }) {
   return (
     <View style={{ flexDirection: "row", paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: divider ? 1 : 0, borderBottomColor: colors.border, alignItems: "baseline" }}>
       <Text style={{ width: 64, fontSize: 13, fontFamily: "Satoshi-Medium", color: colors.textMuted }}>{label}</Text>
@@ -378,6 +384,8 @@ function MealRow({ label, time, amount, divider }: { label: string; time?: strin
         <Text style={{ flex: 1, fontSize: 13, color: BODY }}>
           {time ? <Text style={{ fontFamily: "Satoshi-Medium" }}>{time}</Text> : null}{time && amount ? " · " : ""}{amount}
         </Text>
+      ) : medOnly ? (
+        <Text style={{ flex: 1, fontSize: 13, color: colors.textMuted, fontStyle: "italic" }}>Medication only</Text>
       ) : (
         <Text style={{ flex: 1, fontSize: 13, color: colors.dashedBorder }}>—</Text>
       )}
