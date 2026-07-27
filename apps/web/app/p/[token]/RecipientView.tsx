@@ -269,7 +269,7 @@ export default function RecipientView({ profile, token }: Props) {
                   {(mealSlotLabel(med.withMeal) || med.frequency || med.locationStored) && (
                     <p className="text-text-muted text-xs mt-0.5">{[mealSlotLabel(med.withMeal), med.frequency, med.locationStored && `Stored: ${med.locationStored}`].filter(Boolean).join(" · ")}</p>
                   )}
-                  {med.notes && <p className="text-text-muted text-xs mt-0.5">{med.notes}</p>}
+                  {med.notes && <p className="text-text-muted text-xs italic mt-0.5">{med.notes}</p>}
                 </div>
               ))}
             </div>

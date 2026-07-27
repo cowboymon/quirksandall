@@ -304,7 +304,7 @@ export default function Preview() {
                       <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>{mealSlotLabel(m.withMeal)}</Text>
                     ) : null}
                     {m.notes ? (
-                      <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>{m.notes}</Text>
+                      <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2, fontStyle: "italic" }}>{m.notes}</Text>
                     ) : null}
                   </View>
                 ))}
