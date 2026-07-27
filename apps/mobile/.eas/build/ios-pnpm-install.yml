@@ -1,0 +1,34 @@
+# Custom iOS build config — needed ONLY because of a confirmed upstream bug
+# in EAS Build's package-manager auto-detection for pnpm monorepos where the
+# Expo app lives in a nested directory (apps/mobile, not the repo root).
+# EAS's built-in `eas/install_node_modules` step misdetects this project as
+# an npm workspace and runs `npm ci`, which installs nothing real. This is
+# the same list of steps `eas/build` runs by default for an iOS build using
+# EAS-managed (remote) credentials, with `eas/install_node_modules` swapped
+# for a manual pnpm install. See github.com/expo/eas-cli issues #2978, #3247.
+build:
+  name: iOS build with manual pnpm install (workaround for EAS pnpm-workspace detection bug)
+  steps:
+    - eas/checkout
+
+    - run:
+        name: Install dependencies with pnpm
+        command: cd ../.. && pnpm install --frozen-lockfile
+
+    - eas/resolve_build_config
+
+    - eas/prebuild
+
+    - eas/configure_eas_update:
+        inputs:
+          throw_if_not_configured: false
+
+    - eas/configure_ios_credentials
+
+    - eas/generate_gymfile_from_template:
+        inputs:
+          credentials: ${ eas.job.secrets.buildCredentials }
+
+    - eas/run_fastlane
+
+    - eas/find_and_upload_build_artifacts
