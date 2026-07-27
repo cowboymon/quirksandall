@@ -307,9 +307,9 @@ export default function RecipientView({ profile, token }: Props) {
                       style={{ borderColor: BORDER, backgroundColor: i % 2 === 0 ? "#FFFFFF" : BLUSH }}
                     >
                       <td className="px-3 py-2 font-semibold" style={{ color: BODY }}>
-                        {cmd.word}
+                        <span className="block leading-tight">{cmd.word}</span>
                         {commandStrengthLabel(cmd.strength) && (
-                          <span className="mt-0.5 block text-[10px] font-medium" style={{ color: MUTED }}>
+                          <span className="mt-0.5 block text-[10px] leading-tight font-medium" style={{ color: MUTED }}>
                             {commandStrengthLabel(cmd.strength)}
                           </span>
                         )}

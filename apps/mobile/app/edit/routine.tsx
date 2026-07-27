@@ -10,7 +10,7 @@ import { Input, Eyebrow, Card, InlineNote, TimeInput, FieldTier, Select } from "
 import { colors, capitalizeFirst, PRICE } from "@quirksandall/shared";
 import type { MealSlot } from "@quirksandall/shared";
 
-type Med = { id: string; name: string; dose: string; withMeal?: MealSlot };
+type Med = { id: string; name: string; dose: string; withMeal?: MealSlot; notes: string };
 const MEAL_SLOTS: { key: MealSlot; label: string }[] = [
   { key: "breakfast", label: "Breakfast" },
   { key: "lunch", label: "Lunch" },
@@ -73,8 +73,8 @@ export default function EditRoutine() {
   const [conditions, setConditions] = useState("");
   const [meds, setMeds] = useState<Med[]>([]);
 
-  const addMed = () => setMeds((prev) => [...prev, { id: Date.now().toString(), name: "", dose: "" }]);
-  const updateMed = (id: string, field: "name" | "dose", val: string) =>
+  const addMed = () => setMeds((prev) => [...prev, { id: Date.now().toString(), name: "", dose: "", notes: "" }]);
+  const updateMed = (id: string, field: "name" | "dose" | "notes", val: string) =>
     setMeds((prev) => prev.map((m) => (m.id === id ? { ...m, [field]: val } : m)));
   const setMedMeal = (id: string, slot: MealSlot) =>
     setMeds((prev) => prev.map((m) => (m.id === id ? { ...m, withMeal: m.withMeal === slot ? undefined : slot } : m)));
@@ -124,6 +124,7 @@ export default function EditRoutine() {
             name: m.name ?? "",
             dose: m.dose ?? "",
             withMeal: m.with_meal ?? undefined,
+            notes: m.notes ?? "",
           }))
         );
       }
@@ -157,7 +158,7 @@ export default function EditRoutine() {
           conditions: conditions ? conditions.split(",").map((s) => s.trim()).filter(Boolean) : [],
           medications: meds
             .filter((m) => m.name.trim())
-            .map((m) => ({ name: m.name.trim(), dose: m.dose.trim(), frequency: "", time_of_day: "", location_stored: "", notes: "", with_meal: m.withMeal ?? null })),
+            .map((m) => ({ name: m.name.trim(), dose: m.dose.trim(), frequency: "", time_of_day: "", location_stored: "", notes: m.notes.trim(), with_meal: m.withMeal ?? null })),
         }, { onConflict: "pet_id" }),
       ]);
       router.back();
@@ -362,6 +363,13 @@ export default function EditRoutine() {
                   );
                 })}
               </View>
+              <Input
+                placeholder="Notes — e.g. every 2nd Monday, hide it in cheese"
+                value={m.notes}
+                onChangeText={(v) => updateMed(m.id, "notes", v)}
+                multiline
+                style={{ minHeight: 44, paddingTop: 10, textAlignVertical: "top" }}
+              />
             </View>
           ))}
         </View>
