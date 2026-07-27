@@ -87,7 +87,7 @@ export default function WaitlistForm({
         </button>
       </div>
 
-      <p className={`mt-2.5 text-sm ${noteColor}`}>
+      <p className={`mt-2.5 text-left text-sm ${noteColor}`}>
         {status === "error"
           ? "Something went wrong — please try again."
           : "We'll email you once. Nothing else."}
