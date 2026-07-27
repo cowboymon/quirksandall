@@ -97,21 +97,13 @@ export default function MissingPoster() {
     setLoading(false);
   };
 
-  const outputUrl = (key: string, preview = false) => {
-    const params = new URLSearchParams({
-      token: profile!.token,
-      format: key,
-      lastSeenArea,
-      lastSeenDate,
-      lookFor: whatToLookFor,
-      ...(preview ? { preview: "1" } : {}),
-    });
-    return `${WEB_URL}/api/generate-poster?${params.toString()}`;
-  };
-
-  // Generate a format server-side with an overridden photo (POST + data URI),
-  // cache the PNG locally, and return its file URI.
-  const generateWithOverride = async (key: string, photoDataUri: string): Promise<string> => {
+  // Generate a format server-side and cache the PNG locally, returning its file
+  // URI. Always POST: the ephemeral fields (last-seen area, description) carry a
+  // pet's location and must not travel in a query string, where Vercel's access
+  // logs would capture them. `preview` renders at 1× for fast on-screen display;
+  // saves omit it for the full 2× export. `photoDataUri` overrides the profile
+  // photo for this render.
+  const generate = async (key: string, photoDataUri?: string, preview = false): Promise<string> => {
     const res = await fetch(`${WEB_URL}/api/generate-poster`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -121,7 +113,8 @@ export default function MissingPoster() {
         lastSeenArea,
         lastSeenDate,
         lookFor: whatToLookFor,
-        photoDataUri,
+        preview,
+        ...(photoDataUri ? { photoDataUri } : {}),
       }),
     });
     if (!res.ok) throw new Error("Generation failed");
@@ -152,7 +145,7 @@ export default function MissingPoster() {
     const dataUri = `data:image/jpeg;base64,${result.assets[0].base64}`;
     setRegenerating(key);
     try {
-      const fileUri = await generateWithOverride(key, dataUri);
+      const fileUri = await generate(key, dataUri, true);
       setOverrides((o) => ({ ...o, [key]: dataUri }));
       setPreviews((p) => ({ ...p, [key]: fileUri }));
     } catch {
@@ -162,33 +155,45 @@ export default function MissingPoster() {
     }
   };
 
-  // Entering the output view: previews built with overridden photos need a
-  // rebuild in case the ephemeral form fields changed since last time.
-  const openOutput = async () => {
+  // Enter the output view fresh: clearing cached previews forces a rebuild via
+  // the effect below, so they reflect any ephemeral fields changed since last time.
+  const openOutput = () => {
+    setPreviews({});
     setView("output");
-    for (const key of Object.keys(overrides)) {
-      setRegenerating(key);
-      try {
-        const uri = await generateWithOverride(key, overrides[key]);
-        setPreviews((p) => ({ ...p, [key]: uri }));
-      } catch {
-        // keep the stale preview rather than blocking the view
-      }
-    }
-    setRegenerating(null);
   };
+
+  // Build 1× previews (via POST) for whichever formats are visible — on entering
+  // the output view and when toggling poster/social. Skips formats already cached,
+  // so a photo override or an already-built tile is kept.
+  useEffect(() => {
+    if (view !== "output" || !profile) return;
+    let cancelled = false;
+    (async () => {
+      const keys = format === "poster" ? ["poster"] : SOCIAL_FORMATS.map((f) => f.key);
+      for (const key of keys) {
+        if (previews[key]) continue;
+        setRegenerating(key);
+        try {
+          const uri = await generate(key, overrides[key], true);
+          if (!cancelled) setPreviews((p) => ({ ...p, [key]: uri }));
+        } catch {
+          // leave the slot blank rather than blocking the view
+        }
+      }
+      if (!cancelled) setRegenerating(null);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, format]);
 
   const saveOutput = async (key: string) => {
     if (!profile) return;
     setSaving(key);
     try {
-      let uri = previews[key];
-      if (!uri) {
-        const fileUri = `${FileSystem.cacheDirectory}${profile.name.toLowerCase()}-missing-${key}.png`;
-        const dl = await FileSystem.downloadAsync(outputUrl(key), fileUri);
-        if (dl.status !== 200) throw new Error("Generation failed");
-        uri = dl.uri;
-      }
+      // Generate the full-res (2×) export via POST — the on-screen preview is 1×.
+      const uri = await generate(key, overrides[key], false);
       await Share.share({ url: uri, message: `${profile.name} is missing.` });
     } catch {
       AppAlert.alert("Couldn't save", "Check your connection and try again.");
@@ -258,11 +263,15 @@ export default function MissingPoster() {
                 </Text>
               )}
               <View>
-                <Image
-                  source={{ uri: previews[f.key] ?? outputUrl(f.key, true) }}
-                  style={{ width: "100%", aspectRatio: f.aspect, borderRadius: 8, backgroundColor: colors.secondary }}
-                  resizeMode="contain"
-                />
+                {previews[f.key] ? (
+                  <Image
+                    source={{ uri: previews[f.key] }}
+                    style={{ width: "100%", aspectRatio: f.aspect, borderRadius: 8, backgroundColor: colors.secondary }}
+                    resizeMode="contain"
+                  />
+                ) : (
+                  <View style={{ width: "100%", aspectRatio: f.aspect, borderRadius: 8, backgroundColor: colors.secondary }} />
+                )}
                 {regenerating === f.key && (
                   <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(248,236,238,0.6)", borderRadius: 8 }}>
                     <ActivityIndicator color={colors.textDark} />
