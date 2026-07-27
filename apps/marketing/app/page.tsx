@@ -70,12 +70,12 @@ const FAQS = [
   },
 ];
 
-// Real app screenshots. Drop the files in /public/shots and set src (e.g.
-// "/shots/profile.png"); an empty src renders a labelled placeholder frame.
+// Real app screenshots. Add the three files to /public/shots with these exact
+// names; an empty src renders a labelled placeholder frame until they exist.
 const SHOTS = [
-  { src: "", caption: "Your pet's profile" },
-  { src: "", caption: "Commands & how solid they are" },
-  { src: "", caption: "The link a stand-in opens" },
+  { src: "/shots/onboarding.png", caption: "Set it up in minutes" },
+  { src: "/shots/share.png", caption: "What a stand-in opens" },
+  { src: "/shots/poster.png", caption: "If they ever go missing" },
 ];
 
 export default function Home() {
