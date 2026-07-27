@@ -4,7 +4,8 @@
 // message. When the flow ships, replace handleRedeem's body with the Edge
 // Function call.
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView } from "react-native";
+import { AppAlert } from "../stores/appAlert";
 import { router } from "expo-router";
 import { colors, PRICE } from "@quirksandall/shared";
 
@@ -20,7 +21,7 @@ export default function Redeem() {
     // Entitlement. Non-functional until that backend exists.
     setTimeout(() => {
       setLoading(false);
-      Alert.alert(
+      AppAlert.alert(
         "Not active yet",
         "Code redemption is coming soon — it's how group and partner licences will work. Thanks for your patience.",
       );

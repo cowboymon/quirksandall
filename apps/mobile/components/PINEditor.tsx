@@ -1,6 +1,7 @@
 // Inline PIN change component — used in the emergency contacts edit screen
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
+import { AppAlert } from "../stores/appAlert";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "../lib/supabase";
 import { colors } from "@quirksandall/shared";
@@ -66,9 +67,9 @@ export default function PINEditor({ petId, autoStart }: Props) {
         setStage("idle");
         setPin("");
         setConfirm("");
-        Alert.alert("PIN updated", "New PIN is active.");
+        AppAlert.alert("PIN updated", "New PIN is active.");
       } catch (e: any) {
-        Alert.alert("Couldn't update PIN", e.message);
+        AppAlert.alert("Couldn't update PIN", e.message);
         setStage("set");
         setPin("");
         setConfirm("");

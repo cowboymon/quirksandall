@@ -1,7 +1,8 @@
 // Screen 1 — Pet basics: photo, name, breed/species, sex, colour, microchip,
 // weight, DOB (with live age). Mirrors the prototype's Screen1PetBasics.
 import { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Image, Alert } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Image } from "react-native";
+import { AppAlert } from "../../stores/appAlert";
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { Headline, Input, Select, DateInput, WeightInput, PrimaryButton, ProgressDots, Eyebrow, BackButton } from "../../components/ui";
@@ -19,7 +20,7 @@ export default function Step1() {
   const pickPhoto = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Permission needed", "Allow photo access to add a pet photo.");
+      AppAlert.alert("Permission needed", "Allow photo access to add a pet photo.");
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({

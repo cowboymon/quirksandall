@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Share, TextInput, Alert, Platform, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Share, TextInput, Platform, ActivityIndicator } from "react-native";
+import { AppAlert } from "../stores/appAlert";
 import { router, useFocusEffect } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Entypo from "@expo/vector-icons/Entypo";
@@ -168,7 +169,7 @@ export default function Dashboard() {
     setRevokeTarget(null);
     if (!link) return;
     const { error } = await revokeLink(link.id);
-    if (error) { Alert.alert("Couldn't revoke", error); return; }
+    if (error) { AppAlert.alert("Couldn't revoke", error); return; }
     loadDashboard();
   };
 

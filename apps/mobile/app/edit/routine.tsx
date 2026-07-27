@@ -1,6 +1,7 @@
 // Edit routine + medical. Tier-aware: shows lock indicator on paid-gated sections for free users.
 import { useState, useEffect, useRef } from "react";
-import { View, Text, TouchableOpacity, TextInput, Alert, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, TextInput, ScrollView } from "react-native";
+import { AppAlert } from "../../stores/appAlert";
 import { router, useLocalSearchParams } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
@@ -161,7 +162,7 @@ export default function EditRoutine() {
       ]);
       router.back();
     } catch (e: any) {
-      Alert.alert("Couldn't save", e.message);
+      AppAlert.alert("Couldn't save", e.message);
     } finally {
       setSaving(false);
     }

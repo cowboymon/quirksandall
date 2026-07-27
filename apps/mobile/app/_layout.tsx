@@ -8,6 +8,7 @@ import Entypo from "@expo/vector-icons/Entypo";
 import { initRevenueCat } from "../lib/purchases";
 import { configureNotifications } from "../lib/notifications";
 import { initAnalytics } from "../lib/analytics";
+import AppAlertHost from "../components/AppAlertHost";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -37,16 +38,19 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#F8ECEE" } }}>
-      <Stack.Screen name="index" />
-      <Stack.Screen name="auth" />
-      <Stack.Screen name="auth-callback" options={{ animation: "none" }} />
-      <Stack.Screen name="onboarding" options={{ presentation: "card" }} />
-      <Stack.Screen name="dashboard" />
-      <Stack.Screen name="account" />
-      <Stack.Screen name="poster" />
-      <Stack.Screen name="upgrade" />
-      <Stack.Screen name="redeem" />
-    </Stack>
+    <>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#F8ECEE" } }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="auth" />
+        <Stack.Screen name="auth-callback" options={{ animation: "none" }} />
+        <Stack.Screen name="onboarding" options={{ presentation: "card" }} />
+        <Stack.Screen name="dashboard" />
+        <Stack.Screen name="account" />
+        <Stack.Screen name="poster" />
+        <Stack.Screen name="upgrade" />
+        <Stack.Screen name="redeem" />
+      </Stack>
+      <AppAlertHost />
+    </>
   );
 }

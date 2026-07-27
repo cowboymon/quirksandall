@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, Alert, Switch, Linking } from "react-native";
+import { View, Text, TouchableOpacity, Switch, Linking } from "react-native";
+import { AppAlert } from "../stores/appAlert";
 import Constants from "expo-constants";
 import { router } from "expo-router";
 import { supabase } from "../lib/supabase";
@@ -66,7 +67,7 @@ export default function Account() {
       .eq("id", user.id);
     if (error) {
       revert();
-      Alert.alert("Couldn't save that", error.message);
+      AppAlert.alert("Couldn't save that", error.message);
       return;
     }
     // Append-only audit trail (the current-state write already succeeded).
@@ -108,10 +109,10 @@ export default function Account() {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) await supabase.from("owners").update({ purchase_status: "paid" }).eq("id", user.id);
         setIsPaid(true);
-        Alert.alert("Unlocked", "Full access is now active across all your pets.");
+        AppAlert.alert("Unlocked", "Full access is now active across all your pets.");
       }
     } catch (e: any) {
-      if (!e.message?.toLowerCase().includes("cancel")) Alert.alert("Purchase failed", e.message);
+      if (!e.message?.toLowerCase().includes("cancel")) AppAlert.alert("Purchase failed", e.message);
     } finally {
       setLoading(false);
     }
@@ -125,12 +126,12 @@ export default function Account() {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) await supabase.from("owners").update({ purchase_status: "paid" }).eq("id", user.id);
         setIsPaid(true);
-        Alert.alert("Restored", "Your purchase has been restored.");
+        AppAlert.alert("Restored", "Your purchase has been restored.");
       } else {
-        Alert.alert("Nothing to restore", "No previous purchase found for this account.");
+        AppAlert.alert("Nothing to restore", "No previous purchase found for this account.");
       }
     } catch (e: any) {
-      Alert.alert("Restore failed", e.message);
+      AppAlert.alert("Restore failed", e.message);
     } finally {
       setLoading(false);
     }
@@ -151,7 +152,7 @@ export default function Account() {
     const url = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
     const ok = await Linking.canOpenURL(url).catch(() => false);
     if (ok) Linking.openURL(url);
-    else Alert.alert("No mail app", `Email us at ${SUPPORT_EMAIL}.`);
+    else AppAlert.alert("No mail app", `Email us at ${SUPPORT_EMAIL}.`);
   };
 
   const doDeleteAccount = async () => {
@@ -163,7 +164,7 @@ export default function Account() {
         .update({ deletion_scheduled_at: new Date().toISOString() })
         .eq("id", user.id);
       if (error) {
-        Alert.alert("Couldn't schedule deletion", error.message);
+        AppAlert.alert("Couldn't schedule deletion", error.message);
         return;
       }
     }
