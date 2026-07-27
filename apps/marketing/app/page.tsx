@@ -81,36 +81,32 @@ export default function Home() {
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
               <p className="eyebrow text-primary">For anyone who leaves their pet with someone else</p>
-              <h1 className="mt-4 font-tanker text-5xl leading-[1.03] text-foreground sm:text-7xl">
-                You know your pet by heart.{" "}
-                <span className="relative inline-block">
-                  The sitter is{" "}
-                  <span className="relative inline-block text-primary">
-                    guessing.
-                    <Underline className="absolute -bottom-1.5 left-0 h-3 w-full text-primary sm:-bottom-2 sm:h-4" />
-                  </span>
+              <h1 className="mt-4 font-tanker text-5xl leading-[1.03] text-foreground sm:text-6xl">
+                You know your pet by heart. Everyone else is{" "}
+                <span className="relative inline-block text-primary">
+                  guessing.
+                  <Underline className="absolute -bottom-1.5 left-0 h-3 w-full text-primary sm:-bottom-2 sm:h-4" />
                 </span>
               </h1>
               <p className="mt-6 max-w-md text-lg leading-relaxed text-text-muted">
-                The rushed note on the counter. The three follow-up texts from the airport. The thing you
-                forgot to mention that only comes up at 9pm. Quirks &amp; All puts everything a carer needs
-                in one link they can actually open.
+                The note on the counter, the 11pm text from the airport — Quirks &amp; All puts everything a
+                carer needs in one link they can actually open.
               </p>
-
-              <div className="mt-8">
-                <WaitlistForm source="hero" tone="light" />
-              </div>
             </div>
 
-            {/* #E5BEC4 surface holding the product imagery (placeholder photo). */}
+            {/* #E5BEC4 surface holding the waitlist capture. */}
             <div className="mx-auto w-full max-w-md rounded-card bg-[#E5BEC4] p-3 shadow-xl shadow-primary/10">
-              <div className="overflow-hidden rounded-card">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/hero/dog.jpg"
-                  alt="A dog at home with the person who looks after them"
-                  className="aspect-[4/5] w-full object-cover"
-                />
+              <div className="rounded-card bg-card-bg p-6 sm:p-8">
+                <p className="eyebrow text-primary">Launching soon</p>
+                <p className="mt-2 font-tanker text-2xl leading-tight text-foreground sm:text-3xl">
+                  Get notified at launch
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-text-muted">
+                  Leave your email and we&apos;ll tell you the moment it&apos;s live.
+                </p>
+                <div className="mt-5">
+                  <WaitlistForm source="hero" tone="light" />
+                </div>
               </div>
             </div>
           </div>
