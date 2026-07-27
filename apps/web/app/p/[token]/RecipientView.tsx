@@ -478,6 +478,9 @@ function FeedingCard({ feeding, medications }: { feeding: NonNullable<RecipientP
                 + {[m.name, m.dose].filter(Boolean).join(" ")}
               </span>
             ))}
+            {meds.length > 0 && (
+              <span className="text-[11px] mt-0.5" style={{ color: MUTED }}>See Medications</span>
+            )}
           </div>
         </div>
         );

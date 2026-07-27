@@ -251,6 +251,11 @@ export default function Preview() {
                               + {[m.name, m.dose].filter(Boolean).join(" ")}
                             </Text>
                           ))}
+                          {tied.length > 0 && (
+                            <Text style={{ color: colors.textMuted, fontSize: 11, paddingLeft: 80, paddingRight: 16, paddingBottom: 8 }}>
+                              See Medications
+                            </Text>
+                          )}
                         </View>
                       );
                     })}
