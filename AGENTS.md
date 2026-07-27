@@ -42,9 +42,20 @@ Product analytics is **Mixpanel**, wired per the Mixpanel setup skill.
 - Same project token value for both. With no token set, all calls are safe no-ops.
 
 ### Events (snake_case — the skill's convention)
+
+Two categories, two different Mixpanel report types. Don't mix them into the
+same query — a funnel step is meant to represent one-time forward progress; a
+retention event is meant to recur. Putting `session_started` into a **Funnel**
+report as "step 1" is the one way this gets confusing — it isn't a conversion
+step, it's the "did they come back" signal, and belongs in a **Retention**
+report (Day 0 = `sign_up_completed`, return event = `session_started`) or a
+daily/weekly unique-users trend instead.
+
+**Funnel events** — each fires once per account, in order, and represents
+forward progress. Build the conversion funnel from these only:
+
 | Event | Where | Key props |
 |---|---|---|
-| `session_started` | `app/index.tsx` (returning session) + `app/auth.tsx` (fresh login/signup) | `platform`, `source` (`resume`/`login`) |
 | `sign_up_completed` | `app/auth.tsx` (new account only) | `platform`, `sign_up_method` |
 | `pet_created` | `app/onboarding/step4.tsx` | `platform` |
 | `share_link_created` ⭐ Value Moment | `lib/links.ts`, `onboarding/step4.tsx` | `context` (`onboarding`/`dashboard`), `platform` |
@@ -52,6 +63,13 @@ Product analytics is **Mixpanel**, wired per the Mixpanel setup skill.
 | `purchase_started` | `app/upgrade.tsx`, `app/account.tsx` | `source` |
 | `purchase_completed` | `app/upgrade.tsx`, `app/account.tsx` | `source` |
 | `purchase_restored` | `app/upgrade.tsx`, `app/account.tsx` | `source` |
+
+**Engagement / retention events** — recur by design, answer "do they come
+back," never a funnel step:
+
+| Event | Where | Key props |
+|---|---|---|
+| `session_started` | `app/index.tsx` (returning session) + `app/auth.tsx` (fresh login/signup) | `platform`, `source` (`resume`/`login`) |
 | `recipient_page_viewed` | `apps/web/.../RecipientView.tsx` | `pin_gated`, `tier` |
 
 ### Rules when adding tracking
