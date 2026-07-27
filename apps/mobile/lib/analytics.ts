@@ -25,6 +25,7 @@ let initPromise: Promise<void> | null = null;
 // The full event vocabulary lives here so call sites can't typo an event name.
 // Values are the wire names sent to Mixpanel (snake_case, object_verb).
 export const AnalyticsEvent = {
+  SessionStarted: "session_started",
   SignUpCompleted: "sign_up_completed",
   PetCreated: "pet_created",
   ShareLinkCreated: "share_link_created", // Value Moment

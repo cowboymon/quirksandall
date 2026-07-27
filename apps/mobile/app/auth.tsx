@@ -57,6 +57,10 @@ export default function AuthScreen() {
           setUserProps({ signup_platform: Platform.OS });
           track(AnalyticsEvent.SignUpCompleted, { platform: Platform.OS, sign_up_method: "otp" });
         }
+        // Every authenticated app entry — new signup or returning login — is a
+        // session. This is the "did they come back" signal separate from
+        // sign_up_completed (which only fires once, ever, per account).
+        track(AnalyticsEvent.SessionStarted, { platform: Platform.OS, source: "login" });
       }
       router.replace("/dashboard");
     }

@@ -44,6 +44,7 @@ Product analytics is **Mixpanel**, wired per the Mixpanel setup skill.
 ### Events (snake_case — the skill's convention)
 | Event | Where | Key props |
 |---|---|---|
+| `session_started` | `app/index.tsx` (returning session) + `app/auth.tsx` (fresh login/signup) | `platform`, `source` (`resume`/`login`) |
 | `sign_up_completed` | `app/auth.tsx` (new account only) | `platform`, `sign_up_method` |
 | `pet_created` | `app/onboarding/step4.tsx` | `platform` |
 | `share_link_created` ⭐ Value Moment | `lib/links.ts`, `onboarding/step4.tsx` | `context` (`onboarding`/`dashboard`), `platform` |
