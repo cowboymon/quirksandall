@@ -241,11 +241,11 @@ export default function RecipientView({ profile, token }: Props) {
         )}
 
         {/* Daily Routine — feeding is free; walks/sleep/bathroom are paid */}
-        {routine && (hasFeeding(routine.feeding) || (paidVisible && (routine.walks || routine.sleep || routine.bathroomHabits || routine.leftAlone || routine.toileting))) && (
+        {routine && (hasFeeding(routine.feeding, allMeds) || (paidVisible && (routine.walks || routine.sleep || routine.bathroomHabits || routine.leftAlone || routine.toileting))) && (
           <section>
             <SectionTitle name={name} tail="Daily Routine" />
             <div className="flex flex-col gap-2">
-              {hasFeeding(routine.feeding) && <FeedingCard feeding={routine.feeding} medications={allMeds} />}
+              {hasFeeding(routine.feeding, allMeds) && <FeedingCard feeding={routine.feeding} medications={allMeds} />}
               {paidVisible && routine.walks && <InfoCard label="Walks" text={routine.walks} locked={lockedPreview} />}
               {paidVisible && routine.sleep && <InfoCard label="Sleep" text={routine.sleep} locked={lockedPreview} />}
               {paidVisible && routine.bathroomHabits && <InfoCard label="Bathroom" text={routine.bathroomHabits} locked={lockedPreview} />}
@@ -375,8 +375,14 @@ function mealComplete(slot?: { time?: string; amount?: string }): boolean {
   // a bare "7:30am" with no amount says nothing.
   return !!(slot?.time && slot?.amount);
 }
-function hasFeeding(f: NonNullable<RecipientProfile["routine"]>["feeding"]): boolean {
-  return !!(mealComplete(f.breakfast) || mealComplete(f.lunch) || mealComplete(f.dinner) || f.treats?.type || f.notes);
+function hasFeeding(f: NonNullable<RecipientProfile["routine"]>["feeding"], medications: NonNullable<RecipientProfile["medical"]>["medications"] = []): boolean {
+  // A meal-tied medication also earns the Feeding card its own row (with a
+  // "See Medications" pointer), even if that meal itself was never filled in.
+  return !!(
+    mealComplete(f.breakfast) || mealComplete(f.lunch) || mealComplete(f.dinner) ||
+    f.treats?.type || f.notes ||
+    medications.some((m) => m.withMeal === "breakfast" || m.withMeal === "lunch" || m.withMeal === "dinner")
+  );
 }
 
 function SectionTitle({ name, tail, locked }: { name: string; tail: string; locked?: boolean }) {
@@ -452,7 +458,10 @@ function FeedingCard({ feeding, medications }: { feeding: NonNullable<RecipientP
     ["Lunch", "lunch", feeding.lunch],
     ["Dinner", "dinner", feeding.dinner],
   ];
-  const shown = meals.filter(([, , slot]) => mealComplete(slot));
+  // A meal renders if it has its own time+amount, OR if a medication is tied
+  // to it — otherwise a med tied to an unfilled-in meal (e.g. "with lunch"
+  // when lunch itself was never filled in) would have nowhere to point from.
+  const shown = meals.filter(([, key, slot]) => mealComplete(slot) || medications.some((m) => m.withMeal === key));
   return (
     <div className="bg-white border rounded-card overflow-hidden" style={{ borderColor: BORDER }}>
       <div className="px-4 pt-3 pb-2">
@@ -468,11 +477,13 @@ function FeedingCard({ feeding, medications }: { feeding: NonNullable<RecipientP
         >
           <span className="text-sm font-medium w-20 shrink-0" style={{ color: MUTED }}>{label}</span>
           <div className="flex flex-col">
-            <span className="text-sm" style={{ color: BODY }}>
-              {slot?.time && <span className="font-medium">{slot.time}</span>}
-              {slot?.time && slot?.amount ? " · " : ""}
-              {slot?.amount}
-            </span>
+            {mealComplete(slot) && (
+              <span className="text-sm" style={{ color: BODY }}>
+                {slot?.time && <span className="font-medium">{slot.time}</span>}
+                {slot?.time && slot?.amount ? " · " : ""}
+                {slot?.amount}
+              </span>
+            )}
             {meds.map((m, mi) => (
               <span key={mi} className="text-xs mt-0.5 font-medium" style={{ color: "#B83A52" }}>
                 + {[m.name, m.dose].filter(Boolean).join(" ")}

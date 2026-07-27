@@ -347,6 +347,13 @@ export default function EditRoutine() {
                   <Text style={{ color: colors.danger, fontSize: 20, lineHeight: 20 }}>×</Text>
                 </TouchableOpacity>
               </View>
+              <Input
+                placeholder="Notes — e.g. every 2nd Monday, hide it in cheese"
+                value={m.notes}
+                onChangeText={(v) => updateMed(m.id, "notes", v)}
+                multiline
+                style={{ minHeight: 44, paddingTop: 10, textAlignVertical: "top" }}
+              />
               <Text style={{ color: colors.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium" }}>Given</Text>
               <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
                 {MEAL_SLOTS.map((s) => {
@@ -363,13 +370,6 @@ export default function EditRoutine() {
                   );
                 })}
               </View>
-              <Input
-                placeholder="Notes — e.g. every 2nd Monday, hide it in cheese"
-                value={m.notes}
-                onChangeText={(v) => updateMed(m.id, "notes", v)}
-                multiline
-                style={{ minHeight: 44, paddingTop: 10, textAlignVertical: "top" }}
-              />
             </View>
           ))}
         </View>

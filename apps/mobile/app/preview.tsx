@@ -107,7 +107,11 @@ export default function Preview() {
   const locked = !isPaid;
   // A meal needs both time and amount to render (#93). Bare times aren't useful.
   const mealComplete = (slot: any) => !!(slot?.time && slot?.amount);
-  const meals = [["Breakfast", "breakfast", f.breakfast], ["Lunch", "lunch", f.lunch], ["Dinner", "dinner", f.dinner]].filter(([, , slot]: any) => mealComplete(slot));
+  // A meal renders if it has its own time+amount, OR if a medication is tied
+  // to it — otherwise a med tied to an unfilled-in meal (e.g. "with lunch"
+  // when lunch itself was never filled in) would have nowhere to point from.
+  const allMealSlots = [["Breakfast", "breakfast", f.breakfast], ["Lunch", "lunch", f.lunch], ["Dinner", "dinner", f.dinner]] as const;
+  const meals = allMealSlots.filter(([, key, slot]) => mealComplete(slot) || d.meds.some((m) => m.withMeal === key));
   const hasFeeding = !!(meals.length || f.treats?.type || f.notes);
   // Meds tied to a shown meal ALSO render inline in the routine as a
   // convenience, but every medication always shows in the standalone
