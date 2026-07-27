@@ -70,6 +70,14 @@ const FAQS = [
   },
 ];
 
+// Real app screenshots. Drop the files in /public/shots and set src (e.g.
+// "/shots/profile.png"); an empty src renders a labelled placeholder frame.
+const SHOTS = [
+  { src: "", caption: "Your pet's profile" },
+  { src: "", caption: "Commands & how solid they are" },
+  { src: "", caption: "The link a stand-in opens" },
+];
+
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col">
@@ -117,6 +125,21 @@ export default function Home() {
                 <p className="mt-2.5 text-sm leading-relaxed text-text-muted">{f.body}</p>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* 2b — A look inside (#E5BEC4 surface, phone screenshots) */}
+        <section className="bg-[#E5BEC4]">
+          <div className="mx-auto max-w-5xl px-6 py-16 sm:py-24">
+            <p className="eyebrow text-primary">A look inside</p>
+            <h2 className="mt-3 max-w-xl font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
+              Fill it in fast. They read it faster.
+            </h2>
+            <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-3">
+              {SHOTS.map((s) => (
+                <PhoneShot key={s.caption} src={s.src} caption={s.caption} />
+              ))}
+            </div>
           </div>
         </section>
 
@@ -299,6 +322,27 @@ function MarkedHeading({ title, mark }: { title: string; mark?: string }) {
       </span>
       {title.slice(i + mark.length)}
     </>
+  );
+}
+
+/* Phone mockup for the "A look inside" section. Empty src → placeholder frame. */
+function PhoneShot({ src, caption }: { src?: string; caption: string }) {
+  return (
+    <figure className="flex flex-col items-center">
+      <div className="w-full max-w-[220px] rounded-[2.2rem] border-[6px] border-card-dark bg-card-dark p-1.5 shadow-xl shadow-primary/20">
+        <div className="relative aspect-[9/19] overflow-hidden rounded-[1.7rem] bg-card-bg">
+          {src ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={src} alt={caption} className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-secondary">
+              <span className="eyebrow text-text-muted">Screenshot</span>
+            </div>
+          )}
+        </div>
+      </div>
+      <figcaption className="mt-4 text-center text-sm font-medium text-foreground">{caption}</figcaption>
+    </figure>
   );
 }
 
