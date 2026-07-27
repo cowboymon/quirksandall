@@ -1,10 +1,11 @@
 // Server-side missing poster / social tile generation — Satori (JSX → SVG)
 // + sharp (SVG → PNG). Replaces the prototype's client-side html2canvas.
 //
-// GET  /api/generate-poster?token=...&format=poster|1x1|4x5|9x16
-//        &lastSeenArea=...&lastSeenDate=YYYY-MM-DD&lookFor=...
 // POST /api/generate-poster  { token, format, lastSeenArea, lastSeenDate,
-//        lookFor, photoDataUri }   — photoDataUri overrides the profile photo
+//        lookFor, photoDataUri, preview }   — photoDataUri overrides the profile
+//        photo. POST-only by design: lastSeenArea/lookFor describe a missing
+//        pet's location and must not travel in a query string, where the
+//        platform's access logs would capture them.
 
 import { readFile } from "fs/promises";
 import path from "path";
@@ -149,19 +150,6 @@ async function generate(params: Params): Promise<Response> {
       // cache them briefly; the full export is always fresh.
       "Cache-Control": params.preview ? "private, max-age=300" : "no-store",
     },
-  });
-}
-
-export async function GET(req: Request) {
-  const url = new URL(req.url);
-  return generate({
-    token: url.searchParams.get("token") ?? "",
-    format: (url.searchParams.get("format") ?? "poster") as PosterFormat,
-    lastSeenArea: url.searchParams.get("lastSeenArea") ?? "",
-    lastSeenDate: url.searchParams.get("lastSeenDate") ?? "",
-    lookFor: url.searchParams.get("lookFor"),
-    photoDataUri: null,
-    preview: url.searchParams.get("preview") === "1",
   });
 }
 
