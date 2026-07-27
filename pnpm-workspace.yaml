@@ -1,6 +1,8 @@
 packages:
   - "apps/*"
   - "packages/*"
+allowBuilds:
+  sharp: true
 
 # pnpm 10 reads overrides here, not from package.json's "pnpm" field.
 # Pin two transitive deps to versions old enough to pass supply-chain
