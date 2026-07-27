@@ -14,6 +14,7 @@ export default function WaitlistForm({
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState(""); // honeypot
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [errDetail, setErrDetail] = useState(""); // TEMP: diagnostic surface
 
   const dark = tone === "dark";
   const noteColor = dark ? "text-card-dark-label" : "text-text-muted";
@@ -28,8 +29,16 @@ export default function WaitlistForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, source, company }),
       });
-      setStatus(res.ok ? "done" : "error");
-    } catch {
+      if (res.ok) {
+        setStatus("done");
+      } else {
+        // TEMP diagnostic: surface the status + server error code.
+        const data = await res.json().catch(() => ({}));
+        setErrDetail(`(${res.status} ${data?.error ?? "?"})`);
+        setStatus("error");
+      }
+    } catch (err) {
+      setErrDetail(`(network: ${err instanceof Error ? err.message : "failed"})`);
       setStatus("error");
     }
   }
@@ -89,7 +98,7 @@ export default function WaitlistForm({
 
       <p className={`mt-2.5 text-left text-sm ${noteColor}`}>
         {status === "error"
-          ? "Something went wrong — please try again."
+          ? `Something went wrong — please try again. ${errDetail}`
           : "We'll email you once. Nothing else."}
       </p>
     </form>
