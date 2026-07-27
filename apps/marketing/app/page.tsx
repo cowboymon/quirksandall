@@ -6,7 +6,8 @@ import { site } from "./site";
 
 const FEATURES = [
   {
-    annotate: true,
+    // Underline only the key word, matching the app's selective emphasis.
+    mark: "Commands",
     title: "Commands, and how solid they are",
     body: "The word, what it means, what earns the reward — and whether it's still learning, solid, or mastered. A sitter knows what to actually expect when they say it.",
   },
@@ -19,7 +20,7 @@ const FEATURES = [
     body: "Edit in the app, the link updates instantly. Name it, see when it's been opened, revoke it whenever.",
   },
   {
-    annotate: true,
+    mark: "how long",
     title: "Know how long they're staying",
     body: "Set a duration per link. The sitter sees it up top: “Biscuit's with you until Sat 3 Aug.”",
   },
@@ -28,7 +29,7 @@ const FEATURES = [
     body: "Generate a printable, shareable poster straight from the profile. Free, always. Here if you ever need it.",
   },
   {
-    annotate: true,
+    mark: "Certificates",
     title: "Certificates, kept somewhere findable",
     body: "Vaccination and flea/worm records, stored so they're not a scramble the night before a boarding stay.",
   },
@@ -125,11 +126,8 @@ export default function Home() {
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
               <div key={f.title} className="rounded-card border border-border bg-card-bg p-6">
-                <h3 className="relative inline-block text-base font-bold text-foreground">
-                  {f.title}
-                  {f.annotate && (
-                    <Underline className="absolute -bottom-1 left-0 h-2.5 w-full text-primary/70" />
-                  )}
+                <h3 className="text-base font-bold text-foreground">
+                  <MarkedHeading title={f.title} mark={f.mark} />
                 </h3>
                 <p className="mt-2.5 text-sm leading-relaxed text-text-muted">{f.body}</p>
               </div>
@@ -159,7 +157,7 @@ export default function Home() {
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-foreground">
               A weekend sitter. A regular dog walker. A boarding stay. Your mum, who means well but forgets
-              the vacuum thing. One profile works for all of them — you decide what each link shows.
+              the vacuum thing. One profile works for all of them — a link each, revoked whenever you like.
             </p>
           </div>
         </section>
@@ -197,6 +195,9 @@ export default function Home() {
               >
                 Get notified at launch
               </a>
+              <p className="mt-4 min-h-[2.5rem] text-center text-xs text-text-muted">
+                Free forever. No card, no subscription.
+              </p>
             </div>
 
             {/* Unlock */}
@@ -222,7 +223,7 @@ export default function Home() {
               >
                 Get notified at launch
               </a>
-              <p className="mt-4 text-center text-xs text-card-dark-label">
+              <p className="mt-4 min-h-[2.5rem] text-center text-xs text-card-dark-label">
                 No subscription. Purchased in-app, unlocks account-wide.
               </p>
             </div>
@@ -269,6 +270,13 @@ export default function Home() {
         {/* 7 — Final CTA (#510000 full bleed) */}
         <section id="get" className="scroll-mt-20 bg-card-dark text-card-dark-text">
           <div className="mx-auto max-w-3xl px-6 py-20 text-center sm:py-24">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/brand/cta-dog.svg"
+              alt=""
+              aria-hidden
+              className="mx-auto mb-5 h-24 w-24 sm:h-28 sm:w-28"
+            />
             <h2 className="font-tanker text-4xl leading-tight sm:text-5xl">Away, but known.</h2>
             <p className="mx-auto mt-4 max-w-md text-lg leading-relaxed text-card-dark-text/85">
               We&apos;re putting the finishing touches on it. Leave your email and we&apos;ll tell you the
@@ -280,8 +288,8 @@ export default function Home() {
             </div>
 
             <div className="mt-10 flex flex-nowrap items-center justify-center gap-3">
-              <StoreBadge kind="apple" href={site.appStoreUrl} />
-              <StoreBadge kind="google" href={site.playStoreUrl} />
+              <StoreBadge kind="apple" href={site.appStoreUrl} onDark />
+              <StoreBadge kind="google" href={site.playStoreUrl} onDark />
             </div>
           </div>
         </section>
@@ -289,6 +297,23 @@ export default function Home() {
 
       <Footer />
     </div>
+  );
+}
+
+/* Renders a heading with the squiggle underline on one key word only —
+   selective emphasis, matching the app, not a full-line decoration. */
+function MarkedHeading({ title, mark }: { title: string; mark?: string }) {
+  const i = mark ? title.indexOf(mark) : -1;
+  if (!mark || i < 0) return <>{title}</>;
+  return (
+    <>
+      {title.slice(0, i)}
+      <span className="relative inline-block">
+        {mark}
+        <Underline className="absolute -bottom-1 left-0 h-2.5 w-full text-primary/70" />
+      </span>
+      {title.slice(i + mark.length)}
+    </>
   );
 }
 
@@ -304,8 +329,17 @@ function Check({ children, light }: { children: React.ReactNode; light?: boolean
 }
 
 /* App store badges. Pre-launch, these show a non-clickable "Coming soon"
-   state (site.comingSoon); flip the flag and set the URLs to go live. */
-function StoreBadge({ kind, href }: { kind: "apple" | "google"; href: string }) {
+   state (site.comingSoon); flip the flag and set the URLs to go live.
+   `onDark` recolours the pill for the maroon sections so it stays legible. */
+function StoreBadge({
+  kind,
+  href,
+  onDark,
+}: {
+  kind: "apple" | "google";
+  href: string;
+  onDark?: boolean;
+}) {
   const isApple = kind === "apple";
   const soon = site.comingSoon;
   const icon = (
@@ -337,7 +371,9 @@ function StoreBadge({ kind, href }: { kind: "apple" | "google"; href: string }) 
     return (
       <span
         aria-label={`${isApple ? "App Store" : "Google Play"} — coming soon`}
-        className="flex cursor-default items-center gap-2.5 rounded-button bg-button/70 px-4 py-2.5 text-card-dark-text"
+        className={`flex cursor-default items-center gap-2.5 rounded-button px-4 py-2.5 text-card-dark-text ${
+          onDark ? "border border-card-dark-label/60 bg-card-dark-deep" : "bg-button/70"
+        }`}
       >
         {inner}
       </span>
