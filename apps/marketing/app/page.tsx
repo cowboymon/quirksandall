@@ -93,24 +93,13 @@ export default function Home() {
                 {site.description}
               </p>
 
-              <div className="mt-8 flex flex-wrap items-center gap-3">
+              <div className="mt-8">
                 <a
                   href={site.appStoreUrl}
-                  className="rounded-button bg-button px-5 py-3 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed"
+                  className="inline-block rounded-button bg-button px-5 py-3 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed"
                 >
                   Download free
                 </a>
-                <a
-                  href="#how"
-                  className="rounded-button border border-border bg-card-bg px-5 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary"
-                >
-                  See how it works ↓
-                </a>
-              </div>
-
-              <div className="mt-8 flex flex-wrap items-center gap-3">
-                <StoreBadge kind="apple" href={site.appStoreUrl} />
-                <StoreBadge kind="google" href={site.playStoreUrl} />
               </div>
             </div>
 
@@ -135,20 +124,6 @@ export default function Home() {
               A printed page goes out of date the moment you update it. A group chat gets buried.
               Quirks &amp; All is one link, always current, with everything a sitter, walker, or family
               member actually needs.
-            </p>
-          </div>
-        </section>
-
-        {/* The promise — the product's core trust line */}
-        <section className="bg-card-dark text-card-dark-text">
-          <div className="mx-auto max-w-3xl px-6 py-16 text-center sm:py-24">
-            <p className="eyebrow text-card-dark-label">Our promise</p>
-            <p className="mt-4 font-tanker text-3xl leading-[1.15] sm:text-[2.75rem]">
-              We&apos;ll never put a paywall between a pet and their medicine.
-            </p>
-            <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-card-dark-text/85">
-              Allergies, medications, doses, emergency vet, escape risk — free, permanently, on every
-              profile. Not a launch promotion. A rule.
             </p>
           </div>
         </section>
@@ -178,12 +153,12 @@ export default function Home() {
         </section>
 
         {/* Section 3 — Who it's for */}
-        <section className="border-t border-border/70 bg-secondary/40">
-          <div className="mx-auto max-w-3xl px-6 py-16 text-center sm:py-20">
-            <h2 className="font-tanker text-2xl leading-tight text-foreground sm:text-3xl">
+        <section className="bg-card-dark text-card-dark-text">
+          <div className="mx-auto max-w-3xl px-6 py-16 text-center sm:py-24">
+            <h2 className="font-tanker text-3xl leading-[1.15] sm:text-[2.75rem]">
               For whoever&apos;s holding the lead.
             </h2>
-            <p className="mt-5 text-lg leading-relaxed text-text-muted">
+            <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-card-dark-text/85">
               A weekend sitter. A regular dog walker. A boarding stay. Your mum, who means well but forgets
               the vacuum thing. One profile works for all of them — you decide what each link shows.
             </p>
@@ -222,7 +197,7 @@ export default function Home() {
               </ul>
               <a
                 href={site.appStoreUrl}
-                className="mt-8 rounded-button border border-border bg-background px-5 py-3 text-center text-sm font-medium text-foreground transition-colors hover:border-primary"
+                className="mt-8 rounded-button border border-border bg-[#F8ECEE] px-5 py-3 text-center text-sm font-medium text-foreground transition-colors hover:border-primary"
               >
                 Download free
               </a>
@@ -247,7 +222,7 @@ export default function Home() {
               </ul>
               <a
                 href={site.appStoreUrl}
-                className="mt-8 rounded-button bg-background px-5 py-3 text-center text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                className="mt-8 rounded-button bg-[#F8ECEE] px-5 py-3 text-center text-sm font-medium text-foreground transition-colors hover:bg-secondary"
               >
                 Unlock for {site.proPrice}
               </a>
@@ -304,15 +279,7 @@ export default function Home() {
             <p className="mt-4 text-lg leading-relaxed text-text-muted">
               Download Quirks &amp; All and fill in your pet&apos;s profile in under five minutes.
             </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <a
-                href={site.appStoreUrl}
-                className="rounded-button bg-button px-5 py-3 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed"
-              >
-                Download free
-              </a>
-            </div>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <div className="mt-8 flex flex-nowrap items-center justify-center gap-3">
               <StoreBadge kind="apple" href={site.appStoreUrl} />
               <StoreBadge kind="google" href={site.playStoreUrl} />
             </div>
