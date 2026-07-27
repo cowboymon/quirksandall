@@ -14,6 +14,10 @@
 import { Mixpanel } from "mixpanel-react-native";
 
 const TOKEN = process.env.EXPO_PUBLIC_MIXPANEL_TOKEN;
+// The Mixpanel project lives on EU data residency (eu.mixpanel.com) — events
+// must be ingested at the EU endpoint or they silently land in the US region
+// and never appear in the project.
+const SERVER_URL = "https://api-eu.mixpanel.com";
 
 let mp: Mixpanel | null = null;
 let initPromise: Promise<void> | null = null;
@@ -41,7 +45,7 @@ export function initAnalytics(): Promise<void> {
   }
   const instance = new Mixpanel(TOKEN, false /* trackAutomaticEvents */);
   initPromise = instance
-    .init()
+    .init(false, undefined, SERVER_URL)
     .then(() => { mp = instance; })
     .catch(() => { mp = null; });
   return initPromise;
