@@ -17,6 +17,12 @@ export const site = {
   contactEmail: "quirksandall@itshypothetical.com",
   // Company / operator name shown in legal copy.
   operator: "Quirks & All",
+  // The registered contracting party named in the Terms and Privacy Policy.
+  // Sole trader (ABN 22 525 634 531), styled as "name trading as brand".
+  // A lawyer should confirm the exact registered-name form (ABN Lookup lists
+  // it as "Rattanong, Monica Litheda") before final publication.
+  legalEntity: "Monica Rattanong trading as Its Hypothetical",
+  legalAbn: "22 525 634 531",
   // Maker attribution shown in the footer.
   maker: "Its Hypothetical",
   makerOtherProduct: "Loud & Fine",
