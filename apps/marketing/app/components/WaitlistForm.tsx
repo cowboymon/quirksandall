@@ -7,9 +7,11 @@ type Tone = "light" | "dark";
 export default function WaitlistForm({
   source,
   tone = "light",
+  intro,
 }: {
   source: "hero" | "footer";
   tone?: Tone;
+  intro?: string;
 }) {
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState(""); // honeypot
@@ -55,8 +57,18 @@ export default function WaitlistForm({
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className="w-full max-w-md">
-      <div className="flex flex-col gap-2.5 sm:flex-row">
+    <div className="w-full max-w-md">
+      {intro && (
+        <p
+          className={`mb-6 text-center text-lg leading-relaxed ${
+            dark ? "text-card-dark-text/85" : "text-text-muted"
+          }`}
+        >
+          {intro}
+        </p>
+      )}
+      <form onSubmit={onSubmit} noValidate>
+        <div className="flex flex-col gap-2.5 sm:flex-row">
         <label className="sr-only" htmlFor={`waitlist-email-${source}`}>
           Email address
         </label>
@@ -99,11 +111,12 @@ export default function WaitlistForm({
         </button>
       </div>
 
-      <p className={`mt-2.5 text-left text-sm ${noteColor}`}>
-        {status === "error"
-          ? "Something went wrong — please try again."
-          : "We'll email you once. Nothing else."}
-      </p>
-    </form>
+        <p className={`mt-2.5 text-left text-sm ${noteColor}`}>
+          {status === "error"
+            ? "Something went wrong — please try again."
+            : "We'll email you once. Nothing else."}
+        </p>
+      </form>
+    </div>
   );
 }
