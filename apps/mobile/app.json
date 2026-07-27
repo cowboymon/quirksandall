@@ -21,7 +21,8 @@
       "bundleIdentifier": "com.itshypothetical.quirksandall",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Choose a photo of your pet, or a document like a vaccination record.",
-        "NSCameraUsageDescription": "Take a photo of your pet, or a document like a vaccination record."
+        "NSCameraUsageDescription": "Take a photo of your pet, or a document like a vaccination record.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -46,6 +47,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "64d7579d-1a5e-43a7-995a-5a8bf7718b21"
+      }
     }
   }
 }
