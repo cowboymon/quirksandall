@@ -76,37 +76,28 @@ export default function Home() {
       <Header />
 
       <main className="flex-1">
-        {/* 1 — Hero (page default #F8ECEE, mockup on #E5BEC4) */}
-        <section className="mx-auto max-w-5xl px-6 pt-16 pb-14 sm:pt-24 sm:pb-20">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            <div>
-              <p className="eyebrow text-primary">For anyone who leaves their pet with someone else</p>
-              <h1 className="mt-4 font-tanker text-5xl leading-[1.03] text-foreground sm:text-6xl">
-                You know your pet by heart. Everyone else is{" "}
-                <span className="relative inline-block text-primary">
-                  guessing.
-                  <Underline className="absolute -bottom-1.5 left-0 h-3 w-full text-primary sm:-bottom-2 sm:h-4" />
-                </span>
-              </h1>
-              <p className="mt-6 max-w-md text-lg leading-relaxed text-text-muted">
-                The rushed note on the counter. The three follow-up texts from the airport. The thing you
-                forgot to mention that only comes up at 9pm. Quirks &amp; All puts everything a stand-in
-                needs in one link they can actually open.
-              </p>
-              <div className="mt-8">
-                <a
-                  href="#get"
-                  className="inline-block rounded-button bg-button px-5 py-3 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed"
-                >
-                  Get notified at launch
-                </a>
-              </div>
-            </div>
-
-            {/* #E5BEC4 surface holding the product mockup: fill it in → their link. */}
-            <div className="mx-auto w-full max-w-md rounded-card bg-[#E5BEC4] p-5 shadow-xl shadow-primary/10 sm:p-6">
-              <HeroMock />
-            </div>
+        {/* 1 — Hero (page default #F8ECEE) — text only, centred */}
+        <section className="mx-auto max-w-3xl px-6 pt-20 pb-16 text-center sm:pt-28 sm:pb-24">
+          <p className="eyebrow text-primary">For anyone who leaves their pet with someone else</p>
+          <h1 className="mx-auto mt-4 font-tanker text-5xl leading-[1.03] text-foreground sm:text-7xl">
+            You know your pet by heart. Everyone else is{" "}
+            <span className="relative inline-block text-primary">
+              guessing.
+              <Underline className="absolute -bottom-1.5 left-0 h-3 w-full text-primary sm:-bottom-2 sm:h-4" />
+            </span>
+          </h1>
+          <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-text-muted">
+            The rushed note on the counter. The three follow-up texts from the airport. The thing you forgot
+            to mention that only comes up at 9pm. Quirks &amp; All puts everything a stand-in needs in one
+            link they can actually open.
+          </p>
+          <div className="mt-8 flex justify-center">
+            <a
+              href="#get"
+              className="inline-block rounded-button bg-button px-5 py-3 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed"
+            >
+              Get notified at launch
+            </a>
           </div>
         </section>
 
@@ -319,106 +310,6 @@ function Check({ children, light }: { children: React.ReactNode; light?: boolean
       </span>
       <span>{children}</span>
     </li>
-  );
-}
-
-/* Command-solidity pill, mirroring the app's "still learning / solid / mastered" states. */
-function SolidPill({ label, tone = "success" }: { label: string; tone?: "success" | "caution" }) {
-  const styles =
-    tone === "success"
-      ? { backgroundColor: "#E4EEE4", color: "#467049" }
-      : { backgroundColor: "#F3E7D6", color: "#7F5A30" };
-  return (
-    <span
-      className="inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-semibold"
-      style={styles}
-    >
-      {label}
-    </span>
-  );
-}
-
-function LockIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <rect x="4" y="11" width="16" height="9" rx="2" />
-      <path d="M8 11V8a4 4 0 0 1 8 0v3" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-/* Hero "show, don't tell" mockup: the owner fills the profile in the app (top),
-   and it becomes the link a stand-in opens in a browser (bottom). Built from the
-   design system — no real screenshots needed, no off-palette emoji. */
-function HeroMock() {
-  return (
-    <div>
-      {/* Picture 1 — In the app: you fill it in */}
-      <div className="rounded-card border border-border bg-card-bg p-4 shadow-md shadow-primary/10">
-        <div className="flex items-center justify-between">
-          <p className="eyebrow text-primary">In the app</p>
-          <span className="eyebrow text-text-muted">You fill it in</span>
-        </div>
-        <div className="mt-3 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary font-tanker text-lg text-primary">
-            B
-          </div>
-          <div>
-            <p className="font-tanker text-lg leading-none text-foreground">Biscuit</p>
-            <p className="mt-0.5 text-[11px] text-text-muted">Golden Retriever mix · 4 yrs</p>
-          </div>
-        </div>
-        <div className="mt-3 overflow-hidden rounded-card border border-border text-xs">
-          <div
-            className="flex text-[10px] font-medium uppercase tracking-wide"
-            style={{ backgroundColor: "#510000", color: "#F8ECEE" }}
-          >
-            <span className="flex-1 px-2.5 py-1.5">Word</span>
-            <span className="flex-1 px-2.5 py-1.5">Means</span>
-            <span className="px-2.5 py-1.5">Solid</span>
-          </div>
-          <div className="flex items-center border-t border-border bg-white">
-            <span className="flex-1 px-2.5 py-1.5 font-semibold text-primary">Park it</span>
-            <span className="flex-1 px-2.5 py-1.5 text-text-muted">Lie down</span>
-            <span className="px-2.5 py-1.5">
-              <SolidPill label="Mastered" />
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Connector — fill it in → becomes their link */}
-      <div className="relative z-10 -my-2 flex justify-center">
-        <span
-          aria-hidden
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-card-bg text-primary shadow-sm"
-        >
-          ↓
-        </span>
-      </div>
-
-      {/* Picture 2 — Their link: no app needed */}
-      <div className="rounded-card border border-border bg-card-bg p-4 shadow-md shadow-primary/10">
-        <div className="flex items-center gap-1.5 rounded-button border border-border bg-secondary/60 px-2.5 py-1.5">
-          <LockIcon className="h-3 w-3 shrink-0 text-text-muted" />
-          <span className="truncate text-[10px] text-text-muted">quirksandall.app/p/biscuit</span>
-        </div>
-        <div className="mt-3 flex items-center justify-between">
-          <p className="eyebrow text-primary">Their link</p>
-          <span className="eyebrow text-text-muted">No app needed</span>
-        </div>
-        <div className="mt-2 rounded-card border bg-white px-3 py-2" style={{ borderColor: "#A07848" }}>
-          <p className="eyebrow" style={{ color: "#A07848" }}>
-            Flight risk
-          </p>
-          <p className="mt-0.5 text-[11px] text-primary">Bolts at open doors. Lead on before the gate.</p>
-        </div>
-        <div className="mt-2 flex items-center justify-center gap-1.5 rounded-card border border-border bg-secondary/60 px-3 py-2">
-          <LockIcon className="h-3 w-3 shrink-0 text-text-muted" />
-          <p className="eyebrow text-text-muted">Emergency contacts behind a PIN</p>
-        </div>
-      </div>
-    </div>
   );
 }
 
