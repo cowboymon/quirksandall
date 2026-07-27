@@ -263,13 +263,13 @@ export default function Home() {
               className="mx-auto mb-5 h-24 w-24 sm:h-28 sm:w-28"
             />
             <h2 className="font-tanker text-4xl leading-tight sm:text-5xl">Away, but known.</h2>
-            <p className="mx-auto mt-4 max-w-md text-lg leading-relaxed text-card-dark-text/85">
-              We&apos;re putting the finishing touches on it. Leave your email and we&apos;ll tell you the
-              moment it&apos;s live.
-            </p>
 
-            <div className="mt-8 flex justify-center">
-              <WaitlistForm source="footer" tone="dark" />
+            <div className="mt-6 flex justify-center">
+              <WaitlistForm
+                source="footer"
+                tone="dark"
+                intro="We're putting the finishing touches on it. Leave your email and we'll tell you the moment it's live."
+              />
             </div>
 
             <div className="mt-10 flex flex-nowrap items-center justify-center gap-3">
