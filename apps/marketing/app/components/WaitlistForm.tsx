@@ -14,7 +14,6 @@ export default function WaitlistForm({
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState(""); // honeypot
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
-  const [errDetail, setErrDetail] = useState(""); // TEMP: diagnostic surface
 
   const dark = tone === "dark";
   const noteColor = dark ? "text-card-dark-label" : "text-text-muted";
@@ -29,25 +28,29 @@ export default function WaitlistForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, source, company }),
       });
-      if (res.ok) {
-        setStatus("done");
-      } else {
-        // TEMP diagnostic: surface the status + server error code.
-        const data = await res.json().catch(() => ({}));
-        setErrDetail(`(${res.status} ${data?.error ?? "?"})`);
-        setStatus("error");
-      }
-    } catch (err) {
-      setErrDetail(`(network: ${err instanceof Error ? err.message : "failed"})`);
+      setStatus(res.ok ? "done" : "error");
+    } catch {
       setStatus("error");
     }
   }
 
   if (status === "done") {
     return (
-      <p className={`text-base font-medium ${dark ? "text-card-dark-text" : "text-foreground"}`}>
-        You&apos;re on the list. We&apos;ll be in touch when it&apos;s live.
-      </p>
+      <div className="flex items-center justify-center gap-3 sm:justify-start">
+        <span
+          aria-hidden
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+            dark ? "bg-card-dark-deep text-card-dark-label" : "bg-secondary text-primary"
+          }`}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+        </span>
+        <p className={`text-base font-medium ${dark ? "text-card-dark-text" : "text-foreground"}`}>
+          You&apos;re on the list. We&apos;ll be in touch when it&apos;s live.
+        </p>
+      </div>
     );
   }
 
@@ -98,7 +101,7 @@ export default function WaitlistForm({
 
       <p className={`mt-2.5 text-left text-sm ${noteColor}`}>
         {status === "error"
-          ? `Something went wrong — please try again. ${errDetail}`
+          ? "Something went wrong — please try again."
           : "We'll email you once. Nothing else."}
       </p>
     </form>
