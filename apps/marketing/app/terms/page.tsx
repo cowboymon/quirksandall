@@ -24,8 +24,10 @@ export default function TermsPage() {
           <p>
             These Terms of Service (&quot;Terms&quot;) govern your access to and use of the {site.name}{" "}
             mobile app, website and the shareable links it generates (together, the &quot;Service&quot;),
-            operated by {site.operator}. By downloading, accessing or using the Service, you agree to
-            these Terms. If you don&apos;t agree, please don&apos;t use the Service.
+            operated by {site.legalEntity}
+            {site.legalAbn ? ` (ABN ${site.legalAbn})` : ""} (&quot;we&quot;, &quot;us&quot;). By
+            downloading, accessing or using the Service, you agree to these Terms. If you don&apos;t agree,
+            please don&apos;t use the Service.
           </p>
 
           <h2>1. Who can use the Service</h2>
@@ -49,13 +51,18 @@ export default function TermsPage() {
             <strong>not</strong> a substitute for professional veterinary advice, emergency services, or
             your own judgement. In an emergency, contact a vet or the relevant emergency service directly.
           </p>
+          <p>
+            You are responsible for the accuracy of what you record. Medication doses, allergies, vet
+            details and emergency contacts are shown to whoever opens your link exactly as you entered them
+            — we don&apos;t verify them.
+          </p>
 
           <h2>4. Your content</h2>
           <p>
-            You keep ownership of the information, text, photos and other content you add (&quot;Your
-            Content&quot;). You grant us a limited licence to host, store, process and display Your Content
-            solely to operate the Service for you — for example, rendering the cheat-sheet page when
-            someone opens a link you&apos;ve shared.
+            You keep ownership of the information, text, photos, documents and other content you add
+            (&quot;Your Content&quot;). You grant us a limited licence to host, store, process and display
+            Your Content solely to operate the Service for you — for example, rendering the shared profile
+            page when someone opens a link you&apos;ve shared.
           </p>
           <p>You are responsible for Your Content. You agree that:</p>
           <ul>
@@ -63,6 +70,10 @@ export default function TermsPage() {
             <li>
               where you add another person&apos;s information (such as a backup contact, vet or insurer),
               you have their permission to share it;
+            </li>
+            <li>
+              where you upload a document issued by someone else, such as a vaccination certificate from a
+              veterinary practice, you have the right to store and use it;
             </li>
             <li>Your Content is lawful and doesn&apos;t infringe anyone else&apos;s rights.</li>
           </ul>
@@ -112,7 +123,7 @@ export default function TermsPage() {
 
           <h2>10. Limitation of liability</h2>
           <p>
-            To the fullest extent permitted by law, {site.operator} will not be liable for any indirect,
+            To the fullest extent permitted by law, {site.legalEntity} will not be liable for any indirect,
             incidental, special or consequential damages, or for any loss of data, arising from your use
             of the Service. Nothing in these Terms limits liability that can&apos;t be limited under
             applicable law.
@@ -124,6 +135,11 @@ export default function TermsPage() {
             terminate access if you breach these Terms or use the Service in a way that could cause harm or
             legal risk.
           </p>
+          <p>
+            Deleting your account or a pet&apos;s profile immediately stops any share links for that pet
+            from working. If someone is currently caring for your pet, make sure they have what they need
+            before you delete.
+          </p>
 
           <h2>12. Changes to these Terms</h2>
           <p>
@@ -132,7 +148,40 @@ export default function TermsPage() {
             changes take effect means you accept the updated Terms.
           </p>
 
-          <h2>13. Contact</h2>
+          <h2>13. Governing law</h2>
+          <p>
+            These Terms are governed by the laws of New South Wales, Australia. You and we submit to the
+            non-exclusive jurisdiction of the courts of that state. If you are a consumer in another
+            country, this does not remove any protection you have under the mandatory laws of the place you
+            live.
+          </p>
+
+          <h2>14. General</h2>
+          <ul>
+            <li>
+              <strong>Severability.</strong> If any part of these Terms is found unenforceable, the rest
+              stays in effect.
+            </li>
+            <li>
+              <strong>Assignment.</strong> You may not transfer your rights under these Terms. We may
+              transfer ours to a successor — for example if the business is sold or restructured — without
+              reducing your rights.
+            </li>
+            <li>
+              <strong>Entire agreement.</strong> These Terms, together with the Privacy Policy, are the
+              whole agreement between you and us about the Service.
+            </li>
+            <li>
+              <strong>Force majeure.</strong> We aren&apos;t responsible for delays or failures caused by
+              events beyond our reasonable control.
+            </li>
+            <li>
+              <strong>Notices.</strong> We give notice through the app or by email to the address on your
+              account. You give us notice at {site.contactEmail}.
+            </li>
+          </ul>
+
+          <h2>15. Contact</h2>
           <p>
             Questions about these Terms? Email us at{" "}
             <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>.
