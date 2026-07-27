@@ -4,28 +4,39 @@ import { site } from "./site";
 
 const FEATURES = [
   {
-    title: "Commands & quirks",
-    body: "The words they know, what they mean, and what earns the reward. The stuff that makes them them — not a form.",
+    icon: 5, // excited, responsive
+    title: "Commands, and how solid they are",
+    body: "The word, what it means, what earns the reward — and whether it's still learning, solid, or mastered. A sitter knows what to actually expect when they say it.",
   },
   {
-    title: "Emergency contacts, protected",
-    body: "Vet, insurance, backup contacts — there when it matters, with a PIN on the sensitive stuff.",
+    icon: 4, // curled safe in bed
+    title: "Emergency contacts, behind a PIN",
+    body: "Vet, emergency vet, insurance, backups. Sensitive details sit behind a 4-digit PIN you set. It remembers a trusted device for 30 days, so nobody's re-typing it mid-stay.",
   },
   {
-    title: "Routine, when you need it shown",
-    body: "Feeding, walks, sleep, medications — as detailed as the situation calls for.",
+    icon: 7, // holding flowers — tender care
+    title: "Medications, never gated",
+    body: "Doses, and which meal they go with. Free on every profile, always — a sitter is never blocked from your pet's medicine by a paywall.",
   },
   {
-    title: "Always current",
-    body: "Update the profile, the link updates too. No new PDF to re-send.",
+    icon: 9, // with a laptop — always current
+    title: "A link that can't go stale",
+    body: "Edit in the app, the link updates instantly. Name it, see when it's been opened, revoke it whenever.",
   },
   {
+    icon: 1, // sprawled, settled in for the stay
+    title: "Know how long they're staying",
+    body: "Set a duration per link. The sitter sees it up top: “Biscuit's with you until Sat 3 Aug.”",
+  },
+  {
+    icon: 3, // leaping / on the move
     title: "If they ever go missing",
-    body: "Generate a print-ready poster and a social tile in one tap. Free, always. Here if you ever need it.",
+    body: "Generate a printable, shareable poster straight from the profile. Free, always. Here if you ever need it.",
   },
   {
-    title: "You control the link",
-    body: "Revoke access anytime. See when it was last viewed. Nothing lingers longer than you want it to.",
+    icon: 13, // sitting attentively
+    title: "Certificates, kept somewhere findable",
+    body: "Vaccination and flea/worm records, stored so they're not a scramble the night before a boarding stay.",
   },
 ];
 
@@ -48,15 +59,19 @@ const FAQS = [
   },
   {
     q: "What's actually free?",
-    a: "Identity, commands, quirks, emergency contacts, feeding, and allergies. Always. Routines beyond feeding, medications, and unlimited pets are a one-time $7.99.",
+    a: "ID, commands, allergies, medications and conditions, escape risk, emergency contacts, feeding times, and one shareable link. Permanently. Medical information is never paywalled.",
   },
   {
     q: "Can I use this for more than one pet?",
     a: "One pet is free. Unlock unlimited pets for $7.99, once.",
   },
   {
+    q: "Can I give different sitters different links?",
+    a: "One link is free. The unlock lets you run several at once — one for your walker, one for the kennel — each revocable on its own.",
+  },
+  {
     q: "What's the missing poster thing?",
-    a: "One tap generates a print-ready poster and a social tile from your pet's existing profile. Free, always. Here if you ever need it.",
+    a: "One tap generates a printable, shareable poster straight from your pet's existing profile. Free, always. Here if you ever need it.",
   },
 ];
 
@@ -124,6 +139,20 @@ export default function Home() {
           </div>
         </section>
 
+        {/* The promise — the product's core trust line */}
+        <section className="bg-card-dark text-card-dark-text">
+          <div className="mx-auto max-w-3xl px-6 py-16 text-center sm:py-24">
+            <p className="eyebrow text-card-dark-label">Our promise</p>
+            <p className="mt-4 font-tanker text-3xl leading-[1.15] sm:text-[2.75rem]">
+              We&apos;ll never put a paywall between a pet and their medicine.
+            </p>
+            <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-card-dark-text/85">
+              Allergies, medications, doses, emergency vet, escape risk — free, permanently, on every
+              profile. Not a launch promotion. A rule.
+            </p>
+          </div>
+        </section>
+
         {/* Section 2 — Features */}
         <section id="how" className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
           <p className="eyebrow text-primary">What&apos;s inside</p>
@@ -134,7 +163,14 @@ export default function Home() {
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
               <div key={f.title} className="rounded-card border border-border bg-card-bg p-6">
-                <h3 className="text-base font-bold text-foreground">{f.title}</h3>
+                <img
+                  src={`/brand/icons/group-${f.icon}.svg`}
+                  alt=""
+                  aria-hidden
+                  className="h-16 w-16"
+                  loading="lazy"
+                />
+                <h3 className="mt-4 text-base font-bold text-foreground">{f.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-text-muted">{f.body}</p>
               </div>
             ))}
@@ -160,23 +196,29 @@ export default function Home() {
           <h2 className="mt-3 max-w-2xl font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
             Free to start. {site.proPrice} to unlock the rest.
           </h2>
-          <p className="mt-4 max-w-xl text-lg leading-relaxed text-text-muted">
-            Identity, emergency contacts, commands, quirks, feeding, and allergies — free, always. Unlock
-            routines, medications, and unlimited pets for a one-time {site.proPrice}. No subscription.
+          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-text-muted">
+            Everything a sitter needs to keep your pet safe is free, permanently — ID, commands, allergies,
+            medications, escape risk, emergency contacts, feeding times, and one live link.
+          </p>
+          <p className="mt-3 max-w-2xl text-lg leading-relaxed text-text-muted">
+            Unlock full routines, the soft stuff, unlimited pets, and a separate live link per sitter for a
+            one-time {site.proPrice}. No subscription.
           </p>
 
           <div className="mt-12 grid gap-6 md:grid-cols-2">
             {/* Free */}
             <div className="flex flex-col rounded-card border border-border bg-card-bg p-8">
-              <h3 className="text-lg font-bold text-foreground">Free</h3>
+              <h3 className="text-lg font-bold text-foreground">Free, always</h3>
               <p className="mt-1 text-sm text-text-muted">Everything you need to hand off one pet.</p>
               <p className="mt-6 font-tanker text-4xl text-foreground">$0</p>
               <ul className="mt-6 flex flex-col gap-3 text-sm text-text-muted">
-                <Check>Identity &amp; shareable profile link</Check>
-                <Check>Commands, quirks &amp; triggers</Check>
-                <Check>Feeding &amp; allergies, always shown</Check>
+                <Check>Pet ID — photo, breed, age, microchip &amp; more</Check>
+                <Check>Commands, with how solid each one is</Check>
+                <Check>Allergies, medications &amp; doses</Check>
+                <Check>Escape / flight-risk flag</Check>
                 <Check>PIN-gated emergency contacts</Check>
-                <Check>Print-ready missing poster &amp; social tile</Check>
+                <Check>Feeding times &amp; one live link</Check>
+                <Check>Missing poster &amp; document vault</Check>
               </ul>
               <a
                 href={site.appStoreUrl}
@@ -197,8 +239,9 @@ export default function Home() {
               <p className="mt-1 text-sm text-card-dark-label">One payment, all your pets, forever.</p>
               <p className="mt-6 font-tanker text-4xl">{site.proPrice}</p>
               <ul className="mt-6 flex flex-col gap-3 text-sm text-card-dark-text/90">
-                <Check light>Routines — walks, sleep, bathroom, more</Check>
-                <Check light>Medications &amp; conditions</Check>
+                <Check light>Full daily routine — walks, sleep, bathroom</Check>
+                <Check light>The soft stuff — fears, no-go zones, temperament</Check>
+                <Check light>A separate live link per sitter</Check>
                 <Check light>Unlimited pets</Check>
                 <Check light>Everything in Free, always included</Check>
               </ul>
@@ -248,7 +291,14 @@ export default function Home() {
         {/* Section 6 — Final CTA */}
         <section className="border-t border-border/70">
           <div className="mx-auto max-w-3xl px-6 py-20 text-center">
-            <h2 className="font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
+            <img
+              src="/brand/icons/group-4.svg"
+              alt=""
+              aria-hidden
+              className="mx-auto h-24 w-24"
+              loading="lazy"
+            />
+            <h2 className="mt-4 font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
               Away, but known.
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-text-muted">
@@ -272,6 +322,22 @@ export default function Home() {
 
       <Footer />
     </div>
+  );
+}
+
+/* Command-solidity pill, mirroring the app's "still learning / solid / mastered" states. */
+function SolidPill({ label, tone = "success" }: { label: string; tone?: "success" | "caution" }) {
+  const styles =
+    tone === "success"
+      ? { backgroundColor: "#E4EEE4", color: "#467049" }
+      : { backgroundColor: "#F3E7D6", color: "#7F5A30" };
+  return (
+    <span
+      className="inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-semibold"
+      style={styles}
+    >
+      {label}
+    </span>
   );
 }
 
@@ -346,14 +412,21 @@ function CheatSheetMock() {
           <div className="flex text-[11px] font-medium uppercase tracking-wide" style={{ backgroundColor: "#510000", color: "#F8ECEE" }}>
             <span className="flex-1 px-2.5 py-1.5">Word</span>
             <span className="flex-1 px-2.5 py-1.5">Means</span>
+            <span className="px-2.5 py-1.5">How solid</span>
           </div>
-          <div className="flex border-t border-border bg-white text-xs">
+          <div className="flex items-center border-t border-border bg-white text-xs">
             <span className="flex-1 px-2.5 py-1.5 font-semibold text-primary">Park it</span>
             <span className="flex-1 px-2.5 py-1.5 text-text-muted">Lie down</span>
+            <span className="px-2.5 py-1.5">
+              <SolidPill label="Mastered" />
+            </span>
           </div>
-          <div className="flex border-t border-border text-xs" style={{ backgroundColor: "#F8ECEE" }}>
+          <div className="flex items-center border-t border-border text-xs" style={{ backgroundColor: "#F8ECEE" }}>
             <span className="flex-1 px-2.5 py-1.5 font-semibold text-primary">This way</span>
             <span className="flex-1 px-2.5 py-1.5 text-text-muted">Come back</span>
+            <span className="px-2.5 py-1.5">
+              <SolidPill label="Learning" tone="caution" />
+            </span>
           </div>
         </div>
       </div>

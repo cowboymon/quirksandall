@@ -5,8 +5,8 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-6">
-        <Link href="/" className="font-tanker text-xl leading-none text-foreground">
-          {site.name}
+        <Link href="/" aria-label={site.name} className="flex items-center">
+          <img src="/brand/logo-clean.png" alt={site.name} className="h-11 w-auto" />
         </Link>
 
         <nav className="hidden items-center gap-8 sm:flex">
