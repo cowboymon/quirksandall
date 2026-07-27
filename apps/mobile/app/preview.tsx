@@ -20,7 +20,7 @@ type Data = {
   backup2Name: string; backup2Phone: string; backup2Rel: string;
   commands: any[];
   scared: string; noGo: string; flightRisk: string; temperament: string;
-  allergies: string; conditions: string; meds: { name: string; dose: string; withMeal?: string }[];
+  allergies: string; conditions: string; meds: { name: string; dose: string; withMeal?: string; notes?: string }[];
   feeding: any; walks: string; sleep: string; bathroom: string; leftAlone: string; toileting: string;
   updatedAt: string;
 };
@@ -72,7 +72,7 @@ export default function Preview() {
       const paid = owner?.purchase_status === "paid";
       setIsPaid(paid);
       const backups = owner?.backup_contacts ?? [];
-      const meds = (medical?.medications ?? []).map((m: any) => ({ name: m.name ?? "", dose: m.dose ?? "", withMeal: m.with_meal ?? undefined }));
+      const meds = (medical?.medications ?? []).map((m: any) => ({ name: m.name ?? "", dose: m.dose ?? "", withMeal: m.with_meal ?? undefined, notes: m.notes || undefined }));
 
       setData({
         name: (pet.name ?? "").trim(), breed: pet.breed ?? "", age: computeAge(pet.dob, pet.dob_is_estimated), photoUrl: pet.photo_url,
@@ -295,7 +295,7 @@ export default function Preview() {
                 {d.meds.length > 0 ? (
                   <InfoCard
                     label="Medications"
-                    text={d.meds.map((m) => [m.name, m.dose, mealSlotLabel(m.withMeal)].filter(Boolean).join(" · ")).join("\n")}
+                    text={d.meds.map((m) => [m.name, m.dose, mealSlotLabel(m.withMeal), m.notes].filter(Boolean).join(" · ")).join("\n")}
                   />
                 ) : null}
               </View>
