@@ -71,9 +71,10 @@ export default function TermsPage() {
           <p>
             The Service lets you generate links that display your pet&apos;s profile. Anyone with a link can
             view the non-PIN-protected parts of that profile — treat a link like you&apos;d treat a key.
-            Emergency contact details are protected behind a PIN you set. If you have a paid plan, you can
-            rotate a link, which invalidates the previous one. We can&apos;t control what recipients do with
-            information after they&apos;ve seen it.
+            Emergency contact details are protected behind a PIN you set. You can revoke a link at any time,
+            which stops it working; on a paid plan you can run several links at once — one per sitter — and
+            revoke any of them on its own. We can&apos;t control what recipients do with information after
+            they&apos;ve seen it.
           </p>
 
           <h2>6. Acceptable use</h2>

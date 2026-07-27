@@ -55,10 +55,6 @@ export default function PrivacyPage() {
               <strong>Basic technical data</strong> — such as device type and app version, used to keep the
               Service working and diagnose problems.
             </li>
-            <li>
-              <strong>Push tokens</strong> — if you enable notifications, a device token so we can send the
-              nudges you&apos;ve asked for.
-            </li>
           </ul>
 
           <h3>Information from others</h3>
@@ -71,8 +67,7 @@ export default function PrivacyPage() {
           <h2>2. How we use information</h2>
           <ul>
             <li>to provide the Service — storing your pet&apos;s profile and rendering it when someone opens a link you share;</li>
-            <li>to protect emergency details behind a PIN and to let you rotate share links;</li>
-            <li>to send notifications you&apos;ve turned on;</li>
+            <li>to protect emergency details behind a PIN and to let you manage and revoke share links;</li>
             <li>to operate, maintain, secure and improve the Service;</li>
             <li>to respond to your requests and provide support;</li>
             <li>to comply with legal obligations.</li>
@@ -83,8 +78,9 @@ export default function PrivacyPage() {
           <p>
             The core purpose of {site.name} is to let you share your pet&apos;s profile with people you
             choose. When you share a link, anyone who has it can view the non-PIN-protected parts of that
-            profile. Emergency contacts require the PIN. You control who you send links to, and — on a paid
-            plan — you can rotate a link to invalidate the previous one.
+            profile. Emergency contacts require the PIN. You control who you send links to, and you can
+            revoke a link at any time to stop it working. On a paid plan you can run a separate link per
+            sitter and revoke any of them on its own.
           </p>
 
           <h2>4. Service providers</h2>
@@ -103,10 +99,6 @@ export default function PrivacyPage() {
             </li>
             <li>
               <strong>RevenueCat</strong> — to verify and manage purchase entitlements.
-            </li>
-            <li>
-              <strong>Push notification services</strong> (Apple Push Notification service / Firebase Cloud
-              Messaging) — to deliver notifications you&apos;ve enabled.
             </li>
           </ul>
 
