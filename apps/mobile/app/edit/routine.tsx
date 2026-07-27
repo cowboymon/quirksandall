@@ -348,7 +348,7 @@ export default function EditRoutine() {
                 </TouchableOpacity>
               </View>
               <Input
-                placeholder="Notes — e.g. every 2nd Monday, hide it in cheese"
+                placeholder="Cut into smaller pieces — she won't take it whole."
                 value={m.notes}
                 onChangeText={(v) => updateMed(m.id, "notes", v)}
                 multiline

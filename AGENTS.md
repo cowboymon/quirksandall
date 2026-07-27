@@ -12,6 +12,21 @@ Guidance for AI agents working in this repo.
   `apps/web/app/p/[token]/page.tsx` (documents are not added to the recipient
   profile).
 
+## Manual QA — smoke test before shipping recipient-page changes
+
+- **Medication anchored to an empty meal slot must still render.** Configure a
+  medication anchored to Lunch (`edit/routine.tsx`) on a pet with NO lunch feed
+  configured. Open the share link (or the owner preview). Confirm: the Lunch
+  slot renders in Daily Routine with "Medication only" where the food
+  description would sit, the medication line under it, and a "See Medications"
+  pointer — even though no lunch food was ever entered. A medication set to
+  "Anytime" must NOT create a meal slot anywhere; it only appears in the
+  standalone Medications section. Regression risk: the Feeding section's meal
+  rows are gated on either food being configured OR a medication being tied to
+  that slot (`RecipientView.tsx`'s `FeedingCard`/`hasFeeding`, `preview.tsx`'s
+  `meals` filter) — it's easy to accidentally re-gate on food alone and silently
+  drop a dose from the sitter's view.
+
 ## Analytics — Mixpanel
 
 Product analytics is **Mixpanel**, wired per the Mixpanel setup skill.

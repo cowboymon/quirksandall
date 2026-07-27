@@ -477,16 +477,18 @@ function FeedingCard({ feeding, medications }: { feeding: NonNullable<RecipientP
         >
           <span className="text-sm font-medium w-20 shrink-0" style={{ color: MUTED }}>{label}</span>
           <div className="flex flex-col">
-            {mealComplete(slot) && (
+            {mealComplete(slot) ? (
               <span className="text-sm" style={{ color: BODY }}>
                 {slot?.time && <span className="font-medium">{slot.time}</span>}
                 {slot?.time && slot?.amount ? " · " : ""}
                 {slot?.amount}
               </span>
+            ) : (
+              <span className="text-sm italic" style={{ color: MUTED }}>Medication only</span>
             )}
             {meds.map((m, mi) => (
               <span key={mi} className="text-xs mt-0.5 font-medium" style={{ color: "#B83A52" }}>
-                + {[m.name, m.dose].filter(Boolean).join(" ")}
+                + {[m.name, m.dose].filter(Boolean).join(" — ")}
               </span>
             ))}
             {meds.length > 0 && (
