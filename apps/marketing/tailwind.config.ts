@@ -11,7 +11,7 @@ export default {
       colors: {
         primary: colors.primary,
         accent: colors.accent,
-        background: colors.background,
+        background: "#E5BEC4",
         foreground: colors.foreground,
         secondary: colors.secondary,
         "text-dark": colors.textDark,
@@ -34,8 +34,8 @@ export default {
         button: `${radius.button}px`,
       },
       fontFamily: {
-        tanker: ["Tanker", "serif"],
-        satoshi: ["Satoshi", "system-ui", "sans-serif"],
+        tanker: ["var(--font-tanker)", "serif"],
+        satoshi: ["var(--font-satoshi)", "system-ui", "sans-serif"],
       },
     },
   },
