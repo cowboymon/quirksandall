@@ -1,40 +1,34 @@
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import WaitlistForm from "./components/WaitlistForm";
+import { Underline, CircleMark, MarginArrow } from "./components/Annotations";
 import { site } from "./site";
 
 const FEATURES = [
   {
-    icon: 5, // excited, responsive
+    annotate: true,
     title: "Commands, and how solid they are",
     body: "The word, what it means, what earns the reward — and whether it's still learning, solid, or mastered. A sitter knows what to actually expect when they say it.",
   },
   {
-    icon: 4, // curled safe in bed
     title: "Emergency contacts, behind a PIN",
     body: "Vet, emergency vet, insurance, backups. Sensitive details sit behind a 4-digit PIN you set. It remembers a trusted device for 30 days, so nobody's re-typing it mid-stay.",
   },
   {
-    icon: 7, // holding flowers — tender care
-    title: "Medications, never gated",
-    body: "Doses, and which meal they go with. Free on every profile, always — a sitter is never blocked from your pet's medicine by a paywall.",
-  },
-  {
-    icon: 9, // with a laptop — always current
     title: "A link that can't go stale",
     body: "Edit in the app, the link updates instantly. Name it, see when it's been opened, revoke it whenever.",
   },
   {
-    icon: 1, // sprawled, settled in for the stay
+    annotate: true,
     title: "Know how long they're staying",
     body: "Set a duration per link. The sitter sees it up top: “Biscuit's with you until Sat 3 Aug.”",
   },
   {
-    icon: 3, // leaping / on the move
     title: "If they ever go missing",
     body: "Generate a printable, shareable poster straight from the profile. Free, always. Here if you ever need it.",
   },
   {
-    icon: 13, // sitting attentively
+    annotate: true,
     title: "Certificates, kept somewhere findable",
     body: "Vaccination and flea/worm records, stored so they're not a scramble the night before a boarding stay.",
   },
@@ -81,104 +75,106 @@ export default function Home() {
       <Header />
 
       <main className="flex-1">
-        {/* Hero */}
+        {/* 1 — Hero (page default #F8ECEE, mockup on #E5BEC4) */}
         <section className="mx-auto max-w-5xl px-6 pt-16 pb-14 sm:pt-24 sm:pb-20">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
-              <p className="eyebrow text-primary">A pet profile that travels with them</p>
-              <h1 className="mt-4 font-tanker text-4xl leading-[1.05] text-foreground sm:text-6xl">
-                Away,<br />but known.
+              <p className="eyebrow text-primary">For anyone who leaves their pet with someone else</p>
+              <h1 className="mt-4 font-tanker text-5xl leading-[1.03] text-foreground sm:text-7xl">
+                You know your pet by heart.{" "}
+                <span className="relative inline-block">
+                  The sitter is{" "}
+                  <span className="relative inline-block text-primary">
+                    guessing.
+                    <Underline className="absolute -bottom-1.5 left-0 h-3 w-full text-primary sm:-bottom-2 sm:h-4" />
+                  </span>
+                </span>
               </h1>
-              <p className="mt-5 max-w-md text-lg leading-relaxed text-text-muted">
-                {site.description}
+              <p className="mt-6 max-w-md text-lg leading-relaxed text-text-muted">
+                The rushed note on the counter. The three follow-up texts from the airport. The thing you
+                forgot to mention that only comes up at 9pm. Quirks &amp; All puts everything a carer needs
+                in one link they can actually open.
               </p>
 
               <div className="mt-8">
-                <a
-                  href="#get"
-                  className="inline-block rounded-button bg-button px-5 py-3 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed"
-                >
-                  Download free
-                </a>
+                <WaitlistForm source="hero" tone="light" />
               </div>
             </div>
 
-            {/* Cheat-sheet mock */}
-            <div className="mx-auto w-full max-w-sm">
-              <CheatSheetMock />
+            {/* #E5BEC4 surface holding the product imagery (placeholder photo). */}
+            <div className="mx-auto w-full max-w-md rounded-card bg-[#E5BEC4] p-3 shadow-xl shadow-primary/10">
+              <div className="overflow-hidden rounded-card">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/hero/dog.jpg"
+                  alt="A dog at home with the person who looks after them"
+                  className="aspect-[4/5] w-full object-cover"
+                />
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Section 1 — The problem */}
-        <section className="border-y border-border/70 bg-secondary/50">
-          <div className="mx-auto max-w-3xl px-6 py-16 text-center sm:py-20">
-            <h2 className="font-tanker text-2xl leading-tight text-foreground sm:text-3xl">
-              The old way was a text at 11pm.
-            </h2>
-            <p className="mt-5 text-lg leading-relaxed text-text-muted">
-              &ldquo;What time does she eat?&rdquo; &ldquo;Is he allowed on the couch?&rdquo;
-              &ldquo;What&apos;s the vet&apos;s number again?&rdquo;
-            </p>
-            <p className="mt-4 text-lg leading-relaxed text-text-muted">
-              A printed page goes out of date the moment you update it. A group chat gets buried.
-              Quirks &amp; All is one link, always current, with everything a sitter, walker, or family
-              member actually needs.
-            </p>
-          </div>
-        </section>
-
-        {/* Section 2 — Features */}
+        {/* 2 — Features (#F8ECEE) */}
         <section id="how" className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
           <p className="eyebrow text-primary">What&apos;s inside</p>
           <h2 className="mt-3 max-w-xl font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
-            Everything they need. Nothing you have to repeat.
+            Write them down before someone else has to guess.
           </h2>
 
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
               <div key={f.title} className="rounded-card border border-border bg-card-bg p-6">
-                <img
-                  src={`/brand/icons/group-${f.icon}.svg`}
-                  alt=""
-                  aria-hidden
-                  className="h-16 w-16"
-                  loading="lazy"
-                />
-                <h3 className="mt-4 text-base font-bold text-foreground">{f.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-text-muted">{f.body}</p>
+                <h3 className="relative inline-block text-base font-bold text-foreground">
+                  {f.title}
+                  {f.annotate && (
+                    <Underline className="absolute -bottom-1 left-0 h-2.5 w-full text-primary/70" />
+                  )}
+                </h3>
+                <p className="mt-2.5 text-sm leading-relaxed text-text-muted">{f.body}</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Section 3 — Who it's for */}
+        {/* 3 — Medications statement (#510000 full bleed) */}
         <section className="bg-card-dark text-card-dark-text">
-          <div className="mx-auto max-w-3xl px-6 py-16 text-center sm:py-24">
-            <h2 className="font-tanker text-3xl leading-[1.15] sm:text-[2.75rem]">
-              For whoever&apos;s holding the lead.
-            </h2>
+          <div className="relative mx-auto max-w-3xl px-6 py-20 text-center sm:py-28">
+            <MarginArrow className="absolute left-2 top-24 hidden h-10 w-16 text-card-dark-label lg:block" />
+            <p className="mx-auto max-w-2xl font-tanker text-4xl leading-[1.12] sm:text-5xl">
+              We don&apos;t put a paywall between a pet and their medicine.
+            </p>
             <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-card-dark-text/85">
+              Allergies, medications, doses and emergency contacts are free on every profile. Always. Not a
+              launch offer — a rule.
+            </p>
+          </div>
+        </section>
+
+        {/* 4 — Who it's for (#E5BEC4; muted grey fails AA here, so body copy is #510000) */}
+        <section className="bg-[#E5BEC4]">
+          <div className="mx-auto max-w-3xl px-6 py-16 text-center sm:py-24">
+            <h2 className="font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
+              For whoever&apos;s got them.
+            </h2>
+            <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-foreground">
               A weekend sitter. A regular dog walker. A boarding stay. Your mum, who means well but forgets
               the vacuum thing. One profile works for all of them — you decide what each link shows.
             </p>
           </div>
         </section>
 
-        {/* Section 4 — Pricing */}
+        {/* 5 — Pricing (#F8ECEE) */}
         <section id="pricing" className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
           <p className="eyebrow text-primary">Pricing</p>
           <h2 className="mt-3 max-w-2xl font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
-            Free to start. {site.proPrice} to unlock the rest.
+            Free to start.{" "}
+            <span className="relative inline-block">
+              <span className="relative z-10">{site.proPrice}</span>
+              <CircleMark className="absolute left-1/2 top-1/2 h-[1.6em] w-[128%] -translate-x-1/2 -translate-y-1/2 text-primary" />
+            </span>{" "}
+            to unlock the rest.
           </h2>
-          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-text-muted">
-            Everything a sitter needs to keep your pet safe is free, permanently — ID, commands, allergies,
-            medications, escape risk, emergency contacts, feeding times, and one live link.
-          </p>
-          <p className="mt-3 max-w-2xl text-lg leading-relaxed text-text-muted">
-            Unlock full routines, the soft stuff, unlimited pets, and a separate live link per sitter for a
-            one-time {site.proPrice}. No subscription.
-          </p>
 
           <div className="mt-12 grid gap-6 md:grid-cols-2">
             {/* Free */}
@@ -186,7 +182,7 @@ export default function Home() {
               <h3 className="text-lg font-bold text-foreground">Free, always</h3>
               <p className="mt-1 text-sm text-text-muted">Everything you need to hand off one pet.</p>
               <p className="mt-6 font-tanker text-4xl text-foreground">$0</p>
-              <ul className="mt-6 flex flex-col gap-3 text-sm text-text-muted">
+              <ul className="mt-6 flex flex-1 flex-col gap-3 text-sm text-text-muted">
                 <Check>Pet ID — photo, breed, age, microchip &amp; more</Check>
                 <Check>Commands, with how solid each one is</Check>
                 <Check>Allergies, medications &amp; doses</Check>
@@ -197,9 +193,9 @@ export default function Home() {
               </ul>
               <a
                 href="#get"
-                className="mt-8 rounded-button border border-border bg-[#F8ECEE] px-5 py-3 text-center text-sm font-medium text-foreground transition-colors hover:border-primary"
+                className="mt-8 rounded-button border border-border bg-background px-5 py-3 text-center text-sm font-medium text-foreground transition-colors hover:border-primary"
               >
-                Download free
+                Get notified at launch
               </a>
             </div>
 
@@ -213,7 +209,7 @@ export default function Home() {
               </div>
               <p className="mt-1 text-sm text-card-dark-label">One payment, all your pets, forever.</p>
               <p className="mt-6 font-tanker text-4xl">{site.proPrice}</p>
-              <ul className="mt-6 flex flex-col gap-3 text-sm text-card-dark-text/90">
+              <ul className="mt-6 flex flex-1 flex-col gap-3 text-sm text-card-dark-text/90">
                 <Check light>Full daily routine — walks, sleep, bathroom</Check>
                 <Check light>The soft stuff — fears, no-go zones, temperament</Check>
                 <Check light>A separate live link per sitter</Check>
@@ -222,9 +218,9 @@ export default function Home() {
               </ul>
               <a
                 href="#get"
-                className="mt-8 rounded-button bg-[#F8ECEE] px-5 py-3 text-center text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                className="mt-8 rounded-button bg-background px-5 py-3 text-center text-sm font-medium text-foreground transition-colors hover:bg-secondary"
               >
-                Unlock for {site.proPrice}
+                Get notified at launch
               </a>
               <p className="mt-4 text-center text-xs text-card-dark-label">
                 No subscription. Purchased in-app, unlocks account-wide.
@@ -233,53 +229,57 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Section 5 — FAQ */}
-        <section id="faq" className="border-t border-border/70 bg-secondary/40">
-          <div className="mx-auto max-w-3xl px-6 py-16 sm:py-20">
-            <p className="eyebrow text-primary">FAQ</p>
-            <h2 className="mt-3 font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
-              Questions, answered plainly.
-            </h2>
+        {/* 6 — FAQ (#F8ECEE) */}
+        <section id="faq" className="mx-auto max-w-3xl px-6 py-16 sm:py-20">
+          <p className="eyebrow text-primary">FAQ</p>
+          <h2 className="mt-3 font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
+            Questions, answered plainly.
+          </h2>
 
-            <div className="mt-10 flex flex-col gap-3">
-              {FAQS.map((f) => (
-                <details
-                  key={f.q}
-                  className="group rounded-card border border-border bg-card-bg px-5 py-4 [&_summary::-webkit-details-marker]:hidden"
-                >
-                  <summary className="flex cursor-pointer items-center justify-between gap-4 text-base font-bold text-foreground">
-                    {f.q}
-                    <span
-                      className="shrink-0 text-primary transition-transform duration-200 group-open:rotate-45"
-                      aria-hidden
-                    >
-                      +
-                    </span>
-                  </summary>
-                  <p className="mt-3 text-sm leading-relaxed text-text-muted">{f.a}</p>
-                </details>
-              ))}
-            </div>
+          <div className="mt-10 flex flex-col gap-3">
+            {FAQS.map((f) => (
+              <details
+                key={f.q}
+                className="group rounded-card border border-border bg-card-bg px-5 py-4 [&_summary::-webkit-details-marker]:hidden"
+              >
+                <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
+                  <span className="text-base font-bold text-foreground">{f.q}</span>
+                  {/* Chevron matching the app's nav — rotates on expand */}
+                  <svg
+                    aria-hidden
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="mt-1 shrink-0 text-primary transition-transform duration-200 group-open:rotate-180"
+                  >
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </summary>
+                <p className="mt-3 text-sm leading-relaxed text-text-muted">{f.a}</p>
+              </details>
+            ))}
           </div>
         </section>
 
-        {/* Section 6 — Final CTA */}
-        <section id="get" className="border-t border-border/70 scroll-mt-20">
-          <div className="mx-auto max-w-3xl px-6 py-20 text-center">
-            <img
-              src="/brand/icons/group-4.svg"
-              alt=""
-              aria-hidden
-              className="mx-auto h-24 w-24"
-              loading="lazy"
-            />
-            <h2 className="mt-4 font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
-              Away, but known.
-            </h2>
-            <p className="mt-4 text-lg leading-relaxed text-text-muted">
-              Download Quirks &amp; All and fill in your pet&apos;s profile in under five minutes.
+        {/* 7 — Final CTA (#510000 full bleed) */}
+        <section id="get" className="scroll-mt-20 bg-card-dark text-card-dark-text">
+          <div className="mx-auto max-w-3xl px-6 py-20 text-center sm:py-24">
+            <h2 className="font-tanker text-4xl leading-tight sm:text-5xl">Away, but known.</h2>
+            <p className="mx-auto mt-4 max-w-md text-lg leading-relaxed text-card-dark-text/85">
+              We&apos;re putting the finishing touches on it. Leave your email and we&apos;ll tell you the
+              moment it&apos;s live.
             </p>
-            <div className="mt-8 flex flex-nowrap items-center justify-center gap-3">
+
+            <div className="mt-8 flex justify-center">
+              <WaitlistForm source="footer" tone="dark" />
+            </div>
+
+            <div className="mt-10 flex flex-nowrap items-center justify-center gap-3">
               <StoreBadge kind="apple" href={site.appStoreUrl} />
               <StoreBadge kind="google" href={site.playStoreUrl} />
             </div>
@@ -289,22 +289,6 @@ export default function Home() {
 
       <Footer />
     </div>
-  );
-}
-
-/* Command-solidity pill, mirroring the app's "still learning / solid / mastered" states. */
-function SolidPill({ label, tone = "success" }: { label: string; tone?: "success" | "caution" }) {
-  const styles =
-    tone === "success"
-      ? { backgroundColor: "#E4EEE4", color: "#467049" }
-      : { backgroundColor: "#F3E7D6", color: "#7F5A30" };
-  return (
-    <span
-      className="inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-semibold"
-      style={styles}
-    >
-      {label}
-    </span>
   );
 }
 
@@ -367,69 +351,5 @@ function StoreBadge({ kind, href }: { kind: "apple" | "google"; href: string }) 
     >
       {inner}
     </a>
-  );
-}
-
-/* A small, faithful mock of the recipient "cheat sheet" the app generates. */
-function CheatSheetMock() {
-  return (
-    <div className="rotate-1 rounded-card border border-border bg-card-bg p-5 shadow-xl shadow-primary/10">
-      <div className="flex items-center gap-3">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-border bg-secondary text-2xl">
-          🐕
-        </div>
-        <div>
-          <p className="font-tanker text-2xl leading-none text-foreground">Biscuit&apos;s Cheat Sheet</p>
-          <p className="mt-1 text-xs text-text-muted">Golden Retriever mix · 4 yrs</p>
-        </div>
-      </div>
-
-      <div className="mt-4 flex gap-1 rounded-card p-1" style={{ backgroundColor: "#EFE7D8" }}>
-        <span
-          className="flex-1 rounded-button py-1.5 text-center text-xs font-medium"
-          style={{ backgroundColor: "#510000", color: "#F8ECEE" }}
-        >
-          Quick view
-        </span>
-        <span className="flex-1 py-1.5 text-center text-xs font-medium text-text-muted">Full view</span>
-      </div>
-
-      <div className="mt-4">
-        <p className="eyebrow text-text-muted">Commands</p>
-        <div className="mt-2 overflow-hidden rounded-card border border-border">
-          <div className="flex text-[11px] font-medium uppercase tracking-wide" style={{ backgroundColor: "#510000", color: "#F8ECEE" }}>
-            <span className="flex-1 px-2.5 py-1.5">Word</span>
-            <span className="flex-1 px-2.5 py-1.5">Means</span>
-            <span className="px-2.5 py-1.5">How solid</span>
-          </div>
-          <div className="flex items-center border-t border-border bg-white text-xs">
-            <span className="flex-1 px-2.5 py-1.5 font-semibold text-primary">Park it</span>
-            <span className="flex-1 px-2.5 py-1.5 text-text-muted">Lie down</span>
-            <span className="px-2.5 py-1.5">
-              <SolidPill label="Mastered" />
-            </span>
-          </div>
-          <div className="flex items-center border-t border-border text-xs" style={{ backgroundColor: "#F8ECEE" }}>
-            <span className="flex-1 px-2.5 py-1.5 font-semibold text-primary">This way</span>
-            <span className="flex-1 px-2.5 py-1.5 text-text-muted">Come back</span>
-            <span className="px-2.5 py-1.5">
-              <SolidPill label="Learning" tone="caution" />
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-4">
-        <p className="eyebrow text-text-muted">Quirks &amp; triggers</p>
-        <div className="mt-2 rounded-card border bg-white px-3 py-2" style={{ borderColor: "#A07848" }}>
-          <p className="eyebrow" style={{ color: "#A07848" }}>Flight risk</p>
-          <p className="mt-0.5 text-xs text-primary">Bolts at open doors. Lead on before the gate.</p>
-        </div>
-      </div>
-
-      <div className="mt-4 rounded-card border border-border bg-secondary/60 px-3 py-2.5 text-center">
-        <p className="eyebrow text-text-muted">🔒 Emergency contacts behind a PIN</p>
-      </div>
-    </div>
   );
 }

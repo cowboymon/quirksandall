@@ -28,6 +28,23 @@ export default function PrivacyPage() {
             Service actually needs.
           </p>
 
+          <div className="my-8 rounded-card border border-border bg-card-bg p-5">
+            <h3 className="!mt-0">Joining the launch waitlist (this website)</h3>
+            <p>
+              If you enter your email in the &quot;Get notified at launch&quot; form on this site, we
+              collect <strong>only your email address</strong> and a note of which form you used (to see
+              which converts). We use it for exactly one thing: a single email to tell you when {site.name}{" "}
+              is live. We don&apos;t add you to a newsletter, sell or share it, or use it for anything else.
+            </p>
+            <p>
+              We keep your email until launch (plus a short window to send that one email), then delete it.
+              You can ask us to remove you sooner at any time — email{" "}
+              <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>. When the launch email goes
+              out it will identify us as the sender and carry a working unsubscribe link, as required under
+              the Australian Spam Act.
+            </p>
+          </div>
+
           <h2>1. Information we collect</h2>
           <h3>Information you give us</h3>
           <ul>

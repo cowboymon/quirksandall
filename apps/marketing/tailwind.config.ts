@@ -11,7 +11,7 @@ export default {
       colors: {
         primary: colors.primary,
         accent: colors.accent,
-        background: "#E5BEC4",
+        background: colors.background,
         foreground: colors.foreground,
         secondary: colors.secondary,
         "text-dark": colors.textDark,
