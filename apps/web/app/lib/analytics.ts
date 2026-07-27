@@ -24,7 +24,9 @@ export type WebAnalyticsEventName = (typeof WebAnalyticsEvent)[keyof typeof WebA
 function ensureInit(): boolean {
   if (ready) return true;
   if (!TOKEN || typeof window === "undefined") return false;
-  mixpanel.init(TOKEN, { track_pageview: false, persistence: "localStorage" });
+  // api_host: the project lives on EU data residency — events must go to the
+  // EU ingestion endpoint or they silently land in the US region.
+  mixpanel.init(TOKEN, { track_pageview: false, persistence: "localStorage", api_host: "https://api-eu.mixpanel.com" });
   ready = true;
   return true;
 }
