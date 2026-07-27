@@ -1,37 +1,43 @@
-import { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { AppAlert } from "../stores/appAlert";
 import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "../lib/supabase";
 import { purchasePro, restorePurchases } from "../lib/purchases";
-import { colors } from "@quirksandall/shared";
+import { colors, PRICE } from "@quirksandall/shared";
+import { REDEMPTION_ENABLED } from "../lib/config";
+import { track, AnalyticsEvent } from "../lib/analytics";
 
 const FEATURES = [
   { label: "The soft stuff, too", sub: "Scared of, steers clear of, and what they're really like" },
   { label: "Routine, beyond feeding", sub: "Walks, sleep, and the bathroom routine" },
-  { label: "Medications & conditions", sub: "Down to the dose — nothing left to guess" },
+  { label: "A link for every sitter", sub: "Share several at once — a separate live link per sitter or kennel, each revocable on its own" },
   { label: "Unlimited pets", sub: "Add as many as you need" },
-  { label: "Rotate share links", sub: "Get a new link whenever you want. The old one won't work again." },
 ];
 
 export default function Upgrade() {
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => { track(AnalyticsEvent.PaywallViewed, { source: "upgrade" }); }, []);
+
   const handlePurchase = async () => {
     setLoading(true);
+    track(AnalyticsEvent.PurchaseStarted, { source: "upgrade" });
     try {
       const success = await purchasePro();
       if (success) {
+        track(AnalyticsEvent.PurchaseCompleted, { source: "upgrade" });
         const { data: { user } } = await supabase.auth.getUser();
         await supabase.from("owners").update({ purchase_status: "paid" }).eq("id", user!.id);
-        Alert.alert(
+        AppAlert.alert(
           "Unlocked.",
-          "The full picture is live now — routines, medical, and the softer stuff.",
+          "The full picture is live now — routines and the softer stuff.",
           [{ text: "Got it", onPress: () => router.back() }]
         );
       }
     } catch (e: any) {
-      if (!e.message?.includes("cancel")) Alert.alert("Purchase failed", e.message);
+      if (!e.message?.includes("cancel")) AppAlert.alert("Purchase failed", e.message);
     } finally {
       setLoading(false);
     }
@@ -42,14 +48,15 @@ export default function Upgrade() {
     try {
       const success = await restorePurchases();
       if (success) {
+        track(AnalyticsEvent.PurchaseRestored, { source: "upgrade" });
         const { data: { user } } = await supabase.auth.getUser();
         await supabase.from("owners").update({ purchase_status: "paid" }).eq("id", user!.id);
-        Alert.alert("Restored", "Full access is back.", [{ text: "Got it", onPress: () => router.back() }]);
+        AppAlert.alert("Restored", "Full access is back.", [{ text: "Got it", onPress: () => router.back() }]);
       } else {
-        Alert.alert("Nothing to restore", "No previous purchase found for this account.");
+        AppAlert.alert("Nothing to restore", "No previous purchase found for this account.");
       }
     } catch (e: any) {
-      Alert.alert("Restore failed", e.message);
+      AppAlert.alert("Restore failed", e.message);
     } finally {
       setLoading(false);
     }
@@ -68,7 +75,7 @@ export default function Upgrade() {
             Unlock the full picture.
           </Text>
           <Text style={{ color: "rgba(248,236,238,0.7)", fontSize: 15, lineHeight: 22, fontFamily: "Satoshi-Light", marginBottom: 24 }}>
-            Routines, medical needs, and the softer stuff that makes the handoff feel less like a stranger and more like you.
+            Routines and the softer stuff that makes the handoff feel less like a stranger and more like you.
           </Text>
 
           {/* Price pill */}
@@ -86,7 +93,7 @@ export default function Upgrade() {
               paddingVertical: 10,
             }}
           >
-            <Text style={{ fontFamily: "Tanker", fontSize: 30, color: "#F8ECEE" }}>$7.99</Text>
+            <Text style={{ fontFamily: "Tanker", fontSize: 30, color: "#F8ECEE" }}>{PRICE}</Text>
             <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, fontFamily: "Satoshi-Light" }}>once, forever</Text>
           </View>
         </View>
@@ -167,13 +174,35 @@ export default function Upgrade() {
               }}
             >
               <Text style={{ color: "#F8ECEE", fontSize: 15, fontFamily: "Satoshi-Medium", letterSpacing: 0.3 }}>
-                {loading ? "Working…" : "Unlock for $7.99"}
+                {loading ? "Working…" : `Unlock for ${PRICE}`}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={handleRestore} disabled={loading} style={{ paddingVertical: 4 }}>
               <Text style={{ color: colors.textMuted, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Restore purchases</Text>
             </TouchableOpacity>
+
+            {/* Batch-licensing redemption (breeders, insurance partners). Present
+                now so the paywall layout is future-proof; the flow is built later.
+                Intended architecture: code lives in a redemption_codes table →
+                a Supabase Edge Function validates it → the function calls the
+                RevenueCat API to grant a Promotional Entitlement to this user's
+                RC customer ID (bypasses StoreKit/Play Billing, so one shared
+                code works on both platforms). Do NOT use Apple/Google promo
+                codes — they're platform-specific. Flip REDEMPTION_ENABLED on
+                once the backend exists. */}
+            {REDEMPTION_ENABLED ? (
+              <TouchableOpacity onPress={() => router.push("/redeem")} style={{ paddingVertical: 4 }}>
+                <Text style={{ color: colors.textMuted, fontSize: 13, fontFamily: "Satoshi" }}>Have a code?</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                onPress={() => AppAlert.alert("Coming soon", "Code redemption isn't available yet — it's on the way for group and partner licences.")}
+                style={{ paddingVertical: 4 }}
+              >
+                <Text style={{ color: colors.textMuted, fontSize: 13, fontFamily: "Satoshi" }}>Have a code?</Text>
+              </TouchableOpacity>
+            )}
 
             <Text style={{ color: colors.textMuted, fontSize: 10, fontFamily: "Satoshi-Light", textAlign: "center", lineHeight: 15 }}>
               Charged to your App Store / Google Play account. Unlocks account-wide — every pet you add, covered.

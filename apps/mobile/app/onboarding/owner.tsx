@@ -37,7 +37,7 @@ export default function OwnerSetup() {
       if (user) {
         await supabase.from("owners").update({ name: name.trim(), primary_phone: phone.trim() }).eq("id", user.id);
       }
-      router.replace("/onboarding/step1");
+      router.push("/onboarding/step1");
     } finally {
       setSaving(false);
     }

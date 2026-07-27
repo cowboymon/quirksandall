@@ -1,7 +1,9 @@
-import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from "react-native";
-import { router } from "expo-router";
+import { useState, useCallback } from "react";
+import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
+import { AppAlert } from "../stores/appAlert";
+import { router, useFocusEffect } from "expo-router";
 import { supabase } from "../lib/supabase";
+import { initAnalytics, identify, setUserProps, track, AnalyticsEvent } from "../lib/analytics";
 
 // Mobile sign-in uses a 6-digit email code (OTP) rather than a magic link.
 // Deep-linking a magic link back into the app is unreliable in Expo Go and
@@ -11,6 +13,11 @@ export default function AuthScreen() {
   const [code, setCode] = useState("");
   const [stage, setStage] = useState<"email" | "code">("email");
   const [loading, setLoading] = useState(false);
+  // Bumped whenever the screen regains focus so the code field remounts fresh —
+  // iOS otherwise shows the alpha keyboard on refocus instead of the numeric one
+  // the field asks for (keyboardType only reliably applies on mount).
+  const [focusKey, setFocusKey] = useState(0);
+  useFocusEffect(useCallback(() => { setFocusKey((k) => k + 1); }, []));
 
   const sendCode = async () => {
     if (!email.trim()) return;
@@ -21,7 +28,7 @@ export default function AuthScreen() {
     });
     setLoading(false);
     if (error) {
-      Alert.alert("Couldn't send code", error.message);
+      AppAlert.alert("Couldn't send code", error.message);
     } else {
       setStage("code");
     }
@@ -30,15 +37,32 @@ export default function AuthScreen() {
   const verifyCode = async () => {
     if (code.trim().length < 6) return;
     setLoading(true);
-    const { error } = await supabase.auth.verifyOtp({
+    const { data, error } = await supabase.auth.verifyOtp({
       email: email.trim(),
       token: code.trim(),
       type: "email",
     });
     setLoading(false);
     if (error) {
-      Alert.alert("That code didn't work", "Check it and try again, or request a new one.");
+      AppAlert.alert("That code didn't work", "Check it and try again, or request a new one.");
     } else {
+      // Identity + funnel: identify everyone; fire sign_up_completed only for a
+      // brand-new account (created within the last minute), AFTER identify so
+      // it's attributed correctly.
+      const user = data.user;
+      if (user) {
+        await initAnalytics();
+        identify(user.id);
+        const isNew = !!user.created_at && Date.now() - new Date(user.created_at).getTime() < 60_000;
+        if (isNew) {
+          setUserProps({ signup_platform: Platform.OS });
+          track(AnalyticsEvent.SignUpCompleted, { platform: Platform.OS, sign_up_method: "otp" });
+        }
+        // Every authenticated app entry — new signup or returning login — is a
+        // session. This is the "did they come back" signal separate from
+        // sign_up_completed (which only fires once, ever, per account).
+        track(AnalyticsEvent.SessionStarted, { platform: Platform.OS, source: "login" });
+      }
       router.replace("/dashboard");
     }
   };
@@ -86,6 +110,7 @@ export default function AuthScreen() {
         ) : (
           <>
             <TextInput
+              key={`otp-${focusKey}`}
               className="h-[52px] rounded-button border bg-input-bg px-4 text-foreground text-[22px] tracking-[8px] text-center mb-4"
               style={{ borderColor: "#E5BEC4", fontFamily: "Satoshi-Bold" }}
               placeholder="000000"

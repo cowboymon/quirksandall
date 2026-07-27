@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { RecipientProfile } from "@quirksandall/shared";
-import { formatWeight, formatPhone, formatVetName, possessive } from "@quirksandall/shared";
+import { formatWeight, formatPhone, formatVetName, possessive, commandStrengthLabel, mealSlotLabel } from "@quirksandall/shared";
 import PINGate from "./PINGate";
+import { trackWeb, WebAnalyticsEvent } from "../../lib/analytics";
 
 type Props = { profile: RecipientProfile; token: string };
 
@@ -19,13 +20,15 @@ const SECONDARY = "#F2E4E6";
 const BODY = "#1F1A17";
 
 export default function RecipientView({ profile, token }: Props) {
-  const { pet, age, behavior, allergies, routine, medical, lastUpdatedAt, isPaid, pinSet, preview } = profile;
+  const { pet, age, behavior, allergies, routine, medical, lastUpdatedAt, isPaid, pinSet, preview, stayNote } = profile;
   // The Quick/Full toggle only exists where there is paid content to toggle:
   // paid links and the owner's own preview. A free sitter gets one fixed view.
   const showToggle = isPaid || preview;
   const [view, setView] = useState<"quick" | "full">(showToggle ? "full" : "quick");
-  // No PIN set → nothing to gate; the contacts are already in the profile.
-  const [pinUnlocked, setPinUnlocked] = useState(!pinSet);
+  // Unlocked when there's no PIN to gate, or when the emergency contacts already
+  // arrived — either openly (no PIN) or via a persisted device unlock (#87),
+  // which the server resolves before render so there's no flash of the gate.
+  const [pinUnlocked, setPinUnlocked] = useState(!pinSet || !!profile.emergencyContacts);
   const [emergencyContacts, setEmergencyContacts] = useState<RecipientProfile["emergencyContacts"] | null>(
     profile.emergencyContacts ?? null
   );
@@ -33,11 +36,41 @@ export default function RecipientView({ profile, token }: Props) {
   // only needs in a pinch, so let them fold it away after a first read.
   const [emergencyOpen, setEmergencyOpen] = useState(true);
 
+  // "Lock again on this device" (#87) — clears the persisted-unlock cookie
+  // server-side (it's httpOnly), then re-gates the block behind the PIN.
+  const relock = async () => {
+    try {
+      await fetch("/api/pin-lock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+    } catch {}
+    setEmergencyContacts(null);
+    setPinUnlocked(false);
+    setEmergencyOpen(true);
+  };
+
+  // Growth-engine signal (§3.2): a shared link was actually opened. Anonymous —
+  // the viewer is a sitter/vet, not a signed-up user. Skip the owner's own
+  // preview so it doesn't count as a real recipient view.
+  useEffect(() => {
+    if (preview) return;
+    trackWeb(WebAnalyticsEvent.RecipientPageViewed, { pin_gated: pinSet, tier: isPaid ? "paid" : "free" });
+  }, [preview, pinSet, isPaid]);
+
   // Paid-tier fields (soft triggers, routine-rest, medical) are visible in the
   // Full view. In the owner's preview on a free plan we still show them but with
   // a "Paid" badge, so the owner sees exactly what an upgrade would unlock.
   const lockedPreview = preview && !isPaid;
   const paidVisible = view === "full";
+
+  // Medications tied to a meal ALSO render inline in the feeding routine (at
+  // that meal) as a convenience, but every medication always shows in the
+  // standalone Medication section too — that's the safety-critical section a
+  // sitter is most likely to check, so nothing should ever be discoverable
+  // only via Feeding.
+  const allMeds = medical?.medications ?? [];
 
   const name = pet.name?.trim() ?? "";
   const idTiles: [string, string][] = [
@@ -55,6 +88,17 @@ export default function RecipientView({ profile, token }: Props) {
           style={{ backgroundColor: CRIMSON, color: BLUSH }}
         >
           Preview — this is the full picture. {!isPaid && "Sitters see routine & medical only after you unlock."}
+        </div>
+      )}
+
+      {/* Stay-duration orientation (§5.1) — set by the owner, tells the sitter
+          the plan at a glance. */}
+      {stayNote && (
+        <div
+          className="mt-4 rounded-card px-4 py-2.5 text-sm font-medium"
+          style={{ backgroundColor: SECONDARY, color: CRIMSON }}
+        >
+          {possessive(pet.name?.trim() ?? "")} with you {stayNote}.
         </div>
       )}
 
@@ -180,38 +224,52 @@ export default function RecipientView({ profile, token }: Props) {
                     </p>
                   </div>
                 )}
+                {/* Only meaningful when a PIN gates this block — on a shared or
+                    borrowed device, drop the 30-day remembered unlock. */}
+                {pinSet && (
+                  <button
+                    onClick={relock}
+                    className="self-start text-xs underline"
+                    style={{ color: "rgba(248,236,238,0.55)" }}
+                  >
+                    Lock again on this device
+                  </button>
+                )}
               </div>
             </section>
           )
         )}
 
         {/* Daily Routine — feeding is free; walks/sleep/bathroom are paid */}
-        {routine && (hasFeeding(routine.feeding) || (paidVisible && (routine.walks || routine.sleep || routine.bathroomHabits))) && (
+        {routine && (hasFeeding(routine.feeding, allMeds) || (paidVisible && (routine.walks || routine.sleep || routine.bathroomHabits || routine.leftAlone || routine.toileting))) && (
           <section>
             <SectionTitle name={name} tail="Daily Routine" />
             <div className="flex flex-col gap-2">
-              {hasFeeding(routine.feeding) && <FeedingCard feeding={routine.feeding} />}
+              {hasFeeding(routine.feeding, allMeds) && <FeedingCard feeding={routine.feeding} medications={allMeds} />}
               {paidVisible && routine.walks && <InfoCard label="Walks" text={routine.walks} locked={lockedPreview} />}
               {paidVisible && routine.sleep && <InfoCard label="Sleep" text={routine.sleep} locked={lockedPreview} />}
               {paidVisible && routine.bathroomHabits && <InfoCard label="Bathroom" text={routine.bathroomHabits} locked={lockedPreview} />}
+              {paidVisible && routine.leftAlone && <InfoCard label="Left alone" text={routine.leftAlone} locked={lockedPreview} />}
+              {paidVisible && routine.toileting && <InfoCard label="Toileting" text={routine.toileting} locked={lockedPreview} />}
             </div>
           </section>
         )}
 
-        {/* Medication — paid tier + full view only */}
-        {paidVisible && medical && (medical.conditions?.length > 0 || medical.medications?.length > 0) && (
+        {/* Medication — free at every tier, like allergies. A sitter needs the
+            dose whether or not the owner has paid, so it shows in both views. */}
+        {medical && (medical.conditions?.length > 0 || allMeds.length > 0) && (
           <section>
-            <SectionTitle name={name} tail="Medication" locked={lockedPreview} />
+            <SectionTitle name={name} tail="Medication" />
             <div className="flex flex-col gap-2">
               {medical.conditions?.length > 0 && <InfoCard label="Conditions" text={medical.conditions.join(", ")} />}
-              {medical.medications?.map((med, i) => (
+              {allMeds.map((med, i) => (
                 <div key={i} className="bg-white border rounded-card px-4 py-3" style={{ borderColor: BORDER }}>
                   <p className="eyebrow text-primary mb-1">Medication</p>
                   <p className="text-sm font-semibold whitespace-pre-line" style={{ color: BODY }}>{[med.name, med.dose].filter(Boolean).join(" — ")}</p>
-                  {(med.frequency || med.locationStored) && (
-                    <p className="text-text-muted text-xs mt-0.5">{[med.frequency, med.locationStored && `Stored: ${med.locationStored}`].filter(Boolean).join(" · ")}</p>
+                  {(mealSlotLabel(med.withMeal) || med.frequency || med.locationStored) && (
+                    <p className="text-text-muted text-xs mt-0.5">{[mealSlotLabel(med.withMeal), med.frequency, med.locationStored && `Stored: ${med.locationStored}`].filter(Boolean).join(" · ")}</p>
                   )}
-                  {med.notes && <p className="text-text-muted text-xs mt-0.5">{med.notes}</p>}
+                  {med.notes && <p className="text-text-muted text-xs italic mt-0.5">{med.notes}</p>}
                 </div>
               ))}
             </div>
@@ -249,7 +307,12 @@ export default function RecipientView({ profile, token }: Props) {
                       style={{ borderColor: BORDER, backgroundColor: i % 2 === 0 ? "#FFFFFF" : BLUSH }}
                     >
                       <td className="px-3 py-2 font-semibold" style={{ color: BODY }}>
-                        {cmd.word}
+                        <span className="block leading-tight">{cmd.word}</span>
+                        {commandStrengthLabel(cmd.strength) && (
+                          <span className="mt-0.5 block text-[10px] leading-tight font-medium" style={{ color: MUTED }}>
+                            {commandStrengthLabel(cmd.strength)}
+                          </span>
+                        )}
                       </td>
                       <td className="px-3 py-2 text-text-muted">
                         {cmd.meaning}
@@ -307,8 +370,19 @@ function hasContactData(c: NonNullable<RecipientProfile["emergencyContacts"]>): 
   );
 }
 
-function hasFeeding(f: NonNullable<RecipientProfile["routine"]>["feeding"]): boolean {
-  return !!(f.breakfast?.time || f.breakfast?.amount || f.lunch?.time || f.lunch?.amount || f.dinner?.time || f.dinner?.amount || f.treats?.type || f.notes);
+function mealComplete(slot?: { time?: string; amount?: string }): boolean {
+  // A meal needs BOTH a time and an amount to be useful to a sitter (#93) —
+  // a bare "7:30am" with no amount says nothing.
+  return !!(slot?.time && slot?.amount);
+}
+function hasFeeding(f: NonNullable<RecipientProfile["routine"]>["feeding"], medications: NonNullable<RecipientProfile["medical"]>["medications"] = []): boolean {
+  // A meal-tied medication also earns the Feeding card its own row (with a
+  // "See Medications" pointer), even if that meal itself was never filled in.
+  return !!(
+    mealComplete(f.breakfast) || mealComplete(f.lunch) || mealComplete(f.dinner) ||
+    f.treats?.type || f.notes ||
+    medications.some((m) => m.withMeal === "breakfast" || m.withMeal === "lunch" || m.withMeal === "dinner")
+  );
 }
 
 function SectionTitle({ name, tail, locked }: { name: string; tail: string; locked?: boolean }) {
@@ -378,32 +452,52 @@ function InfoCard({ label, text, locked }: { label: string; text: string; locked
   );
 }
 
-function FeedingCard({ feeding }: { feeding: NonNullable<RecipientProfile["routine"]>["feeding"] }) {
-  const meals: [string, { time?: string; amount?: string } | undefined][] = [
-    ["Breakfast", feeding.breakfast],
-    ["Lunch", feeding.lunch],
-    ["Dinner", feeding.dinner],
+function FeedingCard({ feeding, medications }: { feeding: NonNullable<RecipientProfile["routine"]>["feeding"]; medications: NonNullable<RecipientProfile["medical"]>["medications"] }) {
+  const meals: [string, "breakfast" | "lunch" | "dinner", { time?: string; amount?: string } | undefined][] = [
+    ["Breakfast", "breakfast", feeding.breakfast],
+    ["Lunch", "lunch", feeding.lunch],
+    ["Dinner", "dinner", feeding.dinner],
   ];
-  const shown = meals.filter(([, slot]) => slot?.time || slot?.amount);
+  // A meal renders if it has its own time+amount, OR if a medication is tied
+  // to it — otherwise a med tied to an unfilled-in meal (e.g. "with lunch"
+  // when lunch itself was never filled in) would have nowhere to point from.
+  const shown = meals.filter(([, key, slot]) => mealComplete(slot) || medications.some((m) => m.withMeal === key));
   return (
     <div className="bg-white border rounded-card overflow-hidden" style={{ borderColor: BORDER }}>
       <div className="px-4 pt-3 pb-2">
         <p className="eyebrow" style={{ color: "#B83A52" }}>Feeding</p>
       </div>
-      {shown.map(([label, slot], i) => (
+      {shown.map(([label, key, slot], i) => {
+        const meds = medications.filter((m) => m.withMeal === key);
+        return (
         <div
           key={label}
           className="flex px-4 py-2 gap-3"
           style={{ borderTop: i === 0 ? undefined : `1px solid ${BORDER}` }}
         >
           <span className="text-sm font-medium w-20 shrink-0" style={{ color: MUTED }}>{label}</span>
-          <span className="text-sm" style={{ color: BODY }}>
-            {slot?.time && <span className="font-medium">{slot.time}</span>}
-            {slot?.time && slot?.amount ? " · " : ""}
-            {slot?.amount}
-          </span>
+          <div className="flex flex-col">
+            {mealComplete(slot) ? (
+              <span className="text-sm" style={{ color: BODY }}>
+                {slot?.time && <span className="font-medium">{slot.time}</span>}
+                {slot?.time && slot?.amount ? " · " : ""}
+                {slot?.amount}
+              </span>
+            ) : (
+              <span className="text-sm italic" style={{ color: MUTED }}>Medication only</span>
+            )}
+            {meds.map((m, mi) => (
+              <span key={mi} className="text-xs mt-0.5 font-medium" style={{ color: "#B83A52" }}>
+                + {[m.name, m.dose].filter(Boolean).join(" — ")}
+              </span>
+            ))}
+            {meds.length > 0 && (
+              <span className="text-[11px] mt-0.5" style={{ color: MUTED }}>See Medications</span>
+            )}
+          </div>
         </div>
-      ))}
+        );
+      })}
       {(feeding.treats?.type || feeding.treats?.limit) && (
         <div className="flex px-4 py-2 gap-3" style={{ borderTop: `1px solid ${BORDER}` }}>
           <span className="text-sm font-medium w-20 shrink-0" style={{ color: MUTED }}>Treats</span>

@@ -1,6 +1,7 @@
 // Inline PIN change component — used in the emergency contacts edit screen
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
+import { AppAlert } from "../stores/appAlert";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "../lib/supabase";
 import { colors } from "@quirksandall/shared";
@@ -66,9 +67,9 @@ export default function PINEditor({ petId, autoStart }: Props) {
         setStage("idle");
         setPin("");
         setConfirm("");
-        Alert.alert("PIN updated", "New PIN is active.");
+        AppAlert.alert("PIN updated", "New PIN is active.");
       } catch (e: any) {
-        Alert.alert("Couldn't update PIN", e.message);
+        AppAlert.alert("Couldn't update PIN", e.message);
         setStage("set");
         setPin("");
         setConfirm("");
@@ -92,10 +93,11 @@ export default function PINEditor({ petId, autoStart }: Props) {
           </Text>
           <TouchableOpacity
             onPress={() => setStage("set")}
-            style={{ height: 44, borderRadius: 10, backgroundColor: colors.primary, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }}
+            activeOpacity={0.85}
+            style={{ height: 46, borderRadius: 12, backgroundColor: colors.button, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }}
           >
-            <Ionicons name="lock-closed" size={15} color="#F8ECEE" />
-            <Text style={{ color: "#F8ECEE", fontSize: 14, fontFamily: "Satoshi-Bold" }}>Change PIN</Text>
+            <Ionicons name="lock-closed" size={15} color={colors.buttonText} />
+            <Text style={{ color: colors.buttonText, fontSize: 15, fontFamily: "Satoshi-Medium", letterSpacing: 0.3 }}>Change PIN</Text>
           </TouchableOpacity>
         </>
       )}

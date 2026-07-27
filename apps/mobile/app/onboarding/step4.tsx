@@ -1,15 +1,17 @@
 // Screen 4 — Routine & medical
-import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert } from "react-native";
+import { View, Text, ScrollView, TextInput, TouchableOpacity, Platform } from "react-native";
+import { AppAlert } from "../../stores/appAlert";
 import { router } from "expo-router";
-import { Headline, Textarea, InlineNote, PrimaryButton, SkipButton, ProgressDots, Eyebrow, TimeInput } from "../../components/ui";
+import { track, AnalyticsEvent } from "../../lib/analytics";
+import { Headline, Textarea, InlineNote, PrimaryButton, SkipButton, ProgressDots, Eyebrow, TimeInput, BackButton } from "../../components/ui";
 import { Underlined } from "../../components/Underlined";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { useActivePetStore } from "../../stores/activePet";
 import { supabase } from "../../lib/supabase";
 import { uploadPetPhoto } from "../../lib/uploadPhoto";
 import { randomToken } from "../../lib/links";
-import { colors, displayDateToISO, capitalizeFirst } from "@quirksandall/shared";
-import { useState } from "react";
+import { colors, displayDateToISO, capitalizeFirst, PRICE } from "@quirksandall/shared";
+import { useState, useEffect } from "react";
 
 const mealInput = {
   minHeight: 38,
@@ -24,14 +26,14 @@ const mealInput = {
   color: colors.textDark,
 } as const;
 
-function MealBlock({ label, time, amount, onTime, onAmount, divider }: {
+function MealBlock({ label, time, amount, onTime, onAmount, divider, defaultPeriod }: {
   label: string; time: string; amount: string;
-  onTime: (v: string) => void; onAmount: (v: string) => void; divider: boolean;
+  onTime: (v: string) => void; onAmount: (v: string) => void; divider: boolean; defaultPeriod?: "AM" | "PM";
 }) {
   return (
     <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8, borderBottomWidth: divider ? 1 : 0, borderBottomColor: colors.border }}>
       <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.textDark }}>{label}</Text>
-      <TimeInput style={mealInput} placeholder="7:30" value={time} onChangeText={onTime} />
+      <TimeInput style={mealInput} placeholder="7:30" value={time} onChangeText={onTime} defaultPeriod={defaultPeriod} />
       <TextInput style={mealInput} placeholder="Amount & brand" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" value={amount} onChangeText={(v) => onAmount(capitalizeFirst(v))} />
     </View>
   );
@@ -40,6 +42,17 @@ function MealBlock({ label, time, amount, onTime, onAmount, divider }: {
 export default function Step4() {
   const { pet, setPet, reset } = useOnboardingStore();
   const [saving, setSaving] = useState(false);
+  // The unlock is account-wide, so a paid owner adding another pet should never
+  // see the paywall again (#86). Check their entitlement up front.
+  const [isPaid, setIsPaid] = useState(false);
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("owners").select("purchase_status").eq("id", user.id).single();
+      if (data?.purchase_status === "paid") setIsPaid(true);
+    })();
+  }, []);
 
   const finish = async () => {
     // Both "Finish" and "Skip" call this — guard so a double-tap can't create
@@ -61,6 +74,7 @@ export default function Step4() {
         })
         .select("id").single();
       if (!newPet) throw new Error("Failed to create pet");
+      track(AnalyticsEvent.PetCreated, { platform: Platform.OS });
 
       if (pet.photoUri?.startsWith("file://")) {
         const photoUrl = await uploadPetPhoto(newPet.id, pet.photoUri);
@@ -113,6 +127,8 @@ export default function Step4() {
         .insert({ pet_id: newPet.id, token, label: "Main link", pin_hash: null, mode: "full", revoked: false })
         .select("id")
         .single();
+      // Value Moment — onboarding leaves the pet with a shareable link ready.
+      track(AnalyticsEvent.ShareLinkCreated, { context: "onboarding", platform: Platform.OS });
 
       // Persist the PIN the owner chose during onboarding. Hashing happens
       // server-side in the set-pin edge function so we never store it plaintext.
@@ -134,7 +150,7 @@ export default function Step4() {
       reset();
       router.replace("/dashboard");
     } catch (e: any) {
-      Alert.alert("Couldn't save", e.message);
+      AppAlert.alert("Couldn't save", e.message);
     } finally {
       setSaving(false);
     }
@@ -142,9 +158,7 @@ export default function Step4() {
 
   return (
     <ScrollView className="flex-1 bg-background" keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 24, paddingTop: 60, width: "100%", maxWidth: 600, alignSelf: "center" }}>
-      <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 16 }}>
-        <Text style={{ color: colors.textMuted, fontSize: 14 }}>‹ Back</Text>
-      </TouchableOpacity>
+      <BackButton />
       <ProgressDots total={4} current={4} />
 
       <View style={{ marginTop: 20, marginBottom: 6 }}><Eyebrow>Step 4 of 4</Eyebrow></View>
@@ -155,11 +169,14 @@ export default function Step4() {
       <Text style={{ color: colors.textMuted, fontSize: 14, lineHeight: 21, marginTop: 8, fontFamily: "Satoshi-Light" }}>
         Your link already works. This is the full picture.
       </Text>
-      <View style={{ marginTop: 12 }}>
-        <InlineNote variant="paywall" cta="Unlock for $7.99" onCta={() => router.push("/upgrade")}>
-          Routine's saved. Sitters won't see it until you unlock.
-        </InlineNote>
-      </View>
+      {/* Paywall only for free owners — paid access is account-wide (#86). */}
+      {!isPaid && (
+        <View style={{ marginTop: 12 }}>
+          <InlineNote variant="paywall" cta={`Unlock for ${PRICE}`} onCta={() => router.push("/upgrade")}>
+            Routine's saved. Sitters won't see it until you unlock.
+          </InlineNote>
+        </View>
+      )}
 
       {/* Routine */}
       <View style={{ marginTop: 24 }}>
@@ -172,7 +189,7 @@ export default function Step4() {
             </View>
             <MealBlock label="Breakfast" time={pet.feedingBreakfastTime ?? ""} amount={pet.feedingBreakfastAmount ?? ""} onTime={(v) => setPet({ feedingBreakfastTime: v })} onAmount={(v) => setPet({ feedingBreakfastAmount: v })} divider />
             <MealBlock label="Lunch" time={pet.feedingLunchTime ?? ""} amount={pet.feedingLunchAmount ?? ""} onTime={(v) => setPet({ feedingLunchTime: v })} onAmount={(v) => setPet({ feedingLunchAmount: v })} divider />
-            <MealBlock label="Dinner" time={pet.feedingDinnerTime ?? ""} amount={pet.feedingDinnerAmount ?? ""} onTime={(v) => setPet({ feedingDinnerTime: v })} onAmount={(v) => setPet({ feedingDinnerAmount: v })} divider />
+            <MealBlock label="Dinner" time={pet.feedingDinnerTime ?? ""} amount={pet.feedingDinnerAmount ?? ""} onTime={(v) => setPet({ feedingDinnerTime: v })} onAmount={(v) => setPet({ feedingDinnerAmount: v })} divider defaultPeriod="PM" />
             <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8, borderBottomWidth: 1, borderBottomColor: colors.border }}>
               <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.textDark }}>Treats</Text>
               <TextInput style={mealInput} placeholder="Type / brand" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" value={pet.feedingTreatsType ?? ""} onChangeText={(v) => setPet({ feedingTreatsType: capitalizeFirst(v) })} />

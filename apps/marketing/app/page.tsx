@@ -63,7 +63,7 @@ const FAQS = [
   },
   {
     q: "Can I use this for more than one pet?",
-    a: "One pet is free. Unlock unlimited pets for $7.99, once.",
+    a: `One pet is free. Unlock unlimited pets for ${site.proPrice}, once.`,
   },
   {
     q: "Can I give different sitters different links?",

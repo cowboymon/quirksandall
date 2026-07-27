@@ -14,20 +14,21 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#F8ECEE"
+      "backgroundColor": "#E5BEC4"
     },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.itshypothetical.quirksandall",
       "infoPlist": {
-        "NSPhotoLibraryUsageDescription": "Choose a photo for your pet's profile.",
-        "NSCameraUsageDescription": "Take a photo for your pet's profile."
+        "NSPhotoLibraryUsageDescription": "Choose a photo of your pet, or a document like a vaccination record.",
+        "NSCameraUsageDescription": "Take a photo of your pet, or a document like a vaccination record.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#F8ECEE"
+        "backgroundColor": "#E5BEC4"
       },
       "package": "com.itshypothetical.quirksandall"
     },
@@ -46,6 +47,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "64d7579d-1a5e-43a7-995a-5a8bf7718b21"
+      }
     }
   }
 }

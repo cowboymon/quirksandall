@@ -1,20 +1,30 @@
 {
   "cli": {
     "version": ">= 9.0.0",
-    "appVersionSource": "remote"
+    "appVersionSource": "remote",
+    "promptToConfigurePushNotifications": false
   },
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "ios": {
+        "config": "ios-pnpm-install.yml"
+      }
     },
     "preview": {
       "distribution": "internal",
-      "channel": "preview"
+      "channel": "preview",
+      "ios": {
+        "config": "ios-pnpm-install.yml"
+      }
     },
     "production": {
       "autoIncrement": true,
-      "channel": "production"
+      "channel": "production",
+      "ios": {
+        "config": "ios-pnpm-install.yml"
+      }
     }
   },
   "submit": {

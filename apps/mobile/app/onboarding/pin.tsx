@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
-import { Headline, PrimaryButton, SkipButton } from "../../components/ui";
+import { Headline, PrimaryButton, SkipButton, BackButton } from "../../components/ui";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { colors } from "@quirksandall/shared";
 
@@ -35,6 +35,7 @@ export default function PINSetup() {
 
   return (
     <View className="flex-1 bg-background px-6 pt-16">
+      <BackButton />
       <Headline>For if you're ever not there.</Headline>
       <View style={{ backgroundColor: colors.cardDark, borderRadius: 10, padding: 12, marginTop: 12, marginBottom: 24 }}>
         <Text style={{ color: "rgba(248,236,238,0.8)", fontSize: 12, lineHeight: 18 }}>

@@ -1,7 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
+import { cookies } from "next/headers";
 import type { RecipientProfile } from "@quirksandall/shared";
 import LinkUnavailable from "../../components/LinkUnavailable";
 import RecipientView from "./RecipientView";
+import { fetchEmergencyContacts } from "../../lib/emergency";
+import { unlockCookieName, verifyUnlock } from "../../lib/unlock";
 
 // Never cache the recipient page — a revoked link or freshly edited profile must
 // take effect immediately.
@@ -38,7 +41,7 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
   // Resolve the share link
   const { data: link } = await supabase
     .from("share_links")
-    .select("id, pet_id, mode, revoked, expires_at, pin_hash, last_viewed_at, last_viewed_by")
+    .select("id, pet_id, mode, revoked, expires_at, pin_hash, last_viewed_at, last_viewed_by, duration_preset, ends_at")
     .eq("token", token)
     .single();
 
@@ -61,7 +64,7 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
     supabase.from("owners").select("purchase_status, name, primary_phone, backup_contacts").eq("id", pet.owner_id).single(),
     supabase.from("pet_behavior").select("commands, quirks_triggers, escape_risk, scared, no_go, flight_risk, temperament_summary").eq("pet_id", pet.id).maybeSingle(),
     supabase.from("pet_medical").select("allergies, conditions, medications").eq("pet_id", pet.id).maybeSingle(),
-    supabase.from("pet_routine").select("feeding, walks, sleep, bathroom_habits").eq("pet_id", pet.id).maybeSingle(),
+    supabase.from("pet_routine").select("feeding, walks, sleep, bathroom_habits, left_alone, toileting_frequency").eq("pet_id", pet.id).maybeSingle(),
     supabase.from("pet_vet_info").select("primary_vet, emergency_vet, insurance, vet_pre_auth").eq("pet_id", pet.id).maybeSingle(),
   ]);
 
@@ -78,6 +81,16 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
   // client badges them, so a free owner sees what they'd be unlocking.
   const canSeePaid = isPaid || preview;
 
+  // Persisted unlock (#87): if this device previously entered the correct PIN it
+  // holds a signed httpOnly cookie, so render the emergency block already
+  // unlocked — no flash of the PIN gate. Re-verified here against the current
+  // PIN hash on the (already non-revoked) link, so a revoked link or changed PIN
+  // re-locks immediately.
+  let unlockedContacts: Awaited<ReturnType<typeof fetchEmergencyContacts>> | null = null;
+  if (pinSet && verifyUnlock(token, link.pin_hash!, cookies().get(unlockCookieName(token))?.value)) {
+    unlockedContacts = await fetchEmergencyContacts(supabase, pet.id);
+  }
+
   // Log view (fire and forget) — never count an owner preview as a real view
   if (logView && !preview) {
     supabase
@@ -88,9 +101,18 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
   }
 
   // Compute age
-  const { computeAge } = await import("@quirksandall/shared");
+  const { computeAge, orderedCommands, stayPhrase } = await import("@quirksandall/shared");
   const age = computeAge(pet.dob, pet.dob_is_estimated);
+  // Stay-duration orientation (§5.1) — only the owner-set phrase, no raw dates
+  // beyond the friendly "until …" form. Owner previews don't show it.
+  const stayNote = preview ? null : stayPhrase((link as any).duration_preset, (link as any).ends_at);
 
+  // PRODUCT DECISION (v1, do not reopen without a product call): the document
+  // vault is owner-side only. Vaccination/flea-worm documents are deliberately
+  // NOT added to the recipient profile and never exposed to a sitter via signed
+  // URL — boarding check-in is almost always the owner in person, in-home
+  // sitting needs no certificate, and sitter-run boarding collects proof through
+  // its own booking platform. See AGENTS.md "Product decisions".
   const profile: RecipientProfile = {
     pet: {
       name: pet.name,
@@ -104,7 +126,7 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
     },
     age,
     behavior: {
-      commands: behavior.commands ?? [],
+      commands: orderedCommands(behavior.commands ?? [], isPaid, false),
       quirksTriggers: behavior.quirks_triggers ?? [],
       // Flight/escape risk is a safety override — always free.
       escapeRisk: behavior.escape_risk ?? { flag: false, notes: "" },
@@ -117,10 +139,11 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
     allergies: medical.allergies ?? [],
     pinSet,
     // When a PIN is set, emergencyContacts is populated client-side only after
-    // the sitter enters it (via the pin-check route). When NO pin is set there
-    // is nothing to protect, so we surface the contacts openly here.
+    // the sitter enters it (via the pin-check route) — unless this device has a
+    // persisted unlock (#87), in which case we surface it server-side here. When
+    // NO pin is set there is nothing to protect, so we surface it openly.
     ...(pinSet
-      ? {}
+      ? (unlockedContacts ? { emergencyContacts: unlockedContacts } : {})
       : {
           emergencyContacts: {
             primaryVet: {
@@ -129,7 +152,7 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
               phone: vetInfo?.primary_vet?.phone ?? "",
             },
             emergencyVet: vetInfo?.emergency_vet ?? {},
-            insurance: { provider: vetInfo?.insurance?.provider ?? "", policyNumber: vetInfo?.insurance?.policy_number ?? "", claimsContact: vetInfo?.insurance?.claims_contact ?? "" },
+            insurance: { provider: vetInfo?.insurance?.provider ?? "", policyNumber: vetInfo?.insurance?.policy_number ?? "" },
             ownerContact: { name: owner.name ?? "", phone: owner.primary_phone ?? "" },
             backupContacts: owner.backup_contacts ?? [],
             vetPreAuth: vetInfo?.vet_pre_auth ?? false,
@@ -139,6 +162,7 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
     mode: link.mode,
     isPaid,
     preview,
+    ...(stayNote ? { stayNote } : {}),
     // Feeding is free at every tier; walks/sleep/bathroom are paid. Always send
     // feeding when a routine row exists; withhold the rest for a free payload.
     ...(routine
@@ -148,11 +172,32 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
             walks: canSeePaid ? routine.walks ?? "" : "",
             sleep: canSeePaid ? routine.sleep ?? "" : "",
             bathroomHabits: canSeePaid ? routine.bathroom_habits ?? "" : "",
+            leftAlone: canSeePaid ? (routine.left_alone?.ok ? (routine.left_alone.detail ? `${routine.left_alone.ok} — ${routine.left_alone.detail}` : routine.left_alone.ok) : "") : "",
+            toileting: canSeePaid ? routine.toileting_frequency ?? "" : "",
           },
         }
       : {}),
-    // Medical (conditions + medications) — paid tier only.
-    ...(canSeePaid && medical ? { medical: { conditions: medical.conditions ?? [], medications: medical.medications ?? [] } } : {}),
+    // Medical (conditions + medications) — free at every tier. Withholding a
+    // dog's medication from a sitter because the owner hasn't paid is a
+    // safety failure (harm test), so it ships in the free payload like allergies.
+    ...(medical
+      ? {
+          medical: {
+            conditions: medical.conditions ?? [],
+            // Map the stored (snake_case) medication rows to the camelCase type
+            // the view renders, including the meal slot (#94).
+            medications: (medical.medications ?? []).map((m: any) => ({
+              name: m.name ?? "",
+              dose: m.dose ?? "",
+              frequency: m.frequency ?? "",
+              timeOfDay: m.time_of_day ?? "",
+              locationStored: m.location_stored ?? "",
+              notes: m.notes ?? "",
+              withMeal: m.with_meal ?? undefined,
+            })),
+          },
+        }
+      : {}),
   };
 
   return profile;

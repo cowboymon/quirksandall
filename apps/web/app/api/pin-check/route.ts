@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { PIN_MAX_ATTEMPTS, PIN_WINDOW_MINUTES } from "@quirksandall/shared";
 import { compareSync } from "bcryptjs";
+import { fetchEmergencyContacts } from "../../lib/emergency";
+import { UNLOCK_MAX_AGE_SECONDS, signUnlock, unlockCookieName } from "../../lib/unlock";
 
 export const runtime = "nodejs";
 
@@ -60,28 +62,20 @@ export async function POST(req: NextRequest) {
 
   // Fetch emergency contacts with separate reads (embeds were returning empty
   // relations, which surfaced nothing after unlock).
-  const { data: pet } = await supabase.from("pets").select("owner_id").eq("id", link.pet_id).single();
-  const [{ data: ownerRow }, { data: vetRow }] = await Promise.all([
-    supabase.from("owners").select("name, primary_phone, backup_contacts").eq("id", pet?.owner_id).single(),
-    supabase.from("pet_vet_info").select("primary_vet, emergency_vet, insurance, vet_pre_auth").eq("pet_id", link.pet_id).maybeSingle(),
-  ]);
-  const vetInfo = (vetRow ?? {}) as any;
-  const owner = (ownerRow ?? {}) as any;
-  const ins = vetInfo.insurance ?? {};
+  const contacts = await fetchEmergencyContacts(supabase, link.pet_id);
 
-  return NextResponse.json({
-    success: true,
-    contacts: {
-      primaryVet: {
-        contactName: vetInfo.primary_vet?.contact_name ?? "",
-        clinic: vetInfo.primary_vet?.clinic ?? "",
-        phone: vetInfo.primary_vet?.phone ?? "",
-      },
-      emergencyVet: vetInfo.emergency_vet ?? {},
-      insurance: { provider: ins.provider ?? "", policyNumber: ins.policy_number ?? "", claimsContact: ins.claims_contact ?? "" },
-      ownerContact: { name: owner.name ?? "", phone: owner.primary_phone ?? "" },
-      backupContacts: owner.backup_contacts ?? [],
-      vetPreAuth: vetInfo.vet_pre_auth ?? false,
-    },
+  // Persist the unlock on this device (#87): a signed, httpOnly cookie bound to
+  // this link's PIN hash, good for 30 days, so the sitter doesn't re-key the PIN
+  // every visit. Every future visit still re-checks revoked/PIN server-side.
+  const res = NextResponse.json({ success: true, contacts });
+  res.cookies.set({
+    name: unlockCookieName(token),
+    value: signUnlock(token, link.pin_hash!),
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: UNLOCK_MAX_AGE_SECONDS,
   });
+  return res;
 }

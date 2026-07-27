@@ -3,7 +3,25 @@
 import { useState, useRef } from "react";
 import { Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { router, useNavigation } from "expo-router";
 import { colors, radius, capitalizeFirst, capitalizeWords, formatPhone } from "@quirksandall/shared";
+
+// "‹ Back" for onboarding/stack screens. Uses the NEAREST navigator's goBack
+// (via useNavigation) so it pops the current nested stack correctly — plain
+// router.back() targets the root navigator and was a no-op inside onboarding.
+// Falls back to the dashboard when there's nothing to pop (e.g. first step).
+export function BackButton({ style }: { style?: ViewProps["style"] }) {
+  const nav = useNavigation();
+  return (
+    <TouchableOpacity
+      onPress={() => (nav.canGoBack() ? nav.goBack() : router.replace("/dashboard"))}
+      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+      style={[{ marginBottom: 16, alignSelf: "flex-start" }, style]}
+    >
+      <Text style={{ color: colors.textMuted, fontSize: 14 }}>‹ Back</Text>
+    </TouchableOpacity>
+  );
+}
 
 // Keyboard types where sentence-casing the first char would be wrong.
 const NON_TEXT_KEYBOARDS = ["numeric", "number-pad", "decimal-pad", "phone-pad", "email-address"];
@@ -179,8 +197,12 @@ function maskTime12(raw: string): string {
 }
 
 // 12-hour time field with an AM/PM toggle. Stores "h:mm AM" / "h:mm PM".
-export function TimeInput({ value, onChangeText, style, placeholder }: { value: string; onChangeText: (v: string) => void; style?: TextInputProps["style"]; placeholder?: string }) {
-  const { hhmm, period } = parseTime12(value);
+export function TimeInput({ value, onChangeText, style, placeholder, defaultPeriod }: { value: string; onChangeText: (v: string) => void; style?: TextInputProps["style"]; placeholder?: string; defaultPeriod?: "AM" | "PM" }) {
+  const parsed = parseTime12(value);
+  const hhmm = parsed.hhmm;
+  // Empty field pre-selects defaultPeriod (e.g. PM for the dinner slot) so the
+  // owner doesn't have to switch it; once they've typed a value its own period wins.
+  const period = value && value.trim() ? parsed.period : (defaultPeriod ?? parsed.period);
   const commit = (nextHhmm: string, nextPeriod: "AM" | "PM") =>
     onChangeText(nextHhmm ? `${nextHhmm} ${nextPeriod}` : "");
   return (

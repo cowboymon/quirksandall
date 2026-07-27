@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TouchableOpacity, Switch, Linking } from "react-native";
+import { AppAlert } from "../stores/appAlert";
+import Constants from "expo-constants";
 import { router } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { checkEntitlement, purchasePro, restorePurchases } from "../lib/purchases";
-import { colors } from "@quirksandall/shared";
+import { REDEMPTION_ENABLED } from "../lib/config";
+import { colors, PRICE, CONSENT_POLICY_VERSION } from "@quirksandall/shared";
+import { Platform } from "react-native";
+import { track, resetAnalytics, AnalyticsEvent } from "../lib/analytics";
 import { Eyebrow, Input } from "../components/ui";
 import EditShell from "../components/EditShell";
+import ConfirmModal from "../components/ConfirmModal";
 
 const SUPPORT_EMAIL = "quirksandall@itshypothetical.com";
 
@@ -16,6 +22,12 @@ export default function Account() {
   const [isPaid, setIsPaid] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  // null = not yet read from the DB. The toggle stays disabled until we've
+  // hydrated the real value, so we never render "off" as if it were authoritative
+  // before the source of truth has loaded.
+  const [insuranceConsent, setInsuranceConsent] = useState<boolean | null>(null);
+  const [marketingConsent, setMarketingConsent] = useState<boolean | null>(null);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -23,16 +35,60 @@ export default function Account() {
       if (!user) { router.replace("/auth"); return; }
       const { data: owner } = await supabase
         .from("owners")
-        .select("name, primary_phone, primary_email, purchase_status")
+        .select("name, primary_phone, primary_email, purchase_status, consent_insurance_offers, consent_marketing")
         .eq("id", user.id)
         .single();
       setName(owner?.name ?? "");
       setPhone(owner?.primary_phone ?? "");
       setEmail(owner?.primary_email ?? user.email ?? "");
       setIsPaid(owner?.purchase_status === "paid");
+      // Read the consent state back from the source of truth every time the
+      // screen opens — reflects changes made on another device or a withdrawal.
+      setInsuranceConsent(owner?.consent_insurance_offers ?? false);
+      setMarketingConsent(owner?.consent_marketing ?? false);
     })();
     checkEntitlement().then((v) => v && setIsPaid(true)).catch(() => {});
   }, []);
+
+  // Flip a consent: write the current-state column AND append an audit row, both
+  // stamped with the policy version. On failure, revert the toggle via `revert`
+  // so it keeps matching what's actually stored. Shared by every opt-in.
+  const writeConsent = async (
+    column: "consent_insurance_offers" | "consent_marketing",
+    type: string,
+    next: boolean,
+    revert: () => void,
+  ) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { error } = await supabase
+      .from("owners")
+      .update({ [column]: next, consent_updated_at: new Date().toISOString(), consent_policy_version: CONSENT_POLICY_VERSION })
+      .eq("id", user.id);
+    if (error) {
+      revert();
+      AppAlert.alert("Couldn't save that", error.message);
+      return;
+    }
+    // Append-only audit trail (the current-state write already succeeded).
+    await supabase.from("consent_log").insert({
+      owner_id: user.id,
+      consent_type: type,
+      granted: next,
+      policy_version: CONSENT_POLICY_VERSION,
+    });
+  };
+
+  const setInsuranceOffers = (next: boolean) => {
+    const prev = insuranceConsent;
+    setInsuranceConsent(next);
+    writeConsent("consent_insurance_offers", "insurance_offers", next, () => setInsuranceConsent(prev));
+  };
+  const setMarketing = (next: boolean) => {
+    const prev = marketingConsent;
+    setMarketingConsent(next);
+    writeConsent("consent_marketing", "marketing", next, () => setMarketingConsent(prev));
+  };
 
   const save = async () => {
     setSaving(true);
@@ -46,15 +102,17 @@ export default function Account() {
 
   const handlePurchase = async () => {
     setLoading(true);
+    track(AnalyticsEvent.PurchaseStarted, { source: "account" });
     try {
       if (await purchasePro()) {
+        track(AnalyticsEvent.PurchaseCompleted, { source: "account" });
         const { data: { user } } = await supabase.auth.getUser();
         if (user) await supabase.from("owners").update({ purchase_status: "paid" }).eq("id", user.id);
         setIsPaid(true);
-        Alert.alert("Unlocked", "Full access is now active across all your pets.");
+        AppAlert.alert("Unlocked", "Full access is now active across all your pets.");
       }
     } catch (e: any) {
-      if (!e.message?.toLowerCase().includes("cancel")) Alert.alert("Purchase failed", e.message);
+      if (!e.message?.toLowerCase().includes("cancel")) AppAlert.alert("Purchase failed", e.message);
     } finally {
       setLoading(false);
     }
@@ -64,52 +122,55 @@ export default function Account() {
     setLoading(true);
     try {
       if (await restorePurchases()) {
+        track(AnalyticsEvent.PurchaseRestored, { source: "account" });
         const { data: { user } } = await supabase.auth.getUser();
         if (user) await supabase.from("owners").update({ purchase_status: "paid" }).eq("id", user.id);
         setIsPaid(true);
-        Alert.alert("Restored", "Your purchase has been restored.");
+        AppAlert.alert("Restored", "Your purchase has been restored.");
       } else {
-        Alert.alert("Nothing to restore", "No previous purchase found for this account.");
+        AppAlert.alert("Nothing to restore", "No previous purchase found for this account.");
       }
     } catch (e: any) {
-      Alert.alert("Restore failed", e.message);
+      AppAlert.alert("Restore failed", e.message);
     } finally {
       setLoading(false);
     }
   };
 
   const signOut = async () => {
+    resetAnalytics(); // clear identity so the next account isn't merged into this one
     await supabase.auth.signOut();
     router.replace("/auth");
   };
 
-  const deleteAccount = () => {
-    Alert.alert(
-      "Delete your account?",
-      "Your profile and every pet's details stay recoverable for 30 days — sign back in any time before then to cancel. After that, everything is permanently deleted.",
-      [
-        { text: "Keep my account", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-              const { error } = await supabase
-                .from("owners")
-                .update({ deletion_scheduled_at: new Date().toISOString() })
-                .eq("id", user.id);
-              if (error) {
-                Alert.alert("Couldn't schedule deletion", error.message);
-                return;
-              }
-            }
-            await supabase.auth.signOut();
-            router.replace("/auth");
-          },
-        },
-      ]
-    );
+  // Feedback / feature requests (#95) — opens a mail draft with a little context
+  // pre-filled so we know which build it came from. No backend needed.
+  const sendFeedback = async () => {
+    const version = Constants.expoConfig?.version ?? "";
+    const subject = encodeURIComponent("Quirks & All — feedback");
+    const body = encodeURIComponent(`\n\n\n———\nSent from Quirks & All ${version} (${Platform.OS})`);
+    const url = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
+    const ok = await Linking.canOpenURL(url).catch(() => false);
+    if (ok) Linking.openURL(url);
+    else AppAlert.alert("No mail app", `Email us at ${SUPPORT_EMAIL}.`);
+  };
+
+  const doDeleteAccount = async () => {
+    setShowDeleteAccount(false);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { error } = await supabase
+        .from("owners")
+        .update({ deletion_scheduled_at: new Date().toISOString() })
+        .eq("id", user.id);
+      if (error) {
+        AppAlert.alert("Couldn't schedule deletion", error.message);
+        return;
+      }
+    }
+    resetAnalytics();
+    await supabase.auth.signOut();
+    router.replace("/auth");
   };
 
   return (
@@ -144,6 +205,49 @@ export default function Account() {
         </Text>
       </View>
 
+      {/* Consent (Spec §8.4) — own section, plain register (not deadpan). Opt-in,
+          off by default, revocable in one tap. The toggle reflects the value
+          stored in the DB, hydrated on open. */}
+      <View style={{ marginTop: 24, paddingTop: 20, borderTopWidth: 1, borderTopColor: colors.border }}>
+        <Text style={{ fontSize: 11, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.7, color: colors.textMuted }}>
+          What we can contact you about
+        </Text>
+        <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginTop: 14 }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: colors.textDark, fontSize: 15, fontFamily: "Satoshi-Medium" }}>Product news &amp; tips</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 12, lineHeight: 17, fontFamily: "Satoshi-Light", marginTop: 3 }}>
+              Occasional emails about new features and getting the most out of Quirks &amp; All. Off unless you say so. Change your mind anytime.
+            </Text>
+          </View>
+          <Switch
+            value={marketingConsent ?? false}
+            onValueChange={setMarketing}
+            disabled={marketingConsent === null}
+            trackColor={{ false: colors.border, true: colors.primary }}
+            thumbColor="#FFFFFF"
+            ios_backgroundColor={colors.border}
+            style={{ marginTop: 2 }}
+          />
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginTop: 18, paddingTop: 18, borderTopWidth: 1, borderTopColor: colors.border }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: colors.textDark, fontSize: 15, fontFamily: "Satoshi-Medium" }}>Insurance offers</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 12, lineHeight: 17, fontFamily: "Satoshi-Light", marginTop: 3 }}>
+              Occasional offers from pet insurance partners, matched to your pet's details. Off unless you say so. Change your mind anytime.
+            </Text>
+          </View>
+          <Switch
+            value={insuranceConsent ?? false}
+            onValueChange={setInsuranceOffers}
+            disabled={insuranceConsent === null}
+            trackColor={{ false: colors.border, true: colors.primary }}
+            thumbColor="#FFFFFF"
+            ios_backgroundColor={colors.border}
+            style={{ marginTop: 2 }}
+          />
+        </View>
+      </View>
+
       {/* Unlock module — dark card, matching the paywall hero */}
       {!isPaid ? (
         <View style={{ marginTop: 24, backgroundColor: "#510000", borderRadius: 14, paddingHorizontal: 20, paddingVertical: 20 }}>
@@ -151,18 +255,23 @@ export default function Account() {
             Unlock full access.
           </Text>
           <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6, marginTop: 8, marginBottom: 16 }}>
-            <Text style={{ fontFamily: "Tanker", fontSize: 20, lineHeight: 20, color: "#F8ECEE" }}>$7.99</Text>
+            <Text style={{ fontFamily: "Tanker", fontSize: 20, lineHeight: 20, color: "#F8ECEE" }}>{PRICE}</Text>
             <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 11, fontFamily: "Satoshi-Light" }}>once, forever</Text>
           </View>
           <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, lineHeight: 17, fontFamily: "Satoshi-Light", marginBottom: 20 }}>
-            The full picture — routines, medical needs, and the softer stuff that makes the handoff feel like you. Unlimited pets, too.
+            The full picture — routines and the softer stuff that makes the handoff feel like you. Unlimited pets, too.
           </Text>
           <TouchableOpacity onPress={handlePurchase} disabled={loading} activeOpacity={0.85} style={{ height: 44, borderRadius: 10, backgroundColor: "#F8ECEE", alignItems: "center", justifyContent: "center", opacity: loading ? 0.6 : 1 }}>
-            <Text style={{ color: "#510000", fontSize: 14, fontFamily: "Satoshi-Medium" }}>{loading ? "Working…" : "Unlock for $7.99"}</Text>
+            <Text style={{ color: "#510000", fontSize: 14, fontFamily: "Satoshi-Medium" }}>{loading ? "Working…" : `Unlock for ${PRICE}`}</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={handleRestore} disabled={loading} style={{ alignItems: "center", marginTop: 10, paddingVertical: 4 }}>
             <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, fontFamily: "Satoshi" }}>Restore purchases</Text>
           </TouchableOpacity>
+          {REDEMPTION_ENABLED && (
+            <TouchableOpacity onPress={() => router.push("/redeem")} style={{ alignItems: "center", marginTop: 8, paddingVertical: 4 }}>
+              <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, fontFamily: "Satoshi" }}>Have a code?</Text>
+            </TouchableOpacity>
+          )}
         </View>
       ) : (
         <View style={{ marginTop: 24, backgroundColor: "#510000", borderRadius: 14, paddingHorizontal: 20, paddingVertical: 20 }}>
@@ -173,19 +282,36 @@ export default function Account() {
         </View>
       )}
 
+      {/* Feedback / feature request (#95) — quiet row above sign out. */}
+      <TouchableOpacity onPress={sendFeedback} activeOpacity={0.7} style={{ marginTop: 24, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 4 }}>
+        <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Send feedback or a feature request</Text>
+        <Text style={{ color: colors.textMuted, fontSize: 16 }}>›</Text>
+      </TouchableOpacity>
+
       {/* Sign out — outlined standalone button (the treatment Delete used to have). */}
       <TouchableOpacity
         onPress={signOut}
         activeOpacity={0.85}
-        style={{ marginTop: 28, height: 50, borderRadius: 12, borderWidth: 1, borderColor: colors.textDark, backgroundColor: "transparent", alignItems: "center", justifyContent: "center" }}
+        style={{ marginTop: 16, height: 50, borderRadius: 12, borderWidth: 1, borderColor: colors.textDark, backgroundColor: "transparent", alignItems: "center", justifyContent: "center" }}
       >
         <Text style={{ color: colors.textDark, fontSize: 15, fontFamily: "Satoshi-Medium", letterSpacing: 0.3 }}>Sign out</Text>
       </TouchableOpacity>
 
       {/* Delete account — the quiet text link, beneath Sign out. */}
-      <TouchableOpacity onPress={deleteAccount} style={{ marginTop: 14, alignItems: "center", paddingVertical: 6 }}>
+      <TouchableOpacity onPress={() => setShowDeleteAccount(true)} style={{ marginTop: 14, alignItems: "center", paddingVertical: 6 }}>
         <Text style={{ color: colors.danger, fontSize: 14 }}>Delete account</Text>
       </TouchableOpacity>
+
+      <ConfirmModal
+        visible={showDeleteAccount}
+        title="Delete your account?"
+        message="Your profile and every pet's details stay recoverable for 30 days — sign back in any time before then to cancel. After that, everything is permanently deleted."
+        confirmLabel="Delete"
+        cancelLabel="Keep my account"
+        destructive
+        onConfirm={doDeleteAccount}
+        onCancel={() => setShowDeleteAccount(false)}
+      />
     </EditShell>
   );
 }

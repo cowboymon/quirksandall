@@ -1,12 +1,21 @@
 // Edit commands, quirks, escape risk
 import { useState, useEffect, useRef } from "react";
-import { View, Text, TouchableOpacity, Alert, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { AppAlert } from "../../stores/appAlert";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { Input, Eyebrow, Card, FieldTier } from "../../components/ui";
-import { colors } from "@quirksandall/shared";
-import type { Command } from "@quirksandall/shared";
+import ConfirmModal from "../../components/ConfirmModal";
+import { colors, orderedCommands } from "@quirksandall/shared";
+import type { Command, CommandStrength } from "@quirksandall/shared";
+
+const STRENGTHS: { key: CommandStrength; label: string }[] = [
+  { key: "learning", label: "Still learning" },
+  { key: "solid", label: "Solid" },
+  { key: "mastered", label: "Mastered" },
+];
 import { router, useLocalSearchParams } from "expo-router";
 
 export default function EditBehavior() {
@@ -22,6 +31,7 @@ export default function EditBehavior() {
   const [temperament, setTemperament] = useState("");
   const [isPaid, setIsPaid] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   // Paid-gated fields carry the "Unlock to share" pill for free owners.
   const softLocked = !isPaid;
 
@@ -61,6 +71,27 @@ export default function EditBehavior() {
   const removeCmd = (id: string) =>
     setCommands((prev) => prev.filter((c) => c.id !== id));
 
+  // Strength tag (#92, free) — tap the current one again to clear it.
+  const setStrength = (id: string, strength: CommandStrength) =>
+    setCommands((prev) => prev.map((c) => (c.id === id ? { ...c, strength: c.strength === strength ? undefined : strength } : c)));
+
+  // Paid organisation controls.
+  const toggleHide = (id: string) =>
+    setCommands((prev) => prev.map((c) => (c.id === id ? { ...c, hidden: !c.hidden } : c)));
+  // Reorder a visible command up/down within the owner's manual order.
+  const move = (id: string, dir: -1 | 1) =>
+    setCommands((prev) => {
+      const vis = orderedCommands(prev, true, false);
+      const i = vis.findIndex((c) => c.id === id);
+      const j = i + dir;
+      if (i < 0 || j < 0 || j >= vis.length) return prev;
+      const arr = prev.slice();
+      const ai = arr.findIndex((c) => c.id === vis[i].id);
+      const aj = arr.findIndex((c) => c.id === vis[j].id);
+      [arr[ai], arr[aj]] = [arr[aj], arr[ai]];
+      return arr;
+    });
+
   const save = async () => {
     if (!petId) return;
     setSaving(true);
@@ -81,7 +112,7 @@ export default function EditBehavior() {
       if (error) throw error;
       router.back();
     } catch (e: any) {
-      Alert.alert("Couldn't save", e.message);
+      AppAlert.alert("Couldn't save", e.message);
     } finally {
       setSaving(false);
     }
@@ -98,42 +129,107 @@ export default function EditBehavior() {
         Commands
       </Text>
 
+      {/* Free owners can add unlimited commands, but organising them
+          (favourite / reorder / hide) is a paid control. */}
+      {!isPaid && commands.length > 1 && (
+        <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 6, fontFamily: "Satoshi-Light" }}>
+          Shown oldest-first. Unlock to reorder and hide commands.
+        </Text>
+      )}
+
       <View style={{ gap: 10, marginTop: 12 }}>
-        {commands.map((cmd, i) => (
-          <Card key={cmd.id}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <Eyebrow>Command {i + 1}</Eyebrow>
-              {commands.length > 0 && (
-                <TouchableOpacity onPress={() => removeCmd(cmd.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                  <Text style={{ color: colors.danger, fontSize: 20, lineHeight: 20 }}>×</Text>
-                </TouchableOpacity>
+        {(() => {
+          const visible = orderedCommands(commands, isPaid, false);
+          const ordered = orderedCommands(commands, isPaid, true);
+          return ordered.map((cmd, i) => {
+            const vi = visible.findIndex((c) => c.id === cmd.id);
+            const canUp = isPaid && vi > 0;
+            const canDown = isPaid && vi >= 0 && vi < visible.length - 1;
+            // The hidden commands are appended after the visible ones — mark
+            // where that section starts so it's obvious where a hidden command
+            // "goes" (rather than looking like it vanished).
+            const firstHidden = cmd.hidden && i === visible.length;
+            return (
+            <View key={cmd.id} style={{ gap: 10 }}>
+              {firstHidden && (
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 8 }}>
+                  <Ionicons name="eye-off-outline" size={14} color={colors.textMuted} />
+                  <Text style={{ color: colors.textMuted, fontSize: 12, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                    Hidden — only you can see these
+                  </Text>
+                </View>
               )}
+              <Card style={cmd.hidden ? { opacity: 0.6 } : undefined}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                  <Eyebrow>{cmd.hidden ? "Hidden from sitters" : `Command ${vi + 1}`}</Eyebrow>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                    {isPaid && !cmd.hidden && (
+                      <>
+                        <TouchableOpacity onPress={() => move(cmd.id, -1)} disabled={!canUp} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                          <Ionicons name="chevron-up" size={18} color={canUp ? colors.textMuted : colors.border} />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => move(cmd.id, 1)} disabled={!canDown} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                          <Ionicons name="chevron-down" size={18} color={canDown ? colors.textMuted : colors.border} />
+                        </TouchableOpacity>
+                      </>
+                    )}
+                    {isPaid && (
+                      <TouchableOpacity onPress={() => toggleHide(cmd.id)} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                        <Ionicons name={cmd.hidden ? "eye-off-outline" : "eye-outline"} size={17} color={colors.textMuted} />
+                      </TouchableOpacity>
+                    )}
+                    <TouchableOpacity onPress={() => setDeleteTarget(cmd.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                      <Text style={{ color: colors.danger, fontSize: 20, lineHeight: 20 }}>×</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                <Input
+                  placeholder="Word (e.g. Settle)"
+                  value={cmd.word}
+                  onChangeText={(v) => updateCmd(cmd.id, "word", v)}
+                />
+                <Input
+                  className="mt-2"
+                  placeholder="Means…"
+                  value={cmd.meaning}
+                  onChangeText={(v) => updateCmd(cmd.id, "meaning", v)}
+                />
+                <Input
+                  className="mt-2"
+                  placeholder="How to cue (optional)"
+                  value={cmd.howToCue}
+                  onChangeText={(v) => updateCmd(cmd.id, "howToCue", v)}
+                />
+                <Input
+                  className="mt-2"
+                  placeholder="Reward"
+                  value={cmd.reward}
+                  onChangeText={(v) => updateCmd(cmd.id, "reward", v)}
+                />
+                {/* Strength tag (#92) — how solid is it? Optional; shown to sitters. */}
+                <Text style={{ color: colors.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium", marginTop: 12, marginBottom: 6 }}>
+                  How solid is it?
+                </Text>
+                <View style={{ flexDirection: "row", gap: 6 }}>
+                  {STRENGTHS.map((s) => {
+                    const active = cmd.strength === s.key;
+                    return (
+                      <TouchableOpacity
+                        key={s.key}
+                        onPress={() => setStrength(cmd.id, s.key)}
+                        activeOpacity={0.85}
+                        style={{ flex: 1, height: 34, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: active ? colors.cardDark : colors.secondary, borderWidth: 1, borderColor: active ? colors.cardDark : colors.border }}
+                      >
+                        <Text style={{ color: active ? colors.cardDarkText : colors.textDark, fontSize: 12, fontFamily: "Satoshi-Medium" }}>{s.label}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </Card>
             </View>
-            <Input
-              placeholder="Word (e.g. Settle)"
-              value={cmd.word}
-              onChangeText={(v) => updateCmd(cmd.id, "word", v)}
-            />
-            <Input
-              className="mt-2"
-              placeholder="Means…"
-              value={cmd.meaning}
-              onChangeText={(v) => updateCmd(cmd.id, "meaning", v)}
-            />
-            <Input
-              className="mt-2"
-              placeholder="How to cue (optional)"
-              value={cmd.howToCue}
-              onChangeText={(v) => updateCmd(cmd.id, "howToCue", v)}
-            />
-            <Input
-              className="mt-2"
-              placeholder="Reward"
-              value={cmd.reward}
-              onChangeText={(v) => updateCmd(cmd.id, "reward", v)}
-            />
-          </Card>
-        ))}
+            );
+          });
+        })()}
       </View>
 
       <TouchableOpacity
@@ -212,6 +308,16 @@ export default function EditBehavior() {
           />
         </Card>
       </View>
+
+      <ConfirmModal
+        visible={!!deleteTarget}
+        title="Delete this command?"
+        message="This removes the command permanently — there's no undo."
+        confirmLabel="Delete"
+        destructive
+        onConfirm={() => { if (deleteTarget) removeCmd(deleteTarget); setDeleteTarget(null); }}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </EditShell>
   );
 }

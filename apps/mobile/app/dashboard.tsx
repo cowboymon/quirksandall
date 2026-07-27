@@ -1,16 +1,18 @@
 import { useCallback, useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Share, TextInput, Alert, Platform, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Share, TextInput, Platform, ActivityIndicator } from "react-native";
+import { AppAlert } from "../stores/appAlert";
 import { router, useFocusEffect } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Entypo from "@expo/vector-icons/Entypo";
 import { supabase } from "../lib/supabase";
-import { registerForPushNotifications, scheduleTrickNudge } from "../lib/notifications";
 import { Eyebrow, Card } from "../components/ui";
 import PetSwitcher from "../components/PetSwitcher";
+import ConfirmModal from "../components/ConfirmModal";
+import DurationModal from "../components/DurationModal";
 import { useActivePetStore } from "../stores/activePet";
-import { colors, computeAge, capitalizeFirst } from "@quirksandall/shared";
+import { colors, computeAge, capitalizeFirst, orderedCommands, possessive, PRICE, stayPhrase } from "@quirksandall/shared";
 import { WEB_URL } from "../lib/config";
-import { listLinks, createLink, renameLink, revokeLink, type OwnerLink } from "../lib/links";
+import { listLinks, createLink, renameLink, revokeLink, setLinkDuration, type OwnerLink } from "../lib/links";
 import type { Pet } from "@quirksandall/shared";
 
 type Section = { label: string; detail: string; status: "done" | "saved" | "empty"; route: string };
@@ -50,6 +52,8 @@ export default function Dashboard() {
   const [showNewLink, setShowNewLink] = useState(false);
   const [newLinkName, setNewLinkName] = useState("");
   const [creatingLink, setCreatingLink] = useState(false);
+  const [revokeTarget, setRevokeTarget] = useState<OwnerLink | null>(null);
+  const [durationTarget, setDurationTarget] = useState<OwnerLink | null>(null);
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [deletionScheduled, setDeletionScheduled] = useState(false);
 
@@ -93,13 +97,20 @@ export default function Dashboard() {
     // blocking on their own round-trip.
     setCachedPet(pet);
 
-    const [links, { data: behavior }] = await Promise.all([
+    const [links, { data: behavior }, docCountRes] = await Promise.all([
       listLinks(pet.id),
       supabase.from("pet_behavior").select("commands").eq("pet_id", pet.id).single(),
+      // Defensive: pet_documents may not exist until its migration is applied —
+      // a missing table returns an error (not a throw), so count falls back to 0.
+      supabase.from("pet_documents").select("id", { count: "exact", head: true }).eq("pet_id", pet.id),
     ]);
+    const docCount = docCountRes.count ?? 0;
 
     const isPaid = ownerData?.purchase_status === "paid";
-    const commandCount = behavior?.commands?.length ?? 0;
+    // Same visible/ordered list a recipient sees (manual order, hidden
+    // withheld for paid) so the dashboard count/preview never disagree.
+    const visibleCommands = orderedCommands((behavior?.commands ?? []) as any[], isPaid, false);
+    const commandCount = visibleCommands.length;
     // 21-day freshness cadence (#54): the nudge reappears when no command has
     // been confirmed (i.e. the behavior screen saved) within the window.
     const lastConfirmed = (behavior?.commands ?? [])
@@ -110,7 +121,7 @@ export default function Dashboard() {
       pet: { ...pet, age: computeAge(pet.dob, pet.dob_is_estimated) },
       ownerInitials: initialsOf(ownerData?.name),
       links,
-      firstCommand: behavior?.commands?.[0]?.word ?? null,
+      firstCommand: visibleCommands[0]?.word ?? null,
       needsReview,
       isPaid,
       sections: [
@@ -119,7 +130,8 @@ export default function Dashboard() {
         { label: "Commands", detail: commandCount ? `${commandCount} command${commandCount === 1 ? "" : "s"} saved` : "None saved yet", status: commandCount ? "done" : "empty", route: "/edit/behavior" },
         { label: "Quirks & Triggers", detail: "Escape risk, fears, off-limits zones", status: "done", route: "/edit/behavior?section=quirks" },
         { label: "Routine", detail: isPaid ? "Shown to sitters" : "Saved — not shown to sitters yet", status: "saved", route: "/edit/routine" },
-        { label: "Medical", detail: isPaid ? "Shown to sitters" : "Saved — not shown to sitters yet", status: "saved", route: "/edit/routine?section=medical" },
+        { label: "Medical", detail: "Shown to sitters", status: "done", route: "/edit/routine?section=medical" },
+        { label: "Documents", detail: docCount ? `${docCount} file${docCount === 1 ? "" : "s"}` : "Vaccinations, flea & worm", status: docCount ? "done" : "empty", route: "/edit/documents" },
       ],
     });
     setLoading(false);
@@ -130,10 +142,9 @@ export default function Dashboard() {
       .from("owners").select("deletion_scheduled_at").eq("id", user.id).single();
     setDeletionScheduled(!!(delRow as any)?.deletion_scheduled_at);
 
-    if (isPaid) {
-      registerForPushNotifications();
-      if (behavior?.commands?.[0]?.word && pet.name) scheduleTrickNudge(pet.name, behavior.commands[0].word);
-    }
+    // Notifications (push + the local freshness nudge) are a v1.1 feature —
+    // deliberately not wired in v1 so there's no notification-permission prompt
+    // and no APNs dependency. The lib stays in place for 1.1.
   };
 
   const shareLinkUrl = async (link: OwnerLink) => {
@@ -153,15 +164,13 @@ export default function Dashboard() {
     loadDashboard();
   };
 
-  const confirmRevoke = (link: OwnerLink) => {
-    Alert.alert("Revoke this link?", "It stops working immediately for anyone who has it.", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Revoke", style: "destructive", onPress: async () => {
-        const { error } = await revokeLink(link.id);
-        if (error) { Alert.alert("Couldn't revoke", error); return; }
-        loadDashboard();
-      } },
-    ]);
+  const doRevoke = async () => {
+    const link = revokeTarget;
+    setRevokeTarget(null);
+    if (!link) return;
+    const { error } = await revokeLink(link.id);
+    if (error) { AppAlert.alert("Couldn't revoke", error); return; }
+    loadDashboard();
   };
 
   const cancelDeletion = async () => {
@@ -273,6 +282,17 @@ export default function Dashboard() {
                 <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 11, marginTop: 2, fontFamily: "Satoshi-Light" }}>
                   {viewedLabel(link.last_viewed_at)}
                 </Text>
+                {/* Stay duration (§5.1) — tap to set/change how long the pet's
+                    staying. Shows on the recipient page. */}
+                <TouchableOpacity onPress={() => setDurationTarget(link)} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }} style={{ marginTop: 3 }}>
+                  {stayPhrase(link.duration_preset, link.ends_at) ? (
+                    <Text style={{ color: colors.cardDarkLabel, fontSize: 11, fontFamily: "Satoshi-Medium" }} numberOfLines={1}>
+                      Staying {stayPhrase(link.duration_preset, link.ends_at)}
+                    </Text>
+                  ) : (
+                    <Text style={{ color: "rgba(248,236,238,0.4)", fontSize: 11, fontFamily: "Satoshi-Medium" }}>+ Add stay length</Text>
+                  )}
+                </TouchableOpacity>
               </View>
               {/* Action row, left→right: Edit → Share → Delete (#71). Edit is a
                   standalone button (renames inline) rather than a pencil hung off
@@ -300,7 +320,7 @@ export default function Dashboard() {
                   </TouchableOpacity>
                 );
               })()}
-              <TouchableOpacity onPress={() => confirmRevoke(link)} style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}>
+              <TouchableOpacity onPress={() => setRevokeTarget(link)} style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}>
                 <Ionicons name="trash-outline" size={15} color="rgba(248,236,238,0.5)" />
               </TouchableOpacity>
             </View>
@@ -351,10 +371,10 @@ export default function Dashboard() {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium", lineHeight: 19 }}>
-                  Routine &amp; medical are saved, not shared yet.
+                  {pet.name}'s routine is saved, not shared yet.
                 </Text>
                 <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 3, fontFamily: "Satoshi-Light" }}>
-                  Unlock so sitters get {pet.name}'s full day — $7.99, once.
+                  Unlock so sitters get {pet.name}'s full day — {PRICE}, once.
                 </Text>
                 <Text style={{ color: colors.primary, fontSize: 12, marginTop: 6, fontFamily: "Satoshi-Medium" }}>Unlock full access →</Text>
               </View>
@@ -409,6 +429,16 @@ export default function Dashboard() {
                     <Text style={{ color: colors.primary, fontSize: 12, fontFamily: "Satoshi-Medium" }}>Change PIN →</Text>
                   </TouchableOpacity>
                 )}
+                {/* Delete pet — a clear callout under Pet Basics, mirroring Change PIN */}
+                {s.label === "Pet Basics" && (
+                  <TouchableOpacity
+                    onPress={() => router.push("/edit/pet")}
+                    style={{ flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start", marginTop: 6, marginLeft: 20, paddingVertical: 4 }}
+                  >
+                    <Ionicons name="trash-outline" size={13} color={colors.danger} />
+                    <Text style={{ color: colors.danger, fontSize: 12, fontFamily: "Satoshi-Medium" }}>Delete {possessive(pet.name)} profile?</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             ))}
           </View>
@@ -431,6 +461,32 @@ export default function Dashboard() {
           <Ionicons name="chevron-forward" size={16} color="rgba(248,236,238,0.5)" />
         </TouchableOpacity>
       </View>
+
+      <ConfirmModal
+        visible={!!revokeTarget}
+        title="Delete this link?"
+        message="It stops working immediately for anyone who has it."
+        confirmLabel="Delete"
+        destructive
+        onConfirm={doRevoke}
+        onCancel={() => setRevokeTarget(null)}
+      />
+
+      {durationTarget && (
+        <DurationModal
+          visible={!!durationTarget}
+          petName={data?.pet.name ?? ""}
+          initialPreset={durationTarget.duration_preset}
+          initialEndsAt={durationTarget.ends_at}
+          onSave={async (preset, endsAt) => {
+            const id = durationTarget.id;
+            setDurationTarget(null);
+            await setLinkDuration(id, preset, endsAt);
+            loadDashboard();
+          }}
+          onClose={() => setDurationTarget(null)}
+        />
+      )}
     </ScrollView>
   );
 }

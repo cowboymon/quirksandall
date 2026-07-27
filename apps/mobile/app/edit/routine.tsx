@@ -1,12 +1,22 @@
 // Edit routine + medical. Tier-aware: shows lock indicator on paid-gated sections for free users.
 import { useState, useEffect, useRef } from "react";
-import { View, Text, TouchableOpacity, TextInput, Alert, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, TextInput, ScrollView } from "react-native";
+import { AppAlert } from "../../stores/appAlert";
 import { router, useLocalSearchParams } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
-import { Input, Eyebrow, Card, InlineNote, TimeInput, FieldTier } from "../../components/ui";
-import { colors, capitalizeFirst } from "@quirksandall/shared";
+import { Input, Eyebrow, Card, InlineNote, TimeInput, FieldTier, Select } from "../../components/ui";
+import { colors, capitalizeFirst, PRICE } from "@quirksandall/shared";
+import type { MealSlot } from "@quirksandall/shared";
+
+type Med = { id: string; name: string; dose: string; withMeal?: MealSlot; notes: string };
+const MEAL_SLOTS: { key: MealSlot; label: string }[] = [
+  { key: "breakfast", label: "Breakfast" },
+  { key: "lunch", label: "Lunch" },
+  { key: "dinner", label: "Dinner" },
+  { key: "anytime", label: "Anytime" },
+];
 
 const mealInput = {
   minHeight: 38, borderRadius: 8, borderWidth: 1, borderColor: colors.border,
@@ -14,14 +24,14 @@ const mealInput = {
   fontSize: 14, fontFamily: "Satoshi", color: colors.textDark,
 } as const;
 
-function RoutineMeal({ label, time, amount, onTime, onAmount, divider }: {
+function RoutineMeal({ label, time, amount, onTime, onAmount, divider, defaultPeriod }: {
   label: string; time: string; amount: string;
-  onTime: (v: string) => void; onAmount: (v: string) => void; divider: boolean;
+  onTime: (v: string) => void; onAmount: (v: string) => void; divider: boolean; defaultPeriod?: "AM" | "PM";
 }) {
   return (
     <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8, borderBottomWidth: divider ? 1 : 0, borderBottomColor: colors.border }}>
       <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.textDark }}>{label}</Text>
-      <TimeInput style={mealInput} placeholder="7:30" value={time} onChangeText={onTime} />
+      <TimeInput style={mealInput} placeholder="7:30" value={time} onChangeText={onTime} defaultPeriod={defaultPeriod} />
       <TextInput style={mealInput} placeholder="Amount & brand" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" value={amount} onChangeText={(v) => onAmount(capitalizeFirst(v))} />
     </View>
   );
@@ -54,11 +64,21 @@ export default function EditRoutine() {
   const [walks, setWalks] = useState("");
   const [sleep, setSleep] = useState("");
   const [bathroom, setBathroom] = useState("");
+  const [leftAloneOk, setLeftAloneOk] = useState("");
+  const [leftAloneDetail, setLeftAloneDetail] = useState("");
+  const [toileting, setToileting] = useState("");
 
   // Medical
   const [allergies, setAllergies] = useState("");
   const [conditions, setConditions] = useState("");
-  const [medications, setMedications] = useState("");
+  const [meds, setMeds] = useState<Med[]>([]);
+
+  const addMed = () => setMeds((prev) => [...prev, { id: Date.now().toString(), name: "", dose: "", notes: "" }]);
+  const updateMed = (id: string, field: "name" | "dose" | "notes", val: string) =>
+    setMeds((prev) => prev.map((m) => (m.id === id ? { ...m, [field]: val } : m)));
+  const setMedMeal = (id: string, slot: MealSlot) =>
+    setMeds((prev) => prev.map((m) => (m.id === id ? { ...m, withMeal: m.withMeal === slot ? undefined : slot } : m)));
+  const removeMed = (id: string) => setMeds((prev) => prev.filter((m) => m.id !== id));
 
   const [isPaid, setIsPaid] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -90,13 +110,22 @@ export default function EditRoutine() {
         setWalks(routine.walks ?? "");
         setSleep(routine.sleep ?? "");
         setBathroom(routine.bathroom_habits ?? "");
+        setLeftAloneOk(routine.left_alone?.ok ?? "");
+        setLeftAloneDetail(routine.left_alone?.detail ?? "");
+        setToileting(routine.toileting_frequency ?? "");
       }
 
       if (medical) {
         setAllergies((medical.allergies ?? []).join(", "));
         setConditions((medical.conditions ?? []).join(", "));
-        setMedications(
-          (medical.medications ?? []).map((m: any) => `${m.name} ${m.dose}`).join("; ")
+        setMeds(
+          (medical.medications ?? []).map((m: any, i: number) => ({
+            id: String(i),
+            name: m.name ?? "",
+            dose: m.dose ?? "",
+            withMeal: m.with_meal ?? undefined,
+            notes: m.notes ?? "",
+          }))
         );
       }
     })();
@@ -120,19 +149,21 @@ export default function EditRoutine() {
           walks,
           sleep,
           bathroom_habits: bathroom,
+          left_alone: { ok: leftAloneOk, detail: leftAloneDetail },
+          toileting_frequency: toileting,
         }, { onConflict: "pet_id" }),
         supabase.from("pet_medical").upsert({
           pet_id: petId,
           allergies: allergies ? allergies.split(",").map((s) => s.trim()).filter(Boolean) : [],
           conditions: conditions ? conditions.split(",").map((s) => s.trim()).filter(Boolean) : [],
-          medications: medications
-            ? [{ name: medications, dose: "", frequency: "", time_of_day: "", location_stored: "", notes: "" }]
-            : [],
+          medications: meds
+            .filter((m) => m.name.trim())
+            .map((m) => ({ name: m.name.trim(), dose: m.dose.trim(), frequency: "", time_of_day: "", location_stored: "", notes: m.notes.trim(), with_meal: m.withMeal ?? null })),
         }, { onConflict: "pet_id" }),
       ]);
       router.back();
     } catch (e: any) {
-      Alert.alert("Couldn't save", e.message);
+      AppAlert.alert("Couldn't save", e.message);
     } finally {
       setSaving(false);
     }
@@ -151,8 +182,8 @@ export default function EditRoutine() {
     <EditShell title="Routine & Medical" onSave={save} saving={saving} loading={loading} scrollRef={scrollRef}>
       {!isPaid && (
         <View style={{ marginBottom: 16 }}>
-          <InlineNote variant="paywall" cta="Unlock for $7.99" onCta={() => router.push("/upgrade")}>
-            Feeding shows on every link. Walks, sleep and medical stay saved until you unlock.
+          <InlineNote variant="paywall" cta={`Unlock for ${PRICE}`} onCta={() => router.push("/upgrade")}>
+            Feeding shows on every link. The rest of the routine stays saved until you unlock.
           </InlineNote>
         </View>
       )}
@@ -167,7 +198,7 @@ export default function EditRoutine() {
         </View>
         <RoutineMeal label="Breakfast" time={breakfastTime} amount={breakfastAmount} onTime={setBreakfastTime} onAmount={setBreakfastAmount} divider />
         <RoutineMeal label="Lunch" time={lunchTime} amount={lunchAmount} onTime={setLunchTime} onAmount={setLunchAmount} divider />
-        <RoutineMeal label="Dinner" time={dinnerTime} amount={dinnerAmount} onTime={setDinnerTime} onAmount={setDinnerAmount} divider />
+        <RoutineMeal label="Dinner" time={dinnerTime} amount={dinnerAmount} onTime={setDinnerTime} onAmount={setDinnerAmount} divider defaultPeriod="PM" />
         <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8, borderBottomWidth: 1, borderBottomColor: colors.border }}>
           <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.textDark }}>Treats</Text>
           <TextInput style={mealInput} placeholder="Type / brand" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" value={treatsType} onChangeText={(v) => setTreatsType(capitalizeFirst(v))} />
@@ -231,6 +262,39 @@ export default function EditRoutine() {
         />
       </Card>
 
+      {/* Toileting frequency — directly under bathroom habits */}
+      <Card style={{ marginBottom: 20 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+          <Eyebrow>How often do they toilet?</Eyebrow>
+          <PaidBadge />
+        </View>
+        <Input
+          className="mt-2"
+          placeholder="e.g. Every 4–6 hours, and after meals"
+          value={toileting}
+          onChangeText={(v) => setToileting(capitalizeFirst(v))}
+        />
+      </Card>
+
+      {/* Can they be left alone? */}
+      <Card style={{ marginBottom: 20 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+          <Eyebrow>Can they be left alone?</Eyebrow>
+          <PaidBadge />
+        </View>
+        <View style={{ marginTop: 8 }}>
+          <Select value={leftAloneOk} onValueChange={setLeftAloneOk} options={["Yes", "No"]} placeholder="Select" />
+        </View>
+        <Input
+          className="mt-2"
+          placeholder="e.g. Up to 4 hours, crated with a chew"
+          value={leftAloneDetail}
+          onChangeText={(v) => setLeftAloneDetail(capitalizeFirst(v))}
+          multiline
+          style={{ height: 64, paddingTop: 10, textAlignVertical: "top" }}
+        />
+      </Card>
+
       {/* Medical section title */}
       <Text
         onLayout={(e) => { medicalY.current = e.nativeEvent.layout.y; }}
@@ -254,12 +318,9 @@ export default function EditRoutine() {
         />
       </Card>
 
-      {/* Conditions — paid only */}
+      {/* Conditions */}
       <Card style={{ marginBottom: 12 }}>
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <Eyebrow>Medical conditions</Eyebrow>
-          <PaidBadge />
-        </View>
+        <Eyebrow>Medical conditions</Eyebrow>
         <Input
           className="mt-2"
           placeholder="Atopic dermatitis, managed with Apoquel"
@@ -270,23 +331,54 @@ export default function EditRoutine() {
         />
       </Card>
 
-      {/* Medications — paid only */}
+      {/* Medications — structured entries, each tied to a meal (#94) */}
       <Card>
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <Eyebrow>Medications</Eyebrow>
-          <PaidBadge />
-        </View>
-        <Input
-          className="mt-2"
-          placeholder="Apoquel 16mg with breakfast. Pill pockets. Kitchen cupboard above microwave."
-          value={medications}
-          onChangeText={setMedications}
-          multiline
-          style={{ height: 88, paddingTop: 10, textAlignVertical: "top" }}
-        />
-        <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4 }}>
-          Include name, dose, frequency, and where it's stored.
+        <Eyebrow>Medications</Eyebrow>
+        <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4, marginBottom: 4 }}>
+          Add each one, and when it's given.
         </Text>
+        <View style={{ gap: 12, marginTop: 4 }}>
+          {meds.map((m) => (
+            <View key={m.id} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 12, gap: 8 }}>
+              <View style={{ flexDirection: "row", gap: 8 }}>
+                <Input style={{ flex: 2 }} placeholder="Name (e.g. Apoquel)" value={m.name} onChangeText={(v) => updateMed(m.id, "name", v)} />
+                <Input style={{ flex: 1 }} placeholder="Dose" value={m.dose} onChangeText={(v) => updateMed(m.id, "dose", v)} />
+                <TouchableOpacity onPress={() => removeMed(m.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ justifyContent: "center" }}>
+                  <Text style={{ color: colors.danger, fontSize: 20, lineHeight: 20 }}>×</Text>
+                </TouchableOpacity>
+              </View>
+              <Input
+                placeholder="Cut into smaller pieces — she won't take it whole."
+                value={m.notes}
+                onChangeText={(v) => updateMed(m.id, "notes", v)}
+                multiline
+                style={{ minHeight: 44, paddingTop: 10, textAlignVertical: "top" }}
+              />
+              <Text style={{ color: colors.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium" }}>Given</Text>
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
+                {MEAL_SLOTS.map((s) => {
+                  const active = m.withMeal === s.key;
+                  return (
+                    <TouchableOpacity
+                      key={s.key}
+                      onPress={() => setMedMeal(m.id, s.key)}
+                      activeOpacity={0.85}
+                      style={{ paddingHorizontal: 12, height: 32, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: active ? colors.cardDark : colors.secondary, borderWidth: 1, borderColor: active ? colors.cardDark : colors.border }}
+                    >
+                      <Text style={{ color: active ? colors.cardDarkText : colors.textDark, fontSize: 12, fontFamily: "Satoshi-Medium" }}>{s.label}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          ))}
+        </View>
+        <TouchableOpacity
+          onPress={addMed}
+          style={{ height: 40, borderRadius: 10, borderWidth: 1.5, borderColor: colors.dashedBorder, borderStyle: "dashed", alignItems: "center", justifyContent: "center", marginTop: 12 }}
+        >
+          <Text style={{ color: colors.textMuted, fontSize: 14 }}>+ Add a medication</Text>
+        </TouchableOpacity>
       </Card>
     </EditShell>
   );

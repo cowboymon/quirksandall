@@ -8,7 +8,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "../lib/supabase";
 import { useActivePetStore } from "../stores/activePet";
 import { FieldTier } from "../components/ui";
-import { colors, computeAge, formatWeight, formatPhone, formatVetName, possessive } from "@quirksandall/shared";
+import { colors, computeAge, formatWeight, formatPhone, formatVetName, possessive, orderedCommands, commandStrengthLabel, mealSlotLabel } from "@quirksandall/shared";
 
 type Data = {
   name: string; breed: string; age: string; photoUrl: string | null;
@@ -20,8 +20,8 @@ type Data = {
   backup2Name: string; backup2Phone: string; backup2Rel: string;
   commands: any[];
   scared: string; noGo: string; flightRisk: string; temperament: string;
-  allergies: string; conditions: string; medications: string;
-  feeding: any; walks: string; sleep: string; bathroom: string;
+  allergies: string; conditions: string; meds: { name: string; dose: string; withMeal?: string; notes?: string }[];
+  feeding: any; walks: string; sleep: string; bathroom: string; leftAlone: string; toileting: string;
   updatedAt: string;
 };
 
@@ -69,9 +69,10 @@ export default function Preview() {
         supabase.from("owners").select("backup_contacts, purchase_status").eq("id", user.id).single(),
       ]);
 
-      setIsPaid(owner?.purchase_status === "paid");
+      const paid = owner?.purchase_status === "paid";
+      setIsPaid(paid);
       const backups = owner?.backup_contacts ?? [];
-      const meds = (medical?.medications ?? []).map((m: any) => [m.name, m.dose].filter(Boolean).join(" ")).filter(Boolean).join("; ");
+      const meds = (medical?.medications ?? []).map((m: any) => ({ name: m.name ?? "", dose: m.dose ?? "", withMeal: m.with_meal ?? undefined, notes: m.notes || undefined }));
 
       setData({
         name: (pet.name ?? "").trim(), breed: pet.breed ?? "", age: computeAge(pet.dob, pet.dob_is_estimated), photoUrl: pet.photo_url,
@@ -81,10 +82,12 @@ export default function Preview() {
         vetPreAuth: vet?.vet_pre_auth ?? false, insuranceProvider: vet?.insurance?.provider ?? "", insurancePolicy: vet?.insurance?.policy_number ?? "",
         backupName: backups[0]?.name ?? "", backupPhone: backups[0]?.phone ?? "", backupRel: backups[0]?.relationship ?? "",
         backup2Name: backups[1]?.name ?? "", backup2Phone: backups[1]?.phone ?? "", backup2Rel: backups[1]?.relationship ?? "",
-        commands: behavior?.commands ?? [],
+        commands: orderedCommands(behavior?.commands ?? [], paid, false),
         scared: behavior?.scared ?? "", noGo: behavior?.no_go ?? "", flightRisk: behavior?.flight_risk ?? "", temperament: behavior?.temperament_summary ?? "",
-        allergies: (medical?.allergies ?? []).join(", "), conditions: (medical?.conditions ?? []).join(", "), medications: meds,
+        allergies: (medical?.allergies ?? []).join(", "), conditions: (medical?.conditions ?? []).join(", "), meds,
         feeding: routine?.feeding ?? null, walks: routine?.walks ?? "", sleep: routine?.sleep ?? "", bathroom: routine?.bathroom_habits ?? "",
+        leftAlone: routine?.left_alone?.ok ? (routine.left_alone.detail ? `${routine.left_alone.ok} — ${routine.left_alone.detail}` : routine.left_alone.ok) : "",
+        toileting: routine?.toileting_frequency ?? "",
         updatedAt: pet.updated_at,
       });
       setLoading(false);
@@ -102,7 +105,18 @@ export default function Preview() {
   // Free plan → the paid fields carry a "Paid" badge so the owner sees what a
   // sitter would unlock. Feeding, flight risk, allergies and commands are free.
   const locked = !isPaid;
-  const hasFeeding = !!(f.breakfast?.time || f.breakfast?.amount || f.lunch?.time || f.lunch?.amount || f.dinner?.time || f.dinner?.amount || f.treats?.type || f.notes);
+  // A meal needs both time and amount to render (#93). Bare times aren't useful.
+  const mealComplete = (slot: any) => !!(slot?.time && slot?.amount);
+  // A meal renders if it has its own time+amount, OR if a medication is tied
+  // to it — otherwise a med tied to an unfilled-in meal (e.g. "with lunch"
+  // when lunch itself was never filled in) would have nowhere to point from.
+  const allMealSlots = [["Breakfast", "breakfast", f.breakfast], ["Lunch", "lunch", f.lunch], ["Dinner", "dinner", f.dinner]] as const;
+  const meals = allMealSlots.filter(([, key, slot]) => mealComplete(slot) || d.meds.some((m) => m.withMeal === key));
+  const hasFeeding = !!(meals.length || f.treats?.type || f.notes);
+  // Meds tied to a shown meal ALSO render inline in the routine as a
+  // convenience, but every medication always shows in the standalone
+  // Medication section too — that's the safety-critical section a sitter is
+  // most likely to check (#94 follow-up).
 
   const CreamLink = ({ icon, text, onPress, bold }: { icon: "location" | "call"; text: string; onPress: () => void; bold?: boolean }) => (
     <TouchableOpacity onPress={onPress} style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 }}>
@@ -222,7 +236,7 @@ export default function Preview() {
 
           {/* Order (#15): Daily Routine → Medication → Allergies → Commands → Triggers.
               Feeding is free at every tier; walks/sleep/bathroom are paid. */}
-          {(hasFeeding || (showFull && (d.walks || d.sleep || d.bathroom))) && (
+          {(hasFeeding || (showFull && (d.walks || d.sleep || d.bathroom || d.leftAlone || d.toileting))) && (
             <View>
               <SectionHeader lead={possessive(d.name)} underline="Daily Routine" />
               <View style={{ gap: 12 }}>
@@ -231,9 +245,24 @@ export default function Preview() {
                     <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
                       <Text style={{ ...microLabel, color: colors.primary }}>Feeding</Text>
                     </View>
-                    {[["Breakfast", f.breakfast], ["Lunch", f.lunch], ["Dinner", f.dinner]].map(([label, slot]: any, i) => (
-                      <MealRow key={label} label={label} time={slot?.time} amount={slot?.amount} divider={i < 2} />
-                    ))}
+                    {meals.map(([label, key, slot]: any, i) => {
+                      const tied = d.meds.filter((m) => m.withMeal === key);
+                      return (
+                        <View key={label} style={{ borderBottomWidth: i < meals.length - 1 ? 1 : 0, borderBottomColor: colors.border }}>
+                          <MealRow label={label} time={slot?.time} amount={slot?.amount} divider={false} medOnly={tied.length > 0 && !mealComplete(slot)} />
+                          {tied.map((m, mi) => (
+                            <Text key={mi} style={{ color: colors.primary, fontSize: 12, fontFamily: "Satoshi-Medium", paddingLeft: 80, paddingRight: 16, paddingBottom: 8 }}>
+                              + {[m.name, m.dose].filter(Boolean).join(" — ")}
+                            </Text>
+                          ))}
+                          {tied.length > 0 && (
+                            <Text style={{ color: colors.textMuted, fontSize: 11, paddingLeft: 80, paddingRight: 16, paddingBottom: 8 }}>
+                              See Medications
+                            </Text>
+                          )}
+                        </View>
+                      );
+                    })}
                     {(f.treats?.type || f.treats?.limit) ? (
                       <View style={{ flexDirection: "row", paddingHorizontal: 16, paddingVertical: 8, borderTopWidth: 1, borderTopColor: colors.border, alignItems: "flex-start" }}>
                         <Text style={{ width: 64, fontSize: 13, fontFamily: "Satoshi-Medium", color: colors.textMuted }}>Treats</Text>
@@ -253,16 +282,32 @@ export default function Preview() {
                 {showFull && d.walks ? <InfoCard label="Walks" text={d.walks} locked={locked} /> : null}
                 {showFull && d.sleep ? <InfoCard label="Sleep" text={d.sleep} locked={locked} /> : null}
                 {showFull && d.bathroom ? <InfoCard label="Bathroom" text={d.bathroom} locked={locked} /> : null}
+                {showFull && d.leftAlone ? <InfoCard label="Left alone" text={d.leftAlone} locked={locked} /> : null}
+                {showFull && d.toileting ? <InfoCard label="Toileting" text={d.toileting} locked={locked} /> : null}
               </View>
             </View>
           )}
 
-          {showFull && (d.medications || d.conditions) && (
+          {/* Medication & conditions — free at every tier (#87 follow-up): a
+              sitter dosing the wrong thing because the owner hadn't paid is a
+              safety failure. Shows in both quick and full view, like allergies. */}
+          {(d.meds.length > 0 || d.conditions) && (
             <View>
-              <SectionHeader lead={possessive(d.name)} underline="Medication" locked={locked} />
+              <SectionHeader lead={possessive(d.name)} underline="Medication" />
               <View style={{ gap: 12 }}>
                 {d.conditions ? <InfoCard label="Conditions" text={d.conditions} /> : null}
-                {d.medications ? <InfoCard label="Medications" text={d.medications} /> : null}
+                {d.meds.map((m, i) => (
+                  <View key={i} style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 16 }}>
+                    <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.primary }}>Medication</Text>
+                    <Text style={{ color: BODY, fontSize: 14, fontFamily: "Satoshi-Bold", marginTop: 6 }}>{[m.name, m.dose].filter(Boolean).join(" — ")}</Text>
+                    {mealSlotLabel(m.withMeal) ? (
+                      <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>{mealSlotLabel(m.withMeal)}</Text>
+                    ) : null}
+                    {m.notes ? (
+                      <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2, fontStyle: "italic" }}>{m.notes}</Text>
+                    ) : null}
+                  </View>
+                ))}
               </View>
             </View>
           )}
@@ -287,7 +332,12 @@ export default function Preview() {
                 </View>
                 {d.commands.map((cmd, i) => (
                   <View key={cmd.id ?? i} style={{ flexDirection: "row", paddingHorizontal: 12, paddingVertical: 10, backgroundColor: i % 2 === 0 ? "#FFFFFF" : colors.background, alignItems: "flex-start" }}>
-                    <Text style={{ width: "26%", fontSize: 13, fontFamily: "Satoshi-Bold", color: BODY }}>"{cmd.word}"</Text>
+                    <View style={{ width: "26%" }}>
+                      <Text style={{ fontSize: 13, fontFamily: "Satoshi-Bold", color: BODY }}>"{cmd.word}"</Text>
+                      {commandStrengthLabel(cmd.strength) ? (
+                        <Text style={{ fontSize: 10, color: colors.textMuted, marginTop: 2, fontFamily: "Satoshi-Medium" }}>{commandStrengthLabel(cmd.strength)}</Text>
+                      ) : null}
+                    </View>
                     <View style={{ flex: 1, paddingRight: 8 }}>
                       <Text style={{ fontSize: 13, color: BODY }}>{cmd.meaning}</Text>
                       {cmd.howToCue ? <Text style={{ fontSize: 11, color: colors.textMuted, fontStyle: "italic", marginTop: 2 }}>Cue: {cmd.howToCue}</Text> : null}
@@ -326,7 +376,7 @@ export default function Preview() {
   );
 }
 
-function MealRow({ label, time, amount, divider }: { label: string; time?: string; amount?: string; divider: boolean }) {
+function MealRow({ label, time, amount, divider, medOnly }: { label: string; time?: string; amount?: string; divider: boolean; medOnly?: boolean }) {
   return (
     <View style={{ flexDirection: "row", paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: divider ? 1 : 0, borderBottomColor: colors.border, alignItems: "baseline" }}>
       <Text style={{ width: 64, fontSize: 13, fontFamily: "Satoshi-Medium", color: colors.textMuted }}>{label}</Text>
@@ -334,6 +384,8 @@ function MealRow({ label, time, amount, divider }: { label: string; time?: strin
         <Text style={{ flex: 1, fontSize: 13, color: BODY }}>
           {time ? <Text style={{ fontFamily: "Satoshi-Medium" }}>{time}</Text> : null}{time && amount ? " · " : ""}{amount}
         </Text>
+      ) : medOnly ? (
+        <Text style={{ flex: 1, fontSize: 13, color: colors.textMuted, fontStyle: "italic" }}>Medication only</Text>
       ) : (
         <Text style={{ flex: 1, fontSize: 13, color: colors.dashedBorder }}>—</Text>
       )}

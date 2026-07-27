@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
-import { Headline, LabeledInput, InlineNote, PrimaryButton, SkipButton, ProgressDots, Eyebrow, Card } from "../../components/ui";
+import { Headline, LabeledInput, InlineNote, PrimaryButton, SkipButton, ProgressDots, Eyebrow, Card, BackButton } from "../../components/ui";
 import { LabeledPlacesInput } from "../../components/PlacesInput";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { colors } from "@quirksandall/shared";
@@ -14,9 +14,7 @@ export default function Step2() {
 
   return (
     <ScrollView className="flex-1 bg-background" keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 24, paddingTop: 60, width: "100%", maxWidth: 600, alignSelf: "center" }}>
-      <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 16 }}>
-        <Text style={{ color: colors.textMuted, fontSize: 14 }}>‹ Back</Text>
-      </TouchableOpacity>
+      <BackButton />
       <ProgressDots total={4} current={2} />
 
       <View style={{ marginTop: 20, marginBottom: 6 }}><Eyebrow>Step 2 of 4</Eyebrow></View>

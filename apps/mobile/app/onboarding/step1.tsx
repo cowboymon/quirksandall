@@ -1,10 +1,11 @@
 // Screen 1 — Pet basics: photo, name, breed/species, sex, colour, microchip,
 // weight, DOB (with live age). Mirrors the prototype's Screen1PetBasics.
 import { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Image, Alert } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Image } from "react-native";
+import { AppAlert } from "../../stores/appAlert";
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { Headline, Input, Select, DateInput, WeightInput, PrimaryButton, ProgressDots, Eyebrow } from "../../components/ui";
+import { Headline, Input, Select, DateInput, WeightInput, PrimaryButton, ProgressDots, Eyebrow, BackButton } from "../../components/ui";
 import { RollingAnimal } from "../../components/Underlined";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { colors, computeAge, displayDateToISO } from "@quirksandall/shared";
@@ -19,7 +20,7 @@ export default function Step1() {
   const pickPhoto = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Permission needed", "Allow photo access to add a pet photo.");
+      AppAlert.alert("Permission needed", "Allow photo access to add a pet photo.");
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -41,6 +42,7 @@ export default function Step1() {
 
   return (
     <ScrollView className="flex-1 bg-background" keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 24, paddingTop: 60, paddingBottom: 48, width: "100%", maxWidth: 600, alignSelf: "center" }}>
+      <BackButton />
       <ProgressDots total={4} current={1} />
 
       <View style={{ marginTop: 28, marginBottom: 6 }}><Eyebrow>Step 1 of 4</Eyebrow></View>

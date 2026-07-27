@@ -4,7 +4,8 @@
 // Next.js API route; this screen collects the ephemeral fields and downloads
 // the finished PNGs.
 import { useEffect, useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Image, TextInput, Share, Alert, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Image, TextInput, Share, ActivityIndicator } from "react-native";
+import { AppAlert } from "../stores/appAlert";
 import { router } from "expo-router";
 // SDK 54 moved the classic download/read/write API to /legacy; the new
 // File/Directory API isn't needed for these one-shot poster downloads.
@@ -139,7 +140,7 @@ export default function MissingPoster() {
   const pickPhotoFor = async (key: string) => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Permission needed", "Allow photo access to change the photo.");
+      AppAlert.alert("Permission needed", "Allow photo access to change the photo.");
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -155,7 +156,7 @@ export default function MissingPoster() {
       setOverrides((o) => ({ ...o, [key]: dataUri }));
       setPreviews((p) => ({ ...p, [key]: fileUri }));
     } catch {
-      Alert.alert("Couldn't generate", "Check your connection and try again.");
+      AppAlert.alert("Couldn't generate", "Check your connection and try again.");
     } finally {
       setRegenerating(null);
     }
@@ -190,7 +191,7 @@ export default function MissingPoster() {
       }
       await Share.share({ url: uri, message: `${profile.name} is missing.` });
     } catch {
-      Alert.alert("Couldn't save", "Check your connection and try again.");
+      AppAlert.alert("Couldn't save", "Check your connection and try again.");
     } finally {
       setSaving(null);
     }
@@ -392,6 +393,26 @@ export default function MissingPoster() {
           Add a photo to {profile.name}'s profile first.
         </Text>
       )}
+
+      {/* First steps if the worst happens */}
+      <View style={{ marginTop: 32, backgroundColor: colors.cardBg, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 18 }}>
+        <Eyebrow ochre>First steps</Eyebrow>
+        <View style={{ gap: 14, marginTop: 14 }}>
+          {[
+            `Call your vet — confirm that ${profile.name}'s microchip details are current.`,
+            `Ask your vet to add ${profile.name} to their lost-pet database.`,
+            "Share the poster and tile you just made — starting with your own group chats.",
+            "Post in your suburb's community Facebook groups (and neighbouring ones) so people can share it around.",
+          ].map((step, i) => (
+            <View key={i} style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
+              <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: colors.secondary, alignItems: "center", justifyContent: "center", marginTop: 1 }}>
+                <Text style={{ color: colors.textDark, fontSize: 11, fontFamily: "Satoshi-Bold" }}>{i + 1}</Text>
+              </View>
+              <Text style={{ flex: 1, color: colors.textDark, fontSize: 13, lineHeight: 19 }}>{step}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
     </ScrollView>
   );
 }

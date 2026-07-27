@@ -1,4 +1,15 @@
 node_modules
+# npm/yarn/bun lockfiles must never exist here — this repo is pnpm-only. A
+# stray package-lock.json (left behind by a one-off npm command) gets swept
+# up into the EAS Build upload and flips its package-manager detection to
+# npm — the lockfile resolution order checks npm before pnpm — so the
+# builder runs `npm ci` against a lockfile with zero dependencies and
+# installs nothing. Ignoring them keeps strays out of the upload entirely.
+package-lock.json
+npm-shrinkwrap.json
+yarn.lock
+bun.lock
+bun.lockb
 .env
 .env.local
 .env*.local

@@ -98,6 +98,50 @@ export function capitalizeWords(s: string): string {
 }
 
 /**
+ * The single canonical command order, used identically on the dashboard, the
+ * edit screen, and the recipient page so they never disagree.
+ *
+ * Free tier: chronological — the stored array order, all commands shown.
+ * Paid tier: the owner's manual array order; hidden commands withheld unless
+ * `includeHidden` (the edit screen, where hidden ones show at the bottom so the
+ * owner can un-hide them).
+ */
+export function orderedCommands<T extends { hidden?: boolean }>(
+  commands: T[],
+  isPaid: boolean,
+  includeHidden = false,
+): T[] {
+  if (!isPaid) return commands.slice();
+  const shown = commands.filter((c) => !c.hidden);
+  // Manual array order is canonical; hidden commands are withheld from sitters
+  // (appended last only when the owner is editing).
+  if (includeHidden) return [...shown, ...commands.filter((c) => c.hidden)];
+  return shown;
+}
+
+/** Medication meal-slot label (#94) — e.g. "with breakfast", or null when unset. */
+export function mealSlotLabel(slot?: string | null): string | null {
+  switch (slot) {
+    case "breakfast": return "with breakfast";
+    case "lunch": return "with lunch";
+    case "dinner": return "with dinner";
+    case "anytime": return "anytime";
+    default: return null;
+  }
+}
+
+/** Command "strength" (§#92) — how reliable the command is, shown to sitters as
+ * a small tag. Returns the label or null when unset. */
+export function commandStrengthLabel(s?: string | null): string | null {
+  switch (s) {
+    case "learning": return "Still learning";
+    case "solid": return "Solid";
+    case "mastered": return "Mastered";
+    default: return null;
+  }
+}
+
+/**
  * Format a weight value for display. Stored values are usually a bare number
  * ("15"); append " kg" unless the value already carries a unit/letter.
  */
@@ -165,4 +209,25 @@ export function canSeeRoutine(purchaseStatus: "free" | "paid"): boolean {
 
 export function canSeeMedical(purchaseStatus: "free" | "paid"): boolean {
   return purchaseStatus === "paid";
+}
+
+/** Stay duration at share time (§5.1) — turns a link's preset/end-date into a
+ * short, sitter-facing orientation phrase, or null when nothing is set.
+ * The recipient page composes e.g. "Biscuit is with you {phrase}." */
+export type StayPreset = "hours" | "overnight" | "days" | "longer";
+
+export function stayPhrase(preset?: string | null, endsAt?: string | null): string | null {
+  if (endsAt) {
+    const d = new Date(endsAt);
+    if (!isNaN(d.getTime())) {
+      return `until ${d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}`;
+    }
+  }
+  switch (preset) {
+    case "hours": return "for a few hours";
+    case "overnight": return "overnight";
+    case "days": return "for a few days";
+    case "longer": return "for a little while";
+    default: return null;
+  }
 }
