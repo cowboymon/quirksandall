@@ -40,10 +40,14 @@ export async function POST(req: NextRequest) {
   recent.push(now);
   hits.set(ip, recent);
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_KEY;
+  // Read at runtime. Prefer the plain (non-public) names so the value isn't
+  // baked into the build like a NEXT_PUBLIC_* var — that inlining is why a
+  // build compiled before the var was set keeps returning "unconfigured".
+  // Fall back to the public / role-key names so common setups just work.
+  const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) {
-    console.error("waitlist: Supabase env not configured (NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_KEY)");
+    console.error("waitlist: Supabase env not configured (need SUPABASE_URL + SUPABASE_SERVICE_KEY)");
     return NextResponse.json({ ok: false, error: "unconfigured" }, { status: 503 });
   }
 
