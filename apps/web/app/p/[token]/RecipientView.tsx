@@ -65,12 +65,12 @@ export default function RecipientView({ profile, token }: Props) {
   const lockedPreview = preview && !isPaid;
   const paidVisible = view === "full";
 
-  // Medications tied to a meal render inside the feeding routine (at that meal);
-  // the rest ("anytime"/untied, or tied to a meal that isn't filled in) show in
-  // the standalone Medication section so nothing is ever lost.
+  // Medications tied to a meal ALSO render inline in the feeding routine (at
+  // that meal) as a convenience, but every medication always shows in the
+  // standalone Medication section too — that's the safety-critical section a
+  // sitter is most likely to check, so nothing should ever be discoverable
+  // only via Feeding.
   const allMeds = medical?.medications ?? [];
-  const slotShown = (key: "breakfast" | "lunch" | "dinner") => mealComplete(routine?.feeding?.[key]);
-  const looseMeds = allMeds.filter((m) => !(m.withMeal && m.withMeal !== "anytime" && slotShown(m.withMeal)));
 
   const name = pet.name?.trim() ?? "";
   const idTiles: [string, string][] = [
@@ -257,12 +257,12 @@ export default function RecipientView({ profile, token }: Props) {
 
         {/* Medication — free at every tier, like allergies. A sitter needs the
             dose whether or not the owner has paid, so it shows in both views. */}
-        {medical && (medical.conditions?.length > 0 || looseMeds.length > 0) && (
+        {medical && (medical.conditions?.length > 0 || allMeds.length > 0) && (
           <section>
             <SectionTitle name={name} tail="Medication" />
             <div className="flex flex-col gap-2">
               {medical.conditions?.length > 0 && <InfoCard label="Conditions" text={medical.conditions.join(", ")} />}
-              {looseMeds.map((med, i) => (
+              {allMeds.map((med, i) => (
                 <div key={i} className="bg-white border rounded-card px-4 py-3" style={{ borderColor: BORDER }}>
                   <p className="eyebrow text-primary mb-1">Medication</p>
                   <p className="text-sm font-semibold whitespace-pre-line" style={{ color: BODY }}>{[med.name, med.dose].filter(Boolean).join(" — ")}</p>
