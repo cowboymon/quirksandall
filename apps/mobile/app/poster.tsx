@@ -4,7 +4,8 @@
 // Next.js API route; this screen collects the ephemeral fields and downloads
 // the finished PNGs.
 import { useEffect, useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Image, TextInput, Share, Alert, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Image, TextInput, Share, ActivityIndicator } from "react-native";
+import { AppAlert } from "../stores/appAlert";
 import { router } from "expo-router";
 // SDK 54 moved the classic download/read/write API to /legacy; the new
 // File/Directory API isn't needed for these one-shot poster downloads.
@@ -139,7 +140,7 @@ export default function MissingPoster() {
   const pickPhotoFor = async (key: string) => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Permission needed", "Allow photo access to change the photo.");
+      AppAlert.alert("Permission needed", "Allow photo access to change the photo.");
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -155,7 +156,7 @@ export default function MissingPoster() {
       setOverrides((o) => ({ ...o, [key]: dataUri }));
       setPreviews((p) => ({ ...p, [key]: fileUri }));
     } catch {
-      Alert.alert("Couldn't generate", "Check your connection and try again.");
+      AppAlert.alert("Couldn't generate", "Check your connection and try again.");
     } finally {
       setRegenerating(null);
     }
@@ -190,7 +191,7 @@ export default function MissingPoster() {
       }
       await Share.share({ url: uri, message: `${profile.name} is missing.` });
     } catch {
-      Alert.alert("Couldn't save", "Check your connection and try again.");
+      AppAlert.alert("Couldn't save", "Check your connection and try again.");
     } finally {
       setSaving(null);
     }

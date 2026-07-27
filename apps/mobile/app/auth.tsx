@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
-import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
+import { AppAlert } from "../stores/appAlert";
 import { router, useFocusEffect } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { initAnalytics, identify, setUserProps, track, AnalyticsEvent } from "../lib/analytics";
@@ -27,7 +28,7 @@ export default function AuthScreen() {
     });
     setLoading(false);
     if (error) {
-      Alert.alert("Couldn't send code", error.message);
+      AppAlert.alert("Couldn't send code", error.message);
     } else {
       setStage("code");
     }
@@ -43,7 +44,7 @@ export default function AuthScreen() {
     });
     setLoading(false);
     if (error) {
-      Alert.alert("That code didn't work", "Check it and try again, or request a new one.");
+      AppAlert.alert("That code didn't work", "Check it and try again, or request a new one.");
     } else {
       // Identity + funnel: identify everyone; fire sign_up_completed only for a
       // brand-new account (created within the last minute), AFTER identify so

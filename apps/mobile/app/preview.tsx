@@ -109,10 +109,10 @@ export default function Preview() {
   const mealComplete = (slot: any) => !!(slot?.time && slot?.amount);
   const meals = [["Breakfast", "breakfast", f.breakfast], ["Lunch", "lunch", f.lunch], ["Dinner", "dinner", f.dinner]].filter(([, , slot]: any) => mealComplete(slot));
   const hasFeeding = !!(meals.length || f.treats?.type || f.notes);
-  // Meds tied to a shown meal render in the routine; the rest go in the
-  // Medication section (#94 follow-up).
-  const shownMealKeys = new Set(meals.map(([, key]: any) => key));
-  const looseMeds = d.meds.filter((m) => !(m.withMeal && m.withMeal !== "anytime" && shownMealKeys.has(m.withMeal)));
+  // Meds tied to a shown meal ALSO render inline in the routine as a
+  // convenience, but every medication always shows in the standalone
+  // Medication section too — that's the safety-critical section a sitter is
+  // most likely to check (#94 follow-up).
 
   const CreamLink = ({ icon, text, onPress, bold }: { icon: "location" | "call"; text: string; onPress: () => void; bold?: boolean }) => (
     <TouchableOpacity onPress={onPress} style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 }}>
@@ -282,15 +282,15 @@ export default function Preview() {
           {/* Medication & conditions — free at every tier (#87 follow-up): a
               sitter dosing the wrong thing because the owner hadn't paid is a
               safety failure. Shows in both quick and full view, like allergies. */}
-          {(looseMeds.length > 0 || d.conditions) && (
+          {(d.meds.length > 0 || d.conditions) && (
             <View>
               <SectionHeader lead={possessive(d.name)} underline="Medication" />
               <View style={{ gap: 12 }}>
                 {d.conditions ? <InfoCard label="Conditions" text={d.conditions} /> : null}
-                {looseMeds.length > 0 ? (
+                {d.meds.length > 0 ? (
                   <InfoCard
                     label="Medications"
-                    text={looseMeds.map((m) => [m.name, m.dose, mealSlotLabel(m.withMeal)].filter(Boolean).join(" · ")).join("\n")}
+                    text={d.meds.map((m) => [m.name, m.dose, mealSlotLabel(m.withMeal)].filter(Boolean).join(" · ")).join("\n")}
                   />
                 ) : null}
               </View>

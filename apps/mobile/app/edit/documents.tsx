@@ -2,7 +2,8 @@
 // they're never lost the night before a kennel stay. Files are private; viewing
 // opens a short-lived signed URL.
 import { useCallback, useState } from "react";
-import { View, Text, TouchableOpacity, Alert, ActivityIndicator, Linking } from "react-native";
+import { View, Text, TouchableOpacity, ActivityIndicator, Linking } from "react-native";
+import { AppAlert } from "../../stores/appAlert";
 import { useFocusEffect } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import * as DocumentPicker from "expo-document-picker";
@@ -45,7 +46,7 @@ export default function Documents() {
   // Pick the kind after choosing a file — a two-tap flow that avoids a whole
   // pending-upload form for the common case.
   const askKindAndUpload = (file: Omit<NewDocument, "kind" | "petId">) => {
-    Alert.alert("What kind of document?", file.fileName, [
+    AppAlert.alert("What kind of document?", file.fileName, [
       ...KINDS.map((k) => ({ text: k.label, onPress: () => doUpload({ ...file, kind: k.key }) })),
       { text: "Cancel", style: "cancel" as const },
     ]);
@@ -58,7 +59,7 @@ export default function Documents() {
       await uploadDocument({ ...file, petId });
       load();
     } catch (e: any) {
-      Alert.alert("Upload failed", e.message ?? "Something went wrong.");
+      AppAlert.alert("Upload failed", e.message ?? "Something went wrong.");
     } finally {
       setBusy(false);
     }
@@ -73,7 +74,7 @@ export default function Documents() {
 
   const takePhoto = async () => {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
-    if (!perm.granted) { Alert.alert("Camera access needed", "Allow camera access to photograph a document."); return; }
+    if (!perm.granted) { AppAlert.alert("Camera access needed", "Allow camera access to photograph a document."); return; }
     const res = await ImagePicker.launchCameraAsync({ quality: 0.8 });
     if (res.canceled || !res.assets?.[0]) return;
     const a = res.assets[0];
@@ -85,7 +86,7 @@ export default function Documents() {
       const url = await documentSignedUrl(storagePath);
       await Linking.openURL(url);
     } catch (e: any) {
-      Alert.alert("Couldn't open that", e.message ?? "Try again.");
+      AppAlert.alert("Couldn't open that", e.message ?? "Try again.");
     }
   };
 
@@ -94,7 +95,7 @@ export default function Documents() {
     setRemoveTarget(null);
     if (!doc) return;
     try { await removeDocument(doc.id, doc.storage_path); load(); }
-    catch (e: any) { Alert.alert("Couldn't remove", e.message); }
+    catch (e: any) { AppAlert.alert("Couldn't remove", e.message); }
   };
 
   return (

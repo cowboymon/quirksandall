@@ -1,5 +1,6 @@
 // Screen 4 — Routine & medical
-import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert, Platform } from "react-native";
+import { View, Text, ScrollView, TextInput, TouchableOpacity, Platform } from "react-native";
+import { AppAlert } from "../../stores/appAlert";
 import { router } from "expo-router";
 import { track, AnalyticsEvent } from "../../lib/analytics";
 import { Headline, Textarea, InlineNote, PrimaryButton, SkipButton, ProgressDots, Eyebrow, TimeInput, BackButton } from "../../components/ui";
@@ -149,7 +150,7 @@ export default function Step4() {
       reset();
       router.replace("/dashboard");
     } catch (e: any) {
-      Alert.alert("Couldn't save", e.message);
+      AppAlert.alert("Couldn't save", e.message);
     } finally {
       setSaving(false);
     }

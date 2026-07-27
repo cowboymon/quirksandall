@@ -1,6 +1,7 @@
 // Edit emergency contacts + PIN
 import { useState, useEffect, useRef } from "react";
-import { View, Text, Alert, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { AppAlert } from "../../stores/appAlert";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
@@ -106,7 +107,7 @@ export default function EditEmergency() {
       ]);
       router.back();
     } catch (e: any) {
-      Alert.alert("Couldn't save", e.message);
+      AppAlert.alert("Couldn't save", e.message);
     } finally {
       setSaving(false);
     }

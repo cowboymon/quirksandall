@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { AppAlert } from "../stores/appAlert";
 import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "../lib/supabase";
@@ -29,14 +30,14 @@ export default function Upgrade() {
         track(AnalyticsEvent.PurchaseCompleted, { source: "upgrade" });
         const { data: { user } } = await supabase.auth.getUser();
         await supabase.from("owners").update({ purchase_status: "paid" }).eq("id", user!.id);
-        Alert.alert(
+        AppAlert.alert(
           "Unlocked.",
           "The full picture is live now — routines and the softer stuff.",
           [{ text: "Got it", onPress: () => router.back() }]
         );
       }
     } catch (e: any) {
-      if (!e.message?.includes("cancel")) Alert.alert("Purchase failed", e.message);
+      if (!e.message?.includes("cancel")) AppAlert.alert("Purchase failed", e.message);
     } finally {
       setLoading(false);
     }
@@ -50,12 +51,12 @@ export default function Upgrade() {
         track(AnalyticsEvent.PurchaseRestored, { source: "upgrade" });
         const { data: { user } } = await supabase.auth.getUser();
         await supabase.from("owners").update({ purchase_status: "paid" }).eq("id", user!.id);
-        Alert.alert("Restored", "Full access is back.", [{ text: "Got it", onPress: () => router.back() }]);
+        AppAlert.alert("Restored", "Full access is back.", [{ text: "Got it", onPress: () => router.back() }]);
       } else {
-        Alert.alert("Nothing to restore", "No previous purchase found for this account.");
+        AppAlert.alert("Nothing to restore", "No previous purchase found for this account.");
       }
     } catch (e: any) {
-      Alert.alert("Restore failed", e.message);
+      AppAlert.alert("Restore failed", e.message);
     } finally {
       setLoading(false);
     }
@@ -196,7 +197,7 @@ export default function Upgrade() {
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
-                onPress={() => Alert.alert("Coming soon", "Code redemption isn't available yet — it's on the way for group and partner licences.")}
+                onPress={() => AppAlert.alert("Coming soon", "Code redemption isn't available yet — it's on the way for group and partner licences.")}
                 style={{ paddingVertical: 4 }}
               >
                 <Text style={{ color: colors.textMuted, fontSize: 13, fontFamily: "Satoshi" }}>Have a code?</Text>

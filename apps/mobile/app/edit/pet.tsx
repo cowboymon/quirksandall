@@ -1,6 +1,7 @@
 // Edit pet basics: photo, name, breed/species, DOB, sex, weight, microchip
 import { useState, useEffect } from "react";
-import { View, Text, Image, TouchableOpacity, Alert, Modal, Share, Platform } from "react-native";
+import { View, Text, Image, TouchableOpacity, Modal, Share, Platform } from "react-native";
+import { AppAlert } from "../../stores/appAlert";
 import * as FileSystem from "expo-file-system/legacy";
 import * as ImagePicker from "expo-image-picker";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -142,7 +143,7 @@ export default function EditPet() {
   const pickPhoto = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Permission needed", "Allow photo access to change the pet photo.");
+      AppAlert.alert("Permission needed", "Allow photo access to change the pet photo.");
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -186,7 +187,7 @@ export default function EditPet() {
       if (error) throw error;
       router.back();
     } catch (e: any) {
-      Alert.alert("Couldn't save", e.message);
+      AppAlert.alert("Couldn't save", e.message);
     } finally {
       setSaving(false);
     }
@@ -226,7 +227,7 @@ export default function EditPet() {
           : { message: summary, title: `${name || "Pet"} — Quirks & All` }
       );
     } catch (e: any) {
-      Alert.alert("Couldn't export", e.message);
+      AppAlert.alert("Couldn't export", e.message);
     } finally {
       setExporting(false);
     }
@@ -240,7 +241,7 @@ export default function EditPet() {
     const { error: petErr } = await supabase.from("pets").update({ status: "archived" }).eq("id", petId);
     const { error: linkErr } = await supabase.from("share_links").update({ revoked: true }).eq("pet_id", petId);
     if (petErr || linkErr) {
-      Alert.alert("Couldn't delete", (petErr ?? linkErr)!.message);
+      AppAlert.alert("Couldn't delete", (petErr ?? linkErr)!.message);
       return;
     }
     // Route to the next active pet, or onboarding if none remain. Exclude the
