@@ -89,8 +89,10 @@ export default function EditEmergency() {
     if (!petId) return;
     setSaving(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
-      await Promise.all([
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
+      if (!user) throw new Error("Not logged in");
+      const [{ error: vetError }, { error: ownerError }] = await Promise.all([
         supabase.from("pet_vet_info").upsert({
           pet_id: petId,
           primary_vet: { contact_name: vetContactName, clinic: vetClinic, address: vetAddress, phone: vetPhone },
@@ -103,8 +105,9 @@ export default function EditEmergency() {
             { name: backupName, relationship: backupRel, phone: backupPhone, consent_to_share: backupConsent },
             ...(backup2Name || backup2Phone ? [{ name: backup2Name, relationship: backup2Rel, phone: backup2Phone, consent_to_share: backup2Consent }] : []),
           ],
-        }).eq("id", user!.id),
+        }).eq("id", user.id),
       ]);
+      if (vetError || ownerError) throw new Error((vetError ?? ownerError)!.message);
       router.back();
     } catch (e: any) {
       AppAlert.alert("Couldn't save", e.message);
