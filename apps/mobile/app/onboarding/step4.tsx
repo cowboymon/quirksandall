@@ -3,8 +3,9 @@ import { View, Text, ScrollView, TextInput, TouchableOpacity, Platform } from "r
 import { AppAlert } from "../../stores/appAlert";
 import { router } from "expo-router";
 import { track, AnalyticsEvent } from "../../lib/analytics";
-import { Headline, Textarea, InlineNote, PrimaryButton, SkipButton, ProgressDots, Eyebrow, TimeInput, BackButton } from "../../components/ui";
+import { Headline, Textarea, InlineNote, PrimaryButton, SkipButton, ProgressDots, Eyebrow, TimeInput, BackButton, Select } from "../../components/ui";
 import { Underlined } from "../../components/Underlined";
+import MedicationsEditor, { medsToRows } from "../../components/MedicationsEditor";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { useActivePetStore } from "../../stores/activePet";
 import { supabase } from "../../lib/supabase";
@@ -83,7 +84,7 @@ export default function Step4() {
 
       await supabase.from("pet_vet_info").insert({
         pet_id: newPet.id,
-        primary_vet: { contact_name: pet.vetContactName, clinic: pet.vetClinic, phone: pet.vetPhone },
+        primary_vet: { contact_name: pet.vetContactName, clinic: pet.vetClinic, address: pet.vetAddress, phone: pet.vetPhone },
         emergency_vet: { clinic: pet.emergVetClinic, phone: pet.emergVetPhone },
         insurance: { provider: pet.insuranceProvider, policy_number: pet.insurancePolicy },
       });
@@ -101,14 +102,14 @@ export default function Step4() {
 
       await supabase.from("pet_behavior").insert({
         pet_id: newPet.id, commands: pet.commands ?? [], scared: pet.scared, no_go: pet.noGo, flight_risk: pet.flightRisk,
-        escape_risk: { flag: !!pet.flightRisk, notes: pet.flightRisk }, quirks_triggers: [],
+        escape_risk: { flag: !!pet.flightRisk, notes: pet.flightRisk }, quirks_triggers: [], temperament_summary: pet.temperament,
       });
 
       await supabase.from("pet_medical").insert({
         pet_id: newPet.id,
         allergies: pet.allergies ? [pet.allergies] : [],
         conditions: pet.conditions ? [pet.conditions] : [],
-        medications: pet.medications ? [{ name: pet.medications, dose: "", frequency: "", time_of_day: "", location_stored: "", notes: "" }] : [],
+        medications: medsToRows(pet.medications ?? []),
       });
 
       await supabase.from("pet_routine").insert({
@@ -121,6 +122,8 @@ export default function Step4() {
           notes: pet.feedingNotes,
         },
         walks: pet.walks, sleep: pet.sleep, bathroom_habits: pet.bathroomHabits,
+        left_alone: { ok: pet.leftAloneOk, detail: pet.leftAloneDetail },
+        toileting_frequency: pet.toileting,
       });
 
       // Crypto-random token (same source as every other link) — never
@@ -218,6 +221,21 @@ export default function Step4() {
             <Eyebrow>Sleep setup</Eyebrow>
             <Textarea style={{ marginTop: 4 }} placeholder="Crate, bed location, door open/closed…" value={pet.sleep ?? ""} onChangeText={(v) => setPet({ sleep: v })} />
           </View>
+          <View>
+            <Eyebrow>Bathroom habits</Eyebrow>
+            <Textarea style={{ marginTop: 4 }} placeholder="3× daily, signals by sitting by the back door" value={pet.bathroomHabits ?? ""} onChangeText={(v) => setPet({ bathroomHabits: v })} />
+          </View>
+          <View>
+            <Eyebrow>How often do they toilet?</Eyebrow>
+            <Textarea style={{ marginTop: 4 }} placeholder="e.g. Every 4–6 hours, and after meals" value={pet.toileting ?? ""} onChangeText={(v) => setPet({ toileting: v })} />
+          </View>
+          <View>
+            <Eyebrow>Can they be left alone?</Eyebrow>
+            <View style={{ marginTop: 4 }}>
+              <Select value={pet.leftAloneOk ?? ""} onValueChange={(v) => setPet({ leftAloneOk: v })} options={["Yes", "No"]} placeholder="Select" />
+            </View>
+            <Textarea style={{ marginTop: 8 }} placeholder="e.g. Up to 4 hours, crated with a chew" value={pet.leftAloneDetail ?? ""} onChangeText={(v) => setPet({ leftAloneDetail: v })} />
+          </View>
         </View>
       </View>
 
@@ -229,10 +247,7 @@ export default function Step4() {
             <Eyebrow>Allergies</Eyebrow>
             <Textarea style={{ marginTop: 4 }} placeholder="Food, environmental, medication…" value={pet.allergies ?? ""} onChangeText={(v) => setPet({ allergies: v })} />
           </View>
-          <View>
-            <Eyebrow>Medications</Eyebrow>
-            <Textarea style={{ marginTop: 4 }} placeholder="Name, dose, timing, location stored…" value={pet.medications ?? ""} onChangeText={(v) => setPet({ medications: v })} />
-          </View>
+          <MedicationsEditor meds={pet.medications ?? []} onChange={(meds) => setPet({ medications: meds })} />
         </View>
       </View>
 

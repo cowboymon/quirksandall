@@ -243,7 +243,7 @@ export default function Preview() {
                       {i === 0 && d.decisionContacts.length > 1
                         ? `Call ${c.name} first — ${formatPhone(c.phone)}`
                         : d.decisionContacts.length > 1
-                        ? `If you can't reach them, call ${c.name} — ${formatPhone(c.phone)}`
+                        ? `If ${d.decisionContacts[0].name} can't be reached, call ${c.name} — ${formatPhone(c.phone)}`
                         : `Call ${c.name} — ${formatPhone(c.phone)}`}
                     </Text>
                   ))}

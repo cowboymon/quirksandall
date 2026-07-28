@@ -36,10 +36,14 @@ export default function Step2() {
               placeholder="Search clinic name"
               value={pet.vetClinic ?? ""}
               onChangeText={(v) => setPet({ vetClinic: v })}
-              onSelectPlace={(p) => setPet({ vetClinic: p.name, ...(p.phone ? { vetPhone: p.phone } : {}) })}
+              onSelectPlace={(p) => setPet({ vetClinic: p.name, ...(p.phone ? { vetPhone: p.phone } : {}), ...(p.address ? { vetAddress: p.address } : {}) })}
             />
+            <LabeledInput label="Address" placeholder="Address" value={pet.vetAddress ?? ""} onChangeText={(v) => setPet({ vetAddress: v })} />
             <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={pet.vetPhone ?? ""} onChangeText={(v) => setPet({ vetPhone: v })} />
           </View>
+          <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 8, fontFamily: "Satoshi-Light" }}>
+            Consider pre-authorising your sitter directly with your vet by phone or through their online portal.
+          </Text>
         </Card>
 
         <Card>

@@ -230,7 +230,7 @@ export default function RecipientView({ profile, token }: Props) {
                         {i === 0 && decisionContacts.length > 1
                           ? `Call ${c.name} first — ${formatPhone(c.phone)}`
                           : decisionContacts.length > 1
-                          ? `If you can't reach them, call ${c.name} — ${formatPhone(c.phone)}`
+                          ? `If ${decisionContacts[0].name} can't be reached, call ${c.name} — ${formatPhone(c.phone)}`
                           : `Call ${c.name} — ${formatPhone(c.phone)}`}
                       </p>
                     ))}
