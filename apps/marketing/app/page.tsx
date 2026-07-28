@@ -73,14 +73,97 @@ const FAQS = [
 // Real app screenshots. Add the three files to /public/shots with these exact
 // names; an empty src renders a labelled placeholder frame until they exist.
 const SHOTS = [
-  { src: "/shots/onboarding.png", caption: "Set it up in minutes" },
-  { src: "/shots/share.png", caption: "What a stand-in opens" },
-  { src: "/shots/poster.png", caption: "If they ever go missing" },
+  {
+    src: "/shots/onboarding.png",
+    caption: "Set it up in minutes",
+    alt: "Quirks & All onboarding screen for introducing your dog's profile",
+  },
+  {
+    src: "/shots/share.png",
+    caption: "What a stand-in opens",
+    alt: "The shared pet care cheat-sheet a stand-in opens in their browser, no app needed",
+  },
+  {
+    src: "/shots/poster.png",
+    caption: "If they ever go missing",
+    alt: "A printable missing-pet poster generated from the pet's profile",
+  },
 ];
+
+// Three-step "how it works" — plain, extractable sentences (good for AI answer
+// engines) and a quick orientation for first-time visitors.
+const STEPS = [
+  {
+    n: "1",
+    title: "Fill it in once",
+    body: "Add your pet's profile — commands, medications and doses, feeding times, and the quirks only you know. A few minutes, one time.",
+  },
+  {
+    n: "2",
+    title: "Share a link",
+    body: "Send whoever's looking after them a single link. They open it in any browser — nothing to download, no account to make.",
+  },
+  {
+    n: "3",
+    title: "It stays current",
+    body: "Change anything in the app and the link updates instantly. See when it was opened, and revoke it the moment the stay is over.",
+  },
+];
+
+// Homepage structured data. SoftwareApplication tells search + AI engines what
+// the product is, what it runs on, and what it costs; FAQPage marks up the Q&A
+// so it's eligible for rich results and easy for LLMs to quote verbatim.
+const priceNum = site.proPrice.replace(/[^0-9.]/g, "");
+const homeLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": `${site.url}/#app`,
+      name: site.name,
+      description: site.description,
+      applicationCategory: "LifestyleApplication",
+      operatingSystem: "iOS, Android",
+      url: site.url,
+      publisher: { "@id": `${site.url}/#org` },
+      offers: [
+        {
+          "@type": "Offer",
+          name: "Free",
+          price: "0",
+          priceCurrency: "AUD",
+          description:
+            "Pet ID, commands, allergies, medications and doses, emergency contacts, feeding times and one shareable link — free forever. Medical information is never paywalled.",
+        },
+        {
+          "@type": "Offer",
+          name: "Unlock the rest",
+          price: priceNum,
+          priceCurrency: "AUD",
+          description:
+            "One-time purchase: unlimited pets, a separate live link per stand-in, and the full daily routine.",
+        },
+      ],
+    },
+    {
+      "@type": "FAQPage",
+      "@id": `${site.url}/#faq`,
+      mainEntity: FAQS.map((f) => ({
+        "@type": "Question",
+        name: f.q,
+        acceptedAnswer: { "@type": "Answer", text: f.a },
+      })),
+    },
+  ],
+};
 
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(homeLd) }}
+      />
       <Header />
 
       <main className="flex-1">
@@ -106,6 +189,27 @@ export default function Home() {
             >
               Get notified at launch
             </a>
+          </div>
+        </section>
+
+        {/* 1b — How it works (#F8ECEE) */}
+        <section className="border-y border-border/60 bg-card-bg/40">
+          <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
+            <p className="eyebrow text-primary">How it works</p>
+            <h2 className="mt-3 max-w-xl font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
+              Three steps, then you can actually leave.
+            </h2>
+            <ol className="mt-12 grid gap-8 sm:grid-cols-3">
+              {STEPS.map((s) => (
+                <li key={s.n}>
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary font-tanker text-lg text-card-dark-text">
+                    {s.n}
+                  </span>
+                  <h3 className="mt-4 text-base font-bold text-foreground">{s.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-text-muted">{s.body}</p>
+                </li>
+              ))}
+            </ol>
           </div>
         </section>
 
@@ -137,7 +241,7 @@ export default function Home() {
             </h2>
             <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-3">
               {SHOTS.map((s) => (
-                <PhoneShot key={s.caption} src={s.src} caption={s.caption} />
+                <PhoneShot key={s.caption} src={s.src} caption={s.caption} alt={s.alt} />
               ))}
             </div>
           </div>
@@ -326,14 +430,14 @@ function MarkedHeading({ title, mark }: { title: string; mark?: string }) {
 }
 
 /* Phone mockup for the "A look inside" section. Empty src → placeholder frame. */
-function PhoneShot({ src, caption }: { src?: string; caption: string }) {
+function PhoneShot({ src, caption, alt }: { src?: string; caption: string; alt?: string }) {
   return (
     <figure className="flex flex-col items-center">
       <div className="w-full max-w-[220px] rounded-[2rem] border-[3px] border-card-dark bg-card-dark p-0.5 shadow-xl shadow-primary/20">
         <div className="relative aspect-[9/19] overflow-hidden rounded-[1.8rem] bg-card-bg">
           {src ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={src} alt={caption} className="h-full w-full object-cover" />
+            <img src={src} alt={alt ?? caption} className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-secondary">
               <span className="eyebrow text-text-muted">Screenshot</span>

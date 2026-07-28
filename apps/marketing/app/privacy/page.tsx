@@ -6,6 +6,7 @@ import { site } from "../site";
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description: `How ${site.name} collects, uses and protects your information.`,
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {
