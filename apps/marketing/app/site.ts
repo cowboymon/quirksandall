@@ -10,7 +10,10 @@ export const site = {
   // Canonical production URL. Drives metadataBase, canonicals, the sitemap and
   // absolute OG image links. Set NEXT_PUBLIC_SITE_URL in the deployment to
   // override without a code change; the fallback is the expected live domain.
-  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://quirksandall.com").replace(/\/$/, ""),
+  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://quirksandall.itshypothetical.com").replace(
+    /\/$/,
+    "",
+  ),
   // Pre-launch: the apps aren't in the stores yet, so the download
   // affordances show "Coming soon" instead of linking out. Flip to false
   // and fill in the URLs below when the listings go live.

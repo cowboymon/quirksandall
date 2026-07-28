@@ -131,7 +131,7 @@ function VoteButton({
       disabled={disabled}
       aria-pressed={active}
       aria-label={active ? "Remove your vote" : "Want this"}
-      className={`inline-flex items-center gap-2 rounded-button border px-3 py-1.5 text-sm font-medium tabular-nums transition-colors disabled:opacity-60 ${
+      className={`inline-flex items-center gap-1.5 rounded-button border px-2.5 py-1.5 text-sm font-medium tabular-nums transition-colors disabled:opacity-60 ${
         active
           ? "border-primary bg-secondary text-primary"
           : "border-border bg-card-bg text-text-muted hover:border-primary/50 hover:text-foreground"
@@ -141,7 +141,7 @@ function VoteButton({
         width="16"
         height="16"
         viewBox="0 0 24 24"
-        fill="none"
+        fill={active ? "currentColor" : "none"}
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
@@ -151,8 +151,6 @@ function VoteButton({
         <path d="M7 10v11" />
         <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a1.5 1.5 0 0 1 3 .88Z" />
       </svg>
-      <span>Want this</span>
-      <span className="text-text-muted/60" aria-hidden>·</span>
       <span>{count}</span>
     </button>
   );
