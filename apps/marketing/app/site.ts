@@ -7,6 +7,10 @@ export const site = {
   tagline: "Away, but known.",
   description:
     "Fill in your pet's profile once. Share a link with whoever's looking after them. No app needed on their end — just everything they need to know.",
+  // Canonical production URL. Drives metadataBase, canonicals, the sitemap and
+  // absolute OG image links. Set NEXT_PUBLIC_SITE_URL in the deployment to
+  // override without a code change; the fallback is the expected live domain.
+  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://quirksandall.com").replace(/\/$/, ""),
   // Pre-launch: the apps aren't in the stores yet, so the download
   // affordances show "Coming soon" instead of linking out. Flip to false
   // and fill in the URLs below when the listings go live.

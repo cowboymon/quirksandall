@@ -8,7 +8,14 @@ import SuggestForm from "./SuggestForm";
 
 export const metadata: Metadata = {
   title: "Roadmap",
-  description: `What ${site.name} has shipped, and what it's building next.`,
+  description: `What ${site.name} has shipped, what it's building now, and what's next. Vote on ideas or suggest your own.`,
+  alternates: { canonical: "/roadmap" },
+  openGraph: {
+    title: `Roadmap · ${site.name}`,
+    description: `What ${site.name} has shipped, what it's building now, and what's next.`,
+    url: `${site.url}/roadmap`,
+    type: "website",
+  },
 };
 
 export default function RoadmapPage() {
