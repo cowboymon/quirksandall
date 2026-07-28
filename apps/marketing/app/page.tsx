@@ -211,7 +211,7 @@ export default function Home() {
               href="#get"
               className="inline-block rounded-button bg-button px-5 py-3 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed"
             >
-              Get notified at launch
+              Get notified
             </a>
           </div>
         </section>
