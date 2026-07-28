@@ -226,7 +226,7 @@ export default function Home() {
             <ol className="mt-12 grid gap-8 sm:grid-cols-3">
               {STEPS.map((s) => (
                 <li key={s.n}>
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary font-tanker text-lg text-card-dark-text">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-foreground font-tanker text-lg text-card-dark-text">
                     {s.n}
                   </span>
                   <h3 className="mt-4 text-base font-bold text-foreground">{s.title}</h3>
