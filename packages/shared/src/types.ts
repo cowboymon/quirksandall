@@ -17,6 +17,12 @@ export type BackupContact = {
   relationship: string;
   phone: string;
   consentToShare: boolean;
+  // Marks this contact as someone a sitter should call for care decisions
+  // while the owner is unreachable. decisionPriority orders multiple marked
+  // contacts (1 = call first). Instructional only — never rendered as any
+  // form of legal or clinical authorisation.
+  isDecisionContact?: boolean;
+  decisionPriority?: number;
 };
 
 export type Pet = {
@@ -159,7 +165,6 @@ export type RecipientProfile = {
     insurance: VetInfo["insurance"];
     ownerContact: { name: string; phone: string };
     backupContacts: BackupContact[];
-    vetPreAuth?: boolean;
   };
   // Only present on paid tier:
   routine?: PetRoutine;

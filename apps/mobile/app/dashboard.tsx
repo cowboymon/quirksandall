@@ -164,6 +164,32 @@ export default function Dashboard() {
     loadDashboard();
   };
 
+  // Owner-side only, never shown to a sitter. Setting/changing a stay length
+  // is the app's actual "this is a new trip" signal (unlike a link rename,
+  // which can happen anytime) — so this is where the reminder to actually
+  // tell the vet lives, throttled to a 30-day cadence (same pattern as the
+  // command-freshness nudge above) rather than firing on every save. Only
+  // fires when there's a decision contact to tell the vet about.
+  const NUDGE_INTERVAL_MS = 30 * 24 * 60 * 60 * 1000;
+  const maybeNudgeDecisionContact = async () => {
+    const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
+    if (!user) return;
+    const { data: owner } = await supabase
+      .from("owners")
+      .select("backup_contacts, decision_contact_nudge_shown_at")
+      .eq("id", user.id)
+      .single();
+    const hasDecisionContact = (owner?.backup_contacts ?? []).some((c: any) => c.is_decision_contact);
+    if (!hasDecisionContact) return;
+    const lastShown = owner?.decision_contact_nudge_shown_at ? new Date(owner.decision_contact_nudge_shown_at).getTime() : 0;
+    if (Date.now() - lastShown < NUDGE_INTERVAL_MS) return;
+    AppAlert.alert(
+      "Before this trip",
+      "Worth telling your vet who can make decisions if you're away. Most clinics will note it on your file over the phone."
+    );
+    await supabase.from("owners").update({ decision_contact_nudge_shown_at: new Date().toISOString() }).eq("id", user.id);
+  };
+
   const doRevoke = async () => {
     const link = revokeTarget;
     setRevokeTarget(null);
@@ -482,6 +508,7 @@ export default function Dashboard() {
             const id = durationTarget.id;
             setDurationTarget(null);
             await setLinkDuration(id, preset, endsAt);
+            await maybeNudgeDecisionContact();
             loadDashboard();
           }}
           onClose={() => setDurationTarget(null)}

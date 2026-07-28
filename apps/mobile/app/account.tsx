@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, Switch, Linking } from "react-native";
+import * as WebBrowser from "expo-web-browser";
 import { AppAlert } from "../stores/appAlert";
 import Constants from "expo-constants";
 import { router } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { checkEntitlement, purchasePro, restorePurchases } from "../lib/purchases";
-import { REDEMPTION_ENABLED } from "../lib/config";
+import { REDEMPTION_ENABLED, MARKETING_URL } from "../lib/config";
 import { colors, PRICE, CONSENT_POLICY_VERSION } from "@quirksandall/shared";
 import { Platform } from "react-native";
 import { track, resetAnalytics, AnalyticsEvent } from "../lib/analytics";
@@ -143,16 +144,23 @@ export default function Account() {
     router.replace("/auth");
   };
 
-  // Feedback / feature requests (#95) — opens a mail draft with a little context
-  // pre-filled so we know which build it came from. No backend needed.
-  const sendFeedback = async () => {
+  // Support (#4) — opens a mail draft with a little context pre-filled so we
+  // know which build it came from. No backend needed.
+  const contactSupport = async () => {
     const version = Constants.expoConfig?.version ?? "";
-    const subject = encodeURIComponent("Quirks & All — feedback");
+    const subject = encodeURIComponent("Quirks & All — support");
     const body = encodeURIComponent(`\n\n\n———\nSent from Quirks & All ${version} (${Platform.OS})`);
     const url = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
     const ok = await Linking.canOpenURL(url).catch(() => false);
     if (ok) Linking.openURL(url);
     else AppAlert.alert("No mail app", `Email us at ${SUPPORT_EMAIL}.`);
+  };
+
+  // Feature request (#97, resolves the open question in #95) — the roadmap now
+  // has a real suggestion form, so this no longer needs to go through email.
+  // Opens in-app (not the system browser), same as the Privacy/Terms links.
+  const openFeatureRequest = () => {
+    WebBrowser.openBrowserAsync(`${MARKETING_URL}/roadmap#suggest`);
   };
 
   const doDeleteAccount = async () => {
@@ -282,9 +290,14 @@ export default function Account() {
         </View>
       )}
 
-      {/* Feedback / feature request (#95) — quiet row above sign out. */}
-      <TouchableOpacity onPress={sendFeedback} activeOpacity={0.7} style={{ marginTop: 24, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 4 }}>
-        <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Send feedback or a feature request</Text>
+      {/* Support + Feature request (#97) — two quiet rows above sign out, split
+          from the single combined entry now that the roadmap has its own form. */}
+      <TouchableOpacity onPress={contactSupport} activeOpacity={0.7} style={{ marginTop: 24, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 4 }}>
+        <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Support</Text>
+        <Text style={{ color: colors.textMuted, fontSize: 16 }}>›</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={openFeatureRequest} activeOpacity={0.7} style={{ marginTop: 14, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 4 }}>
+        <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Feature request</Text>
         <Text style={{ color: colors.textMuted, fontSize: 16 }}>›</Text>
       </TouchableOpacity>
 

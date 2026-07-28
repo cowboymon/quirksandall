@@ -23,11 +23,12 @@ type PetDraft = {
   backupRelationship?: string;
   backupPhone?: string;
   backupConsent?: boolean;
+  backupIsDecisionContact?: boolean;
   backup2Name?: string;
   backup2Relationship?: string;
   backup2Phone?: string;
   backup2Consent?: boolean;
-  vetPreAuth?: boolean;
+  backup2IsDecisionContact?: boolean;
   pin?: string;
   commands?: Command[];
   scared?: string;

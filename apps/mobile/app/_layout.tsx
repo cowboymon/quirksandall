@@ -43,6 +43,7 @@ export default function RootLayout() {
         <Stack.Screen name="index" />
         <Stack.Screen name="auth" />
         <Stack.Screen name="auth-callback" options={{ animation: "none" }} />
+        <Stack.Screen name="accept-terms" />
         <Stack.Screen name="onboarding" options={{ presentation: "card" }} />
         <Stack.Screen name="dashboard" />
         <Stack.Screen name="account" />

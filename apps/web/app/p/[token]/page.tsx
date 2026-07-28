@@ -65,7 +65,7 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
     supabase.from("pet_behavior").select("commands, quirks_triggers, escape_risk, scared, no_go, flight_risk, temperament_summary").eq("pet_id", pet.id).maybeSingle(),
     supabase.from("pet_medical").select("allergies, conditions, medications").eq("pet_id", pet.id).maybeSingle(),
     supabase.from("pet_routine").select("feeding, walks, sleep, bathroom_habits, left_alone, toileting_frequency").eq("pet_id", pet.id).maybeSingle(),
-    supabase.from("pet_vet_info").select("primary_vet, emergency_vet, insurance, vet_pre_auth").eq("pet_id", pet.id).maybeSingle(),
+    supabase.from("pet_vet_info").select("primary_vet, emergency_vet, insurance").eq("pet_id", pet.id).maybeSingle(),
   ]);
 
   const owner = (ownerRow ?? {}) as any;
@@ -154,11 +154,19 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
             emergencyVet: vetInfo?.emergency_vet ?? {},
             insurance: { provider: vetInfo?.insurance?.provider ?? "", policyNumber: vetInfo?.insurance?.policy_number ?? "" },
             ownerContact: { name: owner.name ?? "", phone: owner.primary_phone ?? "" },
-            // Same consent filter as fetchEmergencyContacts (lib/emergency.ts) —
+            // Same consent filter + shape as fetchEmergencyContacts (lib/emergency.ts) —
             // this is the no-PIN free-tier path, which builds the payload inline
             // rather than through that shared helper.
-            backupContacts: (owner.backup_contacts ?? []).filter((c: any) => c.consent_to_share),
-            vetPreAuth: vetInfo?.vet_pre_auth ?? false,
+            backupContacts: (owner.backup_contacts ?? [])
+              .filter((c: any) => c.consent_to_share)
+              .map((c: any) => ({
+                name: c.name ?? "",
+                relationship: c.relationship ?? "",
+                phone: c.phone ?? "",
+                consentToShare: !!c.consent_to_share,
+                isDecisionContact: !!c.is_decision_contact,
+                decisionPriority: c.decision_priority ?? undefined,
+              })),
           },
         }),
     lastUpdatedAt: pet.updated_at ?? pet.dob,

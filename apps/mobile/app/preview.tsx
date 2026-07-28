@@ -15,9 +15,13 @@ type Data = {
   weight: string; sex: string; color: string; microchip: string;
   vetContactName: string; vetClinic: string; vetPhone: string;
   emergVetClinic: string; emergVetPhone: string;
-  vetPreAuth: boolean; insuranceProvider: string; insurancePolicy: string;
+  insuranceProvider: string; insurancePolicy: string;
   backupName: string; backupPhone: string; backupRel: string;
   backup2Name: string; backup2Phone: string; backup2Rel: string;
+  // Ordered, already-filtered to whoever's marked as a decision contact
+  // (1st entry = call first). Instructional only — see RecipientView's twin
+  // of this block for the full rationale.
+  decisionContacts: { name: string; phone: string }[];
   commands: any[];
   scared: string; noGo: string; flightRisk: string; temperament: string;
   allergies: string; conditions: string; meds: { name: string; dose: string; withMeal?: string; notes?: string }[];
@@ -74,6 +78,10 @@ export default function Preview() {
       // Only preview backup contacts the owner consented to share — this
       // screen's whole point is showing exactly what a sitter would see.
       const backups = (owner?.backup_contacts ?? []).filter((c: any) => c.consent_to_share);
+      const decisionContacts = backups
+        .filter((c: any) => c.is_decision_contact)
+        .sort((a: any, b: any) => (a.decision_priority ?? 99) - (b.decision_priority ?? 99))
+        .map((c: any) => ({ name: c.name ?? "", phone: c.phone ?? "" }));
       const meds = (medical?.medications ?? []).map((m: any) => ({ name: m.name ?? "", dose: m.dose ?? "", withMeal: m.with_meal ?? undefined, notes: m.notes || undefined }));
 
       setData({
@@ -81,9 +89,10 @@ export default function Preview() {
         weight: formatWeight(pet.weight), sex: pet.sex ?? "", color: pet.color_markings ?? "", microchip: pet.microchip_number ?? "",
         vetContactName: vet?.primary_vet?.contact_name ?? "", vetClinic: vet?.primary_vet?.clinic ?? "", vetPhone: vet?.primary_vet?.phone ?? "",
         emergVetClinic: vet?.emergency_vet?.clinic ?? "", emergVetPhone: vet?.emergency_vet?.phone ?? "",
-        vetPreAuth: vet?.vet_pre_auth ?? false, insuranceProvider: vet?.insurance?.provider ?? "", insurancePolicy: vet?.insurance?.policy_number ?? "",
+        insuranceProvider: vet?.insurance?.provider ?? "", insurancePolicy: vet?.insurance?.policy_number ?? "",
         backupName: backups[0]?.name ?? "", backupPhone: backups[0]?.phone ?? "", backupRel: backups[0]?.relationship ?? "",
         backup2Name: backups[1]?.name ?? "", backup2Phone: backups[1]?.phone ?? "", backup2Rel: backups[1]?.relationship ?? "",
+        decisionContacts,
         commands: orderedCommands(behavior?.commands ?? [], paid, false),
         scared: behavior?.scared ?? "", noGo: behavior?.no_go ?? "", flightRisk: behavior?.flight_risk ?? "", temperament: behavior?.temperament_summary ?? "",
         allergies: (medical?.allergies ?? []).join(", "), conditions: (medical?.conditions ?? []).join(", "), meds,
@@ -226,11 +235,18 @@ export default function Preview() {
                   {d.backup2Phone ? <CreamLink icon="call" text={formatPhone(d.backup2Phone)} onPress={() => Linking.openURL(`tel:${d.backup2Phone}`)} /> : null}
                 </View>
               ) : null}
-              {/* Vet pre-auth — below the backup contacts (#20) */}
-              {d.vetPreAuth && (
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(248,236,238,0.1)", borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 }}>
-                  <Ionicons name="checkmark-circle" size={14} color="#88C888" />
-                  <Text style={{ color: "rgba(248,236,238,0.8)", fontSize: 12, flex: 1, lineHeight: 16 }}>Vet pre-authorised — {d.backupName && d.backup2Name ? "backup contacts" : "backup contact"} can approve treatment</Text>
+              {d.decisionContacts.length > 0 && (
+                <View>
+                  <Text style={{ ...microLabel, color: "rgba(248,236,238,0.6)" }}>Decisions about {possessive(d.name)} care</Text>
+                  {d.decisionContacts.map((c, i) => (
+                    <Text key={i} style={{ color: colors.cardDarkText, fontSize: 14, marginTop: 2 }}>
+                      {i === 0 && d.decisionContacts.length > 1
+                        ? `Call ${c.name} first — ${formatPhone(c.phone)}`
+                        : d.decisionContacts.length > 1
+                        ? `If you can't reach them, call ${c.name} — ${formatPhone(c.phone)}`
+                        : `Call ${c.name} — ${formatPhone(c.phone)}`}
+                    </Text>
+                  ))}
                 </View>
               )}
             </View>

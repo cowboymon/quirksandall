@@ -50,10 +50,12 @@ function buildProfileSummary(d: { pet: any; behavior: any; routine: any; medical
     L("  Phone", v.emergency_vet.phone ? formatPhone(v.emergency_vet.phone) : null);
   }
   if (v.insurance) L("Insurance", [v.insurance.provider, v.insurance.policy_number].filter(Boolean).join(" · "));
-  if (v.vet_pre_auth) out.push("Vet pre-authorised for treatment");
   (o.backup_contacts ?? []).forEach((c: any, i: number) => {
     if (!c?.name) return;
-    L(i === 0 ? "Backup contact" : "Second backup", `${c.name}${c.relationship ? ` (${c.relationship})` : ""}${c.phone ? ` — ${formatPhone(c.phone)}` : ""}`);
+    L(
+      i === 0 ? "Backup contact" : "Second backup",
+      `${c.name}${c.relationship ? ` (${c.relationship})` : ""}${c.phone ? ` — ${formatPhone(c.phone)}` : ""}${c.is_decision_contact ? " — can make care decisions" : ""}`
+    );
   });
 
   if ((b.commands ?? []).length) {
