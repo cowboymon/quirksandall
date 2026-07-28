@@ -31,8 +31,8 @@ Made by Its Hypothetical, the team behind Loud & Fine. Tagline: "Away, but known
 
 ## Links
 
-- Home: https://quirksandall.com
-- Roadmap: https://quirksandall.com/roadmap
-- Privacy: https://quirksandall.com/privacy
-- Terms: https://quirksandall.com/terms
+- Home: https://quirksandall.itshypothetical.com
+- Roadmap: https://quirksandall.itshypothetical.com/roadmap
+- Privacy: https://quirksandall.itshypothetical.com/privacy
+- Terms: https://quirksandall.itshypothetical.com/terms
 - Contact: quirksandall@itshypothetical.com
