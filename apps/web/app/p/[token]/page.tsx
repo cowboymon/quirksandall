@@ -154,7 +154,10 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
             emergencyVet: vetInfo?.emergency_vet ?? {},
             insurance: { provider: vetInfo?.insurance?.provider ?? "", policyNumber: vetInfo?.insurance?.policy_number ?? "" },
             ownerContact: { name: owner.name ?? "", phone: owner.primary_phone ?? "" },
-            backupContacts: owner.backup_contacts ?? [],
+            // Same consent filter as fetchEmergencyContacts (lib/emergency.ts) —
+            // this is the no-PIN free-tier path, which builds the payload inline
+            // rather than through that shared helper.
+            backupContacts: (owner.backup_contacts ?? []).filter((c: any) => c.consent_to_share),
             vetPreAuth: vetInfo?.vet_pre_auth ?? false,
           },
         }),
