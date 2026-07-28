@@ -22,15 +22,18 @@ export default function RoadmapPage() {
             Where we&apos;re headed.
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-text-muted">
-            {site.name} is just getting started. Here&apos;s what&apos;s already in, what
-            we&apos;re building now, and what we&apos;re still chewing over. Don&apos;t read the
-            absence of something as a no — give the ideas a thumb and the loudest ones jump the
-            queue.
+            {site.name} is just getting started. Here&apos;s what we&apos;re building now,
+            what&apos;s next, and what we&apos;re still chewing over. Don&apos;t read the absence of
+            something as a no — give the ideas a thumb and the loudest ones jump the queue.
           </p>
         </section>
 
-        {/* Already shipped — factual, no voting. */}
-        <section className="mx-auto max-w-5xl px-6 pb-10">
+        <section className="mx-auto max-w-5xl px-6 pt-4 pb-16 sm:pb-20">
+          <RoadmapBoard />
+        </section>
+
+        {/* Already shipped — factual, no voting. A quiet list, not cards. */}
+        <section className="mx-auto max-w-5xl px-6 pb-16 sm:pb-24">
           <div className="flex items-center gap-2.5 border-b border-border pb-3">
             <span
               aria-hidden
@@ -44,18 +47,22 @@ export default function RoadmapPage() {
               Already shipped
             </h2>
           </div>
-          <ul className="mt-5 grid gap-4 sm:grid-cols-2">
+          <ul className="mt-5 grid gap-x-10 gap-y-4 sm:grid-cols-2">
             {SHIPPED.map((item) => (
-              <li key={item.id} className="rounded-card border border-border bg-card-bg p-5">
-                <h3 className="text-base font-bold text-foreground">{item.title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-text-muted">{item.desc}</p>
+              <li key={item.id} className="flex gap-3">
+                <span aria-hidden className="mt-1 shrink-0 text-success">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                </span>
+                <p className="text-sm leading-relaxed text-text-muted">
+                  <span className="font-bold text-foreground">{item.title}</span>
+                  {" — "}
+                  {item.desc}
+                </p>
               </li>
             ))}
           </ul>
-        </section>
-
-        <section className="mx-auto max-w-5xl px-6 pb-16 sm:pb-24">
-          <RoadmapBoard />
         </section>
 
         {/* Feedback nudge */}
