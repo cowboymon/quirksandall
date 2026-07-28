@@ -4,7 +4,10 @@ export const WEB_URL =
   process.env.EXPO_PUBLIC_WEB_URL ?? "https://app.quirksandall.itshypothetical.com";
 
 // Shows the "Have a code?" redemption link on the paywall + account screens.
-// Currently ON to preview the /redeem screen; the redemption backend
+// OFF for the first App Store submission: the redemption backend
 // (redemption_codes table + validate-code Edge Function → RevenueCat
-// Promotional Entitlement) is still to be built.
-export const REDEMPTION_ENABLED = true;
+// Promotional Entitlement) isn't built yet, and an unexplained link that
+// leads to a "coming soon" placeholder is a real risk for App Review on
+// the one IAP that submission exists to activate. Flip back on once the
+// redemption backend ships.
+export const REDEMPTION_ENABLED = false;
