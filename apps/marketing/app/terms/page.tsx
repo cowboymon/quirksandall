@@ -58,7 +58,16 @@ export default function TermsPage() {
             — we don&apos;t verify them.
           </p>
 
-          <h2>4. Your content</h2>
+          <h2>4. No authority to act on your behalf</h2>
+          <p>
+            The Service does not authorise anyone to make decisions about your pet&apos;s care. Nothing
+            recorded in a profile — including any person you nominate as a decision contact — gives that
+            person legal authority to consent to veterinary treatment, incur costs, or otherwise act for
+            you. If you want someone to be able to make decisions while you&apos;re away, arrange that
+            directly with your veterinary practice.
+          </p>
+
+          <h2>5. Your content</h2>
           <p>
             You keep ownership of the information, text, photos, documents and other content you add
             (&quot;Your Content&quot;). You grant us a limited licence to host, store, process and display
@@ -79,7 +88,7 @@ export default function TermsPage() {
             <li>Your Content is lawful and doesn&apos;t infringe anyone else&apos;s rights.</li>
           </ul>
 
-          <h2>5. Shareable links</h2>
+          <h2>6. Shareable links</h2>
           <p>
             The Service lets you generate links that display your pet&apos;s profile. Anyone with a link can
             view the non-PIN-protected parts of that profile — treat a link like you&apos;d treat a key.
@@ -89,7 +98,7 @@ export default function TermsPage() {
             they&apos;ve seen it.
           </p>
 
-          <h2>6. Acceptable use</h2>
+          <h2>7. Acceptable use</h2>
           <p>You agree not to:</p>
           <ul>
             <li>use the Service for anything unlawful, harmful, or that infringes others&apos; rights;</li>
@@ -99,7 +108,7 @@ export default function TermsPage() {
             <li>use the Service to build a competing product or scrape its data.</li>
           </ul>
 
-          <h2>7. Purchases</h2>
+          <h2>8. Purchases</h2>
           <p>
             {site.name} is free to start. Some features are unlocked by a one-time in-app purchase (the
             &quot;Pro&quot; unlock). Purchases are processed by the Apple App Store or Google Play under
@@ -107,14 +116,14 @@ export default function TermsPage() {
             a subscription. Refunds are handled by the relevant app store according to their policies.
           </p>
 
-          <h2>8. Availability &amp; changes</h2>
+          <h2>9. Availability &amp; changes</h2>
           <p>
             We work to keep the Service running, but we don&apos;t guarantee it will always be available,
             uninterrupted or error-free. We may add, change or remove features over time. We&apos;ll try to
             give reasonable notice of significant changes where we can.
           </p>
 
-          <h2>9. Disclaimers</h2>
+          <h2>10. Disclaimers</h2>
           <p>
             The Service is provided &quot;as is&quot; and &quot;as available&quot;, without warranties of
             any kind, whether express or implied, to the fullest extent permitted by law. We don&apos;t
@@ -122,7 +131,7 @@ export default function TermsPage() {
             that&apos;s up to you to keep updated.
           </p>
 
-          <h2>10. Limitation of liability</h2>
+          <h2>11. Limitation of liability</h2>
           <p>
             To the fullest extent permitted by law, {site.legalEntity} will not be liable for any indirect,
             incidental, special or consequential damages, or for any loss of data, arising from your use
@@ -130,7 +139,7 @@ export default function TermsPage() {
             applicable law.
           </p>
 
-          <h2>11. Termination</h2>
+          <h2>12. Termination</h2>
           <p>
             You can stop using the Service and delete your account at any time. We may suspend or
             terminate access if you breach these Terms or use the Service in a way that could cause harm or
@@ -142,14 +151,14 @@ export default function TermsPage() {
             before you delete.
           </p>
 
-          <h2>12. Changes to these Terms</h2>
+          <h2>13. Changes to these Terms</h2>
           <p>
             We may update these Terms from time to time. If we make material changes, we&apos;ll update the
             date above and, where appropriate, let you know in the app. Continuing to use the Service after
             changes take effect means you accept the updated Terms.
           </p>
 
-          <h2>13. Governing law</h2>
+          <h2>14. Governing law</h2>
           <p>
             These Terms are governed by the laws of New South Wales, Australia. You and we submit to the
             non-exclusive jurisdiction of the courts of that state. If you are a consumer in another
@@ -157,7 +166,7 @@ export default function TermsPage() {
             live.
           </p>
 
-          <h2>14. General</h2>
+          <h2>15. General</h2>
           <ul>
             <li>
               <strong>Severability.</strong> If any part of these Terms is found unenforceable, the rest
@@ -182,7 +191,7 @@ export default function TermsPage() {
             </li>
           </ul>
 
-          <h2>15. Contact</h2>
+          <h2>16. Contact</h2>
           <p>
             Questions about these Terms? Email us at{" "}
             <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>.

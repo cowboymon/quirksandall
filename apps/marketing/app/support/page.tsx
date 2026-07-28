@@ -50,7 +50,7 @@ export default function SupportPage() {
                 .
               </li>
               <li>
-                Got a feature idea? Tell us on our{" "}
+                Got an idea for us? Tell us on our{" "}
                 <a
                   href="/roadmap#suggest"
                   className="font-medium text-primary underline underline-offset-2"

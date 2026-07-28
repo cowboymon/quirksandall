@@ -38,7 +38,7 @@ export const site = {
   makerUrl: "https://itshypothetical.com",
   makerOtherProduct: "Loud & Fine",
   // Keep in sync when you revise the legal pages.
-  legalLastUpdated: "27 July 2026",
+  legalLastUpdated: "28 July 2026",
   // Single source of truth for the price lives in @quirksandall/shared.
   proPrice: PRICE,
 } as const;
