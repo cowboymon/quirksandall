@@ -12,6 +12,22 @@ const MAX_PER_WINDOW = 5;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Cost guard for AI tagging: link-bearing suggestions are almost always spam,
+// so skip the paid classification for them (they still save, just Untagged),
+// and cap total tagging calls per instance per hour so a flood can't run up
+// the Anthropic bill. Neither affects whether the suggestion is stored.
+const URL_RE = /(https?:\/\/|www\.)/i;
+const TAG_WINDOW_MS = 3_600_000;
+const TAG_MAX_PER_WINDOW = 100;
+let tagCalls: number[] = [];
+function underTagCap(): boolean {
+  const now = Date.now();
+  tagCalls = tagCalls.filter((t) => now - t < TAG_WINDOW_MS);
+  if (tagCalls.length >= TAG_MAX_PER_WINDOW) return false;
+  tagCalls.push(now);
+  return true;
+}
+
 export async function POST(req: NextRequest) {
   let body: { suggestion?: string; email?: string; company?: string };
   try {
@@ -66,13 +82,16 @@ export async function POST(req: NextRequest) {
 
   // Best-effort AI theming — never let it fail the user's submission. Falls
   // back to untagged when ANTHROPIC_API_KEY isn't set or the call errors.
-  try {
-    const theme = await classifyTheme(suggestion);
-    if (theme && data?.id) {
-      await supabase.from("roadmap_suggestions").update({ theme }).eq("id", data.id);
+  // Skip (to protect cost) for link-spam or once the hourly cap is hit.
+  if (!URL_RE.test(suggestion) && underTagCap()) {
+    try {
+      const theme = await classifyTheme(suggestion);
+      if (theme && data?.id) {
+        await supabase.from("roadmap_suggestions").update({ theme }).eq("id", data.id);
+      }
+    } catch {
+      // leave untagged
     }
-  } catch {
-    // leave untagged
   }
 
   return NextResponse.json({ ok: true });
