@@ -27,19 +27,17 @@ export default function SupportPage() {
           </p>
 
           <div className="mt-8 rounded-card border border-border bg-card-bg p-6">
-            <p className="text-sm font-medium text-text-muted">Email us</p>
+            <p className="eyebrow text-text-muted">Email us</p>
             <a
               href={`mailto:${site.contactEmail}`}
-              className="mt-1 block break-all font-tanker text-2xl text-primary underline underline-offset-4 sm:text-3xl"
+              className="mt-1.5 block break-all text-lg font-medium text-primary underline underline-offset-2 sm:text-xl"
             >
               {site.contactEmail}
             </a>
           </div>
 
           <div className="mt-10 border-t border-border/70 pt-8">
-            <h2 className="text-sm font-bold uppercase tracking-wide text-foreground">
-              Before you write
-            </h2>
+            <h2 className="eyebrow text-primary">Before you write</h2>
             <ul className="mt-4 flex flex-col gap-2 text-sm leading-relaxed text-text-muted">
               <li>
                 Quick questions may already be answered in our{" "}
@@ -75,8 +73,8 @@ export default function SupportPage() {
           </div>
 
           <p className="mt-10 text-sm text-text-muted">
-            {site.name} is made by {site.maker}
-            {site.legalEntity ? ` (${site.legalEntity}, ABN ${site.legalAbn})` : ""}.
+            {site.name} is made by {site.legalPerson}, trading as {site.maker} (ABN{" "}
+            {site.legalAbn}).
           </p>
         </section>
       </main>
