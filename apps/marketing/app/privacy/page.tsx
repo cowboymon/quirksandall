@@ -249,9 +249,11 @@ export default function PrivacyPage() {
           <h2>10. International transfers</h2>
           <p>
             Our providers may store and process information outside Australia, including in the United
-            States and the European Union. Where information is transferred out of a jurisdiction with
-            data protection laws, we rely on our providers&apos; standard contractual clauses and take
-            reasonable steps to make sure it receives an equivalent level of protection.
+            States and the European Union. Our product analytics provider (Mixpanel) is configured for
+            EU data residency, so analytics data is stored and processed in the European Union. Where
+            information is transferred out of a jurisdiction with data protection laws, we rely on our
+            providers&apos; standard contractual clauses and take reasonable steps to make sure it
+            receives an equivalent level of protection.
           </p>
 
           <h2>11. Changes to this policy</h2>
