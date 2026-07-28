@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { classifyTheme } from "../../../lib/classify";
 
 export const runtime = "nodejs";
 
@@ -53,10 +54,25 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = createClient(url, key);
-  const { error } = await supabase.from("roadmap_suggestions").insert({ suggestion, email });
+  const { data, error } = await supabase
+    .from("roadmap_suggestions")
+    .insert({ suggestion, email })
+    .select("id")
+    .single();
   if (error) {
     console.error("suggestion insert failed", error);
     return NextResponse.json({ ok: false, error: "server" }, { status: 500 });
+  }
+
+  // Best-effort AI theming — never let it fail the user's submission. Falls
+  // back to untagged when ANTHROPIC_API_KEY isn't set or the call errors.
+  try {
+    const theme = await classifyTheme(suggestion);
+    if (theme && data?.id) {
+      await supabase.from("roadmap_suggestions").update({ theme }).eq("id", data.id);
+    }
+  } catch {
+    // leave untagged
   }
 
   return NextResponse.json({ ok: true });
