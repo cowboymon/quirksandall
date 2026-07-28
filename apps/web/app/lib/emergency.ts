@@ -23,7 +23,10 @@ export async function fetchEmergencyContacts(supabase: SupabaseClient, petId: st
     emergencyVet: vetInfo.emergency_vet ?? {},
     insurance: { provider: ins.provider ?? "", policyNumber: ins.policy_number ?? "" },
     ownerContact: { name: owner.name ?? "", phone: owner.primary_phone ?? "" },
-    backupContacts: owner.backup_contacts ?? [],
+    // Only surface backup contacts the owner explicitly consented to share —
+    // the mobile editor's "I have permission to share this person's contact
+    // info" checkbox, stored per-contact as consent_to_share.
+    backupContacts: (owner.backup_contacts ?? []).filter((c: any) => c.consent_to_share),
     vetPreAuth: vetInfo.vet_pre_auth ?? false,
   };
 }

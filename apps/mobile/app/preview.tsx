@@ -71,7 +71,9 @@ export default function Preview() {
 
       const paid = owner?.purchase_status === "paid";
       setIsPaid(paid);
-      const backups = owner?.backup_contacts ?? [];
+      // Only preview backup contacts the owner consented to share — this
+      // screen's whole point is showing exactly what a sitter would see.
+      const backups = (owner?.backup_contacts ?? []).filter((c: any) => c.consent_to_share);
       const meds = (medical?.medications ?? []).map((m: any) => ({ name: m.name ?? "", dose: m.dose ?? "", withMeal: m.with_meal ?? undefined, notes: m.notes || undefined }));
 
       setData({

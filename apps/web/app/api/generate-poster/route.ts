@@ -35,7 +35,23 @@ async function loadFonts() {
   return fontCache;
 }
 
+// pet.photo_url is owner-writable (any authenticated owner can PATCH their own
+// pet row directly via PostgREST, bypassing uploadPetPhoto's normal flow), and
+// this function does a server-side fetch of it — so it must be pinned to the
+// one host that URL is ever legitimately on (this project's own Supabase
+// Storage), or it's an open SSRF proxy for internal/arbitrary hosts.
+function isTrustedPhotoUrl(url: string): boolean {
+  try {
+    const target = new URL(url);
+    const supabaseHost = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).host;
+    return target.protocol === "https:" && target.host === supabaseHost;
+  } catch {
+    return false;
+  }
+}
+
 async function photoToDataUri(url: string): Promise<string | null> {
+  if (!isTrustedPhotoUrl(url)) return null;
   try {
     const res = await fetch(url);
     if (!res.ok) return null;
