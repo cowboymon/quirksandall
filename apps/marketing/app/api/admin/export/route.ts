@@ -63,12 +63,12 @@ export async function GET(req: NextRequest) {
   } else if (type === "suggestions") {
     const { data, error } = await supabase
       .from("roadmap_suggestions")
-      .select("suggestion, email, created_at")
+      .select("suggestion, email, theme, status, notified_at, created_at")
       .order("created_at", { ascending: false });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     csv = toCsv(
-      ["suggestion", "email", "created_at"],
-      (data ?? []).map((r) => [r.suggestion, r.email, r.created_at]),
+      ["suggestion", "email", "theme", "status", "notified_at", "created_at"],
+      (data ?? []).map((r) => [r.suggestion, r.email, r.theme, r.status, r.notified_at, r.created_at]),
     );
     name = "suggestions";
   } else if (type === "votes") {

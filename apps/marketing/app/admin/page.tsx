@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import { COLUMNS } from "../roadmap/data";
+import SuggestionsAdmin, { type Suggestion } from "./SuggestionsAdmin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic"; // always fresh; never cached
@@ -63,7 +64,7 @@ async function load() {
     supabase.from("roadmap_votes").select("item_id, vote"),
     supabase
       .from("roadmap_suggestions")
-      .select("suggestion, email, created_at")
+      .select("id, suggestion, email, created_at, theme, status, notified_at")
       .order("created_at", { ascending: false })
       .limit(500),
   ]);
@@ -86,8 +87,8 @@ async function load() {
     error: votesRes.error?.message ?? null,
   };
 
-  const suggestions: Loaded<{ suggestion: string; email: string | null; created_at: string }> = {
-    rows: suggestionsRes.data ?? [],
+  const suggestions: Loaded<Suggestion> = {
+    rows: (suggestionsRes.data ?? []) as Suggestion[],
     error: suggestionsRes.error?.message ?? null,
   };
 
@@ -212,22 +213,18 @@ export default async function AdminPage() {
             <DownloadCsv type="suggestions" label="Download CSV" />
           )}
         </div>
+        <p className="mt-2 text-xs text-text-muted">
+          Grouped by AI-assigned theme. Set a status; anyone with an email who wants an update
+          shows up in the “To notify” queue above the list.
+        </p>
         <TableNote error={suggestions.error} name="roadmap_suggestions" />
         {!suggestions.error && suggestions.rows.length === 0 && (
           <p className="mt-4 text-sm text-text-muted">None yet.</p>
         )}
         {!suggestions.error && suggestions.rows.length > 0 && (
-          <ul className="mt-4 flex flex-col gap-3">
-            {suggestions.rows.map((s, idx) => (
-              <li key={idx} className="rounded-card border border-border bg-card-bg p-4">
-                <p className="whitespace-pre-wrap text-sm text-foreground">{s.suggestion}</p>
-                <p className="mt-2 text-xs text-text-muted">
-                  {fmt(s.created_at)}
-                  {s.email ? ` · ${maskEmail(s.email)}` : " · no email"}
-                </p>
-              </li>
-            ))}
-          </ul>
+          <div className="mt-5">
+            <SuggestionsAdmin suggestions={suggestions.rows} />
+          </div>
         )}
       </section>
 
