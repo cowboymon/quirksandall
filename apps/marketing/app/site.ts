@@ -29,6 +29,9 @@ export const site = {
   // A lawyer should confirm the exact registered-name form (ABN Lookup lists
   // it as "Rattanong, Monica Litheda") before final publication.
   legalEntity: "Monica Rattanong trading as Its Hypothetical",
+  // The individual behind the sole-trader ABN, used where we want the person
+  // named separately from the "trading as" brand.
+  legalPerson: "Monica Rattanong",
   legalAbn: "22 525 634 531",
   // Maker attribution shown in the footer.
   maker: "Its Hypothetical",
