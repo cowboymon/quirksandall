@@ -45,12 +45,12 @@ export default function SupportPage() {
                   href="/#faq"
                   className="font-medium text-primary underline underline-offset-2"
                 >
-                  FAQ
+                  FAQs
                 </a>
                 .
               </li>
               <li>
-                Got a feature idea? Tell us on the{" "}
+                Got a feature idea? Tell us on our{" "}
                 <a
                   href="/roadmap#suggest"
                   className="font-medium text-primary underline underline-offset-2"
