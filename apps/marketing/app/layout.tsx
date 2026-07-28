@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   applicationName: site.name,
   alternates: { canonical: "/" },
   icons: {
-    icon: "/brand/icon.png",
+    icon: [{ url: "/brand/favicon.png", type: "image/png", sizes: "any" }],
     apple: "/brand/icon.png",
   },
   openGraph: {
