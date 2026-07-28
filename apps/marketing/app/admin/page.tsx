@@ -82,6 +82,12 @@ async function load() {
       .map(([id, up]) => ({ id, up, title: TITLES[id] ?? id, status: STATUS[id] ?? "" }))
       .sort((a, b) => b.up - a.up),
     error: votesRes.error?.message ?? null,
+    // Diagnostic: raw rows read from Supabase, and any item ids present in the
+    // table that the current roadmap data doesn't know about (orphaned votes).
+    read: votesRes.data?.length ?? 0,
+    unknownIds: Array.from(
+      new Set((votesRes.data ?? []).map((v) => v.item_id).filter((id) => !(id in counts))),
+    ),
   };
 
   const suggestions: Loaded<{ suggestion: string; email: string | null; created_at: string }> = {
@@ -154,7 +160,12 @@ export default async function AdminPage() {
           <p className="eyebrow text-primary">Quirks &amp; All</p>
           <h1 className="mt-2 font-tanker text-4xl text-foreground sm:text-5xl">Admin</h1>
         </div>
-        <p className="text-sm text-text-muted">Live from Supabase · reload to refresh</p>
+        <a
+          href="/admin"
+          className="rounded-button border border-border bg-card-bg px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:border-primary/50"
+        >
+          ↻ Refresh
+        </a>
       </header>
 
       {/* Summary */}
@@ -169,6 +180,13 @@ export default async function AdminPage() {
         <h2 className="text-sm font-bold uppercase tracking-wide text-foreground">
           Roadmap votes
         </h2>
+        <p className="mt-2 text-xs text-text-muted">
+          Diagnostic: read {votes.read} vote row{votes.read === 1 ? "" : "s"} from Supabase
+          {votes.unknownIds.length > 0
+            ? ` · ${votes.unknownIds.length} for unknown items (${votes.unknownIds.join(", ")})`
+            : ""}
+          {votes.error ? ` · error: ${votes.error}` : ""}
+        </p>
         <TableNote error={votes.error} name="roadmap_votes" />
         {!votes.error && (
           <div className="mt-4 overflow-hidden rounded-card border border-border">
