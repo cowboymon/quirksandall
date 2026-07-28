@@ -2,7 +2,10 @@ import Purchases, { LOG_LEVEL } from "react-native-purchases";
 import { Platform } from "react-native";
 
 export const ENTITLEMENT_ID = "pro";
-export const PRODUCT_ID = "quirksandall_unlock";
+// Not read anywhere at runtime — the purchase flow goes through RevenueCat's
+// "current" Offering, not a hardcoded product lookup. Kept as documentation
+// of which App Store Connect / RevenueCat product this app's unlock maps to.
+export const PRODUCT_ID = "quirksandall_unlocked";
 
 export function initRevenueCat() {
   // Prefer a platform-specific key; fall back to a single shared key
