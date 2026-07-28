@@ -95,20 +95,12 @@ export default function RoadmapBoard() {
                 <li key={item.id} className="rounded-card border border-border bg-card-bg p-5">
                   <h3 className="text-base font-bold text-foreground">{item.title}</h3>
                   <p className="mt-1.5 text-sm leading-relaxed text-text-muted">{item.desc}</p>
-                  <div className="mt-4 flex items-center gap-2">
+                  <div className="mt-4">
                     <VoteButton
-                      dir={1}
                       active={v === 1}
                       count={c.up}
                       disabled={busy === item.id}
                       onClick={() => cast(item.id, 1)}
-                    />
-                    <VoteButton
-                      dir={-1}
-                      active={v === -1}
-                      count={c.down}
-                      disabled={busy === item.id}
-                      onClick={() => cast(item.id, -1)}
                     />
                   </div>
                 </li>
@@ -122,28 +114,24 @@ export default function RoadmapBoard() {
 }
 
 function VoteButton({
-  dir,
   active,
   count,
   disabled,
   onClick,
 }: {
-  dir: 1 | -1;
   active: boolean;
   count: number;
   disabled: boolean;
   onClick: () => void;
 }) {
-  const up = dir === 1;
-  const label = up ? "Want this" : "Not fussed";
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
       aria-pressed={active}
-      aria-label={label}
-      className={`inline-flex items-center gap-1.5 rounded-button border px-2.5 py-1.5 text-sm tabular-nums transition-colors disabled:opacity-60 ${
+      aria-label={active ? "Remove your vote" : "Want this"}
+      className={`inline-flex items-center gap-2 rounded-button border px-3 py-1.5 text-sm font-medium tabular-nums transition-colors disabled:opacity-60 ${
         active
           ? "border-primary bg-secondary text-primary"
           : "border-border bg-card-bg text-text-muted hover:border-primary/50 hover:text-foreground"
@@ -158,13 +146,13 @@ function VoteButton({
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className={up ? "" : "rotate-180"}
         aria-hidden
       >
-        {/* thumbs-up glyph; rotated 180° for down */}
         <path d="M7 10v11" />
         <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a1.5 1.5 0 0 1 3 .88Z" />
       </svg>
+      <span>Want this</span>
+      <span className="text-text-muted/60" aria-hidden>·</span>
       <span>{count}</span>
     </button>
   );
