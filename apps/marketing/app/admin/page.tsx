@@ -18,6 +18,17 @@ const STATUS: Record<string, string> = Object.fromEntries(
   COLUMNS.flatMap((c) => c.items.map((i) => [i.id, c.status])),
 );
 
+// Mask an email for on-screen display so a glance / screen-share doesn't leak
+// the full address. Full addresses are available via the CSV download.
+function maskEmail(email: string | null): string {
+  if (!email) return "—";
+  const at = email.indexOf("@");
+  if (at < 1) return "•••";
+  const first = email[0];
+  const domain = email.slice(at);
+  return `${first}••••${domain}`;
+}
+
 function fmt(ts: string | null): string {
   if (!ts) return "—";
   try {
@@ -87,6 +98,22 @@ function Stat({ label, value }: { label: string; value: string | number }) {
       <p className="font-tanker text-3xl text-foreground">{value}</p>
       <p className="mt-1 text-sm text-text-muted">{label}</p>
     </div>
+  );
+}
+
+function DownloadCsv({ type, label }: { type: string; label: string }) {
+  return (
+    <a
+      href={`/api/admin/export?type=${type}`}
+      className="inline-flex items-center gap-1.5 rounded-button border border-border bg-card-bg px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-primary/50"
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <path d="M7 10l5 5 5-5" />
+        <path d="M12 15V3" />
+      </svg>
+      {label}
+    </a>
   );
 }
 
@@ -169,9 +196,14 @@ export default async function AdminPage() {
 
       {/* Suggestions */}
       <section className="mt-14">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-foreground">
-          Feature suggestions
-        </h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-foreground">
+            Feature suggestions
+          </h2>
+          {!suggestions.error && suggestions.rows.length > 0 && (
+            <DownloadCsv type="suggestions" label="Download CSV" />
+          )}
+        </div>
         <TableNote error={suggestions.error} name="roadmap_suggestions" />
         {!suggestions.error && suggestions.rows.length === 0 && (
           <p className="mt-4 text-sm text-text-muted">None yet.</p>
@@ -183,7 +215,7 @@ export default async function AdminPage() {
                 <p className="whitespace-pre-wrap text-sm text-foreground">{s.suggestion}</p>
                 <p className="mt-2 text-xs text-text-muted">
                   {fmt(s.created_at)}
-                  {s.email ? ` · ${s.email}` : " · no email"}
+                  {s.email ? ` · ${maskEmail(s.email)}` : " · no email"}
                 </p>
               </li>
             ))}
@@ -193,7 +225,15 @@ export default async function AdminPage() {
 
       {/* Waitlist */}
       <section className="mt-14">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-foreground">Waitlist</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-foreground">Waitlist</h2>
+          {!waitlist.error && waitlist.rows.length > 0 && (
+            <DownloadCsv type="waitlist" label="Download CSV" />
+          )}
+        </div>
+        <p className="mt-2 text-xs text-text-muted">
+          Emails are masked on screen — download the CSV for the full addresses.
+        </p>
         <TableNote error={waitlist.error} name="waitlist" />
         {!waitlist.error && waitlist.rows.length === 0 && (
           <p className="mt-4 text-sm text-text-muted">No signups yet.</p>
@@ -211,7 +251,7 @@ export default async function AdminPage() {
               <tbody>
                 {waitlist.rows.map((r, idx) => (
                   <tr key={idx} className="border-t border-border/60">
-                    <td className="px-4 py-2.5 text-foreground">{r.email}</td>
+                    <td className="px-4 py-2.5 text-foreground">{maskEmail(r.email)}</td>
                     <td className="px-4 py-2.5 text-text-muted">{r.source ?? "—"}</td>
                     <td className="px-4 py-2.5 text-text-muted">{fmt(r.created_at)}</td>
                   </tr>

@@ -48,4 +48,4 @@ export function middleware(req: NextRequest) {
   return unauthorized();
 }
 
-export const config = { matcher: ["/admin", "/admin/:path*"] };
+export const config = { matcher: ["/admin", "/admin/:path*", "/api/admin/:path*"] };
