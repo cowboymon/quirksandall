@@ -5,27 +5,7 @@ import { COLUMNS } from "../roadmap/data";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic"; // always fresh; never cached
-export const revalidate = 0;
-
-// Non-secret diagnostics: the project host the client connected to, and the
-// key's role claim (anon vs service_role) decoded from the JWT payload — the
-// signature is never touched, so no secret is revealed.
-function projectHost(url: string): string {
-  try {
-    return new URL(url).host;
-  } catch {
-    return "?";
-  }
-}
-function keyRole(key: string): string {
-  try {
-    const payload = key.split(".")[1] ?? "";
-    const json = JSON.parse(Buffer.from(payload, "base64").toString("utf8"));
-    return json.role ?? "?";
-  } catch {
-    return "?";
-  }
-}
+export const revalidate = 0; // never serve a cached/build-time render
 
 // Keep it out of search engines even though it's behind auth.
 export const metadata: Metadata = {
@@ -73,7 +53,6 @@ async function load() {
   const key = process.env.SUPABASE_SERVICE_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) return null;
   const supabase = createClient(url, key);
-  const source = { host: projectHost(url), role: keyRole(key) };
 
   const [waitlistRes, votesRes, suggestionsRes] = await Promise.all([
     supabase
@@ -105,12 +84,6 @@ async function load() {
       .map(([id, up]) => ({ id, up, title: TITLES[id] ?? id, status: STATUS[id] ?? "" }))
       .sort((a, b) => b.up - a.up),
     error: votesRes.error?.message ?? null,
-    // Diagnostic: raw rows read from Supabase, and any item ids present in the
-    // table that the current roadmap data doesn't know about (orphaned votes).
-    read: votesRes.data?.length ?? 0,
-    unknownIds: Array.from(
-      new Set((votesRes.data ?? []).map((v) => v.item_id).filter((id) => !(id in counts))),
-    ),
   };
 
   const suggestions: Loaded<{ suggestion: string; email: string | null; created_at: string }> = {
@@ -118,7 +91,7 @@ async function load() {
     error: suggestionsRes.error?.message ?? null,
   };
 
-  return { waitlist, votes, suggestions, source };
+  return { waitlist, votes, suggestions };
 }
 
 function Stat({ label, value }: { label: string; value: string | number }) {
@@ -174,7 +147,7 @@ export default async function AdminPage() {
     );
   }
 
-  const { waitlist, votes, suggestions, source } = data;
+  const { waitlist, votes, suggestions } = data;
   const totalVotes = votes.rows.reduce((n, r) => n + r.up, 0);
 
   return (
@@ -204,17 +177,6 @@ export default async function AdminPage() {
         <h2 className="text-sm font-bold uppercase tracking-wide text-foreground">
           Roadmap votes
         </h2>
-        <p className="mt-2 text-xs text-text-muted">
-          Diagnostic: read {votes.read} vote row{votes.read === 1 ? "" : "s"} · key role:{" "}
-          <span className={source.role === "service_role" ? "" : "font-bold text-caution"}>
-            {source.role}
-          </span>{" "}
-          · host: {source.host}
-          {votes.unknownIds.length > 0
-            ? ` · ${votes.unknownIds.length} for unknown items (${votes.unknownIds.join(", ")})`
-            : ""}
-          {votes.error ? ` · error: ${votes.error}` : ""}
-        </p>
         <TableNote error={votes.error} name="roadmap_votes" />
         {!votes.error && (
           <div className="mt-4 overflow-hidden rounded-card border border-border">
