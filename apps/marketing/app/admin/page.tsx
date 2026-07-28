@@ -1,9 +1,31 @@
 import type { Metadata } from "next";
+import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import { COLUMNS } from "../roadmap/data";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic"; // always fresh; never cached
+export const revalidate = 0;
+
+// Non-secret diagnostics: the project host the client connected to, and the
+// key's role claim (anon vs service_role) decoded from the JWT payload — the
+// signature is never touched, so no secret is revealed.
+function projectHost(url: string): string {
+  try {
+    return new URL(url).host;
+  } catch {
+    return "?";
+  }
+}
+function keyRole(key: string): string {
+  try {
+    const payload = key.split(".")[1] ?? "";
+    const json = JSON.parse(Buffer.from(payload, "base64").toString("utf8"));
+    return json.role ?? "?";
+  } catch {
+    return "?";
+  }
+}
 
 // Keep it out of search engines even though it's behind auth.
 export const metadata: Metadata = {
@@ -51,6 +73,7 @@ async function load() {
   const key = process.env.SUPABASE_SERVICE_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) return null;
   const supabase = createClient(url, key);
+  const source = { host: projectHost(url), role: keyRole(key) };
 
   const [waitlistRes, votesRes, suggestionsRes] = await Promise.all([
     supabase
@@ -95,7 +118,7 @@ async function load() {
     error: suggestionsRes.error?.message ?? null,
   };
 
-  return { waitlist, votes, suggestions };
+  return { waitlist, votes, suggestions, source };
 }
 
 function Stat({ label, value }: { label: string; value: string | number }) {
@@ -136,6 +159,7 @@ function TableNote({ error, name }: { error: string | null; name: string }) {
 }
 
 export default async function AdminPage() {
+  noStore();
   const data = await load();
 
   if (!data) {
@@ -150,7 +174,7 @@ export default async function AdminPage() {
     );
   }
 
-  const { waitlist, votes, suggestions } = data;
+  const { waitlist, votes, suggestions, source } = data;
   const totalVotes = votes.rows.reduce((n, r) => n + r.up, 0);
 
   return (
@@ -181,7 +205,11 @@ export default async function AdminPage() {
           Roadmap votes
         </h2>
         <p className="mt-2 text-xs text-text-muted">
-          Diagnostic: read {votes.read} vote row{votes.read === 1 ? "" : "s"} from Supabase
+          Diagnostic: read {votes.read} vote row{votes.read === 1 ? "" : "s"} · key role:{" "}
+          <span className={source.role === "service_role" ? "" : "font-bold text-caution"}>
+            {source.role}
+          </span>{" "}
+          · host: {source.host}
           {votes.unknownIds.length > 0
             ? ` · ${votes.unknownIds.length} for unknown items (${votes.unknownIds.join(", ")})`
             : ""}
