@@ -220,12 +220,10 @@ export default function EditEmergency() {
           </Card>
         )}
 
-        {/* Owner-side only — never shown to a sitter. Encourages the owner to
-            handle real authorisation with their own vet directly, rather than
-            the app implying any authority it can't actually confer. */}
-        <Text style={{ color: colors.textMuted, fontSize: 12, lineHeight: 17, fontFamily: "Satoshi-Light" }}>
-          Worth telling your vet who can make decisions if you're away. Most clinics will note it on your file over the phone.
-        </Text>
+        {/* No static reminder here — it now surfaces from the dashboard's
+            stay-duration flow (setting/changing a stay length is the actual
+            "new trip" signal), throttled to a 30-day cadence. See
+            dashboard.tsx's maybeNudgeDecisionContact. */}
 
         {/* PIN editor */}
         <View onLayout={(e) => { pinY.current = e.nativeEvent.layout.y; }}>

@@ -106,13 +106,6 @@ export default function Step2() {
             />
           </Card>
         )}
-
-        {/* Owner-side only — never shown to a sitter. Encourages the owner to
-            handle real authorisation with their own vet directly, rather than
-            the app implying any authority it can't actually confer. */}
-        <Text style={{ color: colors.textMuted, fontSize: 12, lineHeight: 17, fontFamily: "Satoshi-Light" }}>
-          Worth telling your vet who can make decisions if you're away. Most clinics will note it on your file over the phone.
-        </Text>
       </View>
 
       <View style={{ marginTop: 28, gap: 10 }}>
