@@ -9,7 +9,7 @@ export async function fetchEmergencyContacts(supabase: SupabaseClient, petId: st
   const { data: pet } = await supabase.from("pets").select("owner_id").eq("id", petId).single();
   const [{ data: ownerRow }, { data: vetRow }] = await Promise.all([
     supabase.from("owners").select("name, primary_phone, backup_contacts").eq("id", pet?.owner_id).single(),
-    supabase.from("pet_vet_info").select("primary_vet, emergency_vet, insurance, vet_pre_auth").eq("pet_id", petId).maybeSingle(),
+    supabase.from("pet_vet_info").select("primary_vet, emergency_vet, insurance").eq("pet_id", petId).maybeSingle(),
   ]);
   const vetInfo = (vetRow ?? {}) as any;
   const owner = (ownerRow ?? {}) as any;
@@ -26,7 +26,15 @@ export async function fetchEmergencyContacts(supabase: SupabaseClient, petId: st
     // Only surface backup contacts the owner explicitly consented to share —
     // the mobile editor's "I have permission to share this person's contact
     // info" checkbox, stored per-contact as consent_to_share.
-    backupContacts: (owner.backup_contacts ?? []).filter((c: any) => c.consent_to_share),
-    vetPreAuth: vetInfo.vet_pre_auth ?? false,
+    backupContacts: (owner.backup_contacts ?? [])
+      .filter((c: any) => c.consent_to_share)
+      .map((c: any) => ({
+        name: c.name ?? "",
+        relationship: c.relationship ?? "",
+        phone: c.phone ?? "",
+        consentToShare: !!c.consent_to_share,
+        isDecisionContact: !!c.is_decision_contact,
+        decisionPriority: c.decision_priority ?? undefined,
+      })),
   };
 }

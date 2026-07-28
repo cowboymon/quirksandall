@@ -86,12 +86,17 @@ export default function Step4() {
         primary_vet: { contact_name: pet.vetContactName, clinic: pet.vetClinic, phone: pet.vetPhone },
         emergency_vet: { clinic: pet.emergVetClinic, phone: pet.emergVetPhone },
         insurance: { provider: pet.insuranceProvider, policy_number: pet.insurancePolicy },
-        vet_pre_auth: pet.vetPreAuth ?? false,
       });
 
       const backups = [];
-      if (pet.backupName) backups.push({ name: pet.backupName, relationship: pet.backupRelationship, phone: pet.backupPhone, consent_to_share: pet.backupConsent ?? false });
-      if (pet.backup2Name) backups.push({ name: pet.backup2Name, relationship: pet.backup2Relationship ?? "", phone: pet.backup2Phone, consent_to_share: pet.backup2Consent ?? false });
+      if (pet.backupName) backups.push({ name: pet.backupName, relationship: pet.backupRelationship, phone: pet.backupPhone, consent_to_share: pet.backupConsent ?? false, is_decision_contact: pet.backupIsDecisionContact ?? false });
+      if (pet.backup2Name) backups.push({ name: pet.backup2Name, relationship: pet.backup2Relationship ?? "", phone: pet.backup2Phone, consent_to_share: pet.backup2Consent ?? false, is_decision_contact: pet.backup2IsDecisionContact ?? false });
+      // Priority follows entry order among only the contacts actually marked
+      // as a decision contact (1 = call first).
+      let priority = 1;
+      for (const b of backups) {
+        if (b.is_decision_contact) (b as any).decision_priority = priority++;
+      }
       if (backups.length) await supabase.from("owners").update({ backup_contacts: backups }).eq("id", user.id);
 
       await supabase.from("pet_behavior").insert({

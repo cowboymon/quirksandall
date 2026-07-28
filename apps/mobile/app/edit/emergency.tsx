@@ -38,12 +38,13 @@ export default function EditEmergency() {
   const [backupRel, setBackupRel] = useState("");
   const [backupPhone, setBackupPhone] = useState("");
   const [backupConsent, setBackupConsent] = useState(false);
+  const [backupIsDecisionContact, setBackupIsDecisionContact] = useState(false);
   const [backup2Name, setBackup2Name] = useState("");
   const [backup2Rel, setBackup2Rel] = useState("");
   const [backup2Phone, setBackup2Phone] = useState("");
   const [backup2Consent, setBackup2Consent] = useState(false);
+  const [backup2IsDecisionContact, setBackup2IsDecisionContact] = useState(false);
   const [showSecondBackup, setShowSecondBackup] = useState(false);
-  const [vetPreAuth, setVetPreAuth] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showPIN, setShowPIN] = useState(false);
 
@@ -63,7 +64,6 @@ export default function EditEmergency() {
         setEmergPhone(vet.emergency_vet?.phone ?? "");
         setInsuranceProvider(vet.insurance?.provider ?? "");
         setInsurancePolicy(vet.insurance?.policy_number ?? "");
-        setVetPreAuth(vet.vet_pre_auth ?? false);
       }
       if (owner) {
         const backup = owner.backup_contacts?.[0];
@@ -72,6 +72,7 @@ export default function EditEmergency() {
           setBackupRel(backup.relationship ?? "");
           setBackupPhone(backup.phone ?? "");
           setBackupConsent(backup.consent_to_share ?? false);
+          setBackupIsDecisionContact(backup.is_decision_contact ?? false);
         }
         const backup2 = owner.backup_contacts?.[1];
         if (backup2) {
@@ -79,6 +80,7 @@ export default function EditEmergency() {
           setBackup2Rel(backup2.relationship ?? "");
           setBackup2Phone(backup2.phone ?? "");
           setBackup2Consent(backup2.consent_to_share ?? false);
+          setBackup2IsDecisionContact(backup2.is_decision_contact ?? false);
           setShowSecondBackup(true);
         }
       }
@@ -92,20 +94,24 @@ export default function EditEmergency() {
       const { data: { session } } = await supabase.auth.getSession();
       const user = session?.user;
       if (!user) throw new Error("Not logged in");
+      const backups = [
+        { name: backupName, relationship: backupRel, phone: backupPhone, consent_to_share: backupConsent, is_decision_contact: backupIsDecisionContact },
+        ...(backup2Name || backup2Phone ? [{ name: backup2Name, relationship: backup2Rel, phone: backup2Phone, consent_to_share: backup2Consent, is_decision_contact: backup2IsDecisionContact }] : []),
+      ];
+      // Priority follows entry order among only the contacts actually marked
+      // as a decision contact (1 = call first).
+      let priority = 1;
+      for (const b of backups) {
+        if (b.is_decision_contact) (b as any).decision_priority = priority++;
+      }
       const [{ error: vetError }, { error: ownerError }] = await Promise.all([
         supabase.from("pet_vet_info").upsert({
           pet_id: petId,
           primary_vet: { contact_name: vetContactName, clinic: vetClinic, address: vetAddress, phone: vetPhone },
           emergency_vet: { clinic: emergClinic, phone: emergPhone },
           insurance: { provider: insuranceProvider, policy_number: insurancePolicy },
-          vet_pre_auth: vetPreAuth,
         }, { onConflict: "pet_id" }),
-        supabase.from("owners").update({
-          backup_contacts: [
-            { name: backupName, relationship: backupRel, phone: backupPhone, consent_to_share: backupConsent },
-            ...(backup2Name || backup2Phone ? [{ name: backup2Name, relationship: backup2Rel, phone: backup2Phone, consent_to_share: backup2Consent }] : []),
-          ],
-        }).eq("id", user.id),
+        supabase.from("owners").update({ backup_contacts: backups }).eq("id", user.id),
       ]);
       if (vetError || ownerError) throw new Error((vetError ?? ownerError)!.message);
       router.back();
@@ -177,6 +183,11 @@ export default function EditEmergency() {
             checked={backupConsent}
             onToggle={setBackupConsent}
           />
+          <CheckboxRow
+            label="Can make care decisions if I'm unreachable."
+            checked={backupIsDecisionContact}
+            onToggle={setBackupIsDecisionContact}
+          />
         </Card>
 
         {/* Second backup */}
@@ -201,32 +212,20 @@ export default function EditEmergency() {
               checked={backup2Consent}
               onToggle={setBackup2Consent}
             />
+            <CheckboxRow
+              label="Can make care decisions if I'm unreachable."
+              checked={backup2IsDecisionContact}
+              onToggle={setBackup2IsDecisionContact}
+            />
           </Card>
         )}
 
-        {/* Pre-authorise vet */}
-        <TouchableOpacity
-          onPress={() => setVetPreAuth(!vetPreAuth)}
-          style={{
-            flexDirection: "row", alignItems: "flex-start", gap: 12, paddingHorizontal: 16, paddingVertical: 14, borderRadius: 12, borderWidth: 1,
-            backgroundColor: vetPreAuth ? colors.secondary : "#FFFFFF",
-            borderColor: vetPreAuth ? "rgba(81,0,0,0.2)" : colors.border,
-          }}
-        >
-          <View style={{
-            width: 18, height: 18, borderRadius: 4, borderWidth: 2, marginTop: 1, alignItems: "center", justifyContent: "center",
-            backgroundColor: vetPreAuth ? colors.cardDark : "transparent",
-            borderColor: vetPreAuth ? colors.cardDark : colors.dashedBorder,
-          }}>
-            {vetPreAuth && <Text style={{ color: "#F8ECEE", fontSize: 11 }}>✓</Text>}
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>I've pre-authorised my vet</Text>
-            <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2, lineHeight: 17, fontFamily: "Satoshi-Light" }}>
-              Many clinics let you do this over the phone or via their portal — worth a quick call before you travel.
-            </Text>
-          </View>
-        </TouchableOpacity>
+        {/* Owner-side only — never shown to a sitter. Encourages the owner to
+            handle real authorisation with their own vet directly, rather than
+            the app implying any authority it can't actually confer. */}
+        <Text style={{ color: colors.textMuted, fontSize: 12, lineHeight: 17, fontFamily: "Satoshi-Light" }}>
+          Worth telling your vet who can make decisions if you're away. Most clinics will note it on your file over the phone.
+        </Text>
 
         {/* PIN editor */}
         <View onLayout={(e) => { pinY.current = e.nativeEvent.layout.y; }}>

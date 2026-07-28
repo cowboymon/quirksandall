@@ -84,7 +84,16 @@ serve(async (req) => {
         emergencyVet: vetInfo.emergency_vet ?? {},
         insurance: vetInfo.insurance ?? {},
         ownerContact: { name: owner.name ?? "", phone: owner.primary_phone ?? "" },
-        backupContacts: (owner.backup_contacts ?? []).filter((c: any) => c.consent_to_share),
+        backupContacts: (owner.backup_contacts ?? [])
+          .filter((c: any) => c.consent_to_share)
+          .map((c: any) => ({
+            name: c.name ?? "",
+            relationship: c.relationship ?? "",
+            phone: c.phone ?? "",
+            consentToShare: !!c.consent_to_share,
+            isDecisionContact: !!c.is_decision_contact,
+            decisionPriority: c.decision_priority ?? undefined,
+          })),
       },
     }),
     { headers: { "Content-Type": "application/json" } }

@@ -35,6 +35,12 @@ export default function RecipientView({ profile, token }: Props) {
   // Once shown, the emergency block can be collapsed — it's a long list a sitter
   // only needs in a pinch, so let them fold it away after a first read.
   const [emergencyOpen, setEmergencyOpen] = useState(true);
+  // Decision-contact designation (replaces the old vet-pre-auth flag) — whoever
+  // the owner marked, ordered so the sitter knows who to try first. Purely
+  // instructional; never implies any legal or clinical authority.
+  const decisionContacts = (emergencyContacts?.backupContacts ?? [])
+    .filter((c) => c.isDecisionContact)
+    .sort((a, b) => (a.decisionPriority ?? 99) - (b.decisionPriority ?? 99));
 
   // "Lock again on this device" (#87) — clears the persisted-unlock cookie
   // server-side (it's httpOnly), then re-gates the block behind the PIN.
@@ -214,14 +220,20 @@ export default function RecipientView({ profile, token }: Props) {
                     phone={c.phone}
                   />
                 ))}
-                {emergencyContacts.vetPreAuth && (
-                  <div className="flex items-center gap-2 rounded-card px-3 py-2" style={{ backgroundColor: "rgba(248,236,238,0.1)" }}>
-                    <span style={{ color: "#88C888" }}>✓</span>
-                    <p className="text-xs leading-snug" style={{ color: "rgba(248,236,238,0.8)" }}>
-                      {emergencyContacts.backupContacts.filter((c) => c.name).length > 1
-                        ? "Vet pre-authorised — backup contacts can approve treatment"
-                        : "Vet pre-authorised — backup contact can approve treatment"}
+                {decisionContacts.length > 0 && (
+                  <div className="flex flex-col gap-1">
+                    <p className="eyebrow" style={{ color: "rgba(248,236,238,0.5)" }}>
+                      Decisions about {possessive(name)} care
                     </p>
+                    {decisionContacts.map((c, i) => (
+                      <p key={i} className="text-sm" style={{ color: BLUSH }}>
+                        {i === 0 && decisionContacts.length > 1
+                          ? `Call ${c.name} first — ${formatPhone(c.phone)}`
+                          : decisionContacts.length > 1
+                          ? `If you can't reach them, call ${c.name} — ${formatPhone(c.phone)}`
+                          : `Call ${c.name} — ${formatPhone(c.phone)}`}
+                      </p>
+                    ))}
                   </div>
                 )}
                 {/* Only meaningful when a PIN gates this block — on a shared or

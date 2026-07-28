@@ -70,6 +70,11 @@ export default function Step2() {
             checked={pet.backupConsent ?? false}
             onToggle={(v) => setPet({ backupConsent: v })}
           />
+          <CheckboxRow
+            label="Can make care decisions if I'm unreachable."
+            checked={pet.backupIsDecisionContact ?? false}
+            onToggle={(v) => setPet({ backupIsDecisionContact: v })}
+          />
         </Card>
 
         {/* Second backup — prompt or expanded */}
@@ -94,32 +99,20 @@ export default function Step2() {
               checked={pet.backup2Consent ?? false}
               onToggle={(v) => setPet({ backup2Consent: v })}
             />
+            <CheckboxRow
+              label="Can make care decisions if I'm unreachable."
+              checked={pet.backup2IsDecisionContact ?? false}
+              onToggle={(v) => setPet({ backup2IsDecisionContact: v })}
+            />
           </Card>
         )}
 
-        {/* Pre-authorise vet toggle */}
-        <TouchableOpacity
-          onPress={() => setPet({ vetPreAuth: !pet.vetPreAuth })}
-          style={{
-            flexDirection: "row", alignItems: "flex-start", gap: 12, paddingHorizontal: 16, paddingVertical: 14, borderRadius: 12, borderWidth: 1,
-            backgroundColor: pet.vetPreAuth ? colors.secondary : "#FFFFFF",
-            borderColor: pet.vetPreAuth ? "rgba(81,0,0,0.2)" : colors.border,
-          }}
-        >
-          <View style={{
-            width: 18, height: 18, borderRadius: 4, borderWidth: 2, marginTop: 1, alignItems: "center", justifyContent: "center",
-            backgroundColor: pet.vetPreAuth ? colors.cardDark : "transparent",
-            borderColor: pet.vetPreAuth ? colors.cardDark : colors.dashedBorder,
-          }}>
-            {pet.vetPreAuth && <Text style={{ color: "#F8ECEE", fontSize: 11 }}>✓</Text>}
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>I've pre-authorised my vet</Text>
-            <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2, lineHeight: 17, fontFamily: "Satoshi-Light" }}>
-              Many clinics let you do this over the phone or via their portal — worth a quick call before you travel.
-            </Text>
-          </View>
-        </TouchableOpacity>
+        {/* Owner-side only — never shown to a sitter. Encourages the owner to
+            handle real authorisation with their own vet directly, rather than
+            the app implying any authority it can't actually confer. */}
+        <Text style={{ color: colors.textMuted, fontSize: 12, lineHeight: 17, fontFamily: "Satoshi-Light" }}>
+          Worth telling your vet who can make decisions if you're away. Most clinics will note it on your file over the phone.
+        </Text>
       </View>
 
       <View style={{ marginTop: 28, gap: 10 }}>
