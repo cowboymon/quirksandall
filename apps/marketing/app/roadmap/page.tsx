@@ -75,18 +75,9 @@ export default function RoadmapPage() {
 
         {/* Feedback nudge — thumb the ideas above, or suggest your own. */}
         <section className="border-t border-border/70 bg-[#E5BEC4]">
-          <div className="mx-auto max-w-3xl px-6 py-14 text-center sm:py-16">
-            <h2 className="font-tanker text-2xl leading-tight text-foreground sm:text-3xl">
-              Missing something?
-            </h2>
-            <p className="mx-auto mt-3 max-w-lg text-lg leading-relaxed text-foreground">
-              Thumb the ideas above, or tell us what would make {site.name} better for your pet —
-              we read every one.
-            </p>
-            <div className="mt-7">
-              <SuggestForm />
-            </div>
-            <p className="mt-8 text-sm text-foreground/70">
+          <div className="mx-auto max-w-3xl px-6 py-14 sm:py-16">
+            <SuggestForm />
+            <p className="mt-6 text-center text-sm text-foreground/80">
               Rather just hear when we launch?{" "}
               <a href="/#get" className="font-medium text-primary underline underline-offset-2">
                 Join the waitlist

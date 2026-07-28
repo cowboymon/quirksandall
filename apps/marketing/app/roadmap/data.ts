@@ -49,22 +49,12 @@ export const COLUMNS: RoadmapColumn[] = [
         title: "Stand-in check-ins",
         desc: "Let whoever's watching tick off the walk, the feed, the meds — so you can see it's done.",
       },
-      {
-        id: "reminders",
-        title: "Reminders & nudges",
-        desc: "Gentle prompts for medications and feeding times, on their phone.",
-      },
     ],
   },
   {
     status: "Next up",
     tone: "next",
     items: [
-      {
-        id: "link-per-stay",
-        title: "A link per kind of stay",
-        desc: "A quick-sit link and a full-boarding link — each showing just what that person needs.",
-      },
       {
         id: "poster-pdf",
         title: "Poster as a print-ready PDF",
@@ -82,6 +72,21 @@ export const COLUMNS: RoadmapColumn[] = [
     tone: "exploring",
     items: [
       {
+        id: "reminders",
+        title: "Reminders & nudges",
+        desc: "Gentle prompts for medications and feeding times, on their phone.",
+      },
+      {
+        id: "link-per-stay",
+        title: "A link per kind of stay",
+        desc: "A quick-sit link and a full-boarding link — each showing just what that person needs.",
+      },
+      {
+        id: "command-notes",
+        title: "Stand-in notes on how commands held up",
+        desc: "Let whoever's watching mark how solid a command actually was during the stay — so its strength reflects real life, not just how it goes at home.",
+      },
+      {
         id: "note-back",
         title: "A note back from the stand-in",
         desc: "“She was a bit off her food today” — straight to you.",
@@ -90,11 +95,6 @@ export const COLUMNS: RoadmapColumn[] = [
         id: "insurance",
         title: "Pet insurance, if you want it",
         desc: "Optional, opt-in offers from partners. Never your data without asking.",
-      },
-      {
-        id: "species-presets",
-        title: "Presets for every species",
-        desc: "Cats, rabbits, birds — the right words for each, out of the box.",
       },
     ],
   },
