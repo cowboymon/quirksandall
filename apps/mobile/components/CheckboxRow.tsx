@@ -1,7 +1,11 @@
 import { TouchableOpacity, View, Text } from "react-native";
 import { colors } from "@quirksandall/shared";
 
-type Props = { label: string; checked: boolean; onToggle: (v: boolean) => void };
+// label accepts a ReactNode (not just a plain string) so callers can embed
+// pressable inline links (e.g. "I agree to the Privacy Policy and Terms")
+// as nested <Text onPress> spans — RN supports styled/pressable Text nested
+// inside Text.
+type Props = { label: React.ReactNode; checked: boolean; onToggle: (v: boolean) => void };
 
 export default function CheckboxRow({ label, checked, onToggle }: Props) {
   return (
