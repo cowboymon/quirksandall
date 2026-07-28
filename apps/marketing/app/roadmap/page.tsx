@@ -2,74 +2,12 @@ import type { Metadata } from "next";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { site } from "../site";
+import { SHIPPED } from "./data";
+import RoadmapBoard from "./RoadmapBoard";
 
 export const metadata: Metadata = {
   title: "Roadmap",
-  description: `What ${site.name} is building next.`,
-};
-
-// Placeholder items — edit these to the real roadmap. Tone drives the status dot.
-const COLUMNS: {
-  status: string;
-  tone: "building" | "next" | "exploring";
-  items: { title: string; desc: string }[];
-}[] = [
-  {
-    status: "Building now",
-    tone: "building",
-    items: [
-      {
-        title: "Sitter check-ins",
-        desc: "Let whoever's watching tick off the walk, the feed, the meds — so you can see it's done.",
-      },
-      {
-        title: "Reminders & nudges",
-        desc: "Gentle prompts for medications and feeding times, on their phone.",
-      },
-    ],
-  },
-  {
-    status: "Next up",
-    tone: "next",
-    items: [
-      {
-        title: "A link per kind of stay",
-        desc: "A quick-sit link and a full-boarding link — each showing just what that person needs.",
-      },
-      {
-        title: "Poster as a print-ready PDF",
-        desc: "Download the missing poster as a PDF with a scannable QR code.",
-      },
-      {
-        title: "Gift & redemption codes",
-        desc: "Unlock the paid features with a code — handy for gifting, or for rescues.",
-      },
-    ],
-  },
-  {
-    status: "Exploring",
-    tone: "exploring",
-    items: [
-      {
-        title: "A note back from the sitter",
-        desc: "“She was a bit off her food today” — straight to you.",
-      },
-      {
-        title: "Pet insurance, if you want it",
-        desc: "Optional, opt-in offers from partners. Never your data without asking.",
-      },
-      {
-        title: "Presets for every species",
-        desc: "Cats, rabbits, birds — the right words for each, out of the box.",
-      },
-    ],
-  },
-];
-
-const DOT: Record<string, string> = {
-  building: "#467049", // green — in progress
-  next: "#B83A52", // rose — planned
-  exploring: "#987080", // muted — ideas
+  description: `What ${site.name} has shipped, and what it's building next.`,
 };
 
 export default function RoadmapPage() {
@@ -84,40 +22,40 @@ export default function RoadmapPage() {
             Where we&apos;re headed.
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-text-muted">
-            {site.name} is just getting started. Here&apos;s what we&apos;re building now, what&apos;s next,
-            and what we&apos;re still chewing over. Don&apos;t read the absence of something as a no — tell
-            us what would help and it might jump the queue.
+            {site.name} is just getting started. Here&apos;s what&apos;s already in, what
+            we&apos;re building now, and what we&apos;re still chewing over. Don&apos;t read the
+            absence of something as a no — give the ideas a thumb and the loudest ones jump the
+            queue.
           </p>
         </section>
 
-        <section className="mx-auto max-w-5xl px-6 pb-16 sm:pb-24">
-          <div className="grid gap-8 md:grid-cols-3">
-            {COLUMNS.map((col) => (
-              <div key={col.status}>
-                <div className="flex items-center gap-2.5 border-b border-border pb-3">
-                  <span
-                    className="h-2.5 w-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: DOT[col.tone] }}
-                    aria-hidden
-                  />
-                  <h2 className="text-sm font-bold uppercase tracking-wide text-foreground">
-                    {col.status}
-                  </h2>
-                </div>
-                <ul className="mt-5 flex flex-col gap-4">
-                  {col.items.map((item) => (
-                    <li
-                      key={item.title}
-                      className="rounded-card border border-border bg-card-bg p-5"
-                    >
-                      <h3 className="text-base font-bold text-foreground">{item.title}</h3>
-                      <p className="mt-1.5 text-sm leading-relaxed text-text-muted">{item.desc}</p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+        {/* Already shipped — factual, no voting. */}
+        <section className="mx-auto max-w-5xl px-6 pb-10">
+          <div className="flex items-center gap-2.5 border-b border-border pb-3">
+            <span
+              aria-hidden
+              className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-success text-card-bg"
+            >
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+            </span>
+            <h2 className="text-sm font-bold uppercase tracking-wide text-foreground">
+              Already shipped
+            </h2>
           </div>
+          <ul className="mt-5 grid gap-4 sm:grid-cols-2">
+            {SHIPPED.map((item) => (
+              <li key={item.id} className="rounded-card border border-border bg-card-bg p-5">
+                <h3 className="text-base font-bold text-foreground">{item.title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-text-muted">{item.desc}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="mx-auto max-w-5xl px-6 pb-16 sm:pb-24">
+          <RoadmapBoard />
         </section>
 
         {/* Feedback nudge */}
@@ -127,8 +65,8 @@ export default function RoadmapPage() {
               Want a say in what&apos;s next?
             </h2>
             <p className="mx-auto mt-3 max-w-lg text-lg leading-relaxed text-foreground">
-              Join the waitlist — when we email you at launch, just reply and tell us what would make{" "}
-              {site.name} better for your pet.
+              Give the ideas above a thumb — or join the waitlist and reply to our launch email with
+              what would make {site.name} better for your pet.
             </p>
             <div className="mt-6">
               <a
