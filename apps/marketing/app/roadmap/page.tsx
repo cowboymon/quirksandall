@@ -4,6 +4,7 @@ import Footer from "../components/Footer";
 import { site } from "../site";
 import { SHIPPED } from "./data";
 import RoadmapBoard from "./RoadmapBoard";
+import SuggestForm from "./SuggestForm";
 
 export const metadata: Metadata = {
   title: "Roadmap",
@@ -22,15 +23,18 @@ export default function RoadmapPage() {
             Where we&apos;re headed.
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-text-muted">
-            {site.name} is just getting started. Here&apos;s what&apos;s already in, what
-            we&apos;re building now, and what we&apos;re still chewing over. Don&apos;t read the
-            absence of something as a no — give the ideas a thumb and the loudest ones jump the
-            queue.
+            {site.name} is just getting started. Here&apos;s what we&apos;re building now,
+            what&apos;s next, and what we&apos;re still chewing over. Don&apos;t read the absence of
+            something as a no — give the ideas a thumb and the loudest ones jump the queue.
           </p>
         </section>
 
-        {/* Already shipped — factual, no voting. */}
-        <section className="mx-auto max-w-5xl px-6 pb-10">
+        <section className="mx-auto max-w-5xl px-6 pt-4 pb-16 sm:pb-20">
+          <RoadmapBoard />
+        </section>
+
+        {/* Already shipped — factual, no voting. A quiet list, not cards. */}
+        <section className="mx-auto max-w-5xl px-6 pb-16 sm:pb-24">
           <div className="flex items-center gap-2.5 border-b border-border pb-3">
             <span
               aria-hidden
@@ -44,38 +48,44 @@ export default function RoadmapPage() {
               Already shipped
             </h2>
           </div>
-          <ul className="mt-5 grid gap-4 sm:grid-cols-2">
+          <ul className="mt-5 grid gap-x-10 gap-y-4 sm:grid-cols-2">
             {SHIPPED.map((item) => (
-              <li key={item.id} className="rounded-card border border-border bg-card-bg p-5">
-                <h3 className="text-base font-bold text-foreground">{item.title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-text-muted">{item.desc}</p>
+              <li key={item.id} className="flex gap-3">
+                <span aria-hidden className="mt-1 shrink-0 text-success">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                </span>
+                <p className="text-sm leading-relaxed text-text-muted">
+                  <span className="font-bold text-foreground">{item.title}</span>
+                  {" — "}
+                  {item.desc}
+                </p>
               </li>
             ))}
           </ul>
         </section>
 
-        <section className="mx-auto max-w-5xl px-6 pb-16 sm:pb-24">
-          <RoadmapBoard />
-        </section>
-
-        {/* Feedback nudge */}
+        {/* Feedback nudge — thumb the ideas above, or suggest your own. */}
         <section className="border-t border-border/70 bg-[#E5BEC4]">
           <div className="mx-auto max-w-3xl px-6 py-14 text-center sm:py-16">
             <h2 className="font-tanker text-2xl leading-tight text-foreground sm:text-3xl">
-              Want a say in what&apos;s next?
+              Missing something?
             </h2>
             <p className="mx-auto mt-3 max-w-lg text-lg leading-relaxed text-foreground">
-              Give the ideas above a thumb — or join the waitlist and reply to our launch email with
-              what would make {site.name} better for your pet.
+              Thumb the ideas above, or tell us what would make {site.name} better for your pet —
+              we read every one.
             </p>
-            <div className="mt-6">
-              <a
-                href="/#get"
-                className="inline-block rounded-button bg-button px-5 py-3 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed"
-              >
-                Get notified at launch
-              </a>
+            <div className="mt-7">
+              <SuggestForm />
             </div>
+            <p className="mt-8 text-sm text-foreground/70">
+              Rather just hear when we launch?{" "}
+              <a href="/#get" className="font-medium text-primary underline underline-offset-2">
+                Join the waitlist
+              </a>
+              .
+            </p>
           </div>
         </section>
       </main>
