@@ -216,8 +216,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 1b — How it works (#F8ECEE) */}
-        <section className="border-y border-border/60 bg-card-bg/40">
+        {/* 1b — How it works (#F8ECEE — same as What's inside) */}
+        <section>
           <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
             <p className="eyebrow text-primary">How it works</p>
             <h2 className="mt-3 max-w-xl font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
