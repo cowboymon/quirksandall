@@ -64,8 +64,9 @@ const orgLd = {
       "@type": "Organization",
       "@id": `${site.url}/#org`,
       name: site.maker,
-      url: site.url,
+      url: site.makerUrl,
       logo: `${site.url}/brand/icon.png`,
+      sameAs: [site.makerUrl],
     },
     {
       "@type": "WebSite",

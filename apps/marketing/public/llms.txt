@@ -25,6 +25,7 @@ Made by Its Hypothetical, the team behind Loud & Fine. Tagline: "Away, but known
 ## Key facts
 
 - Works for any pet — dogs, cats, rabbits, birds — not only dogs.
+- Widely used for cats: a cat's profile can cover feeding and which food, litter location and scooping, medications and how to give them, indoor-only or outdoor status, the escape/door-dash risk, and where the cat hides from strangers — everything a cat sitter needs, on one link with no app to install.
 - The person looking after your pet never needs the app or an account; they just open a link.
 - Sensitive details (emergency contacts, insurance) sit behind a 4-digit PIN the owner sets.
 - One-time purchase, not a subscription; the free tier is permanent.
