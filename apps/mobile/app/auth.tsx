@@ -1,12 +1,10 @@
 import { useState, useCallback } from "react";
 import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
-import * as WebBrowser from "expo-web-browser";
 import { AppAlert } from "../stores/appAlert";
 import { router, useFocusEffect } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { initAnalytics, identify, setUserProps, track, AnalyticsEvent } from "../lib/analytics";
-import { PRIVACY_URL, TERMS_URL } from "../lib/config";
-import CheckboxRow from "../components/CheckboxRow";
+import { CONSENT_POLICY_VERSION } from "@quirksandall/shared";
 
 // Mobile sign-in uses a 6-digit email code (OTP) rather than a magic link.
 // Deep-linking a magic link back into the app is unreliable in Expo Go and
@@ -16,9 +14,6 @@ export default function AuthScreen() {
   const [code, setCode] = useState("");
   const [stage, setStage] = useState<"email" | "code">("email");
   const [loading, setLoading] = useState(false);
-  // Required before sending a code — can't tell new vs. returning users apart
-  // at this point in the flow, so consent is gated up front for everyone.
-  const [agreed, setAgreed] = useState(false);
   // Bumped whenever the screen regains focus so the code field remounts fresh —
   // iOS otherwise shows the alpha keyboard on refocus instead of the numeric one
   // the field asks for (keyboardType only reliably applies on mount).
@@ -26,7 +21,7 @@ export default function AuthScreen() {
   useFocusEffect(useCallback(() => { setFocusKey((k) => k + 1); }, []));
 
   const sendCode = async () => {
-    if (!email.trim() || !agreed) return;
+    if (!email.trim()) return;
     setLoading(true);
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
@@ -51,26 +46,38 @@ export default function AuthScreen() {
     setLoading(false);
     if (error) {
       AppAlert.alert("That code didn't work", "Check it and try again, or request a new one.");
-    } else {
-      // Identity + funnel: identify everyone; fire sign_up_completed only for a
-      // brand-new account (created within the last minute), AFTER identify so
-      // it's attributed correctly.
-      const user = data.user;
-      if (user) {
-        await initAnalytics();
-        identify(user.id);
-        const isNew = !!user.created_at && Date.now() - new Date(user.created_at).getTime() < 60_000;
-        if (isNew) {
-          setUserProps({ signup_platform: Platform.OS });
-          track(AnalyticsEvent.SignUpCompleted, { platform: Platform.OS, sign_up_method: "otp" });
-        }
-        // Every authenticated app entry — new signup or returning login — is a
-        // session. This is the "did they come back" signal separate from
-        // sign_up_completed (which only fires once, ever, per account).
-        track(AnalyticsEvent.SessionStarted, { platform: Platform.OS, source: "login" });
-      }
-      router.replace("/dashboard");
+      return;
     }
+    // Identity + funnel: identify everyone; fire sign_up_completed only for a
+    // brand-new account (created within the last minute), AFTER identify so
+    // it's attributed correctly.
+    const user = data.user;
+    if (user) {
+      await initAnalytics();
+      identify(user.id);
+      const isNew = !!user.created_at && Date.now() - new Date(user.created_at).getTime() < 60_000;
+      if (isNew) {
+        setUserProps({ signup_platform: Platform.OS });
+        track(AnalyticsEvent.SignUpCompleted, { platform: Platform.OS, sign_up_method: "otp" });
+      }
+      // Every authenticated app entry — new signup or returning login — is a
+      // session. This is the "did they come back" signal separate from
+      // sign_up_completed (which only fires once, ever, per account).
+      track(AnalyticsEvent.SessionStarted, { platform: Platform.OS, source: "login" });
+    }
+
+    // Required legal-agreement gate (#96) — recorded once per account, checked
+    // here rather than on this screen, since we can't tell new vs. returning
+    // apart until after verification. A returning user who already accepted the
+    // current policy version skips straight past it; only a brand-new account,
+    // or an acceptance that predates a policy bump, gets routed there.
+    const { data: owner } = await supabase
+      .from("owners")
+      .select("terms_accepted_at, terms_policy_version")
+      .eq("id", user!.id)
+      .single();
+    const upToDate = !!owner?.terms_accepted_at && owner.terms_policy_version === CONSENT_POLICY_VERSION;
+    router.replace(upToDate ? "/dashboard" : "/accept-terms");
   };
 
   return (
@@ -102,28 +109,11 @@ export default function AuthScreen() {
               autoComplete="email"
               autoFocus
             />
-            <CheckboxRow
-              checked={agreed}
-              onToggle={setAgreed}
-              label={
-                <>
-                  I agree to the{" "}
-                  <Text style={{ color: "#510000", fontFamily: "Satoshi-Medium" }} onPress={() => WebBrowser.openBrowserAsync(PRIVACY_URL)}>
-                    Privacy Policy
-                  </Text>{" "}
-                  and{" "}
-                  <Text style={{ color: "#510000", fontFamily: "Satoshi-Medium" }} onPress={() => WebBrowser.openBrowserAsync(TERMS_URL)}>
-                    Terms of Use
-                  </Text>
-                  .
-                </>
-              }
-            />
             <TouchableOpacity
               className="h-[44px] rounded-button items-center justify-center mt-5"
-              style={{ backgroundColor: "#510000", opacity: loading || !email.trim() || !agreed ? 0.6 : 1 }}
+              style={{ backgroundColor: "#510000", opacity: loading || !email.trim() ? 0.6 : 1 }}
               onPress={sendCode}
-              disabled={loading || !email.trim() || !agreed}
+              disabled={loading || !email.trim()}
             >
               <Text className="text-[#F8ECEE] font-semibold text-base">
                 {loading ? "Sending…" : "Send sign-in code"}
