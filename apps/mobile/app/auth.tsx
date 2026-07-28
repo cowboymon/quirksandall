@@ -1,9 +1,12 @@
 import { useState, useCallback } from "react";
 import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
+import * as WebBrowser from "expo-web-browser";
 import { AppAlert } from "../stores/appAlert";
 import { router, useFocusEffect } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { initAnalytics, identify, setUserProps, track, AnalyticsEvent } from "../lib/analytics";
+import { PRIVACY_URL, TERMS_URL } from "../lib/config";
+import CheckboxRow from "../components/CheckboxRow";
 
 // Mobile sign-in uses a 6-digit email code (OTP) rather than a magic link.
 // Deep-linking a magic link back into the app is unreliable in Expo Go and
@@ -13,6 +16,9 @@ export default function AuthScreen() {
   const [code, setCode] = useState("");
   const [stage, setStage] = useState<"email" | "code">("email");
   const [loading, setLoading] = useState(false);
+  // Required before sending a code — can't tell new vs. returning users apart
+  // at this point in the flow, so consent is gated up front for everyone.
+  const [agreed, setAgreed] = useState(false);
   // Bumped whenever the screen regains focus so the code field remounts fresh —
   // iOS otherwise shows the alpha keyboard on refocus instead of the numeric one
   // the field asks for (keyboardType only reliably applies on mount).
@@ -20,7 +26,7 @@ export default function AuthScreen() {
   useFocusEffect(useCallback(() => { setFocusKey((k) => k + 1); }, []));
 
   const sendCode = async () => {
-    if (!email.trim()) return;
+    if (!email.trim() || !agreed) return;
     setLoading(true);
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
@@ -96,11 +102,28 @@ export default function AuthScreen() {
               autoComplete="email"
               autoFocus
             />
+            <CheckboxRow
+              checked={agreed}
+              onToggle={setAgreed}
+              label={
+                <>
+                  I agree to the{" "}
+                  <Text style={{ color: "#510000", fontFamily: "Satoshi-Medium" }} onPress={() => WebBrowser.openBrowserAsync(PRIVACY_URL)}>
+                    Privacy Policy
+                  </Text>{" "}
+                  and{" "}
+                  <Text style={{ color: "#510000", fontFamily: "Satoshi-Medium" }} onPress={() => WebBrowser.openBrowserAsync(TERMS_URL)}>
+                    Terms of Use
+                  </Text>
+                  .
+                </>
+              }
+            />
             <TouchableOpacity
-              className="h-[44px] rounded-button items-center justify-center"
-              style={{ backgroundColor: "#510000", opacity: loading || !email.trim() ? 0.6 : 1 }}
+              className="h-[44px] rounded-button items-center justify-center mt-5"
+              style={{ backgroundColor: "#510000", opacity: loading || !email.trim() || !agreed ? 0.6 : 1 }}
               onPress={sendCode}
-              disabled={loading || !email.trim()}
+              disabled={loading || !email.trim() || !agreed}
             >
               <Text className="text-[#F8ECEE] font-semibold text-base">
                 {loading ? "Sending…" : "Send sign-in code"}
