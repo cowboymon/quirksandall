@@ -182,8 +182,10 @@ export default function Upgrade() {
               <Text style={{ color: colors.textMuted, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Restore purchases</Text>
             </TouchableOpacity>
 
-            {/* Batch-licensing redemption (breeders, insurance partners). Present
-                now so the paywall layout is future-proof; the flow is built later.
+            {/* Batch-licensing redemption (breeders, insurance partners). Hidden
+                until the backend exists — an unexplained link to a "coming
+                soon" placeholder is unnecessary risk on an App Review whose
+                only job is activating the app's one real IAP.
                 Intended architecture: code lives in a redemption_codes table →
                 a Supabase Edge Function validates it → the function calls the
                 RevenueCat API to grant a Promotional Entitlement to this user's
@@ -191,15 +193,8 @@ export default function Upgrade() {
                 code works on both platforms). Do NOT use Apple/Google promo
                 codes — they're platform-specific. Flip REDEMPTION_ENABLED on
                 once the backend exists. */}
-            {REDEMPTION_ENABLED ? (
+            {REDEMPTION_ENABLED && (
               <TouchableOpacity onPress={() => router.push("/redeem")} style={{ paddingVertical: 4 }}>
-                <Text style={{ color: colors.textMuted, fontSize: 13, fontFamily: "Satoshi" }}>Have a code?</Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                onPress={() => AppAlert.alert("Coming soon", "Code redemption isn't available yet — it's on the way for group and partner licences.")}
-                style={{ paddingVertical: 4 }}
-              >
                 <Text style={{ color: colors.textMuted, fontSize: 13, fontFamily: "Satoshi" }}>Have a code?</Text>
               </TouchableOpacity>
             )}
