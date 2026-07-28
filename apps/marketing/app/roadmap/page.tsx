@@ -74,7 +74,7 @@ export default function RoadmapPage() {
         </section>
 
         {/* Feedback nudge — thumb the ideas above, or suggest your own. */}
-        <section className="border-t border-border/70 bg-[#E5BEC4]">
+        <section id="suggest" className="scroll-mt-20 border-t border-border/70 bg-[#E5BEC4]">
           <div className="mx-auto max-w-3xl px-6 py-14 sm:py-16">
             <SuggestForm />
             <p className="mt-6 text-center text-sm text-foreground/80">
