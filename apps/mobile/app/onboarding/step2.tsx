@@ -36,8 +36,9 @@ export default function Step2() {
               placeholder="Search clinic name"
               value={pet.vetClinic ?? ""}
               onChangeText={(v) => setPet({ vetClinic: v })}
-              onSelectPlace={(p) => setPet({ vetClinic: p.name, ...(p.phone ? { vetPhone: p.phone } : {}) })}
+              onSelectPlace={(p) => setPet({ vetClinic: p.name, ...(p.phone ? { vetPhone: p.phone } : {}), ...(p.address ? { vetAddress: p.address } : {}) })}
             />
+            <LabeledInput label="Address" placeholder="Address" value={pet.vetAddress ?? ""} onChangeText={(v) => setPet({ vetAddress: v })} />
             <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={pet.vetPhone ?? ""} onChangeText={(v) => setPet({ vetPhone: v })} />
           </View>
         </Card>

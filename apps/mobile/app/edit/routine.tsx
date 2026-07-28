@@ -7,16 +7,8 @@ import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
 import { Input, Eyebrow, Card, InlineNote, TimeInput, FieldTier, Select } from "../../components/ui";
+import MedicationsEditor, { medsToRows, rowsToMeds, type EditableMedication } from "../../components/MedicationsEditor";
 import { colors, capitalizeFirst, PRICE } from "@quirksandall/shared";
-import type { MealSlot } from "@quirksandall/shared";
-
-type Med = { id: string; name: string; dose: string; withMeal?: MealSlot; notes: string };
-const MEAL_SLOTS: { key: MealSlot; label: string }[] = [
-  { key: "breakfast", label: "Breakfast" },
-  { key: "lunch", label: "Lunch" },
-  { key: "dinner", label: "Dinner" },
-  { key: "anytime", label: "Anytime" },
-];
 
 const mealInput = {
   minHeight: 38, borderRadius: 8, borderWidth: 1, borderColor: colors.border,
@@ -71,14 +63,7 @@ export default function EditRoutine() {
   // Medical
   const [allergies, setAllergies] = useState("");
   const [conditions, setConditions] = useState("");
-  const [meds, setMeds] = useState<Med[]>([]);
-
-  const addMed = () => setMeds((prev) => [...prev, { id: Date.now().toString(), name: "", dose: "", notes: "" }]);
-  const updateMed = (id: string, field: "name" | "dose" | "notes", val: string) =>
-    setMeds((prev) => prev.map((m) => (m.id === id ? { ...m, [field]: val } : m)));
-  const setMedMeal = (id: string, slot: MealSlot) =>
-    setMeds((prev) => prev.map((m) => (m.id === id ? { ...m, withMeal: m.withMeal === slot ? undefined : slot } : m)));
-  const removeMed = (id: string) => setMeds((prev) => prev.filter((m) => m.id !== id));
+  const [meds, setMeds] = useState<EditableMedication[]>([]);
 
   const [isPaid, setIsPaid] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -118,15 +103,7 @@ export default function EditRoutine() {
       if (medical) {
         setAllergies((medical.allergies ?? []).join(", "));
         setConditions((medical.conditions ?? []).join(", "));
-        setMeds(
-          (medical.medications ?? []).map((m: any, i: number) => ({
-            id: String(i),
-            name: m.name ?? "",
-            dose: m.dose ?? "",
-            withMeal: m.with_meal ?? undefined,
-            notes: m.notes ?? "",
-          }))
-        );
+        setMeds(rowsToMeds(medical.medications ?? []));
       }
     })();
   }, [petId]);
@@ -156,9 +133,7 @@ export default function EditRoutine() {
           pet_id: petId,
           allergies: allergies ? allergies.split(",").map((s) => s.trim()).filter(Boolean) : [],
           conditions: conditions ? conditions.split(",").map((s) => s.trim()).filter(Boolean) : [],
-          medications: meds
-            .filter((m) => m.name.trim())
-            .map((m) => ({ name: m.name.trim(), dose: m.dose.trim(), frequency: "", time_of_day: "", location_stored: "", notes: m.notes.trim(), with_meal: m.withMeal ?? null })),
+          medications: medsToRows(meds),
         }, { onConflict: "pet_id" }),
       ]);
       router.back();
@@ -332,54 +307,7 @@ export default function EditRoutine() {
       </Card>
 
       {/* Medications — structured entries, each tied to a meal (#94) */}
-      <Card>
-        <Eyebrow>Medications</Eyebrow>
-        <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4, marginBottom: 4 }}>
-          Add each one, and when it's given.
-        </Text>
-        <View style={{ gap: 12, marginTop: 4 }}>
-          {meds.map((m) => (
-            <View key={m.id} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 12, gap: 8 }}>
-              <View style={{ flexDirection: "row", gap: 8 }}>
-                <Input style={{ flex: 2 }} placeholder="Name (e.g. Apoquel)" value={m.name} onChangeText={(v) => updateMed(m.id, "name", v)} />
-                <Input style={{ flex: 1 }} placeholder="Dose" value={m.dose} onChangeText={(v) => updateMed(m.id, "dose", v)} />
-                <TouchableOpacity onPress={() => removeMed(m.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ justifyContent: "center" }}>
-                  <Text style={{ color: colors.danger, fontSize: 20, lineHeight: 20 }}>×</Text>
-                </TouchableOpacity>
-              </View>
-              <Input
-                placeholder="Cut into smaller pieces — she won't take it whole."
-                value={m.notes}
-                onChangeText={(v) => updateMed(m.id, "notes", v)}
-                multiline
-                style={{ minHeight: 44, paddingTop: 10, textAlignVertical: "top" }}
-              />
-              <Text style={{ color: colors.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium" }}>Given</Text>
-              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
-                {MEAL_SLOTS.map((s) => {
-                  const active = m.withMeal === s.key;
-                  return (
-                    <TouchableOpacity
-                      key={s.key}
-                      onPress={() => setMedMeal(m.id, s.key)}
-                      activeOpacity={0.85}
-                      style={{ paddingHorizontal: 12, height: 32, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: active ? colors.cardDark : colors.secondary, borderWidth: 1, borderColor: active ? colors.cardDark : colors.border }}
-                    >
-                      <Text style={{ color: active ? colors.cardDarkText : colors.textDark, fontSize: 12, fontFamily: "Satoshi-Medium" }}>{s.label}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-          ))}
-        </View>
-        <TouchableOpacity
-          onPress={addMed}
-          style={{ height: 40, borderRadius: 10, borderWidth: 1.5, borderColor: colors.dashedBorder, borderStyle: "dashed", alignItems: "center", justifyContent: "center", marginTop: 12 }}
-        >
-          <Text style={{ color: colors.textMuted, fontSize: 14 }}>+ Add a medication</Text>
-        </TouchableOpacity>
-      </Card>
+      <MedicationsEditor meds={meds} onChange={setMeds} />
     </EditShell>
   );
 }

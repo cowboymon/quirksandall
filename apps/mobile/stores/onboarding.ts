@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { Command } from "@quirksandall/shared";
+import type { EditableMedication } from "../components/MedicationsEditor";
 
 type PetDraft = {
   photoUri?: string;
@@ -14,6 +15,7 @@ type PetDraft = {
   microchipNumber?: string;
   vetContactName?: string;
   vetClinic?: string;
+  vetAddress?: string;
   vetPhone?: string;
   emergVetClinic?: string;
   emergVetPhone?: string;
@@ -34,6 +36,7 @@ type PetDraft = {
   scared?: string;
   noGo?: string;
   flightRisk?: string;
+  temperament?: string;
   feedingBrand?: string;
   feedingBreakfastTime?: string;
   feedingBreakfastAmount?: string;
@@ -47,8 +50,11 @@ type PetDraft = {
   walks?: string;
   sleep?: string;
   bathroomHabits?: string;
+  leftAloneOk?: string;
+  leftAloneDetail?: string;
+  toileting?: string;
   allergies?: string;
-  medications?: string;
+  medications?: EditableMedication[];
   conditions?: string;
 };
 

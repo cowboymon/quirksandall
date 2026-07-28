@@ -148,13 +148,20 @@ export default function Dashboard() {
   };
 
   const shareLinkUrl = async (link: OwnerLink) => {
-    const url = `${WEB_URL}/p/${link.token}`;
-    // Pass ONE representation of the link. Sending both `message` and `url`
-    // makes iOS surface the link twice in the share sheet (#41). iOS prefers a
-    // real `url` (rich preview); Android only reads `message`.
-    await Share.share(Platform.OS === "ios" ? { url } : { message: url });
-    setCopiedId(link.id);
-    setTimeout(() => setCopiedId((id) => (id === link.id ? null : id)), 2000);
+    const doShare = async () => {
+      const url = `${WEB_URL}/p/${link.token}`;
+      // Pass ONE representation of the link. Sending both `message` and `url`
+      // makes iOS surface the link twice in the share sheet (#41). iOS prefers a
+      // real `url` (rich preview); Android only reads `message`.
+      await Share.share(Platform.OS === "ios" ? { url } : { message: url });
+      setCopiedId(link.id);
+      setTimeout(() => setCopiedId((id) => (id === link.id ? null : id)), 2000);
+    };
+    // Nudge (if it fires) gates the actual share — most people share outside
+    // the app (WhatsApp/SMS) and don't come back, so this is the last real
+    // chance to say it before the handoff happens, not after.
+    const nudged = await maybeNudgeDecisionContact(doShare);
+    if (!nudged) await doShare();
   };
 
   const commitRename = async (link: OwnerLink) => {
@@ -164,30 +171,34 @@ export default function Dashboard() {
     loadDashboard();
   };
 
-  // Owner-side only, never shown to a sitter. Setting/changing a stay length
-  // is the app's actual "this is a new trip" signal (unlike a link rename,
-  // which can happen anytime) — so this is where the reminder to actually
-  // tell the vet lives, throttled to a 30-day cadence (same pattern as the
-  // command-freshness nudge above) rather than firing on every save. Only
-  // fires when there's a decision contact to tell the vet about.
+  // Owner-side only, never shown to a sitter. Fires right before the actual
+  // native share sheet opens — not when the stay length is saved — because
+  // most owners share outside the app (WhatsApp/SMS) and don't come back, so
+  // that's the last real moment to say it before the handoff happens.
+  // Throttled to a 30-day cadence (same pattern as the command-freshness
+  // nudge above), and only when there's a decision contact to tell the vet
+  // about. Returns true if it showed (and will call onContinue once
+  // dismissed), false if the caller should just proceed immediately.
   const NUDGE_INTERVAL_MS = 30 * 24 * 60 * 60 * 1000;
-  const maybeNudgeDecisionContact = async () => {
+  const maybeNudgeDecisionContact = async (onContinue: () => void): Promise<boolean> => {
     const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
-    if (!user) return;
+    if (!user) return false;
     const { data: owner } = await supabase
       .from("owners")
       .select("backup_contacts, decision_contact_nudge_shown_at")
       .eq("id", user.id)
       .single();
     const hasDecisionContact = (owner?.backup_contacts ?? []).some((c: any) => c.is_decision_contact);
-    if (!hasDecisionContact) return;
+    if (!hasDecisionContact) return false;
     const lastShown = owner?.decision_contact_nudge_shown_at ? new Date(owner.decision_contact_nudge_shown_at).getTime() : 0;
-    if (Date.now() - lastShown < NUDGE_INTERVAL_MS) return;
-    AppAlert.alert(
-      "Before this trip",
-      "Worth telling your vet who can make decisions if you're away. Most clinics will note it on your file over the phone."
-    );
+    if (Date.now() - lastShown < NUDGE_INTERVAL_MS) return false;
     await supabase.from("owners").update({ decision_contact_nudge_shown_at: new Date().toISOString() }).eq("id", user.id);
+    AppAlert.alert(
+      "Before you send this",
+      "Worth telling your vet who can make decisions if you're away. Most clinics will note it on your file over the phone.",
+      [{ text: "Got it", onPress: onContinue }]
+    );
+    return true;
   };
 
   const doRevoke = async () => {
@@ -508,7 +519,6 @@ export default function Dashboard() {
             const id = durationTarget.id;
             setDurationTarget(null);
             await setLinkDuration(id, preset, endsAt);
-            await maybeNudgeDecisionContact();
             loadDashboard();
           }}
           onClose={() => setDurationTarget(null)}

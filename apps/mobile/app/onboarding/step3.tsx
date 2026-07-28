@@ -6,7 +6,13 @@ import { Headline, Textarea, Input, Card, PrimaryButton, SkipButton, ProgressDot
 import { Underlined } from "../../components/Underlined";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { colors } from "@quirksandall/shared";
-import type { Command } from "@quirksandall/shared";
+import type { Command, CommandStrength } from "@quirksandall/shared";
+
+const STRENGTHS: { key: CommandStrength; label: string }[] = [
+  { key: "learning", label: "Still learning" },
+  { key: "solid", label: "Solid" },
+  { key: "mastered", label: "Mastered" },
+];
 
 export default function Step3() {
   const { pet, setPet } = useOnboardingStore();
@@ -16,6 +22,11 @@ export default function Step3() {
 
   const updateCommand = (id: string, field: keyof Command, val: string) => {
     const updated = commands.map((c) => (c.id === id ? { ...c, [field]: val } : c));
+    setCommands(updated);
+    setPet({ commands: updated });
+  };
+  const setStrength = (id: string, strength: CommandStrength) => {
+    const updated = commands.map((c) => (c.id === id ? { ...c, strength: c.strength === strength ? undefined : strength } : c));
     setCommands(updated);
     setPet({ commands: updated });
   };
@@ -72,6 +83,25 @@ export default function Step3() {
             <Input className="mt-2" placeholder="Means…" value={cmd.meaning} onChangeText={(v) => updateCommand(cmd.id, "meaning", v)} />
             <Input className="mt-2" placeholder="How to cue (optional)" value={cmd.howToCue ?? ""} onChangeText={(v) => updateCommand(cmd.id, "howToCue", v)} />
             <Input className="mt-2" placeholder="Reward" value={cmd.reward} onChangeText={(v) => updateCommand(cmd.id, "reward", v)} />
+            {/* Strength tag (#92) — how solid is it? Optional; shown to sitters. */}
+            <Text style={{ color: colors.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium", marginTop: 12, marginBottom: 6 }}>
+              How solid is it?
+            </Text>
+            <View style={{ flexDirection: "row", gap: 6 }}>
+              {STRENGTHS.map((s) => {
+                const active = cmd.strength === s.key;
+                return (
+                  <TouchableOpacity
+                    key={s.key}
+                    onPress={() => setStrength(cmd.id, s.key)}
+                    activeOpacity={0.85}
+                    style={{ flex: 1, height: 34, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: active ? colors.cardDark : colors.secondary, borderWidth: 1, borderColor: active ? colors.cardDark : colors.border }}
+                  >
+                    <Text style={{ color: active ? colors.cardDarkText : colors.textDark, fontSize: 12, fontFamily: "Satoshi-Medium" }}>{s.label}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </Card>
         ))}
       </View>
@@ -99,6 +129,10 @@ export default function Step3() {
           <View>
             <Eyebrow>A flight risk if a door's left open?</Eyebrow>
             <Textarea style={{ marginTop: 4 }} placeholder="e.g. Yes — always check the gate." value={pet.flightRisk ?? ""} onChangeText={(v) => setPet({ flightRisk: v })} />
+          </View>
+          <View>
+            <Eyebrow>What's their temperament like?</Eyebrow>
+            <Textarea style={{ marginTop: 4 }} placeholder="e.g. Shy at first, warms up fast. Loves belly rubs." value={pet.temperament ?? ""} onChangeText={(v) => setPet({ temperament: v })} />
           </View>
         </View>
       </View>
