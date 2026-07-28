@@ -1,0 +1,86 @@
+import type { Metadata } from "next";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import { site } from "../site";
+import { SHIPPED } from "./data";
+import RoadmapBoard from "./RoadmapBoard";
+
+export const metadata: Metadata = {
+  title: "Roadmap",
+  description: `What ${site.name} has shipped, and what it's building next.`,
+};
+
+export default function RoadmapPage() {
+  return (
+    <div className="flex min-h-screen flex-col">
+      <Header />
+
+      <main className="flex-1">
+        <section className="mx-auto max-w-5xl px-6 pt-16 pb-8 sm:pt-24">
+          <p className="eyebrow text-primary">Roadmap</p>
+          <h1 className="mt-3 max-w-2xl font-tanker text-4xl leading-[1.05] text-foreground sm:text-6xl">
+            Where we&apos;re headed.
+          </h1>
+          <p className="mt-5 max-w-xl text-lg leading-relaxed text-text-muted">
+            {site.name} is just getting started. Here&apos;s what&apos;s already in, what
+            we&apos;re building now, and what we&apos;re still chewing over. Don&apos;t read the
+            absence of something as a no — give the ideas a thumb and the loudest ones jump the
+            queue.
+          </p>
+        </section>
+
+        {/* Already shipped — factual, no voting. */}
+        <section className="mx-auto max-w-5xl px-6 pb-10">
+          <div className="flex items-center gap-2.5 border-b border-border pb-3">
+            <span
+              aria-hidden
+              className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-success text-card-bg"
+            >
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+            </span>
+            <h2 className="text-sm font-bold uppercase tracking-wide text-foreground">
+              Already shipped
+            </h2>
+          </div>
+          <ul className="mt-5 grid gap-4 sm:grid-cols-2">
+            {SHIPPED.map((item) => (
+              <li key={item.id} className="rounded-card border border-border bg-card-bg p-5">
+                <h3 className="text-base font-bold text-foreground">{item.title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-text-muted">{item.desc}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="mx-auto max-w-5xl px-6 pb-16 sm:pb-24">
+          <RoadmapBoard />
+        </section>
+
+        {/* Feedback nudge */}
+        <section className="border-t border-border/70 bg-[#E5BEC4]">
+          <div className="mx-auto max-w-3xl px-6 py-14 text-center sm:py-16">
+            <h2 className="font-tanker text-2xl leading-tight text-foreground sm:text-3xl">
+              Want a say in what&apos;s next?
+            </h2>
+            <p className="mx-auto mt-3 max-w-lg text-lg leading-relaxed text-foreground">
+              Give the ideas above a thumb — or join the waitlist and reply to our launch email with
+              what would make {site.name} better for your pet.
+            </p>
+            <div className="mt-6">
+              <a
+                href="/#get"
+                className="inline-block rounded-button bg-button px-5 py-3 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed"
+              >
+                Get notified at launch
+              </a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}
