@@ -8,7 +8,12 @@ export const dynamic = "force-dynamic";
 // Auth is handled upstream by middleware.ts (Basic Auth on /api/admin/*).
 
 function cell(v: unknown): string {
-  const s = v == null ? "" : String(v);
+  let s = v == null ? "" : String(v);
+  // Neutralise spreadsheet formula injection: a cell beginning with = + - @ (or
+  // tab/CR) can execute as a formula when the CSV is opened in Excel/Sheets.
+  // A suggestion or email is attacker-controlled, so prefix a single quote to
+  // force it to be treated as text.
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
   return `"${s.replace(/"/g, '""')}"`;
 }
 

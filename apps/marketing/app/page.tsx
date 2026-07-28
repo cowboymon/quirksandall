@@ -186,7 +186,7 @@ export default function Home() {
     <div className="flex min-h-screen flex-col">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(homeLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(homeLd).replace(/</g, "\\u003c") }}
       />
       <Header />
 
