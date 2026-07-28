@@ -37,7 +37,14 @@ export default function Footer() {
 
       <div className="mx-auto flex max-w-5xl flex-col gap-1.5 px-6 pb-10">
         <p className="text-sm text-text-muted">
-          {site.name} is made by {site.maker}, the team behind {site.makerOtherProduct}.
+          {site.name} is made by{" "}
+          <a
+            href={site.makerUrl}
+            className="text-text-muted underline underline-offset-2 transition-colors hover:text-foreground"
+          >
+            {site.maker}
+          </a>
+          , the team behind {site.makerOtherProduct}.
         </p>
         <p className="eyebrow text-text-muted">
           © {new Date().getFullYear()} {site.operator}. All rights reserved.

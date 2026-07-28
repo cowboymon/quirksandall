@@ -1,8 +1,26 @@
+import type { Metadata } from "next";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import WaitlistForm from "./components/WaitlistForm";
 import { Underline, CircleMark, MarginArrow } from "./components/Annotations";
 import { site } from "./site";
+
+// Homepage-specific metadata. Names both dogs and cats explicitly (the default
+// description is species-neutral) so the page surfaces for cat-sitter searches
+// too, not just generic pet ones.
+export const metadata: Metadata = {
+  description:
+    "Fill in your pet's profile once — dog or cat — and share a link with whoever's looking after them. Feeding, litter, medications, walks and the quirks only you know, all in one link. No app needed on their end.",
+  keywords: [
+    "cat sitter instructions",
+    "what to leave for a cat sitter",
+    "cat care sheet",
+    "dog sitter info",
+    "pet sitting instructions",
+    "pet care profile",
+    "share pet info with a sitter",
+  ],
+};
 
 const FEATURES = [
   {
@@ -50,7 +68,11 @@ const FAQS = [
   },
   {
     q: "Does this work for cats? Rabbits? Anything that isn't a dog?",
-    a: "Yes. Commands, routines, and quirks work for any pet — the words might just be different.",
+    a: "Absolutely — plenty of Quirks & All profiles are for cats. Feeding routine, litter, medications, whether they're indoor-only or bolt for the door, and the exact spot they hide when someone new is over. “Commands” just become house rules; everything else is the same.",
+  },
+  {
+    q: "What should I leave for a cat sitter?",
+    a: "The things a cat sitter actually needs: feeding times and which food, where the litter is and how often to scoop, any medications and how to give them, your vet and an emergency contact, whether the cat is indoor-only, and where they hide so nobody panics. Quirks & All keeps all of it on one link — with no app for the sitter to install.",
   },
   {
     q: "What's actually free?",
@@ -125,6 +147,8 @@ const homeLd = {
       applicationCategory: "LifestyleApplication",
       operatingSystem: "iOS, Android",
       url: site.url,
+      keywords:
+        "cat sitter instructions, cat care sheet, dog sitter info, pet sitting instructions, pet care profile for a sitter",
       publisher: { "@id": `${site.url}/#org` },
       offers: [
         {
@@ -268,8 +292,9 @@ export default function Home() {
               For whoever&apos;s got them.
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-foreground">
-              A weekend stand-in. A regular dog walker. A boarding stay. Your mum, who means well but forgets
-              the vacuum thing. One profile works for all of them — a link each, revoked whenever you like.
+              A weekend stand-in. A dog walker. The neighbour who pops in to feed the cat. A boarding stay or
+              cattery. Your mum, who means well but forgets the vacuum thing. One profile works for all of them
+              — a link each, revoked whenever you like.
             </p>
           </div>
         </section>

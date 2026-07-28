@@ -32,6 +32,7 @@ export const site = {
   legalAbn: "22 525 634 531",
   // Maker attribution shown in the footer.
   maker: "Its Hypothetical",
+  makerUrl: "https://itshypothetical.com",
   makerOtherProduct: "Loud & Fine",
   // Keep in sync when you revise the legal pages.
   legalLastUpdated: "27 July 2026",
