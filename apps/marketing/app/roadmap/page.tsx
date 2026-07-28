@@ -4,6 +4,7 @@ import Footer from "../components/Footer";
 import { site } from "../site";
 import { SHIPPED } from "./data";
 import RoadmapBoard from "./RoadmapBoard";
+import SuggestForm from "./SuggestForm";
 
 export const metadata: Metadata = {
   title: "Roadmap",
@@ -65,24 +66,26 @@ export default function RoadmapPage() {
           </ul>
         </section>
 
-        {/* Feedback nudge */}
+        {/* Feedback nudge — thumb the ideas above, or suggest your own. */}
         <section className="border-t border-border/70 bg-[#E5BEC4]">
           <div className="mx-auto max-w-3xl px-6 py-14 text-center sm:py-16">
             <h2 className="font-tanker text-2xl leading-tight text-foreground sm:text-3xl">
-              Want a say in what&apos;s next?
+              Missing something?
             </h2>
             <p className="mx-auto mt-3 max-w-lg text-lg leading-relaxed text-foreground">
-              Give the ideas above a thumb — or join the waitlist and reply to our launch email with
-              what would make {site.name} better for your pet.
+              Thumb the ideas above, or tell us what would make {site.name} better for your pet —
+              we read every one.
             </p>
-            <div className="mt-6">
-              <a
-                href="/#get"
-                className="inline-block rounded-button bg-button px-5 py-3 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed"
-              >
-                Get notified at launch
-              </a>
+            <div className="mt-7">
+              <SuggestForm />
             </div>
+            <p className="mt-8 text-sm text-foreground/70">
+              Rather just hear when we launch?{" "}
+              <a href="/#get" className="font-medium text-primary underline underline-offset-2">
+                Join the waitlist
+              </a>
+              .
+            </p>
           </div>
         </section>
       </main>
