@@ -313,19 +313,30 @@ export default function Dashboard() {
       <View style={{ paddingHorizontal: 24, gap: 16 }}>
         {/* Named share links */}
         <View style={{ backgroundColor: colors.cardDark, borderRadius: 12, overflow: "hidden" }}>
-          <View style={{ paddingHorizontal: 20, paddingTop: 18, paddingBottom: 14, flexDirection: "row", alignItems: "flex-start", gap: 12 }}>
-            <View style={{ flex: 1 }}>
-              <Eyebrow ochre>Share links</Eyebrow>
-              <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, marginTop: 6, lineHeight: 17, fontFamily: "Satoshi-Light" }}>
-                Each link is unique. Name it by who you're sending it to — sitter, family, vet, anyone.
+          <View style={{ paddingHorizontal: 20, paddingTop: 18, paddingBottom: 14 }}>
+            {/* Preview sits on the title's own row so it reads as belonging to
+                the section, rather than floating against the card's top edge
+                while the heading starts below it. */}
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+              {/* Not <Eyebrow ochre> here: that rose (#B83A52) is 2.79:1 on
+                  this maroon — below even the 3:1 large-text floor. It's fine
+                  everywhere else it's used, all of which are light
+                  backgrounds, so the fix belongs to this usage rather than the
+                  token. cardDarkLabel is 7.68:1 and already carries the other
+                  labels on this card. */}
+              <Text style={{ color: colors.cardDarkLabel, fontSize: 11, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                Share links
               </Text>
+              {links.length > 0 && (
+                <TouchableOpacity onPress={preview} style={{ flexDirection: "row", alignItems: "center", gap: 6, height: 32, paddingHorizontal: 12, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)" }}>
+                  <Ionicons name="eye-outline" size={14} color="rgba(248,236,238,0.8)" />
+                  <Text style={{ color: "rgba(248,236,238,0.8)", fontSize: 12, fontFamily: "Satoshi-Medium" }}>Preview</Text>
+                </TouchableOpacity>
+              )}
             </View>
-            {links.length > 0 && (
-              <TouchableOpacity onPress={preview} style={{ flexDirection: "row", alignItems: "center", gap: 6, height: 32, paddingHorizontal: 12, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)" }}>
-                <Ionicons name="eye-outline" size={14} color="rgba(248,236,238,0.8)" />
-                <Text style={{ color: "rgba(248,236,238,0.8)", fontSize: 12, fontFamily: "Satoshi-Medium" }}>Preview</Text>
-              </TouchableOpacity>
-            )}
+            <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, marginTop: 6, lineHeight: 17, fontFamily: "Satoshi-Light" }}>
+              Each link is unique. Name it by who you're sending it to — sitter, family, vet, anyone.
+            </Text>
           </View>
 
           {/* One PIN for the pet, so it belongs to the card rather than to any
