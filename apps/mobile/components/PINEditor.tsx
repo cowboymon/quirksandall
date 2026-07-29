@@ -8,11 +8,11 @@ import { rememberPin } from "../lib/pinVault";
 import { colors } from "@quirksandall/shared";
 import { Eyebrow, Card } from "./ui";
 
-type Props = { petId: string | null; autoStart?: boolean };
+type Props = { petId: string | null; petName?: string | null; autoStart?: boolean };
 
 type Stage = "idle" | "set" | "confirm";
 
-export default function PINEditor({ petId, autoStart }: Props) {
+export default function PINEditor({ petId, petName, autoStart }: Props) {
   const [stage, setStage] = useState<Stage>(autoStart ? "set" : "idle");
   const [pin, setPin] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -43,34 +43,48 @@ export default function PINEditor({ petId, autoStart }: Props) {
       // Save — call set-pin edge function so hashing happens server-side
       setSaving(true);
       try {
-        const { data: link } = await supabase
+        // EVERY active link, not just the newest. The PIN is a per-pet secret
+        // as far as the owner is concerned — updating one link left the others
+        // on the old PIN, so an owner who changed it to cut off access hadn't
+        // actually cut anything off.
+        const { data: links } = await supabase
           .from("share_links")
           .select("id")
           .eq("pet_id", petId!)
-          .eq("revoked", false)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .single();
+          .eq("revoked", false);
 
-        if (!link) throw new Error("No active share link found");
+        if (!links?.length) throw new Error("No active share link found");
 
         const { data: { session } } = await supabase.auth.getSession();
-        const res = await fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/set-pin`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session?.access_token}`,
-          },
-          body: JSON.stringify({ link_id: link.id, pin: digits }),
-        });
-
-        if (!res.ok) throw new Error("PIN update failed");
+        const results = await Promise.all(
+          links.map((l) =>
+            fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/set-pin`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${session?.access_token}`,
+              },
+              body: JSON.stringify({ link_id: l.id, pin: digits }),
+            })
+          )
+        );
+        // Partial success is worse than none: some links on the new PIN and
+        // some on the old is exactly the confusion this fix exists to remove.
+        if (results.some((r) => !r.ok)) throw new Error("PIN update failed");
         // Keep a device-local copy so the share flow can offer to send it.
         if (petId) await rememberPin(petId, digits);
         setStage("idle");
         setPin("");
         setConfirm("");
-        AppAlert.alert("PIN updated", "New PIN is active.");
+        // Anyone holding the old PIN is now locked out with no way to know why
+        // — the sitter just sees "that PIN didn't match". Say so plainly rather
+        // than leaving the owner to work it out from a support message later.
+        AppAlert.alert(
+          "PIN updated",
+          "The old PIN stopped working straight away. Anyone still looking after " +
+            (petName?.trim() || "your pet") +
+            " will need the new one — send it to them when you get a chance."
+        );
       } catch (e: any) {
         AppAlert.alert("Couldn't update PIN", e.message);
         setStage("set");
