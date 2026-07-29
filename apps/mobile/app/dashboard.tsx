@@ -349,27 +349,34 @@ export default function Dashboard() {
             ) : petPin ? (
               <>
                 <Text style={{ color: "rgba(248,236,238,0.85)", fontSize: 12, fontFamily: "Satoshi-Bold", letterSpacing: 2 }}>{petPin}</Text>
+                {/* One action, not two: copying and sending are the same
+                    intent — get this PIN to the sitter. So it lands on the
+                    clipboard and opens the share sheet together, which also
+                    covers the apps the sheet can't reach (paste it there
+                    instead). */}
                 <TouchableOpacity
-                  onPress={() => Share.share({ message: pinMessage(pet.name, petPin) })}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <Text style={{ color: colors.cardDarkLabel, fontSize: 11, fontFamily: "Satoshi-Medium" }}>Send separately</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => { Clipboard.setStringAsync(petPin); setPinCopied(true); setTimeout(() => setPinCopied(false), 1600); }}
+                  onPress={() => {
+                    Clipboard.setStringAsync(petPin);
+                    setPinCopied(true);
+                    setTimeout(() => setPinCopied(false), 1600);
+                    Share.share({ message: pinMessage(pet.name, petPin) });
+                  }}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
                   <Text style={{ color: colors.cardDarkLabel, fontSize: 11, fontFamily: "Satoshi-Medium" }}>
-                    {pinCopied ? "Copied" : "Copy"}
+                    {pinCopied ? "Copied — send it on its own" : "Send separately"}
                   </Text>
                 </TouchableOpacity>
               </>
             ) : (
-              // Server-side it's only ever a bcrypt hash, so a device that
-              // never set this PIN genuinely cannot show it.
+              // A PIN exists but this phone doesn't hold it: reinstalled, new
+              // device, or simply set before the app started remembering it.
+              // Server-side it's only ever a bcrypt hash, so it genuinely
+              // can't be shown — and the only useful move is changing it, so
+              // say that rather than explaining our storage model.
               <TouchableOpacity onPress={() => router.push("/edit/emergency?section=pin")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                <Text style={{ color: "rgba(248,236,238,0.4)", fontSize: 11, fontFamily: "Satoshi-Medium" }}>
-                  PIN set on another device — set a new one
+                <Text style={{ color: colors.cardDarkLabel, fontSize: 11, fontFamily: "Satoshi-Medium" }}>
+                  PIN set — tap to change it
                 </Text>
               </TouchableOpacity>
             )}
@@ -453,6 +460,18 @@ export default function Dashboard() {
               </TouchableOpacity>
             </View>
           ))}
+
+          {links.length > LINKS_COLLAPSED_COUNT && (
+            <TouchableOpacity
+              onPress={() => setShowAllLinks((v) => !v)}
+              style={{ paddingHorizontal: 20, paddingVertical: 12, borderTopWidth: 1, borderTopColor: "rgba(248,236,238,0.1)", flexDirection: "row", alignItems: "center", gap: 6 }}
+            >
+              <Ionicons name={showAllLinks ? "chevron-up" : "chevron-down"} size={13} color={colors.cardDarkLabel} />
+              <Text style={{ color: colors.cardDarkLabel, fontSize: 12, fontFamily: "Satoshi-Medium" }}>
+                {showAllLinks ? "Show fewer" : `Show all ${links.length} links`}
+              </Text>
+            </TouchableOpacity>
+          )}
 
           {/* New link */}
           <View style={{ paddingHorizontal: 20, paddingBottom: 18, paddingTop: 14, borderTopWidth: 1, borderTopColor: "rgba(248,236,238,0.1)" }}>
