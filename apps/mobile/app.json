@@ -28,7 +28,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#E5BEC4"
+        "backgroundColor": "#510000"
       },
       "package": "com.itshypothetical.quirksandall"
     },
