@@ -12,7 +12,7 @@ import EditShell from "../../components/EditShell";
 import ConfirmModal from "../../components/ConfirmModal";
 import { colors } from "@quirksandall/shared";
 import { useActivePetStore } from "../../stores/activePet";
-import { listDocuments, uploadDocument, removeDocument, documentSignedUrl, type NewDocument } from "../../lib/documents";
+import { listDocuments, uploadDocument, removeDocument, documentSignedUrl, shareDocument, type NewDocument } from "../../lib/documents";
 
 const KINDS = [
   { key: "vaccination", label: "Vaccination" },
@@ -81,6 +81,21 @@ export default function Documents() {
     askKindAndUpload({ uri: a.uri, fileName: a.fileName ?? `photo-${Date.now()}.jpg`, mimeType: a.mimeType ?? "image/jpeg", sizeBytes: a.fileSize ?? undefined });
   };
 
+  // Per-document rather than multi-select: the OS share sheet takes one
+  // attachment at a time on both platforms, so a "select several" mode would
+  // only be able to send them one after another anyway.
+  const [sharingId, setSharingId] = useState<string | null>(null);
+  const share = async (doc: any) => {
+    setSharingId(doc.id);
+    try {
+      await shareDocument(doc.storage_path, doc.file_name ?? doc.title ?? "document", doc.mime_type);
+    } catch (e: any) {
+      AppAlert.alert("Couldn't share that", e.message ?? "Try again.");
+    } finally {
+      setSharingId(null);
+    }
+  };
+
   const view = async (storagePath: string) => {
     try {
       const url = await documentSignedUrl(storagePath);
@@ -137,7 +152,17 @@ export default function Documents() {
                   {kindLabel(doc.kind)} · {new Date(doc.uploaded_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setRemoveTarget(doc)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <TouchableOpacity
+                onPress={() => share(doc)}
+                disabled={sharingId === doc.id}
+                hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
+                style={{ opacity: sharingId === doc.id ? 0.4 : 1 }}
+              >
+                {sharingId === doc.id
+                  ? <ActivityIndicator size="small" color={colors.primary} />
+                  : <Ionicons name="share-outline" size={18} color={colors.primary} />}
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setRemoveTarget(doc)} hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}>
                 <Ionicons name="trash-outline" size={18} color={colors.danger} />
               </TouchableOpacity>
             </View>
