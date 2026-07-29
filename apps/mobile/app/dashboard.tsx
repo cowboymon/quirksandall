@@ -12,8 +12,11 @@ import DurationModal from "../components/DurationModal";
 import { useActivePetStore } from "../stores/activePet";
 import { colors, computeAge, capitalizeFirst, orderedCommands, possessive, stayPhrase } from "@quirksandall/shared";
 import { usePrice } from "../hooks/usePrice";
+import { recallPin } from "../lib/pinVault";
+import { firstShareMessage } from "../lib/shareMessage";
+import SendPinModal from "../components/SendPinModal";
 import { WEB_URL } from "../lib/config";
-import { listLinks, createLink, renameLink, revokeLink, setLinkDuration, type OwnerLink } from "../lib/links";
+import { listLinks, createLink, renameLink, revokeLink, setLinkDuration, markLinkShared, type OwnerLink } from "../lib/links";
 import type { Pet } from "@quirksandall/shared";
 
 type Section = { label: string; detail: string; status: "done" | "saved" | "empty"; route: string };
@@ -58,6 +61,9 @@ export default function Dashboard() {
   const [durationTarget, setDurationTarget] = useState<OwnerLink | null>(null);
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [deletionScheduled, setDeletionScheduled] = useState(false);
+  // Set after a share of a PIN-gated link; { pin } is null when this device
+  // doesn't remember it and the owner needs to type it.
+  const [pinToSend, setPinToSend] = useState<{ pin: string | null } | null>(null);
 
   // Reload every time the dashboard regains focus (e.g. returning from an edit
   // screen) so counts/status reflect the latest saves — not just on pet switch.
@@ -152,12 +158,34 @@ export default function Dashboard() {
   const shareLinkUrl = async (link: OwnerLink) => {
     const doShare = async () => {
       const url = `${WEB_URL}/p/${link.token}`;
-      // Pass ONE representation of the link. Sending both `message` and `url`
-      // makes iOS surface the link twice in the share sheet (#41). iOS prefers a
-      // real `url` (rich preview); Android only reads `message`.
-      await Share.share(Platform.OS === "ios" ? { url } : { message: url });
+      const firstSend = !link.first_shared_at;
+      const pinSet = !!link.pin_hash;
+
+      if (firstSend) {
+        // First time this link goes out, the sitter has no idea what it is, so
+        // send the explanation with it. The URL lives inside the message —
+        // passing both `message` and `url` makes iOS show the link twice (#41),
+        // so this trades the rich preview for context, which is the better deal
+        // on the one send where context is missing.
+        await Share.share({ message: firstShareMessage(data?.pet.name ?? "", url, pinSet) });
+        await markLinkShared(link.id);
+      } else {
+        // Repeat sends go bare — the sitter already knows. Pass ONE
+        // representation (#41); iOS prefers a real `url` for the rich preview,
+        // Android only reads `message`.
+        await Share.share(Platform.OS === "ios" ? { url } : { message: url });
+      }
+
       setCopiedId(link.id);
       setTimeout(() => setCopiedId((id) => (id === link.id ? null : id)), 2000);
+
+      // The PIN is useless if it rides along with the link, so prompt for it as
+      // a separate message once the share sheet is out of the way.
+      if (pinSet) {
+        const petId = data?.pet.id;
+        setPinToSend({ pin: petId ? await recallPin(petId) : null });
+      }
+      loadDashboard();
     };
     // Nudge (if it fires) gates the actual share — most people share outside
     // the app (WhatsApp/SMS) and don't come back, so this is the last real
@@ -526,6 +554,13 @@ export default function Dashboard() {
           onClose={() => setDurationTarget(null)}
         />
       )}
+
+      <SendPinModal
+        visible={!!pinToSend}
+        petName={data?.pet.name ?? ""}
+        knownPin={pinToSend?.pin ?? null}
+        onClose={() => setPinToSend(null)}
+      />
     </ScrollView>
   );
 }

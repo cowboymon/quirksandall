@@ -11,6 +11,7 @@ import { useActivePetStore } from "../../stores/activePet";
 import { supabase } from "../../lib/supabase";
 import { uploadPetPhoto } from "../../lib/uploadPhoto";
 import { randomToken } from "../../lib/links";
+import { rememberPin } from "../../lib/pinVault";
 import { colors, displayDateToISO, capitalizeFirst } from "@quirksandall/shared";
 import { usePrice } from "../../hooks/usePrice";
 import { useState, useEffect } from "react";
@@ -152,6 +153,9 @@ export default function Step4() {
           },
           body: JSON.stringify({ link_id: newLink.id, pin: pet.pin }),
         }).catch(() => {});
+        // Keep a device-local copy so the share flow can offer to send it —
+        // the server only ever holds the bcrypt hash.
+        await rememberPin(newPet.id, pet.pin);
       }
 
       // Make the pet we just created the active one, so the dashboard lands on

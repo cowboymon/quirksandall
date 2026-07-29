@@ -4,6 +4,7 @@ import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from "reac
 import { AppAlert } from "../stores/appAlert";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "../lib/supabase";
+import { rememberPin } from "../lib/pinVault";
 import { colors } from "@quirksandall/shared";
 import { Eyebrow, Card } from "./ui";
 
@@ -64,6 +65,8 @@ export default function PINEditor({ petId, autoStart }: Props) {
         });
 
         if (!res.ok) throw new Error("PIN update failed");
+        // Keep a device-local copy so the share flow can offer to send it.
+        if (petId) await rememberPin(petId, digits);
         setStage("idle");
         setPin("");
         setConfirm("");
