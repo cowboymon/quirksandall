@@ -11,9 +11,11 @@ import CheckboxRow from "../../components/CheckboxRow";
 export default function Step2() {
   const { pet, setPet } = useOnboardingStore();
   const [showSecondBackup, setShowSecondBackup] = useState(!!(pet.backup2Name || pet.backup2Phone));
-  // Vet name/phone stay locked until a clinic search actually resolves (pick
-  // or manual entry) — not just from typing, which would defeat the point.
-  const [vetConfirmed, setVetConfirmed] = useState(!!pet.vetClinic);
+  // Address/phone are locked to whatever a verified search result says,
+  // since that's the whole point of searching — "Can't find your clinic?"
+  // is the only way to unlock them for manual entry. Vet name is always
+  // free-text; Places has no idea who the actual vet is.
+  const [vetManual, setVetManual] = useState(false);
 
   return (
     <ScrollView className="flex-1 bg-background" keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 24, paddingTop: 60, width: "100%", maxWidth: 600, alignSelf: "center" }}>
@@ -33,26 +35,33 @@ export default function Step2() {
         <Card>
           <Eyebrow bold>Vet</Eyebrow>
           <View style={{ gap: 8, marginTop: 12 }}>
+            <LabeledInput
+              name
+              label="Vet name"
+              placeholder="e.g. Dr. Sarah Mitchell"
+              value={pet.vetContactName ?? ""}
+              onChangeText={(v) => setPet({ vetContactName: v })}
+            />
             <LabeledPlacesInput
               label="Clinic"
               placeholder="Search clinic name"
               value={pet.vetClinic ?? ""}
-              onChangeText={(v) => { setPet({ vetClinic: v }); setVetConfirmed(false); }}
-              onSelectPlace={(p) => { setPet({ vetClinic: p.name, ...(p.phone ? { vetPhone: p.phone } : {}), ...(p.address ? { vetAddress: p.address } : {}) }); setVetConfirmed(true); }}
+              onChangeText={(v) => { setPet({ vetClinic: v }); setVetManual(false); }}
+              onSelectPlace={(p) => { setPet({ vetClinic: p.name, vetPhone: p.phone, vetAddress: p.address }); setVetManual(false); }}
+              onManualEntry={() => setVetManual(true)}
+              onClear={() => { setPet({ vetAddress: "", vetPhone: "" }); setVetManual(false); }}
             />
-            <LabeledInput label="Address" placeholder="Address" value={pet.vetAddress ?? ""} onChangeText={(v) => setPet({ vetAddress: v })} />
             <LabeledInput
-              name
-              label="Vet name"
-              placeholder={vetConfirmed ? "e.g. Dr. Sarah Mitchell" : "Search a clinic first"}
-              editable={vetConfirmed}
-              value={pet.vetContactName ?? ""}
-              onChangeText={(v) => setPet({ vetContactName: v })}
+              label="Address"
+              placeholder={vetManual ? "Address" : "Search a clinic first"}
+              editable={vetManual}
+              value={pet.vetAddress ?? ""}
+              onChangeText={(v) => setPet({ vetAddress: v })}
             />
             <LabeledInput
               label="Phone"
-              placeholder={vetConfirmed ? "Phone" : "Search a clinic first"}
-              editable={vetConfirmed}
+              placeholder={vetManual ? "Phone" : "Search a clinic first"}
+              editable={vetManual}
               phone
               keyboardType="phone-pad"
               value={pet.vetPhone ?? ""}
