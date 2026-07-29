@@ -4,7 +4,8 @@ import { useState, useRef } from "react";
 import { Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, useNavigation } from "expo-router";
-import { colors, radius, capitalizeFirst, capitalizeWords, formatPhone } from "@quirksandall/shared";
+import { colors, radius, capitalizeFirst, capitalizeWords, formatPhone, displayDateToISO } from "@quirksandall/shared";
+import DatePickerSheet from "./DatePickerSheet";
 
 // "‹ Back" for onboarding/stack screens. Uses the NEAREST navigator's goBack
 // (via useNavigation) so it pops the current nested stack correctly — plain
@@ -134,7 +135,26 @@ export function LabeledInput({
 
 // Masked DD/MM/YYYY (AU) text field. Operates on the display string; callers
 // convert to/from ISO with displayDateToISO / isoToDisplayDate.
-export function DateInput({ value, onChangeText, style, ...props }: TextInputProps & { onChangeText: (v: string) => void }) {
+//
+// Typing stays the primary path — someone entering a date they already know
+// shouldn't be dragged through a picker — with the calendar button as the
+// alternative for dates people pick rather than recall.
+//
+// `range` names the job, which decides both bounds and picker style:
+//   "birthday" — wheel, no future. Scrolling back years beats paging a
+//                calendar month by month.
+//   "past"     — calendar, no future. For recent dates ("last seen"), where
+//                the week laid out is what you want.
+//   "future"   — calendar, no past. Stay end dates.
+export function DateInput({
+  value,
+  onChangeText,
+  style,
+  range = "past",
+  ...props
+}: TextInputProps & { onChangeText: (v: string) => void; range?: "birthday" | "past" | "future" }) {
+  const [showPicker, setShowPicker] = useState(false);
+
   const handle = (raw: string) => {
     const digits = raw.replace(/\D/g, "").slice(0, 8);
     let f = digits;
@@ -142,16 +162,45 @@ export function DateInput({ value, onChangeText, style, ...props }: TextInputPro
     else if (digits.length > 2) f = `${digits.slice(0, 2)}/${digits.slice(2)}`;
     onChangeText(f);
   };
+
+  // Seed the picker from whatever's already typed, so opening it continues the
+  // entry rather than restarting from today.
+  const parsed = displayDateToISO(value as string);
+  const seed = parsed ? new Date(`${parsed}T00:00:00`) : new Date();
+
+  const commit = (d: Date) => {
+    onChangeText(
+      `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`
+    );
+  };
+
   return (
-    <Input
-      value={value}
-      onChangeText={handle}
-      placeholder="DD/MM/YYYY"
-      keyboardType="number-pad"
-      maxLength={10}
-      style={style}
-      {...props}
-    />
+    <View style={{ position: "relative", justifyContent: "center" }}>
+      <Input
+        value={value}
+        onChangeText={handle}
+        placeholder="DD/MM/YYYY"
+        keyboardType="number-pad"
+        maxLength={10}
+        style={[{ paddingRight: 40 }, style]}
+        {...props}
+      />
+      <TouchableOpacity
+        onPress={() => setShowPicker(true)}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        style={{ position: "absolute", right: 12 }}
+      >
+        <Ionicons name="calendar-outline" size={17} color={colors.textMuted} />
+      </TouchableOpacity>
+
+      <DatePickerSheet
+        visible={showPicker}
+        value={seed}
+        range={range}
+        onCancel={() => setShowPicker(false)}
+        onConfirm={(d) => { commit(d); setShowPicker(false); }}
+      />
+    </View>
   );
 }
 

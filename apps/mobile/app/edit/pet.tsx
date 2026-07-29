@@ -334,7 +334,7 @@ export default function EditPet() {
             {age && <Text style={{ color: colors.textMuted, fontSize: 12 }}>{age}</Text>}
           </View>
           <View style={{ marginTop: 4 }}>
-            <DateInput value={dob} onChangeText={setDob} />
+            <DateInput value={dob} onChangeText={setDob} range="birthday" />
           </View>
           <TouchableOpacity
             onPress={() => setDobIsEstimated(!dobIsEstimated)}
