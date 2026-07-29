@@ -4,6 +4,7 @@ import Footer from "./components/Footer";
 import WaitlistForm from "./components/WaitlistForm";
 import { Underline, CircleMark, MarginArrow } from "./components/Annotations";
 import { site } from "./site";
+import { pirschEvent } from "./lib/pirsch";
 
 // Homepage-specific metadata. Names both dogs and cats explicitly (the default
 // description is species-neutral) so the page surfaces for cat-sitter searches
@@ -209,6 +210,7 @@ export default function Home() {
           <div className="mt-8 flex justify-center">
             <a
               href="#get"
+              {...pirschEvent("Get Notified Clicked", { location: "mid" })}
               className="inline-block rounded-button bg-button px-5 py-3 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed"
             >
               Get notified
@@ -328,6 +330,7 @@ export default function Home() {
               </ul>
               <a
                 href="#get"
+                {...pirschEvent("Get Notified Clicked", { location: "pricing-free" })}
                 className="mt-8 rounded-button border border-border bg-background px-5 py-3 text-center text-sm font-medium text-foreground transition-colors hover:border-primary"
               >
                 Get notified at launch
@@ -356,6 +359,7 @@ export default function Home() {
               </ul>
               <a
                 href="#get"
+                {...pirschEvent("Get Notified Clicked", { location: "pricing-pro" })}
                 className="mt-8 rounded-button bg-background px-5 py-3 text-center text-sm font-medium text-foreground transition-colors hover:bg-secondary"
               >
                 Get notified at launch
@@ -541,6 +545,7 @@ function StoreBadge({
     <a
       href={href}
       aria-label={isApple ? "Download on the App Store" : "Get it on Google Play"}
+      {...pirschEvent("App Download Clicked", { platform: isApple ? "iOS" : "Android" })}
       className="flex items-center gap-2.5 rounded-button bg-button px-4 py-2.5 text-card-dark-text transition-colors hover:bg-button-pressed"
     >
       {inner}

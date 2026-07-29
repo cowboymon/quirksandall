@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { site } from "../site";
+import { pirschEvent } from "../lib/pirsch";
 
 export default function Header() {
   return (
@@ -23,6 +24,7 @@ export default function Header() {
 
         <a
           href="#get"
+          {...pirschEvent("Get Notified Clicked", { location: "header" })}
           className="rounded-button bg-button px-4 py-2 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed"
         >
           Get notified

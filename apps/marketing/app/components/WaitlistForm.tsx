@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { track } from "../lib/pirsch";
 
 type Tone = "light" | "dark";
 
@@ -30,7 +31,12 @@ export default function WaitlistForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, source, company }),
       });
-      setStatus(res.ok ? "done" : "error");
+      if (res.ok) {
+        setStatus("done");
+        track("Waitlist Joined", { source });
+      } else {
+        setStatus("error");
+      }
     } catch {
       setStatus("error");
     }

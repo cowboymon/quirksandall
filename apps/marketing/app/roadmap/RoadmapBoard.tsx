@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { COLUMNS, DOT, type CountsMap } from "./data";
+import { track } from "../lib/pirsch";
 
 // Anonymous per-browser id, kept in localStorage. Not a person, no PII —
 // just enough to let someone change or clear their own vote.
@@ -64,6 +65,9 @@ export default function RoadmapBoard() {
       });
       const data = res.ok ? await res.json() : null;
       if (data?.counts) setCounts((c) => ({ ...c, [itemId]: data.counts }));
+      if (res.ok) {
+        track("Roadmap Vote", { item: itemId, action: next === 1 ? "want" : "cleared" });
+      }
     } catch {
       // Roll back on failure.
       setCounts((c) => ({ ...c, [itemId]: prevCounts }));

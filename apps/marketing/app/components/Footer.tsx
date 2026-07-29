@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { site } from "../site";
+import { pirschEvent } from "../lib/pirsch";
 
 export default function Footer() {
   return (
@@ -31,6 +32,7 @@ export default function Footer() {
           </Link>
           <a
             href={`mailto:${site.contactEmail}`}
+            {...pirschEvent("Contact Clicked", { location: "footer" })}
             className="text-text-muted transition-colors hover:text-foreground"
           >
             Contact
