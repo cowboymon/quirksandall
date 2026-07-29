@@ -331,40 +331,49 @@ export default function Dashboard() {
           {/* One PIN for the pet, so it belongs to the card rather than to any
               single row — every link inherits the same hash, and changing it
               changes all of them. Repeating it per link would imply six
-              different PINs when there's only ever one. */}
-          {links.some((l) => l.pin_hash) && (
-            <View style={{ paddingHorizontal: 20, paddingBottom: 14, flexDirection: "row", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              {petPin ? (
-                <>
-                  <TouchableOpacity
-                    onPress={() => { Clipboard.setStringAsync(petPin); setPinCopied(true); setTimeout(() => setPinCopied(false), 1600); }}
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                    style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
-                  >
-                    <Ionicons name="key-outline" size={12} color="rgba(248,236,238,0.5)" />
-                    <Text style={{ color: "rgba(248,236,238,0.85)", fontSize: 12, fontFamily: "Satoshi-Bold", letterSpacing: 2 }}>{petPin}</Text>
-                    <Text style={{ color: "rgba(248,236,238,0.4)", fontSize: 10, fontFamily: "Satoshi-Light" }}>
-                      {pinCopied ? "copied" : "tap to copy"}
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => Share.share({ message: pinMessage(pet.name, petPin) })}
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  >
-                    <Text style={{ color: colors.cardDarkLabel, fontSize: 11, fontFamily: "Satoshi-Medium" }}>Send separately</Text>
-                  </TouchableOpacity>
-                </>
-              ) : (
-                // Server-side it's only ever a bcrypt hash, so a device that
-                // never set this PIN genuinely cannot show it.
-                <TouchableOpacity onPress={() => router.push("/edit/emergency?section=pin")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                  <Text style={{ color: "rgba(248,236,238,0.4)", fontSize: 11, fontFamily: "Satoshi-Medium" }}>
-                    PIN set on another device — set a new one
+              different PINs when there's only ever one.
+
+              Sits directly under the header, above the links: it applies to
+              all of them, so it reads as a property of the set rather than
+              something attached to whichever link happens to be last. */}
+          <View style={{ paddingHorizontal: 20, paddingBottom: 14, flexDirection: "row", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <Ionicons name="key-outline" size={12} color="rgba(248,236,238,0.5)" />
+            {!links.some((l) => l.pin_hash) ? (
+              // No PIN anywhere on this pet — the emergency block is open to
+              // anyone holding the link, which is worth saying out loud.
+              <TouchableOpacity onPress={() => router.push("/edit/emergency?section=pin")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Text style={{ color: colors.cardDarkLabel, fontSize: 11, fontFamily: "Satoshi-Medium" }}>
+                  We'd set a PIN — it keeps the emergency contacts back
+                </Text>
+              </TouchableOpacity>
+            ) : petPin ? (
+              <>
+                <Text style={{ color: "rgba(248,236,238,0.85)", fontSize: 12, fontFamily: "Satoshi-Bold", letterSpacing: 2 }}>{petPin}</Text>
+                <TouchableOpacity
+                  onPress={() => Share.share({ message: pinMessage(pet.name, petPin) })}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Text style={{ color: colors.cardDarkLabel, fontSize: 11, fontFamily: "Satoshi-Medium" }}>Send separately</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => { Clipboard.setStringAsync(petPin); setPinCopied(true); setTimeout(() => setPinCopied(false), 1600); }}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Text style={{ color: colors.cardDarkLabel, fontSize: 11, fontFamily: "Satoshi-Medium" }}>
+                    {pinCopied ? "Copied" : "Copy"}
                   </Text>
                 </TouchableOpacity>
-              )}
-            </View>
-          )}
+              </>
+            ) : (
+              // Server-side it's only ever a bcrypt hash, so a device that
+              // never set this PIN genuinely cannot show it.
+              <TouchableOpacity onPress={() => router.push("/edit/emergency?section=pin")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Text style={{ color: "rgba(248,236,238,0.4)", fontSize: 11, fontFamily: "Satoshi-Medium" }}>
+                  PIN set on another device — set a new one
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
 
           {/* Long lists are capped rather than scrolled. A nested scroll region
               inside the page's own ScrollView traps the gesture — you try to
