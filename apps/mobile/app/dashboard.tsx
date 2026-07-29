@@ -4,6 +4,7 @@ import { AppAlert } from "../stores/appAlert";
 import { router, useFocusEffect } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Entypo from "@expo/vector-icons/Entypo";
+import * as Clipboard from "expo-clipboard";
 import { supabase } from "../lib/supabase";
 import { Eyebrow, Card } from "../components/ui";
 import PetSwitcher from "../components/PetSwitcher";
@@ -13,8 +14,7 @@ import { useActivePetStore } from "../stores/activePet";
 import { colors, computeAge, capitalizeFirst, orderedCommands, possessive, stayPhrase } from "@quirksandall/shared";
 import { usePrice } from "../hooks/usePrice";
 import { recallPin } from "../lib/pinVault";
-import { firstShareMessage } from "../lib/shareMessage";
-import SendPinModal from "../components/SendPinModal";
+import { firstShareMessage, pinMessage } from "../lib/shareMessage";
 import { WEB_URL } from "../lib/config";
 import { listLinks, createLink, renameLink, revokeLink, setLinkDuration, markLinkShared, type OwnerLink } from "../lib/links";
 import type { Pet } from "@quirksandall/shared";
@@ -61,9 +61,12 @@ export default function Dashboard() {
   const [durationTarget, setDurationTarget] = useState<OwnerLink | null>(null);
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [deletionScheduled, setDeletionScheduled] = useState(false);
-  // Set after a share of a PIN-gated link; { pin } is null when this device
-  // doesn't remember it and the owner needs to type it.
-  const [pinToSend, setPinToSend] = useState<{ pin: string | null } | null>(null);
+  // The PIN this device remembers for the active pet, shown inline on each
+  // PIN-gated link rather than offered once in a modal. null = not on this
+  // device (reinstall, second device), in which case the row invites setting
+  // it rather than pretending to know it.
+  const [petPin, setPetPin] = useState<string | null>(null);
+  const [pinCopied, setPinCopied] = useState(false);
   const [showTripNudge, setShowTripNudge] = useState(false);
 
   // Reload every time the dashboard regains focus (e.g. returning from an edit
@@ -145,6 +148,7 @@ export default function Dashboard() {
     });
     setLoading(false);
     loadTripNudge(links);
+    recallPin(pet.id).then(setPetPin);
 
     // Defensive: the deletion column may not be present until the migration
     // lands, so a missing column must not break the dashboard.
@@ -181,12 +185,6 @@ export default function Dashboard() {
       setCopiedId(link.id);
       setTimeout(() => setCopiedId((id) => (id === link.id ? null : id)), 2000);
 
-      // The PIN is useless if it rides along with the link, so prompt for it as
-      // a separate message once the share sheet is out of the way.
-      if (pinSet) {
-        const petId = data?.pet.id;
-        setPinToSend({ pin: petId ? await recallPin(petId) : null });
-      }
       loadDashboard();
     };
     await doShare();
@@ -366,6 +364,47 @@ export default function Dashboard() {
                     <Text style={{ color: "rgba(248,236,238,0.4)", fontSize: 11, fontFamily: "Satoshi-Medium" }}>+ Add stay length</Text>
                   )}
                 </TouchableOpacity>
+
+                {/* PIN, kept in reach rather than offered once after sharing.
+                    Sending it is a separate message the owner might send now,
+                    later, or from another app — so it lives here permanently
+                    instead of behind a prompt that can only be dismissed.
+                    Tap to copy, or send it as its own message. */}
+                {link.pin_hash && (
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 5 }}>
+                    {petPin ? (
+                      <>
+                        <TouchableOpacity
+                          onPress={() => { Clipboard.setStringAsync(petPin); setPinCopied(true); setTimeout(() => setPinCopied(false), 1600); }}
+                          hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                          style={{ flexDirection: "row", alignItems: "center", gap: 5 }}
+                        >
+                          <Ionicons name="key-outline" size={11} color="rgba(248,236,238,0.5)" />
+                          <Text style={{ color: "rgba(248,236,238,0.75)", fontSize: 11, fontFamily: "Satoshi-Bold", letterSpacing: 1.5 }}>
+                            {petPin}
+                          </Text>
+                          <Text style={{ color: "rgba(248,236,238,0.4)", fontSize: 10, fontFamily: "Satoshi-Light" }}>
+                            {pinCopied ? "copied" : "tap to copy"}
+                          </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={() => Share.share({ message: pinMessage(pet.name, petPin) })}
+                          hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                        >
+                          <Text style={{ color: colors.cardDarkLabel, fontSize: 10, fontFamily: "Satoshi-Medium" }}>Send separately</Text>
+                        </TouchableOpacity>
+                      </>
+                    ) : (
+                      // Server-side it's only ever a bcrypt hash, so a device
+                      // that never set this PIN genuinely cannot show it.
+                      <TouchableOpacity onPress={() => router.push("/edit/emergency?section=pin")} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                        <Text style={{ color: "rgba(248,236,238,0.4)", fontSize: 11, fontFamily: "Satoshi-Medium" }}>
+                          PIN set on another device — set a new one
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                )}
               </View>
               {/* Action row, left→right: Edit → Share → Delete (#71). Edit is a
                   standalone button (renames inline) rather than a pencil hung off
@@ -583,12 +622,6 @@ export default function Dashboard() {
         />
       )}
 
-      <SendPinModal
-        visible={!!pinToSend}
-        petName={data?.pet.name ?? ""}
-        knownPin={pinToSend?.pin ?? null}
-        onClose={() => setPinToSend(null)}
-      />
     </ScrollView>
   );
 }
