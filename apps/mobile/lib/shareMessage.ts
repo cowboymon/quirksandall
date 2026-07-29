@@ -14,11 +14,14 @@ export function firstShareMessage(petName: string, url: string, pinSet: boolean)
   const pinNote = pinSet
     ? `\n\nI'll send the PIN separately, you'll need it for the emergency contacts.`
     : "";
-  // The URL sits inside the message rather than being passed as a separate
-  // `url` — iOS renders both and the link shows up twice (#41). Trade-off
-  // accepted: explanatory text is worth more than a rich preview card on the
-  // one send where the sitter doesn't yet know what they've been handed.
-  return `${intro}\n\n${url}${pinNote}`;
+  // The URL goes inside the message rather than being passed as a separate
+  // `url` — iOS renders both and the link shows up twice (#41).
+  //
+  // It goes LAST, on its own line, deliberately: messaging apps generate the
+  // rich preview card from a trailing URL, and burying it mid-message is what
+  // suppressed the preview. Same words, same order of ideas — read the intro,
+  // learn a PIN is coming, then get the link.
+  return `${intro}${pinNote}\n\n${url}`;
 }
 
 /** The PIN, sent on its own. Deliberately a separate message — a PIN that
