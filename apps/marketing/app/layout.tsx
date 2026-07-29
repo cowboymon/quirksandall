@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { site } from "./site";
+import Analytics from "./components/Analytics";
 
 // Self-hosted brand fonts — the same licensed files the app ships with.
 // Satoshi for body/UI, Tanker for display. No CDN dependency.
@@ -80,6 +81,8 @@ const orgLd = {
   ],
 };
 
+const swetrixPid = process.env.NEXT_PUBLIC_SWETRIX_PID;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-AU" className={`${satoshi.variable} ${tanker.variable}`}>
@@ -89,6 +92,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd).replace(/</g, "\\u003c") }}
         />
+        {swetrixPid ? <Analytics pid={swetrixPid} /> : null}
       </body>
     </html>
   );
