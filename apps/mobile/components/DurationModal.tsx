@@ -71,7 +71,7 @@ export default function DurationModal({ visible, petName, initialPreset, initial
           <Text style={{ color: colors.textMuted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium", marginTop: 20, marginBottom: 6 }}>
             Or an exact end date
           </Text>
-          <DateInput value={date} onChangeText={onDate} placeholder="dd/mm/yyyy" />
+          <DateInput value={date} onChangeText={onDate} range="future" placeholder="dd/mm/yyyy" />
 
           {/* Actions */}
           <View style={{ flexDirection: "row", gap: 10, marginTop: 22 }}>
