@@ -9,7 +9,7 @@ import { supabase } from "../lib/supabase";
 import { AppAlert } from "../stores/appAlert";
 import { useActivePetStore } from "../stores/activePet";
 import { FieldTier } from "../components/ui";
-import { colors, computeAge, formatWeight, formatPhone, formatVetName, possessive, orderedCommands, commandStrengthLabel, mealSlotLabel } from "@quirksandall/shared";
+import { colors, computeAge, formatWeight, formatPhone, formatVetName, possessive, orderedCommands, commandStrengthLabel, mealSlotLabel, shortAddress } from "@quirksandall/shared";
 
 type Data = {
   name: string; breed: string; age: string; photoUrl: string | null;
@@ -53,6 +53,10 @@ export default function Preview() {
   const [loading, setLoading] = useState(true);
   const [isPaid, setIsPaid] = useState(false);
   const [view, setView] = useState<"quick" | "full">("full");
+  // Matches the recipient page: the block opens by default and can be folded
+  // away after a first read. Previewed so the owner sees the same affordance
+  // a sitter gets.
+  const [emergencyOpen, setEmergencyOpen] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -205,16 +209,23 @@ export default function Preview() {
         <View style={{ gap: 20 }}>
           {/* Emergency contacts — dark card (un-gated for the owner's preview) */}
           <View style={{ backgroundColor: colors.cardDark, borderRadius: 12, padding: 20 }}>
-            <View style={{ marginBottom: 16 }}>
+            {/* Collapsible, as on the recipient page — a long list a sitter only
+                needs in a pinch, so it folds away after a first read. */}
+            <TouchableOpacity
+              onPress={() => setEmergencyOpen((o) => !o)}
+              accessibilityRole="button"
+              style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: emergencyOpen ? 16 : 0 }}
+            >
               <Text style={{ color: colors.cardDarkText, fontSize: 11, fontFamily: "Satoshi-Bold", textTransform: "uppercase", letterSpacing: 0.5 }}>In an emergency</Text>
-            </View>
-            <View style={{ gap: 16 }}>
+              <Ionicons name={emergencyOpen ? "chevron-up" : "chevron-down"} size={16} color="rgba(248,236,238,0.6)" />
+            </TouchableOpacity>
+            <View style={{ gap: 16, display: emergencyOpen ? "flex" : "none" }}>
               {(d.vetContactName || d.vetClinic || d.vetPhone) && (
                 <View>
                   <Text style={{ ...microLabel, color: "rgba(248,236,238,0.6)" }}>Vet</Text>
                   {d.vetContactName ? <Text style={{ color: colors.cardDarkText, fontSize: 14, fontFamily: "Satoshi-Bold", marginTop: 2 }}>{formatVetName(d.vetContactName)}</Text> : null}
                   {d.vetClinic ? <CreamLink icon="location" text={d.vetClinic} onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent([d.vetClinic, d.vetAddress].filter(Boolean).join(", "))}`)} /> : null}
-                  {d.vetAddress ? <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 14, fontFamily: "Satoshi", marginTop: 2 }}>{d.vetAddress}</Text> : null}
+                  {d.vetAddress ? <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 14, fontFamily: "Satoshi", marginTop: 2 }}>{shortAddress(d.vetAddress)}</Text> : null}
                   {d.vetPhone ? <CreamLink icon="call" text={formatPhone(d.vetPhone)} onPress={() => Linking.openURL(`tel:${d.vetPhone}`)} /> : null}
                 </View>
               )}
@@ -222,10 +233,18 @@ export default function Preview() {
                 <View>
                   <Text style={{ ...microLabel, color: "rgba(248,236,238,0.6)" }}>Emergency vet</Text>
                   {d.emergVetClinic ? <CreamLink icon="location" text={d.emergVetClinic} bold onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent([d.emergVetClinic, d.emergVetAddress].filter(Boolean).join(", "))}`)} /> : null}
-                  {d.emergVetAddress ? <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 14, fontFamily: "Satoshi", marginTop: 2 }}>{d.emergVetAddress}</Text> : null}
+                  {d.emergVetAddress ? <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 14, fontFamily: "Satoshi", marginTop: 2 }}>{shortAddress(d.emergVetAddress)}</Text> : null}
                   {d.emergVetPhone ? <CreamLink icon="call" text={formatPhone(d.emergVetPhone)} onPress={() => Linking.openURL(`tel:${d.emergVetPhone}`)} /> : null}
                 </View>
               )}
+              <TouchableOpacity
+                onPress={() => Linking.openURL("https://www.google.com/maps/search/emergency+vet+near+me")}
+                style={{ alignSelf: "flex-start" }}
+              >
+                <Text style={{ color: "rgba(248,236,238,0.55)", fontSize: 12, fontFamily: "Satoshi" }}>
+                  Not at {possessive(d.name)} home? Find an emergency vet near me
+                </Text>
+              </TouchableOpacity>
               {(d.insuranceProvider || d.insurancePolicy) && (
                 <View>
                   <Text style={{ ...microLabel, color: "rgba(248,236,238,0.6)" }}>Insurance</Text>

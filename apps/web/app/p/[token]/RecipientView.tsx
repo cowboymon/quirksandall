@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { RecipientProfile } from "@quirksandall/shared";
-import { formatWeight, formatPhone, formatVetName, possessive, commandStrengthLabel, mealSlotLabel } from "@quirksandall/shared";
+import { formatWeight, formatPhone, formatVetName, possessive, commandStrengthLabel, mealSlotLabel, shortAddress } from "@quirksandall/shared";
 import PINGate from "./PINGate";
 import { trackWeb, WebAnalyticsEvent } from "../../lib/analytics";
 
@@ -214,7 +214,7 @@ export default function RecipientView({ profile, token }: Props) {
                   href="https://www.google.com/maps/search/emergency+vet+near+me"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="self-start text-xs underline"
+                  className="self-start text-xs"
                   style={{ color: "rgba(248,236,238,0.55)" }}
                 >
                   Not at {possessive(name)} home? Find an emergency vet near me
@@ -438,35 +438,6 @@ function PaidBadge() {
       Unlock to share
     </span>
   );
-}
-
-// Google's formatted_address carries a postcode and a country that cost a line
-// wrap on a phone without telling a sitter anything they'd act on. Street and
-// suburb are the part that disambiguates one branch of a chain from another —
-// "Greencross Vets" alone doesn't — so that's what's kept. The Maps link still
-// queries the full address, so nothing about accuracy changes.
-export function shortAddress(address: string): string {
-  const parts = address.split(",").map((p) => p.trim()).filter(Boolean);
-  // A trailing country never carries digits, and only ever appears last.
-  if (parts.length > 1 && !/\d/.test(parts[parts.length - 1])) parts.pop();
-  const last = parts[parts.length - 1];
-  if (!last) return parts.join(", ");
-  if (parts.length > 1 && /^[A-Z]{2,3}\s+\d{3,10}$/.test(last)) {
-    // A segment that is only state + postcode ("IL 62704") — drop the lot.
-    parts.pop();
-  } else {
-    // "Macquarie Park NSW 2113" → "Macquarie Park", and the NZ shape with no
-    // state code, "Auckland 1011" → "Auckland". Only ever applied to the final
-    // segment, which is the locality rather than the street, so a numbered
-    // road is never at risk. Anything that doesn't match (UK postcodes, say)
-    // is left exactly as Google gave it.
-    const trimmed = last
-      .replace(/\s+[A-Z]{2,3}\s+\d{3,10}$/, "")
-      .replace(/\s+\d{4,5}$/, "")
-      .trim();
-    parts[parts.length - 1] = parts.length > 1 && trimmed ? trimmed : last;
-  }
-  return parts.join(", ");
 }
 
 // A contact row inside the dark emergency card: name, an optional place that
