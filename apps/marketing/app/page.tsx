@@ -209,7 +209,7 @@ export default function Home() {
           </p>
           <div className="mt-8 flex justify-center">
             <TrackedLink
-              href="#get"
+              href="/#get"
               event="Get Notified Clicked"
               meta={{ location: "mid" }}
               className="inline-block rounded-button bg-button px-5 py-3 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed"
@@ -330,7 +330,7 @@ export default function Home() {
                 <Check>Missing poster &amp; document vault</Check>
               </ul>
               <TrackedLink
-                href="#get"
+                href="/#get"
                 event="Get Notified Clicked"
                 meta={{ location: "pricing-free" }}
                 className="mt-8 rounded-button border border-border bg-background px-5 py-3 text-center text-sm font-medium text-foreground transition-colors hover:border-primary"
@@ -360,7 +360,7 @@ export default function Home() {
                 <Check light>Everything in Free, always included</Check>
               </ul>
               <TrackedLink
-                href="#get"
+                href="/#get"
                 event="Get Notified Clicked"
                 meta={{ location: "pricing-pro" }}
                 className="mt-8 rounded-button bg-background px-5 py-3 text-center text-sm font-medium text-foreground transition-colors hover:bg-secondary"

@@ -23,7 +23,7 @@ export default function Header() {
         </nav>
 
         <TrackedLink
-          href="#get"
+          href="/#get"
           event="Get Notified Clicked"
           meta={{ location: "header" }}
           className="rounded-button bg-button px-4 py-2 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed"
