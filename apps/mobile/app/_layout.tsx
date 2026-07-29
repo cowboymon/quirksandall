@@ -12,6 +12,14 @@ import AppAlertHost from "../components/AppAlertHost";
 
 SplashScreen.preventAutoHideAsync();
 
+// Hold the splash for a minimum beat rather than hiding the instant fonts
+// resolve — on a warm launch that's ~200ms, which reads as a flicker rather
+// than a brand moment. Measured from module load (app start), so a slow load
+// doesn't add to it: if fonts take longer than this, the splash hides as soon
+// as they're ready and nobody waits twice.
+const MIN_SPLASH_MS = 3000;
+const startedAt = Date.now();
+
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     Tanker: require("../assets/fonts/Tanker-Regular.ttf"),
@@ -27,12 +35,14 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    if (fontsLoaded) {
-      SplashScreen.hideAsync();
-      initRevenueCat();
-      initAnalytics();
-      configureNotifications();
-    }
+    if (!fontsLoaded) return;
+    // Start SDKs immediately — no reason to make them wait behind the splash.
+    initRevenueCat();
+    initAnalytics();
+    configureNotifications();
+    const remaining = Math.max(0, MIN_SPLASH_MS - (Date.now() - startedAt));
+    const t = setTimeout(() => SplashScreen.hideAsync(), remaining);
+    return () => clearTimeout(t);
   }, [fontsLoaded]);
 
   if (!fontsLoaded) return null;
