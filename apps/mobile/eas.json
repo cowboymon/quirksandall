@@ -1,7 +1,7 @@
 {
   "cli": {
     "version": ">= 9.0.0",
-    "appVersionSource": "remote",
+    "appVersionSource": "local",
     "promptToConfigurePushNotifications": false
   },
   "build": {
@@ -19,7 +19,6 @@
       }
     },
     "production": {
-      "autoIncrement": true,
       "ios": {
         "config": "ios-pnpm-install.yml"
       }
