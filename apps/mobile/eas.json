@@ -14,14 +14,12 @@
     },
     "preview": {
       "distribution": "internal",
-      "channel": "preview",
       "ios": {
         "config": "ios-pnpm-install.yml"
       }
     },
     "production": {
       "autoIncrement": true,
-      "channel": "production",
       "ios": {
         "config": "ios-pnpm-install.yml"
       }
