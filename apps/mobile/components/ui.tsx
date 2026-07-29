@@ -1,6 +1,6 @@
 // Shared primitive UI components for the mobile app.
 // Mirrors the prototype's primitives.tsx (fonts, buttons, dots, inputs).
-import { useState, useRef } from "react";
+import { useMemo, useState, useRef } from "react";
 import { Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, useNavigation } from "expo-router";
@@ -165,8 +165,14 @@ export function DateInput({
 
   // Seed the picker from whatever's already typed, so opening it continues the
   // entry rather than restarting from today.
+  //
+  // Memoised on the parsed string, not recomputed per render: an empty field
+  // falls back to `new Date()`, which is a different timestamp every time.
+  // The sheet re-seeds its draft whenever that value changes, so an unstable
+  // seed meant setState on every render — an infinite loop that took the app
+  // down whenever the picker was opened on a field with nothing typed in it.
   const parsed = displayDateToISO(value as string);
-  const seed = parsed ? new Date(`${parsed}T00:00:00`) : new Date();
+  const seed = useMemo(() => (parsed ? new Date(`${parsed}T00:00:00`) : new Date()), [parsed]);
 
   const commit = (d: Date) => {
     onChangeText(
