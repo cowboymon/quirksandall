@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { site } from "../site";
-import { pirschEvent } from "../lib/pirsch";
+import TrackedLink from "../components/TrackedLink";
 
 export const metadata: Metadata = {
   title: "Support",
@@ -29,13 +29,14 @@ export default function SupportPage() {
 
           <div className="mt-8 rounded-card border border-border bg-card-bg p-6">
             <p className="eyebrow text-text-muted">Email us</p>
-            <a
+            <TrackedLink
               href={`mailto:${site.contactEmail}`}
-              {...pirschEvent("Contact Clicked", { location: "support" })}
+              event="Contact Clicked"
+              meta={{ location: "support" }}
               className="mt-1.5 block break-all text-lg font-medium text-primary underline underline-offset-2 sm:text-xl"
             >
               {site.contactEmail}
-            </a>
+            </TrackedLink>
           </div>
 
           <div className="mt-10 border-t border-border/70 pt-8">

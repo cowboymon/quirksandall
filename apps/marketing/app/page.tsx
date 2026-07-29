@@ -4,7 +4,7 @@ import Footer from "./components/Footer";
 import WaitlistForm from "./components/WaitlistForm";
 import { Underline, CircleMark, MarginArrow } from "./components/Annotations";
 import { site } from "./site";
-import { pirschEvent } from "./lib/pirsch";
+import TrackedLink from "./components/TrackedLink";
 
 // Homepage-specific metadata. Names both dogs and cats explicitly (the default
 // description is species-neutral) so the page surfaces for cat-sitter searches
@@ -208,13 +208,14 @@ export default function Home() {
             link they can actually open.
           </p>
           <div className="mt-8 flex justify-center">
-            <a
+            <TrackedLink
               href="#get"
-              {...pirschEvent("Get Notified Clicked", { location: "mid" })}
+              event="Get Notified Clicked"
+              meta={{ location: "mid" }}
               className="inline-block rounded-button bg-button px-5 py-3 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed"
             >
               Get notified
-            </a>
+            </TrackedLink>
           </div>
         </section>
 
@@ -328,13 +329,14 @@ export default function Home() {
                 <Check>Feeding times &amp; one live link</Check>
                 <Check>Missing poster &amp; document vault</Check>
               </ul>
-              <a
+              <TrackedLink
                 href="#get"
-                {...pirschEvent("Get Notified Clicked", { location: "pricing-free" })}
+                event="Get Notified Clicked"
+                meta={{ location: "pricing-free" }}
                 className="mt-8 rounded-button border border-border bg-background px-5 py-3 text-center text-sm font-medium text-foreground transition-colors hover:border-primary"
               >
                 Get notified at launch
-              </a>
+              </TrackedLink>
               <p className="mt-4 min-h-[2.5rem] text-center text-xs text-text-muted">
                 Free forever. No card, no subscription.
               </p>
@@ -357,13 +359,14 @@ export default function Home() {
                 <Check light>Unlimited pets</Check>
                 <Check light>Everything in Free, always included</Check>
               </ul>
-              <a
+              <TrackedLink
                 href="#get"
-                {...pirschEvent("Get Notified Clicked", { location: "pricing-pro" })}
+                event="Get Notified Clicked"
+                meta={{ location: "pricing-pro" }}
                 className="mt-8 rounded-button bg-background px-5 py-3 text-center text-sm font-medium text-foreground transition-colors hover:bg-secondary"
               >
                 Get notified at launch
-              </a>
+              </TrackedLink>
               <p className="mt-4 min-h-[2.5rem] text-center text-xs text-card-dark-label">
                 No subscription. Purchased in-app, unlocks account-wide.
               </p>
@@ -542,13 +545,14 @@ function StoreBadge({
     );
   }
   return (
-    <a
+    <TrackedLink
       href={href}
       aria-label={isApple ? "Download on the App Store" : "Get it on Google Play"}
-      {...pirschEvent("App Download Clicked", { platform: isApple ? "iOS" : "Android" })}
+      event="App Download Clicked"
+      meta={{ platform: isApple ? "iOS" : "Android" }}
       className="flex items-center gap-2.5 rounded-button bg-button px-4 py-2.5 text-card-dark-text transition-colors hover:bg-button-pressed"
     >
       {inner}
-    </a>
+    </TrackedLink>
   );
 }

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { site } from "../site";
-import { pirschEvent } from "../lib/pirsch";
+import TrackedLink from "./TrackedLink";
 
 export default function Header() {
   return (
@@ -22,13 +22,14 @@ export default function Header() {
           </Link>
         </nav>
 
-        <a
+        <TrackedLink
           href="#get"
-          {...pirschEvent("Get Notified Clicked", { location: "header" })}
+          event="Get Notified Clicked"
+          meta={{ location: "header" }}
           className="rounded-button bg-button px-4 py-2 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed"
         >
           Get notified
-        </a>
+        </TrackedLink>
       </div>
     </header>
   );
