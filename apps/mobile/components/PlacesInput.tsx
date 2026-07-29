@@ -23,12 +23,20 @@ export function LabeledPlacesInput({
   value,
   onChangeText,
   onSelectPlace,
+  onManualEntry,
+  onClear,
   placeholder,
 }: {
   label: string;
   value: string;
   onChangeText: (v: string) => void;
   onSelectPlace: (p: { name: string; phone: string; address: string }) => void;
+  // "Can't find your clinic?" — unlocks manual entry without pretending we
+  // have verified address/phone data, unlike a real onSelectPlace pick.
+  onManualEntry?: () => void;
+  // The X button — clears more than just this field's own text; callers use
+  // it to cascade-clear the address/phone that came from the same search.
+  onClear?: () => void;
   placeholder?: string;
 }) {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
@@ -92,14 +100,14 @@ export function LabeledPlacesInput({
   const clear = () => {
     onChangeText("");
     closeDropdown();
+    onClear?.();
   };
 
-  // Escape hatch for a clinic Places doesn't have — treats whatever's typed
-  // as the final answer instead of requiring a suggestion pick.
+  // Escape hatch for a clinic Places doesn't have — unlocks manual entry
+  // rather than pretending we have verified data for it.
   const enterManually = () => {
-    if (!value.trim()) return;
     close();
-    onSelectPlace({ name: value.trim(), phone: "", address: "" });
+    onManualEntry?.();
   };
 
   const showDropdown = focused && predictions.length > 0 && !!anchor;
