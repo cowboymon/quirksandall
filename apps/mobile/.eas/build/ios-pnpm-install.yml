@@ -23,7 +23,13 @@ build:
         inputs:
           throw_if_not_configured: false
 
-    - eas/install_pods
+    # Not eas/install_pods: that helper locates the Podfile via the same
+    # monorepo auto-detection this whole file works around, and looks in the
+    # repo root instead of apps/mobile/ios. Pin the directory explicitly.
+    - run:
+        name: Install pods
+        working_directory: ./ios
+        command: pod install
 
     - eas/configure_ios_credentials
 
