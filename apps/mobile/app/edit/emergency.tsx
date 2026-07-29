@@ -143,13 +143,13 @@ export default function EditEmergency() {
           <View style={{ gap: 8, marginTop: 12 }}>
             <LabeledInput
               name
-              label="Vet name"
+              label="Your vet's name"
               placeholder="e.g. Dr. Sarah Mitchell"
               value={vetContactName}
               onChangeText={setVetContactName}
             />
             <LabeledPlacesInput
-              label="Clinic"
+              label="Clinic name"
               placeholder="Search clinic name"
               value={vetClinic}
               onChangeText={(v) => { setVetClinic(v); setVetManual(false); }}
@@ -159,14 +159,14 @@ export default function EditEmergency() {
             />
             <LabeledInput
               label="Address"
-              placeholder={vetManual ? "Address" : "Search a clinic first"}
+              placeholder={vetManual ? "Address" : "Fills in from your clinic search"}
               editable={vetManual}
               value={vetAddress}
               onChangeText={setVetAddress}
             />
             <LabeledInput
               label="Phone"
-              placeholder={vetManual ? "Phone" : "Search a clinic first"}
+              placeholder={vetManual ? "Phone" : "Fills in from your clinic search"}
               editable={vetManual}
               phone
               keyboardType="phone-pad"
@@ -180,7 +180,7 @@ export default function EditEmergency() {
           <Eyebrow bold>Emergency vet</Eyebrow>
           <View style={{ gap: 8, marginTop: 12 }}>
             <LabeledPlacesInput
-              label="Clinic"
+              label="Clinic name"
               placeholder="Search clinic name"
               value={emergClinic}
               onChangeText={(v) => { setEmergClinic(v); setEmergManual(false); }}
@@ -190,14 +190,14 @@ export default function EditEmergency() {
             />
             <LabeledInput
               label="Address"
-              placeholder={emergManual ? "Address" : "Search a clinic first"}
+              placeholder={emergManual ? "Address" : "Fills in from your clinic search"}
               editable={emergManual}
               value={emergAddress}
               onChangeText={setEmergAddress}
             />
             <LabeledInput
               label="Phone"
-              placeholder={emergManual ? "Phone" : "Search a clinic first"}
+              placeholder={emergManual ? "Phone" : "Fills in from your clinic search"}
               editable={emergManual}
               phone
               keyboardType="phone-pad"
