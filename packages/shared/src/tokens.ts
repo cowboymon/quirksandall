@@ -54,12 +54,16 @@ export const typography = {
 
 export const buttonHeight = 44;
 
-// Pricing — single source of truth for the one-time unlock, shown across the
-// mobile paywall/account screens and the marketing site. Change PRICE here to
-// run a price update everywhere at once (a future increase is one edit).
-// NOTE: this is the *display* string only. The amount actually charged is set
-// by the store product (RevenueCat → App Store / Play). When the price changes,
-// update the store product price too so the two stay in sync.
+// Pricing — the one-time unlock, shown on the marketing site and as the
+// mobile fallback.
+//
+// The mobile app does NOT render this directly: usePrice() reads the store's
+// own localized priceString (RevenueCat → App Store / Play) so each user sees
+// their real charge in their own currency, and a price change in App Store
+// Connect needs no app update. This constant is what usePrice() falls back to
+// while loading or when the store is unreachable, and it's what the marketing
+// site (which has no store connection) displays. Keep it in sync with the
+// store product's US price.
 export const PRICE = "$7.99";
 
 // Stamped onto every consent record (owners.consent_policy_version + each

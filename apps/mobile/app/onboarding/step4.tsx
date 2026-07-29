@@ -11,7 +11,8 @@ import { useActivePetStore } from "../../stores/activePet";
 import { supabase } from "../../lib/supabase";
 import { uploadPetPhoto } from "../../lib/uploadPhoto";
 import { randomToken } from "../../lib/links";
-import { colors, displayDateToISO, capitalizeFirst, PRICE } from "@quirksandall/shared";
+import { colors, displayDateToISO, capitalizeFirst } from "@quirksandall/shared";
+import { usePrice } from "../../hooks/usePrice";
 import { useState, useEffect } from "react";
 
 const mealInput = {
@@ -41,6 +42,7 @@ function MealBlock({ label, time, amount, onTime, onAmount, divider, defaultPeri
 }
 
 export default function Step4() {
+  const price = usePrice();
   const { pet, setPet, reset } = useOnboardingStore();
   const [saving, setSaving] = useState(false);
   // The unlock is account-wide, so a paid owner adding another pet should never
@@ -180,7 +182,7 @@ export default function Step4() {
       {/* Paywall only for free owners — paid access is account-wide (#86). */}
       {!isPaid && (
         <View style={{ marginTop: 12 }}>
-          <InlineNote variant="paywall" cta={`Unlock for ${PRICE}`} onCta={() => router.push("/upgrade")}>
+          <InlineNote variant="paywall" cta={`Unlock for ${price}`} onCta={() => router.push("/upgrade")}>
             Routine's saved. Sitters won't see it until you unlock.
           </InlineNote>
         </View>

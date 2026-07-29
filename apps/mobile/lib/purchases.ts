@@ -33,6 +33,20 @@ export async function checkEntitlement(): Promise<boolean> {
   return info.entitlements.active[ENTITLEMENT_ID] !== undefined;
 }
 
+// The store's own localized price string for the unlock — e.g. "$7.99" in the
+// US, "A$12.99" in Australia — read from the same Offering the purchase flow
+// uses, so what we display is always exactly what the user gets charged.
+// Returns null when unavailable (Expo Go, no key, offline); callers fall back
+// to the static PRICE constant.
+export async function fetchPriceString(): Promise<string | null> {
+  try {
+    const offerings = await Purchases.getOfferings();
+    return offerings.current?.availablePackages?.[0]?.product?.priceString ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function purchasePro(): Promise<boolean> {
   const offerings = await Purchases.getOfferings();
   const pkg = offerings.current?.availablePackages?.[0];

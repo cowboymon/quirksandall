@@ -8,7 +8,8 @@ import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
 import { Input, Eyebrow, Card, InlineNote, TimeInput, FieldTier, Select } from "../../components/ui";
 import MedicationsEditor, { medsToRows, rowsToMeds, type EditableMedication } from "../../components/MedicationsEditor";
-import { colors, capitalizeFirst, PRICE } from "@quirksandall/shared";
+import { colors, capitalizeFirst } from "@quirksandall/shared";
+import { usePrice } from "../../hooks/usePrice";
 
 const mealInput = {
   minHeight: 38, borderRadius: 8, borderWidth: 1, borderColor: colors.border,
@@ -30,6 +31,7 @@ function RoutineMeal({ label, time, amount, onTime, onAmount, divider, defaultPe
 }
 
 export default function EditRoutine() {
+  const price = usePrice();
   const { petId, pet, loading } = useActivePet();
   const { section } = useLocalSearchParams<{ section?: string }>();
   const scrollRef = useRef<ScrollView>(null);
@@ -157,7 +159,7 @@ export default function EditRoutine() {
     <EditShell title="Routine & Medical" onSave={save} saving={saving} loading={loading} scrollRef={scrollRef}>
       {!isPaid && (
         <View style={{ marginBottom: 16 }}>
-          <InlineNote variant="paywall" cta={`Unlock for ${PRICE}`} onCta={() => router.push("/upgrade")}>
+          <InlineNote variant="paywall" cta={`Unlock for ${price}`} onCta={() => router.push("/upgrade")}>
             Feeding shows on every link. The rest of the routine stays saved until you unlock.
           </InlineNote>
         </View>
