@@ -120,7 +120,7 @@ export function LabeledInput({
             borderColor: focused ? colors.primary : colors.border,
             backgroundColor: props.editable === false ? colors.secondary : colors.background,
             paddingHorizontal: 12, paddingVertical: 8,
-            fontSize: 14, fontFamily: "Satoshi", color: props.editable === false ? colors.textMuted : colors.textDark,
+            fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: props.editable === false ? colors.textMuted : colors.textDark,
           },
           style,
         ]}
@@ -412,7 +412,7 @@ export function WeightInput({ value, onChangeText, style }: { value: string; onC
         onBlur={() => setFocused(false)}
         style={{ flex: 1, paddingVertical: 12, fontSize: 15, fontFamily: "Satoshi", color: colors.textDark, letterSpacing: 0 }}
       />
-      <Text style={{ fontSize: 15, fontFamily: "Satoshi-Medium", color: colors.textMuted, marginLeft: 6 }}>kg</Text>
+      <Text style={{ fontSize: 15, letterSpacing: 0, fontFamily: "Satoshi-Medium", color: colors.textMuted, marginLeft: 6 }}>kg</Text>
     </View>
   );
 }
@@ -436,7 +436,7 @@ export function Textarea({ style, filled, onFocus, onBlur, onChangeText, ...prop
           paddingHorizontal: 16,
           paddingVertical: 12,
           fontSize: 15,
-          fontFamily: "Satoshi",
+          letterSpacing: 0, fontFamily: "Satoshi",
           color: colors.textDark,
           lineHeight: 21,
         },
@@ -532,7 +532,7 @@ export function Select({
           flexDirection: "row", alignItems: "center", justifyContent: "space-between",
         }}
       >
-        <Text style={{ fontSize: 15, fontFamily: "Satoshi", color: value ? colors.textDark : colors.textMuted }}>
+        <Text style={{ fontSize: 15, letterSpacing: 0, fontFamily: "Satoshi", color: value ? colors.textDark : colors.textMuted }}>
           {value || placeholder}
         </Text>
         <Text style={{ color: colors.textMuted, fontSize: 12 }}>▾</Text>
