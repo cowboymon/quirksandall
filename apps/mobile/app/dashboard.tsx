@@ -64,6 +64,7 @@ export default function Dashboard() {
   // Set after a share of a PIN-gated link; { pin } is null when this device
   // doesn't remember it and the owner needs to type it.
   const [pinToSend, setPinToSend] = useState<{ pin: string | null } | null>(null);
+  const [showTripNudge, setShowTripNudge] = useState(false);
 
   // Reload every time the dashboard regains focus (e.g. returning from an edit
   // screen) so counts/status reflect the latest saves — not just on pet switch.
@@ -143,6 +144,7 @@ export default function Dashboard() {
       ],
     });
     setLoading(false);
+    loadTripNudge(links);
 
     // Defensive: the deletion column may not be present until the migration
     // lands, so a missing column must not break the dashboard.
@@ -187,11 +189,7 @@ export default function Dashboard() {
       }
       loadDashboard();
     };
-    // Nudge (if it fires) gates the actual share — most people share outside
-    // the app (WhatsApp/SMS) and don't come back, so this is the last real
-    // chance to say it before the handoff happens, not after.
-    const nudged = await maybeNudgeDecisionContact(doShare);
-    if (!nudged) await doShare();
+    await doShare();
   };
 
   const commitRename = async (link: OwnerLink) => {
@@ -201,34 +199,42 @@ export default function Dashboard() {
     loadDashboard();
   };
 
-  // Owner-side only, never shown to a sitter. Fires right before the actual
-  // native share sheet opens — not when the stay length is saved — because
-  // most owners share outside the app (WhatsApp/SMS) and don't come back, so
-  // that's the last real moment to say it before the handoff happens.
-  // Throttled to a 30-day cadence (same pattern as the command-freshness
-  // nudge above), and only when there's a decision contact to tell the vet
-  // about. Returns true if it showed (and will call onContinue once
-  // dismissed), false if the caller should just proceed immediately.
+  // Owner-side only, never shown to a sitter. Surfaced as a dismissable card
+  // rather than a modal at share time: interrupting the share was the wrong
+  // moment (the owner is mid-task, and the thing being asked for happens
+  // outside the app anyway). A trip is the real trigger, and setting a stay
+  // duration is the closest thing to declaring one.
+  //
+  // Still throttled to 30 days — telling the vet twice in a fortnight helps
+  // nobody — and still only when a decision contact exists to tell them about.
   const NUDGE_INTERVAL_MS = 30 * 24 * 60 * 60 * 1000;
-  const maybeNudgeDecisionContact = async (onContinue: () => void): Promise<boolean> => {
-    const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
-    if (!user) return false;
+  const loadTripNudge = async (links: OwnerLink[]) => {
+    const onATrip = links.some((l) => l.duration_preset || l.ends_at);
+    if (!onATrip) { setShowTripNudge(false); return; }
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user ?? null;
+    if (!user) return;
     const { data: owner } = await supabase
       .from("owners")
       .select("backup_contacts, decision_contact_nudge_shown_at")
       .eq("id", user.id)
       .single();
     const hasDecisionContact = (owner?.backup_contacts ?? []).some((c: any) => c.is_decision_contact);
-    if (!hasDecisionContact) return false;
+    if (!hasDecisionContact) { setShowTripNudge(false); return; }
     const lastShown = owner?.decision_contact_nudge_shown_at ? new Date(owner.decision_contact_nudge_shown_at).getTime() : 0;
-    if (Date.now() - lastShown < NUDGE_INTERVAL_MS) return false;
-    await supabase.from("owners").update({ decision_contact_nudge_shown_at: new Date().toISOString() }).eq("id", user.id);
-    AppAlert.alert(
-      "Before you send this",
-      "Worth telling your vet who can make decisions if you're away. Most clinics will note it on your file over the phone.",
-      [{ text: "Got it", onPress: onContinue }]
-    );
-    return true;
+    setShowTripNudge(Date.now() - lastShown >= NUDGE_INTERVAL_MS);
+  };
+
+  // Dismissing counts as shown: the 30-day clock starts here, so it doesn't
+  // reappear on the next dashboard load.
+  const dismissTripNudge = async () => {
+    setShowTripNudge(false);
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user ?? null;
+    if (!user) return;
+    await supabase.from("owners")
+      .update({ decision_contact_nudge_shown_at: new Date().toISOString() })
+      .eq("id", user.id);
   };
 
   const doRevoke = async () => {
@@ -465,6 +471,28 @@ export default function Dashboard() {
               </TouchableOpacity>
             </View>
             <TouchableOpacity onPress={() => setNudgeDismissed(true)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Ionicons name="close" size={16} color={colors.textMuted} />
+            </TouchableOpacity>
+          </Card>
+        )}
+
+        {showTripNudge && (
+          <Card style={{ borderColor: "rgba(184,58,82,0.4)", flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
+            <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: "rgba(184,58,82,0.15)", alignItems: "center", justifyContent: "center", marginTop: 1 }}>
+              <Ionicons name="airplane-outline" size={15} color={colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium", lineHeight: 19 }}>
+                Looks like you're going away.
+              </Text>
+              <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 3, lineHeight: 17, fontFamily: "Satoshi-Light" }}>
+                Let your backup contacts know they're the ones to call. Worth telling your vet too — most clinics will note it on your file over the phone.
+              </Text>
+              <TouchableOpacity onPress={() => { dismissTripNudge(); router.push("/edit/emergency"); }} style={{ marginTop: 6 }}>
+                <Text style={{ color: colors.primary, fontSize: 12, fontFamily: "Satoshi-Medium" }}>Check who's listed →</Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity onPress={dismissTripNudge} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <Ionicons name="close" size={16} color={colors.textMuted} />
             </TouchableOpacity>
           </Card>
