@@ -3,12 +3,17 @@
 // on selection, returns the place name + phone to auto-fill the card. With no
 // key it degrades gracefully to a plain typed field (no behaviour change).
 //
+// Search fires on submit (return key / search icon tap), not live as you
+// type — an explicit action rather than type-ahead, with a search icon to
+// make that obvious.
+//
 // Suggestions render in a full-screen Modal rather than an inline absolute
 // View — dims the rest of the screen while searching (so the dropdown reads
 // as the focused thing to interact with) and avoids the janky reflow of a
 // dropdown pushing surrounding form content around as it opens/closes.
 import { useRef, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Modal, Pressable, Animated, Keyboard, Dimensions } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { colors } from "@quirksandall/shared";
 import { FieldLabel } from "./ui";
 
@@ -43,7 +48,6 @@ export function LabeledPlacesInput({
   const [focused, setFocused] = useState(false);
   const [anchor, setAnchor] = useState<Anchor | null>(null);
   const fieldRef = useRef<View>(null);
-  const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fade = useRef(new Animated.Value(0)).current;
 
   const measure = () => {
@@ -54,31 +58,28 @@ export function LabeledPlacesInput({
   // focus may just be moving to the next field, not actually being dismissed.
   const closeDropdown = () => {
     setPredictions([]);
-    setFocused(false);
     fade.setValue(0);
   };
 
   const close = () => {
     closeDropdown();
+    setFocused(false);
     Keyboard.dismiss();
   };
 
-  const handleChange = (text: string) => {
-    onChangeText(text);
-    if (!KEY || text.trim().length < 3) { setPredictions([]); return; }
-    if (debounce.current) clearTimeout(debounce.current);
-    debounce.current = setTimeout(async () => {
-      try {
-        const res = await fetch(
-          `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(text)}&types=establishment&key=${KEY}`
-        );
-        const data = await res.json();
-        measure();
-        setPredictions((data.predictions ?? []).slice(0, 5).map((p: any) => ({ description: p.description, place_id: p.place_id })));
-      } catch {
-        setPredictions([]);
-      }
-    }, 350);
+  const search = async () => {
+    if (!KEY || !value.trim()) { setPredictions([]); return; }
+    setFocused(true);
+    measure();
+    try {
+      const res = await fetch(
+        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(value)}&types=establishment&key=${KEY}`
+      );
+      const data = await res.json();
+      setPredictions((data.predictions ?? []).slice(0, 5).map((p: any) => ({ description: p.description, place_id: p.place_id })));
+    } catch {
+      setPredictions([]);
+    }
   };
 
   const pick = async (p: Prediction) => {
@@ -116,18 +117,28 @@ export function LabeledPlacesInput({
     <View>
       <FieldLabel>{label}</FieldLabel>
       <View ref={fieldRef} collapsable={false} style={{ justifyContent: "center" }}>
+        <TouchableOpacity
+          onPress={search}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          style={{ position: "absolute", left: 10, zIndex: 1 }}
+        >
+          <Ionicons name="search" size={16} color={colors.textMuted} />
+        </TouchableOpacity>
         <TextInput
           value={value}
-          onChangeText={handleChange}
-          onFocus={() => { setFocused(true); measure(); }}
-          onBlur={() => setTimeout(closeDropdown, 150)}
+          onChangeText={(t) => { onChangeText(t); closeDropdown(); }}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setTimeout(() => { closeDropdown(); setFocused(false); }, 150)}
+          onSubmitEditing={search}
+          returnKeyType="search"
+          blurOnSubmit={false}
           placeholder={placeholder}
           placeholderTextColor={colors.textMuted}
           autoCapitalize="words"
           style={{
             minHeight: 40, borderRadius: 8, borderWidth: 1,
             borderColor: focused ? colors.primary : colors.border, backgroundColor: colors.background,
-            paddingHorizontal: 12, paddingRight: value ? 34 : 12, paddingVertical: 8,
+            paddingLeft: 34, paddingRight: value ? 34 : 12, paddingVertical: 8,
             fontSize: 14, fontFamily: "Satoshi", color: colors.textDark,
           }}
         />
@@ -142,7 +153,7 @@ export function LabeledPlacesInput({
         )}
       </View>
       <TouchableOpacity onPress={enterManually} style={{ marginTop: 4 }}>
-        <Text style={{ color: colors.textMuted, fontSize: 11, fontFamily: "Satoshi", textDecorationLine: "underline" }}>
+        <Text style={{ color: colors.textMuted, fontSize: 11, fontFamily: "Satoshi" }}>
           Can't find your clinic? Enter it manually
         </Text>
       </TouchableOpacity>
