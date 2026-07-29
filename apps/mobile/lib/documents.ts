@@ -3,6 +3,7 @@
 // through short-lived signed URLs (never a public link). Mirrors the working
 // pet-photo upload pattern (base64 → arraybuffer via the /legacy FS API).
 import * as FileSystem from "expo-file-system/legacy";
+import * as Sharing from "expo-sharing";
 import { decode } from "base64-arraybuffer";
 import { supabase } from "./supabase";
 import { randomToken } from "./links";
@@ -76,4 +77,26 @@ export async function documentSignedUrl(storagePath: string, expiresIn = 120): P
   const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(storagePath, expiresIn);
   if (error) throw error;
   return data.signedUrl;
+}
+
+// Hands a document to the OS share sheet as a real attachment (Mail, Messages,
+// AirDrop, Files…), rather than sharing a signed URL that expires in two
+// minutes and would 404 by the time a vet opened it.
+//
+// One file per share: neither expo-sharing nor the RN share sheet accepts
+// multiple attachments on iOS or Android, so this is per-document by design
+// rather than a multi-select.
+export async function shareDocument(storagePath: string, fileName: string, mimeType?: string | null): Promise<void> {
+  if (!(await Sharing.isAvailableAsync())) throw new Error("Sharing isn't available on this device.");
+  const url = await documentSignedUrl(storagePath);
+  // Download under the document's real name so the recipient sees
+  // "vaccination-record.pdf", not the storage path's opaque id.
+  const safeName = fileName.replace(/[^\w.\-]+/g, "_") || "document";
+  const target = `${FileSystem.cacheDirectory}${Date.now()}-${safeName}`;
+  const { uri } = await FileSystem.downloadAsync(url, target);
+  await Sharing.shareAsync(uri, {
+    mimeType: mimeType ?? undefined,
+    UTI: mimeType === "application/pdf" ? "com.adobe.pdf" : undefined,
+    dialogTitle: fileName,
+  });
 }

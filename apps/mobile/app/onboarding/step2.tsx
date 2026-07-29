@@ -4,6 +4,7 @@ import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
 import { Headline, LabeledInput, InlineNote, PrimaryButton, SkipButton, ProgressDots, Eyebrow, Card, BackButton } from "../../components/ui";
 import { LabeledPlacesInput } from "../../components/PlacesInput";
+import { InsurerInput } from "../../components/InsurerInput";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { colors } from "@quirksandall/shared";
 import CheckboxRow from "../../components/CheckboxRow";
@@ -82,7 +83,7 @@ export default function Step2() {
         <Card>
           <Eyebrow bold>Insurance</Eyebrow>
           <View style={{ gap: 8, marginTop: 12 }}>
-            <LabeledInput label="Provider" placeholder="Provider" value={pet.insuranceProvider ?? ""} onChangeText={(v) => setPet({ insuranceProvider: v })} />
+            <InsurerInput label="Provider" placeholder="Provider" value={pet.insuranceProvider ?? ""} onChangeText={(v) => setPet({ insuranceProvider: v })} />
             <LabeledInput label="Policy number" placeholder="Policy number" value={pet.insurancePolicy ?? ""} onChangeText={(v) => setPet({ insurancePolicy: v })} />
           </View>
         </Card>

@@ -7,6 +7,7 @@ import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
 import { LabeledInput, Eyebrow, Card, InlineNote } from "../../components/ui";
 import { LabeledPlacesInput } from "../../components/PlacesInput";
+import { InsurerInput } from "../../components/InsurerInput";
 import CheckboxRow from "../../components/CheckboxRow";
 import PINEditor from "../../components/PINEditor";
 import { colors } from "@quirksandall/shared";
@@ -210,7 +211,7 @@ export default function EditEmergency() {
         <Card>
           <Eyebrow bold>Insurance</Eyebrow>
           <View style={{ gap: 8, marginTop: 12 }}>
-            <LabeledInput label="Provider" placeholder="Provider" value={insuranceProvider} onChangeText={setInsuranceProvider} />
+            <InsurerInput label="Provider" placeholder="Provider" value={insuranceProvider} onChangeText={setInsuranceProvider} />
             <LabeledInput label="Policy number" placeholder="Policy number" value={insurancePolicy} onChangeText={setInsurancePolicy} />
           </View>
         </Card>
