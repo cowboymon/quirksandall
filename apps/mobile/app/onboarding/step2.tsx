@@ -11,6 +11,9 @@ import CheckboxRow from "../../components/CheckboxRow";
 export default function Step2() {
   const { pet, setPet } = useOnboardingStore();
   const [showSecondBackup, setShowSecondBackup] = useState(!!(pet.backup2Name || pet.backup2Phone));
+  // Vet name/phone stay locked until a clinic search actually resolves (pick
+  // or manual entry) — not just from typing, which would defeat the point.
+  const [vetConfirmed, setVetConfirmed] = useState(!!pet.vetClinic);
 
   return (
     <ScrollView className="flex-1 bg-background" keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 24, paddingTop: 60, width: "100%", maxWidth: 600, alignSelf: "center" }}>
@@ -34,22 +37,22 @@ export default function Step2() {
               label="Clinic"
               placeholder="Search clinic name"
               value={pet.vetClinic ?? ""}
-              onChangeText={(v) => setPet({ vetClinic: v })}
-              onSelectPlace={(p) => setPet({ vetClinic: p.name, ...(p.phone ? { vetPhone: p.phone } : {}), ...(p.address ? { vetAddress: p.address } : {}) })}
+              onChangeText={(v) => { setPet({ vetClinic: v }); setVetConfirmed(false); }}
+              onSelectPlace={(p) => { setPet({ vetClinic: p.name, ...(p.phone ? { vetPhone: p.phone } : {}), ...(p.address ? { vetAddress: p.address } : {}) }); setVetConfirmed(true); }}
             />
             <LabeledInput label="Address" placeholder="Address" value={pet.vetAddress ?? ""} onChangeText={(v) => setPet({ vetAddress: v })} />
             <LabeledInput
               name
               label="Vet name"
-              placeholder={pet.vetClinic ? "e.g. Dr. Sarah Mitchell" : "Search a clinic first"}
-              editable={!!pet.vetClinic}
+              placeholder={vetConfirmed ? "e.g. Dr. Sarah Mitchell" : "Search a clinic first"}
+              editable={vetConfirmed}
               value={pet.vetContactName ?? ""}
               onChangeText={(v) => setPet({ vetContactName: v })}
             />
             <LabeledInput
               label="Phone"
-              placeholder={pet.vetClinic ? "Phone" : "Search a clinic first"}
-              editable={!!pet.vetClinic}
+              placeholder={vetConfirmed ? "Phone" : "Search a clinic first"}
+              editable={vetConfirmed}
               phone
               keyboardType="phone-pad"
               value={pet.vetPhone ?? ""}

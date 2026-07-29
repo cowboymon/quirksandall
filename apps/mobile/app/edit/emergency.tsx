@@ -48,6 +48,11 @@ export default function EditEmergency() {
   const [showSecondBackup, setShowSecondBackup] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showPIN, setShowPIN] = useState(false);
+  // Name/phone stay locked until a clinic search actually resolves (pick or
+  // manual entry) — set true once the saved clinic loads, so existing data
+  // isn't locked out on open.
+  const [vetConfirmed, setVetConfirmed] = useState(false);
+  const [emergConfirmed, setEmergConfirmed] = useState(false);
 
   useEffect(() => {
     if (!petId) return;
@@ -64,6 +69,8 @@ export default function EditEmergency() {
         setEmergClinic(vet.emergency_vet?.clinic ?? "");
         setEmergAddress(vet.emergency_vet?.address ?? "");
         setEmergPhone(vet.emergency_vet?.phone ?? "");
+        setVetConfirmed(!!vet.primary_vet?.clinic);
+        setEmergConfirmed(!!vet.emergency_vet?.clinic);
         setInsuranceProvider(vet.insurance?.provider ?? "");
         setInsurancePolicy(vet.insurance?.policy_number ?? "");
       }
@@ -139,22 +146,22 @@ export default function EditEmergency() {
               label="Clinic"
               placeholder="Search clinic name"
               value={vetClinic}
-              onChangeText={setVetClinic}
-              onSelectPlace={(p) => { setVetClinic(p.name); if (p.phone) setVetPhone(p.phone); if (p.address) setVetAddress(p.address); }}
+              onChangeText={(v) => { setVetClinic(v); setVetConfirmed(false); }}
+              onSelectPlace={(p) => { setVetClinic(p.name); if (p.phone) setVetPhone(p.phone); if (p.address) setVetAddress(p.address); setVetConfirmed(true); }}
             />
             <LabeledInput label="Address" placeholder="Address" value={vetAddress} onChangeText={setVetAddress} />
             <LabeledInput
               name
               label="Vet name"
-              placeholder={vetClinic ? "e.g. Dr. Sarah Mitchell" : "Search a clinic first"}
-              editable={!!vetClinic}
+              placeholder={vetConfirmed ? "e.g. Dr. Sarah Mitchell" : "Search a clinic first"}
+              editable={vetConfirmed}
               value={vetContactName}
               onChangeText={setVetContactName}
             />
             <LabeledInput
               label="Phone"
-              placeholder={vetClinic ? "Phone" : "Search a clinic first"}
-              editable={!!vetClinic}
+              placeholder={vetConfirmed ? "Phone" : "Search a clinic first"}
+              editable={vetConfirmed}
               phone
               keyboardType="phone-pad"
               value={vetPhone}
@@ -170,14 +177,14 @@ export default function EditEmergency() {
               label="Clinic"
               placeholder="Search clinic name"
               value={emergClinic}
-              onChangeText={setEmergClinic}
-              onSelectPlace={(p) => { setEmergClinic(p.name); if (p.phone) setEmergPhone(p.phone); if (p.address) setEmergAddress(p.address); }}
+              onChangeText={(v) => { setEmergClinic(v); setEmergConfirmed(false); }}
+              onSelectPlace={(p) => { setEmergClinic(p.name); if (p.phone) setEmergPhone(p.phone); if (p.address) setEmergAddress(p.address); setEmergConfirmed(true); }}
             />
             <LabeledInput label="Address" placeholder="Address" value={emergAddress} onChangeText={setEmergAddress} />
             <LabeledInput
               label="Phone"
-              placeholder={emergClinic ? "Phone" : "Search a clinic first"}
-              editable={!!emergClinic}
+              placeholder={emergConfirmed ? "Phone" : "Search a clinic first"}
+              editable={emergConfirmed}
               phone
               keyboardType="phone-pad"
               value={emergPhone}

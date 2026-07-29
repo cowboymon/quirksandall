@@ -89,12 +89,25 @@ export function LabeledPlacesInput({
     }
   };
 
+  const clear = () => {
+    onChangeText("");
+    closeDropdown();
+  };
+
+  // Escape hatch for a clinic Places doesn't have — treats whatever's typed
+  // as the final answer instead of requiring a suggestion pick.
+  const enterManually = () => {
+    if (!value.trim()) return;
+    close();
+    onSelectPlace({ name: value.trim(), phone: "", address: "" });
+  };
+
   const showDropdown = focused && predictions.length > 0 && !!anchor;
 
   return (
     <View>
       <FieldLabel>{label}</FieldLabel>
-      <View ref={fieldRef} collapsable={false}>
+      <View ref={fieldRef} collapsable={false} style={{ justifyContent: "center" }}>
         <TextInput
           value={value}
           onChangeText={handleChange}
@@ -106,10 +119,25 @@ export function LabeledPlacesInput({
           style={{
             minHeight: 40, borderRadius: 8, borderWidth: 1,
             borderColor: focused ? colors.primary : colors.border, backgroundColor: colors.background,
-            paddingHorizontal: 12, paddingVertical: 8, fontSize: 14, fontFamily: "Satoshi", color: colors.textDark,
+            paddingHorizontal: 12, paddingRight: value ? 34 : 12, paddingVertical: 8,
+            fontSize: 14, fontFamily: "Satoshi", color: colors.textDark,
           }}
         />
+        {!!value && (
+          <TouchableOpacity
+            onPress={clear}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            style={{ position: "absolute", right: 10, height: 20, width: 20, borderRadius: 10, backgroundColor: colors.textMuted, alignItems: "center", justifyContent: "center" }}
+          >
+            <Text style={{ color: "#FFFFFF", fontSize: 12, fontFamily: "Satoshi-Bold", lineHeight: 14 }}>×</Text>
+          </TouchableOpacity>
+        )}
       </View>
+      <TouchableOpacity onPress={enterManually} style={{ marginTop: 4 }}>
+        <Text style={{ color: colors.textMuted, fontSize: 11, fontFamily: "Satoshi", textDecorationLine: "underline" }}>
+          Can't find your clinic? Enter it manually
+        </Text>
+      </TouchableOpacity>
 
       <Modal
         visible={showDropdown}
