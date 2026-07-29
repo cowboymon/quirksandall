@@ -18,6 +18,7 @@ type PetDraft = {
   vetAddress?: string;
   vetPhone?: string;
   emergVetClinic?: string;
+  emergVetAddress?: string;
   emergVetPhone?: string;
   insuranceProvider?: string;
   insurancePolicy?: string;

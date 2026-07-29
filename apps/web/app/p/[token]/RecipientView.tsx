@@ -198,11 +198,17 @@ export default function RecipientView({ profile, token }: Props) {
                     label="Vet"
                     name={emergencyContacts.primaryVet.contactName ? formatVetName(emergencyContacts.primaryVet.contactName) : ""}
                     place={emergencyContacts.primaryVet.clinic}
+                    address={emergencyContacts.primaryVet.address}
                     phone={emergencyContacts.primaryVet.phone}
                   />
                 )}
                 {(emergencyContacts.emergencyVet.clinic || emergencyContacts.emergencyVet.phone) && (
-                  <DarkContact label="Emergency vet" place={emergencyContacts.emergencyVet.clinic} phone={emergencyContacts.emergencyVet.phone} />
+                  <DarkContact
+                    label="Emergency vet"
+                    place={emergencyContacts.emergencyVet.clinic}
+                    address={emergencyContacts.emergencyVet.address}
+                    phone={emergencyContacts.emergencyVet.phone}
+                  />
                 )}
                 <a
                   href="https://www.google.com/maps/search/emergency+vet+near+me"
@@ -436,14 +442,14 @@ function PaidBadge() {
 
 // A contact row inside the dark emergency card: name, an optional place that
 // links to Maps, and a phone that links to tel: — all formatted for AU.
-function DarkContact({ label, name, place, phone }: { label: string; name?: string; place?: string; phone?: string }) {
+function DarkContact({ label, name, place, address, phone }: { label: string; name?: string; place?: string; address?: string; phone?: string }) {
   return (
     <div className="flex flex-col gap-1">
       <p className="eyebrow" style={{ color: "rgba(248,236,238,0.5)" }}>{label}</p>
       {name && <p className="text-sm font-bold" style={{ color: BLUSH }}>{name}</p>}
       {place && (
         <a
-          href={`https://maps.google.com/?q=${encodeURIComponent(place)}`}
+          href={`https://maps.google.com/?q=${encodeURIComponent([place, address].filter(Boolean).join(", "))}`}
           target="_blank"
           rel="noopener noreferrer"
           className="text-sm underline"
@@ -452,6 +458,7 @@ function DarkContact({ label, name, place, phone }: { label: string; name?: stri
           {place}
         </a>
       )}
+      {address && <p className="text-sm" style={{ color: "rgba(248,236,238,0.6)" }}>{address}</p>}
       {phone && (
         <a href={`tel:${phone}`} className="text-sm" style={{ color: "rgba(248,236,238,0.85)" }}>
           {formatPhone(phone)}

@@ -6,6 +6,7 @@ import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, Lin
 import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "../lib/supabase";
+import { AppAlert } from "../stores/appAlert";
 import { useActivePetStore } from "../stores/activePet";
 import { FieldTier } from "../components/ui";
 import { colors, computeAge, formatWeight, formatPhone, formatVetName, possessive, orderedCommands, commandStrengthLabel, mealSlotLabel } from "@quirksandall/shared";
@@ -13,8 +14,8 @@ import { colors, computeAge, formatWeight, formatPhone, formatVetName, possessiv
 type Data = {
   name: string; breed: string; age: string; photoUrl: string | null;
   weight: string; sex: string; color: string; microchip: string;
-  vetContactName: string; vetClinic: string; vetPhone: string;
-  emergVetClinic: string; emergVetPhone: string;
+  vetContactName: string; vetClinic: string; vetAddress: string; vetPhone: string;
+  emergVetClinic: string; emergVetAddress: string; emergVetPhone: string;
   insuranceProvider: string; insurancePolicy: string;
   backupName: string; backupPhone: string; backupRel: string;
   backup2Name: string; backup2Phone: string; backup2Rel: string;
@@ -62,8 +63,16 @@ export default function Preview() {
         .select("id, name, breed, dob, dob_is_estimated, sex, weight, color_markings, microchip_number, photo_url, updated_at")
         .eq("owner_id", user.id).eq("status", "active");
       q = selectedPetId ? q.eq("id", selectedPetId) : q.order("created_at").limit(1);
-      const { data: pet } = await q.single();
-      if (!pet) { router.back(); return; }
+      const { data: pet, error: petError } = await q.single();
+      if (!pet) {
+        setLoading(false);
+        AppAlert.alert(
+          "Couldn't load preview",
+          petError ? "Check your connection and try again." : "No active pet found.",
+          [{ text: "OK", onPress: () => router.back() }]
+        );
+        return;
+      }
 
       const [{ data: behavior }, { data: medical }, { data: routine }, { data: vet }, { data: owner }] = await Promise.all([
         supabase.from("pet_behavior").select("*").eq("pet_id", pet.id).maybeSingle(),
@@ -87,8 +96,8 @@ export default function Preview() {
       setData({
         name: (pet.name ?? "").trim(), breed: pet.breed ?? "", age: computeAge(pet.dob, pet.dob_is_estimated), photoUrl: pet.photo_url,
         weight: formatWeight(pet.weight), sex: pet.sex ?? "", color: pet.color_markings ?? "", microchip: pet.microchip_number ?? "",
-        vetContactName: vet?.primary_vet?.contact_name ?? "", vetClinic: vet?.primary_vet?.clinic ?? "", vetPhone: vet?.primary_vet?.phone ?? "",
-        emergVetClinic: vet?.emergency_vet?.clinic ?? "", emergVetPhone: vet?.emergency_vet?.phone ?? "",
+        vetContactName: vet?.primary_vet?.contact_name ?? "", vetClinic: vet?.primary_vet?.clinic ?? "", vetAddress: vet?.primary_vet?.address ?? "", vetPhone: vet?.primary_vet?.phone ?? "",
+        emergVetClinic: vet?.emergency_vet?.clinic ?? "", emergVetAddress: vet?.emergency_vet?.address ?? "", emergVetPhone: vet?.emergency_vet?.phone ?? "",
         insuranceProvider: vet?.insurance?.provider ?? "", insurancePolicy: vet?.insurance?.policy_number ?? "",
         backupName: backups[0]?.name ?? "", backupPhone: backups[0]?.phone ?? "", backupRel: backups[0]?.relationship ?? "",
         backup2Name: backups[1]?.name ?? "", backup2Phone: backups[1]?.phone ?? "", backup2Rel: backups[1]?.relationship ?? "",
@@ -204,14 +213,16 @@ export default function Preview() {
                 <View>
                   <Text style={{ ...microLabel, color: "rgba(248,236,238,0.6)" }}>Vet</Text>
                   {d.vetContactName ? <Text style={{ color: colors.cardDarkText, fontSize: 14, fontFamily: "Satoshi-Bold", marginTop: 2 }}>{formatVetName(d.vetContactName)}</Text> : null}
-                  {d.vetClinic ? <CreamLink icon="location" text={d.vetClinic} onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(d.vetClinic)}`)} /> : null}
+                  {d.vetClinic ? <CreamLink icon="location" text={d.vetClinic} onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent([d.vetClinic, d.vetAddress].filter(Boolean).join(", "))}`)} /> : null}
+                  {d.vetAddress ? <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 14, fontFamily: "Satoshi", marginTop: 2 }}>{d.vetAddress}</Text> : null}
                   {d.vetPhone ? <CreamLink icon="call" text={formatPhone(d.vetPhone)} onPress={() => Linking.openURL(`tel:${d.vetPhone}`)} /> : null}
                 </View>
               )}
               {(d.emergVetClinic || d.emergVetPhone) && (
                 <View>
                   <Text style={{ ...microLabel, color: "rgba(248,236,238,0.6)" }}>Emergency vet</Text>
-                  {d.emergVetClinic ? <CreamLink icon="location" text={d.emergVetClinic} bold onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(d.emergVetClinic)}`)} /> : null}
+                  {d.emergVetClinic ? <CreamLink icon="location" text={d.emergVetClinic} bold onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent([d.emergVetClinic, d.emergVetAddress].filter(Boolean).join(", "))}`)} /> : null}
+                  {d.emergVetAddress ? <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 14, fontFamily: "Satoshi", marginTop: 2 }}>{d.emergVetAddress}</Text> : null}
                   {d.emergVetPhone ? <CreamLink icon="call" text={formatPhone(d.emergVetPhone)} onPress={() => Linking.openURL(`tel:${d.emergVetPhone}`)} /> : null}
                 </View>
               )}

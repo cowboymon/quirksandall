@@ -31,6 +31,7 @@ export default function EditEmergency() {
   const [vetAddress, setVetAddress] = useState("");
   const [vetPhone, setVetPhone] = useState("");
   const [emergClinic, setEmergClinic] = useState("");
+  const [emergAddress, setEmergAddress] = useState("");
   const [emergPhone, setEmergPhone] = useState("");
   const [insuranceProvider, setInsuranceProvider] = useState("");
   const [insurancePolicy, setInsurancePolicy] = useState("");
@@ -47,6 +48,11 @@ export default function EditEmergency() {
   const [showSecondBackup, setShowSecondBackup] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showPIN, setShowPIN] = useState(false);
+  // Name/phone stay locked until a clinic search actually resolves (pick or
+  // manual entry) — set true once the saved clinic loads, so existing data
+  // isn't locked out on open.
+  const [vetConfirmed, setVetConfirmed] = useState(false);
+  const [emergConfirmed, setEmergConfirmed] = useState(false);
 
   useEffect(() => {
     if (!petId) return;
@@ -61,7 +67,10 @@ export default function EditEmergency() {
         setVetAddress(vet.primary_vet?.address ?? "");
         setVetPhone(vet.primary_vet?.phone ?? "");
         setEmergClinic(vet.emergency_vet?.clinic ?? "");
+        setEmergAddress(vet.emergency_vet?.address ?? "");
         setEmergPhone(vet.emergency_vet?.phone ?? "");
+        setVetConfirmed(!!vet.primary_vet?.clinic);
+        setEmergConfirmed(!!vet.emergency_vet?.clinic);
         setInsuranceProvider(vet.insurance?.provider ?? "");
         setInsurancePolicy(vet.insurance?.policy_number ?? "");
       }
@@ -108,7 +117,7 @@ export default function EditEmergency() {
         supabase.from("pet_vet_info").upsert({
           pet_id: petId,
           primary_vet: { contact_name: vetContactName, clinic: vetClinic, address: vetAddress, phone: vetPhone },
-          emergency_vet: { clinic: emergClinic, phone: emergPhone },
+          emergency_vet: { clinic: emergClinic, address: emergAddress, phone: emergPhone },
           insurance: { provider: insuranceProvider, policy_number: insurancePolicy },
         }, { onConflict: "pet_id" }),
         supabase.from("owners").update({ backup_contacts: backups }).eq("id", user.id),
@@ -133,20 +142,32 @@ export default function EditEmergency() {
         <Card>
           <Eyebrow bold>Vet</Eyebrow>
           <View style={{ gap: 8, marginTop: 12 }}>
-            <LabeledInput name label="Vet name" placeholder="e.g. Dr. Sarah Mitchell" value={vetContactName} onChangeText={setVetContactName} />
             <LabeledPlacesInput
               label="Clinic"
               placeholder="Search clinic name"
               value={vetClinic}
-              onChangeText={setVetClinic}
-              onSelectPlace={(p) => { setVetClinic(p.name); if (p.phone) setVetPhone(p.phone); if (p.address) setVetAddress(p.address); }}
+              onChangeText={(v) => { setVetClinic(v); setVetConfirmed(false); }}
+              onSelectPlace={(p) => { setVetClinic(p.name); if (p.phone) setVetPhone(p.phone); if (p.address) setVetAddress(p.address); setVetConfirmed(true); }}
             />
             <LabeledInput label="Address" placeholder="Address" value={vetAddress} onChangeText={setVetAddress} />
-            <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={vetPhone} onChangeText={setVetPhone} />
+            <LabeledInput
+              name
+              label="Vet name"
+              placeholder={vetConfirmed ? "e.g. Dr. Sarah Mitchell" : "Search a clinic first"}
+              editable={vetConfirmed}
+              value={vetContactName}
+              onChangeText={setVetContactName}
+            />
+            <LabeledInput
+              label="Phone"
+              placeholder={vetConfirmed ? "Phone" : "Search a clinic first"}
+              editable={vetConfirmed}
+              phone
+              keyboardType="phone-pad"
+              value={vetPhone}
+              onChangeText={setVetPhone}
+            />
           </View>
-          <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 8, fontFamily: "Satoshi-Light" }}>
-            Consider pre-authorising your sitter directly with your vet by phone or through their online portal.
-          </Text>
         </Card>
 
         <Card>
@@ -156,10 +177,19 @@ export default function EditEmergency() {
               label="Clinic"
               placeholder="Search clinic name"
               value={emergClinic}
-              onChangeText={setEmergClinic}
-              onSelectPlace={(p) => { setEmergClinic(p.name); if (p.phone) setEmergPhone(p.phone); }}
+              onChangeText={(v) => { setEmergClinic(v); setEmergConfirmed(false); }}
+              onSelectPlace={(p) => { setEmergClinic(p.name); if (p.phone) setEmergPhone(p.phone); if (p.address) setEmergAddress(p.address); setEmergConfirmed(true); }}
             />
-            <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={emergPhone} onChangeText={setEmergPhone} />
+            <LabeledInput label="Address" placeholder="Address" value={emergAddress} onChangeText={setEmergAddress} />
+            <LabeledInput
+              label="Phone"
+              placeholder={emergConfirmed ? "Phone" : "Search a clinic first"}
+              editable={emergConfirmed}
+              phone
+              keyboardType="phone-pad"
+              value={emergPhone}
+              onChangeText={setEmergPhone}
+            />
           </View>
         </Card>
 

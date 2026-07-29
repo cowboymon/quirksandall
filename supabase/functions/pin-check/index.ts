@@ -80,8 +80,17 @@ serve(async (req) => {
     JSON.stringify({
       success: true,
       contacts: {
-        primaryVet: vetInfo.primary_vet ?? {},
-        emergencyVet: vetInfo.emergency_vet ?? {},
+        primaryVet: {
+          contactName: vetInfo.primary_vet?.contact_name ?? "",
+          clinic: vetInfo.primary_vet?.clinic ?? "",
+          address: vetInfo.primary_vet?.address ?? "",
+          phone: vetInfo.primary_vet?.phone ?? "",
+        },
+        emergencyVet: {
+          clinic: vetInfo.emergency_vet?.clinic ?? "",
+          address: vetInfo.emergency_vet?.address ?? "",
+          phone: vetInfo.emergency_vet?.phone ?? "",
+        },
         insurance: vetInfo.insurance ?? {},
         ownerContact: { name: owner.name ?? "", phone: owner.primary_phone ?? "" },
         backupContacts: (owner.backup_contacts ?? [])

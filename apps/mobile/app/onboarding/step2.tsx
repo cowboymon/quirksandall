@@ -11,6 +11,9 @@ import CheckboxRow from "../../components/CheckboxRow";
 export default function Step2() {
   const { pet, setPet } = useOnboardingStore();
   const [showSecondBackup, setShowSecondBackup] = useState(!!(pet.backup2Name || pet.backup2Phone));
+  // Vet name/phone stay locked until a clinic search actually resolves (pick
+  // or manual entry) — not just from typing, which would defeat the point.
+  const [vetConfirmed, setVetConfirmed] = useState(!!pet.vetClinic);
 
   return (
     <ScrollView className="flex-1 bg-background" keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 24, paddingTop: 60, width: "100%", maxWidth: 600, alignSelf: "center" }}>
@@ -30,26 +33,39 @@ export default function Step2() {
         <Card>
           <Eyebrow bold>Vet</Eyebrow>
           <View style={{ gap: 8, marginTop: 12 }}>
-            <LabeledInput name label="Vet name" placeholder="e.g. Dr. Sarah Mitchell" value={pet.vetContactName ?? ""} onChangeText={(v) => setPet({ vetContactName: v })} />
             <LabeledPlacesInput
               label="Clinic"
               placeholder="Search clinic name"
               value={pet.vetClinic ?? ""}
-              onChangeText={(v) => setPet({ vetClinic: v })}
-              onSelectPlace={(p) => setPet({ vetClinic: p.name, ...(p.phone ? { vetPhone: p.phone } : {}), ...(p.address ? { vetAddress: p.address } : {}) })}
+              onChangeText={(v) => { setPet({ vetClinic: v }); setVetConfirmed(false); }}
+              onSelectPlace={(p) => { setPet({ vetClinic: p.name, ...(p.phone ? { vetPhone: p.phone } : {}), ...(p.address ? { vetAddress: p.address } : {}) }); setVetConfirmed(true); }}
             />
             <LabeledInput label="Address" placeholder="Address" value={pet.vetAddress ?? ""} onChangeText={(v) => setPet({ vetAddress: v })} />
-            <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={pet.vetPhone ?? ""} onChangeText={(v) => setPet({ vetPhone: v })} />
+            <LabeledInput
+              name
+              label="Vet name"
+              placeholder={vetConfirmed ? "e.g. Dr. Sarah Mitchell" : "Search a clinic first"}
+              editable={vetConfirmed}
+              value={pet.vetContactName ?? ""}
+              onChangeText={(v) => setPet({ vetContactName: v })}
+            />
+            <LabeledInput
+              label="Phone"
+              placeholder={vetConfirmed ? "Phone" : "Search a clinic first"}
+              editable={vetConfirmed}
+              phone
+              keyboardType="phone-pad"
+              value={pet.vetPhone ?? ""}
+              onChangeText={(v) => setPet({ vetPhone: v })}
+            />
           </View>
-          <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 8, fontFamily: "Satoshi-Light" }}>
-            Consider pre-authorising your sitter directly with your vet by phone or through their online portal.
-          </Text>
         </Card>
 
         <Card>
           <Eyebrow bold>Emergency vet</Eyebrow>
           <View style={{ gap: 8, marginTop: 12 }}>
             <LabeledInput label="Clinic" placeholder="Clinic name" value={pet.emergVetClinic ?? ""} onChangeText={(v) => setPet({ emergVetClinic: v })} />
+            <LabeledInput label="Address" placeholder="Address" value={pet.emergVetAddress ?? ""} onChangeText={(v) => setPet({ emergVetAddress: v })} />
             <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={pet.emergVetPhone ?? ""} onChangeText={(v) => setPet({ emergVetPhone: v })} />
           </View>
         </Card>

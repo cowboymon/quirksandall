@@ -149,9 +149,14 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
             primaryVet: {
               contactName: vetInfo?.primary_vet?.contact_name ?? "",
               clinic: vetInfo?.primary_vet?.clinic ?? "",
+              address: vetInfo?.primary_vet?.address ?? "",
               phone: vetInfo?.primary_vet?.phone ?? "",
             },
-            emergencyVet: vetInfo?.emergency_vet ?? {},
+            emergencyVet: {
+              clinic: vetInfo?.emergency_vet?.clinic ?? "",
+              address: vetInfo?.emergency_vet?.address ?? "",
+              phone: vetInfo?.emergency_vet?.phone ?? "",
+            },
             insurance: { provider: vetInfo?.insurance?.provider ?? "", policyNumber: vetInfo?.insurance?.policy_number ?? "" },
             ownerContact: { name: owner.name ?? "", phone: owner.primary_phone ?? "" },
             // Same consent filter + shape as fetchEmergencyContacts (lib/emergency.ts) —

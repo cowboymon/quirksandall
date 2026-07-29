@@ -2,8 +2,13 @@
 // EXPO_PUBLIC_GOOGLE_PLACES_KEY is present it suggests real establishments and,
 // on selection, returns the place name + phone to auto-fill the card. With no
 // key it degrades gracefully to a plain typed field (no behaviour change).
+//
+// Suggestions render in a full-screen Modal rather than an inline absolute
+// View — dims the rest of the screen while searching (so the dropdown reads
+// as the focused thing to interact with) and avoids the janky reflow of a
+// dropdown pushing surrounding form content around as it opens/closes.
 import { useRef, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, Modal, Pressable, Animated, Keyboard, Dimensions } from "react-native";
 import { colors } from "@quirksandall/shared";
 import { FieldLabel } from "./ui";
 
@@ -11,6 +16,7 @@ const KEY = process.env.EXPO_PUBLIC_GOOGLE_PLACES_KEY;
 export const PLACES_ENABLED = !!KEY;
 
 type Prediction = { description: string; place_id: string };
+type Anchor = { x: number; y: number; width: number };
 
 export function LabeledPlacesInput({
   label,
@@ -27,7 +33,27 @@ export function LabeledPlacesInput({
 }) {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [focused, setFocused] = useState(false);
+  const [anchor, setAnchor] = useState<Anchor | null>(null);
+  const fieldRef = useRef<View>(null);
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fade = useRef(new Animated.Value(0)).current;
+
+  const measure = () => {
+    fieldRef.current?.measureInWindow((x, y, width, height) => setAnchor({ x, y: y + height + 4, width }));
+  };
+
+  // Clears the dropdown without touching the keyboard — used on blur, where
+  // focus may just be moving to the next field, not actually being dismissed.
+  const closeDropdown = () => {
+    setPredictions([]);
+    setFocused(false);
+    fade.setValue(0);
+  };
+
+  const close = () => {
+    closeDropdown();
+    Keyboard.dismiss();
+  };
 
   const handleChange = (text: string) => {
     onChangeText(text);
@@ -39,6 +65,7 @@ export function LabeledPlacesInput({
           `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(text)}&types=establishment&key=${KEY}`
         );
         const data = await res.json();
+        measure();
         setPredictions((data.predictions ?? []).slice(0, 5).map((p: any) => ({ description: p.description, place_id: p.place_id })));
       } catch {
         setPredictions([]);
@@ -47,7 +74,7 @@ export function LabeledPlacesInput({
   };
 
   const pick = async (p: Prediction) => {
-    setPredictions([]);
+    close();
     onChangeText(p.description);
     if (!KEY) return;
     try {
@@ -62,42 +89,92 @@ export function LabeledPlacesInput({
     }
   };
 
+  const clear = () => {
+    onChangeText("");
+    closeDropdown();
+  };
+
+  // Escape hatch for a clinic Places doesn't have — treats whatever's typed
+  // as the final answer instead of requiring a suggestion pick.
+  const enterManually = () => {
+    if (!value.trim()) return;
+    close();
+    onSelectPlace({ name: value.trim(), phone: "", address: "" });
+  };
+
+  const showDropdown = focused && predictions.length > 0 && !!anchor;
+
   return (
-    <View style={{ position: "relative", zIndex: focused && predictions.length ? 20 : 0 }}>
+    <View>
       <FieldLabel>{label}</FieldLabel>
-      <TextInput
-        value={value}
-        onChangeText={handleChange}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setTimeout(() => setFocused(false), 150)}
-        placeholder={placeholder}
-        placeholderTextColor={colors.textMuted}
-        autoCapitalize="words"
-        style={{
-          minHeight: 40, borderRadius: 8, borderWidth: 1,
-          borderColor: focused ? colors.primary : colors.border, backgroundColor: colors.background,
-          paddingHorizontal: 12, paddingVertical: 8, fontSize: 14, fontFamily: "Satoshi", color: colors.textDark,
-        }}
-      />
-      {focused && predictions.length > 0 && (
-        <View
+      <View ref={fieldRef} collapsable={false} style={{ justifyContent: "center" }}>
+        <TextInput
+          value={value}
+          onChangeText={handleChange}
+          onFocus={() => { setFocused(true); measure(); }}
+          onBlur={() => setTimeout(closeDropdown, 150)}
+          placeholder={placeholder}
+          placeholderTextColor={colors.textMuted}
+          autoCapitalize="words"
           style={{
-            position: "absolute", top: 62, left: 0, right: 0, backgroundColor: "#FFFFFF",
-            borderWidth: 1, borderColor: colors.border, borderRadius: 8, overflow: "hidden", elevation: 6,
-            shadowColor: "#000", shadowOpacity: 0.12, shadowRadius: 8, shadowOffset: { width: 0, height: 4 },
+            minHeight: 40, borderRadius: 8, borderWidth: 1,
+            borderColor: focused ? colors.primary : colors.border, backgroundColor: colors.background,
+            paddingHorizontal: 12, paddingRight: value ? 34 : 12, paddingVertical: 8,
+            fontSize: 14, fontFamily: "Satoshi", color: colors.textDark,
           }}
-        >
-          {predictions.map((p, i) => (
-            <TouchableOpacity
-              key={p.place_id}
-              onPress={() => pick(p)}
-              style={{ paddingHorizontal: 12, paddingVertical: 10, borderTopWidth: i === 0 ? 0 : 1, borderTopColor: colors.border }}
+        />
+        {!!value && (
+          <TouchableOpacity
+            onPress={clear}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            style={{ position: "absolute", right: 10, height: 20, width: 20, borderRadius: 10, backgroundColor: colors.textMuted, alignItems: "center", justifyContent: "center" }}
+          >
+            <Text style={{ color: "#FFFFFF", fontSize: 12, fontFamily: "Satoshi-Bold", lineHeight: 14 }}>×</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+      <TouchableOpacity onPress={enterManually} style={{ marginTop: 4 }}>
+        <Text style={{ color: colors.textMuted, fontSize: 11, fontFamily: "Satoshi", textDecorationLine: "underline" }}>
+          Can't find your clinic? Enter it manually
+        </Text>
+      </TouchableOpacity>
+
+      <Modal
+        visible={showDropdown}
+        transparent
+        animationType="none"
+        onShow={() => Animated.timing(fade, { toValue: 1, duration: 160, useNativeDriver: true }).start()}
+        onRequestClose={close}
+      >
+        <Pressable style={{ flex: 1, backgroundColor: "rgba(30,10,14,0.35)" }} onPress={close}>
+          {anchor && (
+            <Animated.View
+              style={{
+                opacity: fade,
+                transform: [{ translateY: fade.interpolate({ inputRange: [0, 1], outputRange: [-6, 0] }) }],
+                position: "absolute",
+                top: anchor.y,
+                left: anchor.x,
+                width: Math.min(anchor.width, Dimensions.get("window").width - anchor.x - 16),
+                backgroundColor: "#FFFFFF",
+                borderWidth: 1, borderColor: colors.border, borderRadius: 8, overflow: "hidden",
+                shadowColor: "#000", shadowOpacity: 0.18, shadowRadius: 10, shadowOffset: { width: 0, height: 6 },
+                elevation: 8,
+              }}
             >
-              <Text style={{ color: colors.textDark, fontSize: 13, fontFamily: "Satoshi" }} numberOfLines={1}>{p.description}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
+              {predictions.map((p, i) => (
+                <TouchableOpacity
+                  key={p.place_id}
+                  onPress={() => pick(p)}
+                  style={{ paddingHorizontal: 12, paddingVertical: 12, borderTopWidth: i === 0 ? 0 : 1, borderTopColor: colors.border }}
+                >
+                  <Text style={{ color: colors.textDark, fontSize: 13, fontFamily: "Satoshi" }} numberOfLines={1}>{p.description}</Text>
+                </TouchableOpacity>
+              ))}
+            </Animated.View>
+          )}
+        </Pressable>
+      </Modal>
     </View>
   );
 }

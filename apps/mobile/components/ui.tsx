@@ -117,9 +117,9 @@ export function LabeledInput({
           {
             minHeight: 40, borderRadius: 8, borderWidth: 1,
             borderColor: focused ? colors.primary : colors.border,
-            backgroundColor: colors.background,
+            backgroundColor: props.editable === false ? colors.secondary : colors.background,
             paddingHorizontal: 12, paddingVertical: 8,
-            fontSize: 14, fontFamily: "Satoshi", color: colors.textDark,
+            fontSize: 14, fontFamily: "Satoshi", color: props.editable === false ? colors.textMuted : colors.textDark,
           },
           style,
         ]}
