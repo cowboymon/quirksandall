@@ -25,8 +25,14 @@ export default function DatePickerSheet({
 }) {
   if (!visible) return null;
 
-  const today = new Date();
-  const bounds = range === "future" ? { minimumDate: today } : { maximumDate: today };
+  // Bounded by the day, not the instant. Comparing against `new Date()` meant
+  // an empty field — whose seed is "now" from a slightly earlier render —
+  // landed microseconds outside the range, and iOS treats an out-of-bounds
+  // value as undefined behaviour. Day granularity is what a date picker means
+  // anyway: "no future" is "not after today", not "not after this millisecond".
+  const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
+  const endOfToday = new Date(); endOfToday.setHours(23, 59, 59, 999);
+  const bounds = range === "future" ? { minimumDate: startOfToday } : { maximumDate: endOfToday };
 
   if (Platform.OS === "android") {
     return (
