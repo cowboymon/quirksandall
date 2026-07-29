@@ -98,7 +98,13 @@ function IOSSheet({
             onChange={(_, d) => d && setDraft(d)}
             themeVariant="light"
             accentColor={colors.primary}
-            style={{ alignSelf: "center" }}
+            // The wheel needs a concrete height. Unlike the inline calendar,
+            // which sizes itself, a spinner in a flex container can end up
+            // with an unresolved height and take the view down with it — which
+            // is why the birthday picker crashed while the stay-date one, on
+            // identical seed and bounds code, didn't. 216 is the standard iOS
+            // wheel height.
+            style={range === "birthday" ? { alignSelf: "stretch", height: 216 } : { alignSelf: "center" }}
           />
         </View>
       </View>
