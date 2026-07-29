@@ -50,6 +50,7 @@ export default function Step2() {
           <Eyebrow bold>Emergency vet</Eyebrow>
           <View style={{ gap: 8, marginTop: 12 }}>
             <LabeledInput label="Clinic" placeholder="Clinic name" value={pet.emergVetClinic ?? ""} onChangeText={(v) => setPet({ emergVetClinic: v })} />
+            <LabeledInput label="Address" placeholder="Address" value={pet.emergVetAddress ?? ""} onChangeText={(v) => setPet({ emergVetAddress: v })} />
             <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={pet.emergVetPhone ?? ""} onChangeText={(v) => setPet({ emergVetPhone: v })} />
           </View>
         </Card>

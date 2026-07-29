@@ -43,7 +43,7 @@ export type Pet = {
 
 export type VetInfo = {
   primaryVet: { contactName?: string; clinic: string; address?: string; phone: string };
-  emergencyVet: { clinic: string; phone: string };
+  emergencyVet: { clinic: string; phone: string; address?: string };
   insurance: { provider: string; policyNumber: string };
 };
 

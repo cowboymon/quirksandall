@@ -31,6 +31,7 @@ export default function EditEmergency() {
   const [vetAddress, setVetAddress] = useState("");
   const [vetPhone, setVetPhone] = useState("");
   const [emergClinic, setEmergClinic] = useState("");
+  const [emergAddress, setEmergAddress] = useState("");
   const [emergPhone, setEmergPhone] = useState("");
   const [insuranceProvider, setInsuranceProvider] = useState("");
   const [insurancePolicy, setInsurancePolicy] = useState("");
@@ -61,6 +62,7 @@ export default function EditEmergency() {
         setVetAddress(vet.primary_vet?.address ?? "");
         setVetPhone(vet.primary_vet?.phone ?? "");
         setEmergClinic(vet.emergency_vet?.clinic ?? "");
+        setEmergAddress(vet.emergency_vet?.address ?? "");
         setEmergPhone(vet.emergency_vet?.phone ?? "");
         setInsuranceProvider(vet.insurance?.provider ?? "");
         setInsurancePolicy(vet.insurance?.policy_number ?? "");
@@ -108,7 +110,7 @@ export default function EditEmergency() {
         supabase.from("pet_vet_info").upsert({
           pet_id: petId,
           primary_vet: { contact_name: vetContactName, clinic: vetClinic, address: vetAddress, phone: vetPhone },
-          emergency_vet: { clinic: emergClinic, phone: emergPhone },
+          emergency_vet: { clinic: emergClinic, address: emergAddress, phone: emergPhone },
           insurance: { provider: insuranceProvider, policy_number: insurancePolicy },
         }, { onConflict: "pet_id" }),
         supabase.from("owners").update({ backup_contacts: backups }).eq("id", user.id),
@@ -157,8 +159,9 @@ export default function EditEmergency() {
               placeholder="Search clinic name"
               value={emergClinic}
               onChangeText={setEmergClinic}
-              onSelectPlace={(p) => { setEmergClinic(p.name); if (p.phone) setEmergPhone(p.phone); }}
+              onSelectPlace={(p) => { setEmergClinic(p.name); if (p.phone) setEmergPhone(p.phone); if (p.address) setEmergAddress(p.address); }}
             />
+            <LabeledInput label="Address" placeholder="Address" value={emergAddress} onChangeText={setEmergAddress} />
             <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={emergPhone} onChangeText={setEmergPhone} />
           </View>
         </Card>

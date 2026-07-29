@@ -85,7 +85,7 @@ export default function Step4() {
       await supabase.from("pet_vet_info").insert({
         pet_id: newPet.id,
         primary_vet: { contact_name: pet.vetContactName, clinic: pet.vetClinic, address: pet.vetAddress, phone: pet.vetPhone },
-        emergency_vet: { clinic: pet.emergVetClinic, phone: pet.emergVetPhone },
+        emergency_vet: { clinic: pet.emergVetClinic, address: pet.emergVetAddress, phone: pet.emergVetPhone },
         insurance: { provider: pet.insuranceProvider, policy_number: pet.insurancePolicy },
       });
 
