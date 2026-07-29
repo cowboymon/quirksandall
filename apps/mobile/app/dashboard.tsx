@@ -10,7 +10,8 @@ import PetSwitcher from "../components/PetSwitcher";
 import ConfirmModal from "../components/ConfirmModal";
 import DurationModal from "../components/DurationModal";
 import { useActivePetStore } from "../stores/activePet";
-import { colors, computeAge, capitalizeFirst, orderedCommands, possessive, PRICE, stayPhrase } from "@quirksandall/shared";
+import { colors, computeAge, capitalizeFirst, orderedCommands, possessive, stayPhrase } from "@quirksandall/shared";
+import { usePrice } from "../hooks/usePrice";
 import { WEB_URL } from "../lib/config";
 import { listLinks, createLink, renameLink, revokeLink, setLinkDuration, type OwnerLink } from "../lib/links";
 import type { Pet } from "@quirksandall/shared";
@@ -41,6 +42,7 @@ function viewedLabel(iso: string | null) {
 }
 
 export default function Dashboard() {
+  const price = usePrice();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const { petId: selectedPetId, setCachedPet } = useActivePetStore();
@@ -411,7 +413,7 @@ export default function Dashboard() {
                   {pet.name}'s routine is saved, not shared yet.
                 </Text>
                 <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 3, fontFamily: "Satoshi-Light" }}>
-                  Unlock so sitters get {pet.name}'s full day — {PRICE}, once.
+                  Unlock so sitters get {pet.name}'s full day — {price}, once.
                 </Text>
                 <Text style={{ color: colors.primary, fontSize: 12, marginTop: 6, fontFamily: "Satoshi-Medium" }}>Unlock full access →</Text>
               </View>

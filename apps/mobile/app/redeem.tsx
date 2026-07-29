@@ -7,9 +7,11 @@ import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ScrollView } from "react-native";
 import { AppAlert } from "../stores/appAlert";
 import { router } from "expo-router";
-import { colors, PRICE } from "@quirksandall/shared";
+import { colors } from "@quirksandall/shared";
+import { usePrice } from "../hooks/usePrice";
 
 export default function Redeem() {
+  const price = usePrice();
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -77,7 +79,7 @@ export default function Redeem() {
       </TouchableOpacity>
 
       <Text style={{ color: colors.textMuted, fontSize: 12, lineHeight: 18, marginTop: 16, fontFamily: "Satoshi-Light" }}>
-        No code? Head back and unlock for {PRICE} — once, forever.
+        No code? Head back and unlock for {price} — once, forever.
       </Text>
     </ScrollView>
   );

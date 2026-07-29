@@ -5,7 +5,8 @@ import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "../lib/supabase";
 import { purchasePro, restorePurchases } from "../lib/purchases";
-import { colors, PRICE } from "@quirksandall/shared";
+import { colors } from "@quirksandall/shared";
+import { usePrice } from "../hooks/usePrice";
 import { REDEMPTION_ENABLED } from "../lib/config";
 import { track, AnalyticsEvent } from "../lib/analytics";
 
@@ -17,6 +18,7 @@ const FEATURES = [
 ];
 
 export default function Upgrade() {
+  const price = usePrice();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => { track(AnalyticsEvent.PaywallViewed, { source: "upgrade" }); }, []);
@@ -93,7 +95,7 @@ export default function Upgrade() {
               paddingVertical: 10,
             }}
           >
-            <Text style={{ fontFamily: "Tanker", fontSize: 30, color: "#F8ECEE" }}>{PRICE}</Text>
+            <Text style={{ fontFamily: "Tanker", fontSize: 30, color: "#F8ECEE" }}>{price}</Text>
             <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, fontFamily: "Satoshi-Light" }}>once, forever</Text>
           </View>
         </View>
@@ -174,7 +176,7 @@ export default function Upgrade() {
               }}
             >
               <Text style={{ color: "#F8ECEE", fontSize: 15, fontFamily: "Satoshi-Medium", letterSpacing: 0.3 }}>
-                {loading ? "Working…" : `Unlock for ${PRICE}`}
+                {loading ? "Working…" : `Unlock for ${price}`}
               </Text>
             </TouchableOpacity>
 

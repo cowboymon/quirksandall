@@ -7,7 +7,8 @@ import { router } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { checkEntitlement, purchasePro, restorePurchases } from "../lib/purchases";
 import { REDEMPTION_ENABLED, MARKETING_URL } from "../lib/config";
-import { colors, PRICE, CONSENT_POLICY_VERSION } from "@quirksandall/shared";
+import { colors, CONSENT_POLICY_VERSION } from "@quirksandall/shared";
+import { usePrice } from "../hooks/usePrice";
 import { Platform } from "react-native";
 import { track, resetAnalytics, AnalyticsEvent } from "../lib/analytics";
 import { Eyebrow, Input } from "../components/ui";
@@ -17,6 +18,7 @@ import ConfirmModal from "../components/ConfirmModal";
 const SUPPORT_EMAIL = "quirksandall@itshypothetical.com";
 
 export default function Account() {
+  const price = usePrice();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -263,14 +265,14 @@ export default function Account() {
             Unlock full access.
           </Text>
           <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6, marginTop: 8, marginBottom: 16 }}>
-            <Text style={{ fontFamily: "Tanker", fontSize: 20, lineHeight: 20, color: "#F8ECEE" }}>{PRICE}</Text>
+            <Text style={{ fontFamily: "Tanker", fontSize: 20, lineHeight: 20, color: "#F8ECEE" }}>{price}</Text>
             <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 11, fontFamily: "Satoshi-Light" }}>once, forever</Text>
           </View>
           <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, lineHeight: 17, fontFamily: "Satoshi-Light", marginBottom: 20 }}>
             The full picture — routines and the softer stuff that makes the handoff feel like you. Unlimited pets, too.
           </Text>
           <TouchableOpacity onPress={handlePurchase} disabled={loading} activeOpacity={0.85} style={{ height: 44, borderRadius: 10, backgroundColor: "#F8ECEE", alignItems: "center", justifyContent: "center", opacity: loading ? 0.6 : 1 }}>
-            <Text style={{ color: "#510000", fontSize: 14, fontFamily: "Satoshi-Medium" }}>{loading ? "Working…" : `Unlock for ${PRICE}`}</Text>
+            <Text style={{ color: "#510000", fontSize: 14, fontFamily: "Satoshi-Medium" }}>{loading ? "Working…" : `Unlock for ${price}`}</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={handleRestore} disabled={loading} style={{ alignItems: "center", marginTop: 10, paddingVertical: 4 }}>
             <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, fontFamily: "Satoshi" }}>Restore purchases</Text>
