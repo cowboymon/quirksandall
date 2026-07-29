@@ -99,7 +99,7 @@ export default function AuthScreen() {
           <>
             <TextInput
               className="h-[44px] rounded-button border bg-input-bg px-4 text-foreground text-base mb-4"
-              style={{ borderColor: "#E5BEC4", fontFamily: "Satoshi" }}
+              style={{ borderColor: "#E5BEC4", letterSpacing: 0, fontFamily: "Satoshi" }}
               placeholder="your@email.com"
               placeholderTextColor="#987080"
               value={email}
@@ -125,7 +125,7 @@ export default function AuthScreen() {
             <TextInput
               key={`otp-${focusKey}`}
               className="h-[52px] rounded-button border bg-input-bg px-4 text-foreground text-[22px] tracking-[8px] text-center mb-4"
-              style={{ borderColor: "#E5BEC4", fontFamily: "Satoshi-Bold" }}
+              style={{ borderColor: "#E5BEC4", letterSpacing: 0, fontFamily: "Satoshi-Bold" }}
               placeholder="000000"
               placeholderTextColor="#C9A3AC"
               value={code}

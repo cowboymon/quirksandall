@@ -31,6 +31,8 @@ type DashboardData = {
 };
 
 const REVIEW_INTERVAL_MS = 21 * 24 * 60 * 60 * 1000; // 21 days
+// Past this many links the panel starts dominating the dashboard.
+const LINKS_COLLAPSED_COUNT = 4;
 
 const statusColor = { done: colors.success, saved: colors.caution, empty: colors.textMuted } as const;
 const statusDot = { done: colors.success, saved: colors.caution, empty: colors.border } as const;
@@ -68,6 +70,7 @@ export default function Dashboard() {
   const [petPin, setPetPin] = useState<string | null>(null);
   const [pinCopied, setPinCopied] = useState(false);
   const [showTripNudge, setShowTripNudge] = useState(false);
+  const [showAllLinks, setShowAllLinks] = useState(false);
 
   // Reload every time the dashboard regains focus (e.g. returning from an edit
   // screen) so counts/status reflect the latest saves — not just on pet switch.
@@ -277,6 +280,7 @@ export default function Dashboard() {
   }
 
   const { pet, ownerInitials, links, firstCommand, needsReview, sections, isPaid } = data;
+  const visibleLinks = showAllLinks ? links : links.slice(0, LINKS_COLLAPSED_COUNT);
 
   return (
     <ScrollView className="flex-1 bg-background" contentContainerStyle={{ paddingBottom: 40 }}>
@@ -362,7 +366,12 @@ export default function Dashboard() {
             </View>
           )}
 
-          {links.map((link, i) => (
+          {/* Long lists are capped rather than scrolled. A nested scroll region
+              inside the page's own ScrollView traps the gesture — you try to
+              scroll the dashboard, the little list moves instead — which is
+              worse than one extra tap. Everything stays reachable in place,
+              and nothing is hidden behind a collapse. */}
+          {visibleLinks.map((link, i) => (
             <View
               key={link.id}
               style={{ paddingHorizontal: 20, paddingVertical: 14, flexDirection: "row", alignItems: "center", gap: 12, borderTopWidth: 1, borderTopColor: "rgba(248,236,238,0.1)" }}
@@ -381,7 +390,7 @@ export default function Dashboard() {
                     onSubmitEditing={() => commitRename(link)}
                     // No underline / extra padding — it changed the row height vs the
                     // plain label and jumped the text up when entering edit mode.
-                    style={{ color: colors.cardDarkText, fontSize: 13, fontFamily: "Satoshi-Medium", padding: 0 }}
+                    style={{ color: colors.cardDarkText, fontSize: 13, letterSpacing: 0, fontFamily: "Satoshi-Medium", padding: 0 }}
                   />
                 ) : (
                   <Text style={{ color: colors.cardDarkText, fontSize: 13, fontFamily: "Satoshi-Medium" }} numberOfLines={1}>
@@ -448,7 +457,7 @@ export default function Dashboard() {
                   onSubmitEditing={handleAddLink}
                   placeholder="Who's this for?"
                   placeholderTextColor="rgba(248,236,238,0.3)"
-                  style={{ flex: 1, height: 36, paddingHorizontal: 12, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", color: colors.cardDarkText, fontSize: 13, fontFamily: "Satoshi" }}
+                  style={{ flex: 1, height: 36, paddingHorizontal: 12, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", color: colors.cardDarkText, fontSize: 13, letterSpacing: 0, fontFamily: "Satoshi" }}
                 />
                 <TouchableOpacity onPress={handleAddLink} disabled={!newLinkName.trim() || creatingLink} style={{ height: 36, paddingHorizontal: 16, borderRadius: 8, backgroundColor: colors.cardDarkText, alignItems: "center", justifyContent: "center", minWidth: 74, opacity: newLinkName.trim() && !creatingLink ? 1 : 0.4 }}>
                   {creatingLink ? (

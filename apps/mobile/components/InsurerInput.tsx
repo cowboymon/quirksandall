@@ -84,7 +84,7 @@ export function InsurerInput({
           style={{
             minHeight: 40, borderRadius: 8, borderWidth: 1,
             borderColor: focused ? colors.primary : colors.border, backgroundColor: colors.background,
-            paddingLeft: 34, paddingRight: 12, paddingVertical: 8, fontSize: 14, fontFamily: "Satoshi", color: colors.textDark,
+            paddingLeft: 34, paddingRight: 12, paddingVertical: 8, fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: colors.textDark,
           }}
         />
       </View>
