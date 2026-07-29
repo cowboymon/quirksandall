@@ -135,7 +135,6 @@ export default function EditEmergency() {
         <Card>
           <Eyebrow bold>Vet</Eyebrow>
           <View style={{ gap: 8, marginTop: 12 }}>
-            <LabeledInput name label="Vet name" placeholder="e.g. Dr. Sarah Mitchell" value={vetContactName} onChangeText={setVetContactName} />
             <LabeledPlacesInput
               label="Clinic"
               placeholder="Search clinic name"
@@ -144,11 +143,24 @@ export default function EditEmergency() {
               onSelectPlace={(p) => { setVetClinic(p.name); if (p.phone) setVetPhone(p.phone); if (p.address) setVetAddress(p.address); }}
             />
             <LabeledInput label="Address" placeholder="Address" value={vetAddress} onChangeText={setVetAddress} />
-            <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={vetPhone} onChangeText={setVetPhone} />
+            <LabeledInput
+              name
+              label="Vet name"
+              placeholder={vetClinic ? "e.g. Dr. Sarah Mitchell" : "Search a clinic first"}
+              editable={!!vetClinic}
+              value={vetContactName}
+              onChangeText={setVetContactName}
+            />
+            <LabeledInput
+              label="Phone"
+              placeholder={vetClinic ? "Phone" : "Search a clinic first"}
+              editable={!!vetClinic}
+              phone
+              keyboardType="phone-pad"
+              value={vetPhone}
+              onChangeText={setVetPhone}
+            />
           </View>
-          <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 8, fontFamily: "Satoshi-Light" }}>
-            Consider pre-authorising your sitter directly with your vet by phone or through their online portal.
-          </Text>
         </Card>
 
         <Card>
@@ -162,7 +174,15 @@ export default function EditEmergency() {
               onSelectPlace={(p) => { setEmergClinic(p.name); if (p.phone) setEmergPhone(p.phone); if (p.address) setEmergAddress(p.address); }}
             />
             <LabeledInput label="Address" placeholder="Address" value={emergAddress} onChangeText={setEmergAddress} />
-            <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={emergPhone} onChangeText={setEmergPhone} />
+            <LabeledInput
+              label="Phone"
+              placeholder={emergClinic ? "Phone" : "Search a clinic first"}
+              editable={!!emergClinic}
+              phone
+              keyboardType="phone-pad"
+              value={emergPhone}
+              onChangeText={setEmergPhone}
+            />
           </View>
         </Card>
 

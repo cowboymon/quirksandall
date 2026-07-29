@@ -30,7 +30,6 @@ export default function Step2() {
         <Card>
           <Eyebrow bold>Vet</Eyebrow>
           <View style={{ gap: 8, marginTop: 12 }}>
-            <LabeledInput name label="Vet name" placeholder="e.g. Dr. Sarah Mitchell" value={pet.vetContactName ?? ""} onChangeText={(v) => setPet({ vetContactName: v })} />
             <LabeledPlacesInput
               label="Clinic"
               placeholder="Search clinic name"
@@ -39,11 +38,24 @@ export default function Step2() {
               onSelectPlace={(p) => setPet({ vetClinic: p.name, ...(p.phone ? { vetPhone: p.phone } : {}), ...(p.address ? { vetAddress: p.address } : {}) })}
             />
             <LabeledInput label="Address" placeholder="Address" value={pet.vetAddress ?? ""} onChangeText={(v) => setPet({ vetAddress: v })} />
-            <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={pet.vetPhone ?? ""} onChangeText={(v) => setPet({ vetPhone: v })} />
+            <LabeledInput
+              name
+              label="Vet name"
+              placeholder={pet.vetClinic ? "e.g. Dr. Sarah Mitchell" : "Search a clinic first"}
+              editable={!!pet.vetClinic}
+              value={pet.vetContactName ?? ""}
+              onChangeText={(v) => setPet({ vetContactName: v })}
+            />
+            <LabeledInput
+              label="Phone"
+              placeholder={pet.vetClinic ? "Phone" : "Search a clinic first"}
+              editable={!!pet.vetClinic}
+              phone
+              keyboardType="phone-pad"
+              value={pet.vetPhone ?? ""}
+              onChangeText={(v) => setPet({ vetPhone: v })}
+            />
           </View>
-          <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 8, fontFamily: "Satoshi-Light" }}>
-            Consider pre-authorising your sitter directly with your vet by phone or through their online portal.
-          </Text>
         </Card>
 
         <Card>
