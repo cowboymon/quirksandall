@@ -6,6 +6,21 @@
 # the same list of steps `eas/build` runs by default for an iOS build using
 # EAS-managed (remote) credentials, with `eas/install_node_modules` swapped
 # for a manual pnpm install. See github.com/expo/eas-cli issues #2978, #3247.
+#
+# CONSEQUENCE — build numbers must be local, not remote. `eas/prebuild` below
+# regenerates the native project from app.json, so CFBundleVersion ends up as
+# whatever app.json says. A default `eas/build` run injects the remote build
+# number into the job before prebuild; this hand-rolled step list does not. So
+# with appVersionSource "remote" and no ios.buildNumber in app.json, prebuild
+# fell back to Expo's default of "1", and every archive shipped as
+# CFBundleVersion 1 while the EAS dashboard reported 15, 16, 17. Confirmed by
+# reading Info.plist out of three of the uploaded IPAs; the only one that
+# carried a real number was a build made while app.json had the value pinned.
+#
+# eas.json therefore pins appVersionSource "local" and app.json carries
+# ios.buildNumber. Do not switch it back to "remote" without also adding a step
+# here that writes the version into the native project — the dashboard number
+# lies otherwise, and App Store Connect rejects the upload as a duplicate.
 build:
   name: iOS build with manual pnpm install (workaround for EAS pnpm-workspace detection bug)
   steps:
