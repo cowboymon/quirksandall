@@ -1,5 +1,5 @@
 // Inline PIN change component — used in the emergency contacts edit screen
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
 import { AppAlert } from "../stores/appAlert";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -14,12 +14,29 @@ type Stage = "idle" | "set" | "confirm";
 
 export default function PINEditor({ petId, petName, autoStart }: Props) {
   const [stage, setStage] = useState<Stage>(autoStart ? "set" : "idle");
+  // Setting a first PIN and replacing an existing one are different actions
+  // and need different words — "change" and "the old PIN stopped working"
+  // are both wrong when there was never a PIN to begin with.
+  const [hasPin, setHasPin] = useState<boolean | null>(null);
   const [pin, setPin] = useState("");
   const [confirm, setConfirm] = useState("");
   const [mismatch, setMismatch] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const current = stage === "confirm" ? confirm : pin;
+
+  useEffect(() => {
+    if (!petId) return;
+    supabase
+      .from("share_links")
+      .select("pin_hash")
+      .eq("pet_id", petId)
+      .eq("revoked", false)
+      .not("pin_hash", "is", null)
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => setHasPin(!!data));
+  }, [petId]);
 
   const handleChange = async (val: string) => {
     const digits = val.replace(/\D/g, "").slice(0, 4);
@@ -76,14 +93,20 @@ export default function PINEditor({ petId, petName, autoStart }: Props) {
         setStage("idle");
         setPin("");
         setConfirm("");
-        // Anyone holding the old PIN is now locked out with no way to know why
-        // — the sitter just sees "that PIN didn't match". Say so plainly rather
-        // than leaving the owner to work it out from a support message later.
+        // Read before flipping the flag: replacing a PIN silently locks out
+        // anyone holding the old one (the sitter just sees "that PIN didn't
+        // match"), so the owner is told. Setting a first PIN locks out nobody
+        // and shouldn't imply it did.
+        const wasReplaced = hasPin === true;
+        const who = petName?.trim() || "your pet";
+        setHasPin(true);
         AppAlert.alert(
-          "PIN updated",
-          "The old PIN stopped working straight away. Anyone still looking after " +
-            (petName?.trim() || "your pet") +
-            " will need the new one — send it to them when you get a chance."
+          wasReplaced ? "PIN updated" : "PIN set",
+          wasReplaced
+            ? "The old PIN stopped working straight away. Anyone still looking after " +
+              who + " will need the new one — send it to them when you get a chance."
+            : "The emergency contacts on " + who + "'s link now wait for this PIN. " +
+              "You'll find it on the dashboard whenever you need to send it."
         );
       } catch (e: any) {
         AppAlert.alert("Couldn't update PIN", e.message);
@@ -106,7 +129,9 @@ export default function PINEditor({ petId, petName, autoStart }: Props) {
       {stage === "idle" && (
         <>
           <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 6, marginBottom: 12, fontFamily: "Satoshi-Light" }}>
-            Anyone with the link sees the profile. This part waits for the PIN.
+            {hasPin
+              ? "Anyone with the link sees the profile. This part waits for the PIN."
+              : "Anyone with the link sees the profile. Set a PIN to keep the emergency contacts back."}
           </Text>
           <TouchableOpacity
             onPress={() => setStage("set")}
@@ -114,7 +139,7 @@ export default function PINEditor({ petId, petName, autoStart }: Props) {
             style={{ height: 46, borderRadius: 12, backgroundColor: colors.button, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }}
           >
             <Ionicons name="lock-closed" size={15} color={colors.buttonText} />
-            <Text style={{ color: colors.buttonText, fontSize: 15, fontFamily: "Satoshi-Medium", letterSpacing: 0.3 }}>Change PIN</Text>
+            <Text style={{ color: colors.buttonText, fontSize: 15, fontFamily: "Satoshi-Medium", letterSpacing: 0.3 }}>{hasPin ? "Change PIN" : "Set a PIN"}</Text>
           </TouchableOpacity>
         </>
       )}
@@ -122,7 +147,7 @@ export default function PINEditor({ petId, petName, autoStart }: Props) {
       {stage !== "idle" && (
         <View style={{ marginTop: 12 }}>
           <Text style={{ color: mismatch ? colors.danger : colors.textMuted, fontSize: 13, marginBottom: 8 }}>
-            {stage === "set" ? "Choose a 4-digit PIN" : mismatch ? "Didn't match. Try again." : "Confirm your PIN"}
+            {stage === "set" ? (hasPin ? "Choose a new 4-digit PIN" : "Choose a 4-digit PIN") : mismatch ? "Didn't match. Try again." : "Confirm your PIN"}
           </Text>
 
           <View style={{ flexDirection: "row", gap: 10, position: "relative" }}>

@@ -567,7 +567,7 @@ export default function Dashboard() {
                     style={{ flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start", marginTop: 6, marginLeft: 20, paddingVertical: 4 }}
                   >
                     <Ionicons name="key-outline" size={13} color={colors.primary} />
-                    <Text style={{ color: colors.primary, fontSize: 12, fontFamily: "Satoshi-Medium" }}>Change PIN →</Text>
+                    <Text style={{ color: colors.primary, fontSize: 12, fontFamily: "Satoshi-Medium" }}>{links.some((l) => l.pin_hash) ? "Change PIN →" : "Set a PIN →"}</Text>
                   </TouchableOpacity>
                 )}
                 {/* Delete pet — a clear callout under Pet Basics, mirroring Change PIN */}
