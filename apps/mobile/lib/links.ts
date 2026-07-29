@@ -17,6 +17,7 @@ export type OwnerLink = {
   pin_hash: string | null;
   duration_preset: string | null;
   ends_at: string | null;
+  first_shared_at: string | null;
 };
 
 export function randomToken(): string {
@@ -30,7 +31,7 @@ export function randomToken(): string {
 export async function listLinks(petId: string): Promise<OwnerLink[]> {
   const { data } = await supabase
     .from("share_links")
-    .select("id, token, label, revoked, last_viewed_at, created_at, pin_hash, duration_preset, ends_at")
+    .select("id, token, label, revoked, last_viewed_at, created_at, pin_hash, duration_preset, ends_at, first_shared_at")
     .eq("pet_id", petId)
     .eq("revoked", false)
     .order("created_at", { ascending: true });
@@ -75,7 +76,7 @@ export async function createLink(petId: string, label: string): Promise<OwnerLin
     const { data, error } = await supabase
       .from("share_links")
       .insert({ pet_id: petId, token: randomToken(), label, pin_hash: existing?.pin_hash ?? null })
-      .select("id, token, label, revoked, last_viewed_at, created_at, pin_hash, duration_preset, ends_at")
+      .select("id, token, label, revoked, last_viewed_at, created_at, pin_hash, duration_preset, ends_at, first_shared_at")
       .single();
     if (!error && data) {
       // Value Moment — a shareable link now exists for this pet.
@@ -86,6 +87,13 @@ export async function createLink(petId: string, label: string): Promise<OwnerLin
     if (error && (error as { code?: string }).code !== "23505") break;
   }
   return null;
+}
+
+// Stamps the first time a link was actually sent, so the explanatory intro
+// message is used once and repeat sends stay bare. Only ever set, never
+// cleared — "has this sitter seen the explanation" doesn't become false again.
+export async function markLinkShared(id: string): Promise<void> {
+  await supabase.from("share_links").update({ first_shared_at: new Date().toISOString() }).eq("id", id);
 }
 
 export async function renameLink(id: string, label: string): Promise<void> {
