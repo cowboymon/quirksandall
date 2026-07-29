@@ -36,7 +36,7 @@ export default function PINGate({ token, onUnlocked }: Props) {
           setCooldown(true);
           setError("Too many tries. Wait a few minutes, or call the owner directly.");
         } else {
-          setError("That PIN didn't match. The owner set it — ask them directly.");
+          setError("That PIN didn't match. If the owner changed it, ask them for the current one.");
           setTimeout(() => { setPin(""); setError(null); }, 1200);
         }
       } catch {

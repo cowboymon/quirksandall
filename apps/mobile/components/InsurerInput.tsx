@@ -10,6 +10,7 @@
 // the two suggestion fields in this screen behave identically.
 import { useEffect, useRef, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Modal, Pressable, Animated, Keyboard, Dimensions } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import * as Localization from "expo-localization";
 import { colors } from "@quirksandall/shared";
 import { FieldLabel } from "./ui";
@@ -59,19 +60,31 @@ export function InsurerInput({
   return (
     <View>
       <FieldLabel>{label}</FieldLabel>
-      <View ref={fieldRef} collapsable={false}>
+      <View ref={fieldRef} collapsable={false} style={{ justifyContent: "center" }}>
+        <View style={{ position: "absolute", left: 10, zIndex: 1 }}>
+          <Ionicons name="search" size={16} color={colors.textMuted} />
+        </View>
         <TextInput
           value={value}
-          onChangeText={(t) => { onChangeText(t); measure(); }}
+          // Deliberately no measure() here: it's a native round-trip, and on
+          // every keystroke it was what made this field feel slower than the
+          // clinic search. The anchor can't move while typing, so measuring
+          // on focus covers it.
+          onChangeText={onChangeText}
           onFocus={() => { setFocused(true); measure(); }}
           onBlur={() => setTimeout(closeDropdown, 150)}
           placeholder={placeholder}
           placeholderTextColor={colors.textMuted}
           autoCapitalize="words"
+          returnKeyType="search"
+          // Nothing to submit — the list filters locally as you type — so
+          // the return key takes the single remaining match if there is one,
+          // and otherwise just gets out of the way.
+          onSubmitEditing={() => { if (matches.length === 1) pick(matches[0]); else close(); }}
           style={{
             minHeight: 40, borderRadius: 8, borderWidth: 1,
             borderColor: focused ? colors.primary : colors.border, backgroundColor: colors.background,
-            paddingHorizontal: 12, paddingVertical: 8, fontSize: 14, fontFamily: "Satoshi", color: colors.textDark,
+            paddingLeft: 34, paddingRight: 12, paddingVertical: 8, fontSize: 14, fontFamily: "Satoshi", color: colors.textDark,
           }}
         />
       </View>

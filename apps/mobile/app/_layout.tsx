@@ -17,7 +17,7 @@ SplashScreen.preventAutoHideAsync();
 // than a brand moment. Measured from module load (app start), so a slow load
 // doesn't add to it: if fonts take longer than this, the splash hides as soon
 // as they're ready and nobody waits twice.
-const MIN_SPLASH_MS = 3000;
+const MIN_SPLASH_MS = 2000;
 const startedAt = Date.now();
 
 export default function RootLayout() {

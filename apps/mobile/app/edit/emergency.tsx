@@ -14,7 +14,7 @@ import { colors } from "@quirksandall/shared";
 import { router, useLocalSearchParams } from "expo-router";
 
 export default function EditEmergency() {
-  const { petId, loading } = useActivePet();
+  const { pet, petId, loading } = useActivePet();
   const { section } = useLocalSearchParams<{ section?: string }>();
   const scrollRef = useRef<ScrollView>(null);
   const pinY = useRef(0);
@@ -272,7 +272,7 @@ export default function EditEmergency() {
 
         {/* PIN editor */}
         <View onLayout={(e) => { pinY.current = e.nativeEvent.layout.y; }}>
-          <PINEditor petId={petId} autoStart={section === "pin"} />
+          <PINEditor petId={petId} petName={pet?.name} autoStart={section === "pin"} />
         </View>
       </View>
     </EditShell>
