@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { site } from "../site";
+import { pirschEvent } from "../lib/pirsch";
 
 export const metadata: Metadata = {
   title: "Support",
@@ -30,6 +31,7 @@ export default function SupportPage() {
             <p className="eyebrow text-text-muted">Email us</p>
             <a
               href={`mailto:${site.contactEmail}`}
+              {...pirschEvent("Contact Clicked", { location: "support" })}
               className="mt-1.5 block break-all text-lg font-medium text-primary underline underline-offset-2 sm:text-xl"
             >
               {site.contactEmail}

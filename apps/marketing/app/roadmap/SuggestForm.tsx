@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { track } from "../lib/pirsch";
 
 export default function SuggestForm() {
   const [suggestion, setSuggestion] = useState("");
@@ -18,7 +19,12 @@ export default function SuggestForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ suggestion, email, company }),
       });
-      setStatus(res.ok ? "done" : "error");
+      if (res.ok) {
+        setStatus("done");
+        track("Suggestion Submitted");
+      } else {
+        setStatus("error");
+      }
     } catch {
       setStatus("error");
     }
