@@ -204,6 +204,15 @@ export default function RecipientView({ profile, token }: Props) {
                 {(emergencyContacts.emergencyVet.clinic || emergencyContacts.emergencyVet.phone) && (
                   <DarkContact label="Emergency vet" place={emergencyContacts.emergencyVet.clinic} phone={emergencyContacts.emergencyVet.phone} />
                 )}
+                <a
+                  href="https://www.google.com/maps/search/emergency+vet+near+me"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="self-start text-xs underline"
+                  style={{ color: "rgba(248,236,238,0.55)" }}
+                >
+                  Not at {possessive(name)} home? Find an emergency vet near me
+                </a>
                 {(emergencyContacts.insurance.provider || emergencyContacts.insurance.policyNumber) && (
                   <div className="flex flex-col gap-0.5">
                     <p className="eyebrow" style={{ color: "rgba(248,236,238,0.5)" }}>Insurance</p>
