@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import Script from "next/script";
 import { site } from "./site";
-import Analytics from "./components/Analytics";
 
 // Self-hosted brand fonts — the same licensed files the app ships with.
 // Satoshi for body/UI, Tanker for display. No CDN dependency.
@@ -81,8 +81,6 @@ const orgLd = {
   ],
 };
 
-const swetrixPid = process.env.NEXT_PUBLIC_SWETRIX_PID;
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-AU" className={`${satoshi.variable} ${tanker.variable}`}>
@@ -92,7 +90,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd).replace(/</g, "\\u003c") }}
         />
-        {swetrixPid ? <Analytics pid={swetrixPid} /> : null}
+        {/* Pirsch — cookieless, privacy-friendly analytics. No consent banner needed. */}
+        <Script
+          defer
+          src="https://api.pirsch.io/pa.js"
+          id="pianjs"
+          data-code="gqaBrXSCahbRaQkAgZg5EPKjyk9Zr08Y"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
