@@ -365,11 +365,14 @@ export default function Dashboard() {
                 </TouchableOpacity>
               </>
             ) : (
-              // Server-side it's only ever a bcrypt hash, so a device that
-              // never set this PIN genuinely cannot show it.
+              // A PIN exists but this phone doesn't hold it: reinstalled, new
+              // device, or simply set before the app started remembering it.
+              // Server-side it's only ever a bcrypt hash, so it genuinely
+              // can't be shown — and the only useful move is changing it, so
+              // say that rather than explaining our storage model.
               <TouchableOpacity onPress={() => router.push("/edit/emergency?section=pin")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                <Text style={{ color: "rgba(248,236,238,0.4)", fontSize: 11, fontFamily: "Satoshi-Medium" }}>
-                  PIN set on another device — set a new one
+                <Text style={{ color: colors.cardDarkLabel, fontSize: 11, fontFamily: "Satoshi-Medium" }}>
+                  PIN set — tap to change it
                 </Text>
               </TouchableOpacity>
             )}
