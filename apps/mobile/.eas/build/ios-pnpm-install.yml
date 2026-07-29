@@ -23,6 +23,8 @@ build:
         inputs:
           throw_if_not_configured: false
 
+    - eas/install_pods
+
     - eas/configure_ios_credentials
 
     - eas/generate_gymfile_from_template:
