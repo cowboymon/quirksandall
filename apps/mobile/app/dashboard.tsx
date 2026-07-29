@@ -314,26 +314,15 @@ export default function Dashboard() {
         {/* Named share links */}
         <View style={{ backgroundColor: colors.cardDark, borderRadius: 12, overflow: "hidden" }}>
           <View style={{ paddingHorizontal: 20, paddingTop: 18, paddingBottom: 14 }}>
-            {/* Preview sits on the title's own row so it reads as belonging to
-                the section, rather than floating against the card's top edge
-                while the heading starts below it. */}
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-              {/* Not <Eyebrow ochre> here: that rose (#B83A52) is 2.79:1 on
-                  this maroon — below even the 3:1 large-text floor. It's fine
-                  everywhere else it's used, all of which are light
-                  backgrounds, so the fix belongs to this usage rather than the
-                  token. cardDarkLabel is 7.68:1 and already carries the other
-                  labels on this card. */}
-              <Text style={{ color: colors.cardDarkLabel, fontSize: 11, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.5 }}>
-                Share links
-              </Text>
-              {links.length > 0 && (
-                <TouchableOpacity onPress={preview} style={{ flexDirection: "row", alignItems: "center", gap: 6, height: 32, paddingHorizontal: 12, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)" }}>
-                  <Ionicons name="eye-outline" size={14} color="rgba(248,236,238,0.8)" />
-                  <Text style={{ color: "rgba(248,236,238,0.8)", fontSize: 12, fontFamily: "Satoshi-Medium" }}>Preview</Text>
-                </TouchableOpacity>
-              )}
-            </View>
+            {/* Not <Eyebrow ochre> here: that rose (#B83A52) is 2.79:1 on
+                this maroon — below even the 3:1 large-text floor. It's fine
+                everywhere else it's used, all of which are light
+                backgrounds, so the fix belongs to this usage rather than the
+                token. cardDarkLabel is 7.68:1 and already carries the other
+                labels on this card. */}
+            <Text style={{ color: colors.cardDarkLabel, fontSize: 11, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.5 }}>
+              Share links
+            </Text>
             <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, marginTop: 6, lineHeight: 17, fontFamily: "Satoshi-Light" }}>
               Each link is unique. Name it by who you're sending it to — sitter, family, vet, anyone.
             </Text>
@@ -347,48 +336,61 @@ export default function Dashboard() {
               Sits directly under the header, above the links: it applies to
               all of them, so it reads as a property of the set rather than
               something attached to whichever link happens to be last. */}
-          <View style={{ paddingHorizontal: 20, paddingBottom: 14, flexDirection: "row", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-            <Ionicons name="key-outline" size={12} color="rgba(248,236,238,0.5)" />
-            {!links.some((l) => l.pin_hash) ? (
-              // No PIN anywhere on this pet — the emergency block is open to
-              // anyone holding the link, which is worth saying out loud.
-              <TouchableOpacity onPress={() => router.push("/edit/emergency?section=pin")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                <Text style={{ color: colors.cardDarkLabel, fontSize: 11, fontFamily: "Satoshi-Medium" }}>
-                  We'd set a PIN — it keeps the emergency contacts back
-                </Text>
-              </TouchableOpacity>
-            ) : petPin ? (
-              <>
-                <Text style={{ color: "rgba(248,236,238,0.85)", fontSize: 12, fontFamily: "Satoshi-Bold", letterSpacing: 2 }}>{petPin}</Text>
-                {/* One action, not two: copying and sending are the same
-                    intent — get this PIN to the sitter. So it lands on the
-                    clipboard and opens the share sheet together, which also
-                    covers the apps the sheet can't reach (paste it there
-                    instead). */}
-                <TouchableOpacity
-                  onPress={() => {
-                    Clipboard.setStringAsync(petPin);
-                    setPinCopied(true);
-                    setTimeout(() => setPinCopied(false), 1600);
-                    Share.share({ message: pinMessage(pet.name, petPin) });
-                  }}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
+          <View style={{ paddingHorizontal: 20, paddingBottom: 14, flexDirection: "row", alignItems: "center", gap: 12 }}>
+            <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              <Ionicons name="key-outline" size={12} color="rgba(248,236,238,0.5)" />
+              {!links.some((l) => l.pin_hash) ? (
+                // No PIN anywhere on this pet — the emergency block is open to
+                // anyone holding the link, which is worth saying out loud.
+                <TouchableOpacity onPress={() => router.push("/edit/emergency?section=pin")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                   <Text style={{ color: colors.cardDarkLabel, fontSize: 11, fontFamily: "Satoshi-Medium" }}>
-                    {pinCopied ? "Copied — send it on its own" : "Send separately"}
+                    We'd set a PIN — it keeps the emergency contacts back
                   </Text>
                 </TouchableOpacity>
-              </>
-            ) : (
-              // A PIN exists but this phone doesn't hold it: reinstalled, new
-              // device, or simply set before the app started remembering it.
-              // Server-side it's only ever a bcrypt hash, so it genuinely
-              // can't be shown — and the only useful move is changing it, so
-              // say that rather than explaining our storage model.
-              <TouchableOpacity onPress={() => router.push("/edit/emergency?section=pin")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                <Text style={{ color: colors.cardDarkLabel, fontSize: 11, fontFamily: "Satoshi-Medium" }}>
-                  PIN set — tap to change it
-                </Text>
+              ) : petPin ? (
+                <>
+                  <Text style={{ color: "rgba(248,236,238,0.85)", fontSize: 12, fontFamily: "Satoshi-Bold", letterSpacing: 2 }}>{petPin}</Text>
+                  {/* One action, not two: copying and sending are the same
+                      intent — get this PIN to the sitter. So it lands on the
+                      clipboard and opens the share sheet together, which also
+                      covers the apps the sheet can't reach (paste it there
+                      instead). */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      Clipboard.setStringAsync(petPin);
+                      setPinCopied(true);
+                      setTimeout(() => setPinCopied(false), 1600);
+                      Share.share({ message: pinMessage(pet.name, petPin) });
+                    }}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  >
+                    <Text style={{ color: colors.cardDarkLabel, fontSize: 11, fontFamily: "Satoshi-Medium" }}>
+                      {pinCopied ? "Copied — send it on its own" : "Send separately"}
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                // A PIN exists but this phone doesn't hold it: reinstalled, new
+                // device, or simply set before the app started remembering it.
+                // Server-side it's only ever a bcrypt hash, so it genuinely
+                // can't be shown — and the only useful move is changing it, so
+                // say that rather than explaining our storage model.
+                <TouchableOpacity onPress={() => router.push("/edit/emergency?section=pin")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                  <Text style={{ color: colors.cardDarkLabel, fontSize: 11, fontFamily: "Satoshi-Medium" }}>
+                    PIN set — tap to change it
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            {/* Preview rides the PIN row rather than the title row: both are
+                card-level actions on the whole set of links, and pairing them
+                keeps the heading and its description as one uninterrupted
+                block of text. Right-aligned, so it holds the same edge as the
+                per-link buttons below it. */}
+            {links.length > 0 && (
+              <TouchableOpacity onPress={preview} style={{ flexDirection: "row", alignItems: "center", gap: 6, height: 32, paddingHorizontal: 12, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)" }}>
+                <Ionicons name="eye-outline" size={14} color="rgba(248,236,238,0.8)" />
+                <Text style={{ color: "rgba(248,236,238,0.8)", fontSize: 12, fontFamily: "Satoshi-Medium" }}>Preview</Text>
               </TouchableOpacity>
             )}
           </View>
