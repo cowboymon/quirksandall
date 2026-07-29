@@ -37,13 +37,13 @@ export default function Step2() {
           <View style={{ gap: 8, marginTop: 12 }}>
             <LabeledInput
               name
-              label="Vet name"
+              label="Your vet's name"
               placeholder="e.g. Dr. Sarah Mitchell"
               value={pet.vetContactName ?? ""}
               onChangeText={(v) => setPet({ vetContactName: v })}
             />
             <LabeledPlacesInput
-              label="Clinic"
+              label="Clinic name"
               placeholder="Search clinic name"
               value={pet.vetClinic ?? ""}
               onChangeText={(v) => { setPet({ vetClinic: v }); setVetManual(false); }}
@@ -53,14 +53,14 @@ export default function Step2() {
             />
             <LabeledInput
               label="Address"
-              placeholder={vetManual ? "Address" : "Search a clinic first"}
+              placeholder={vetManual ? "Address" : "Fills in from your clinic search"}
               editable={vetManual}
               value={pet.vetAddress ?? ""}
               onChangeText={(v) => setPet({ vetAddress: v })}
             />
             <LabeledInput
               label="Phone"
-              placeholder={vetManual ? "Phone" : "Search a clinic first"}
+              placeholder={vetManual ? "Phone" : "Fills in from your clinic search"}
               editable={vetManual}
               phone
               keyboardType="phone-pad"
@@ -73,7 +73,7 @@ export default function Step2() {
         <Card>
           <Eyebrow bold>Emergency vet</Eyebrow>
           <View style={{ gap: 8, marginTop: 12 }}>
-            <LabeledInput label="Clinic" placeholder="Clinic name" value={pet.emergVetClinic ?? ""} onChangeText={(v) => setPet({ emergVetClinic: v })} />
+            <LabeledInput label="Clinic name" placeholder="Clinic name" value={pet.emergVetClinic ?? ""} onChangeText={(v) => setPet({ emergVetClinic: v })} />
             <LabeledInput label="Address" placeholder="Address" value={pet.emergVetAddress ?? ""} onChangeText={(v) => setPet({ emergVetAddress: v })} />
             <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={pet.emergVetPhone ?? ""} onChangeText={(v) => setPet({ emergVetPhone: v })} />
           </View>

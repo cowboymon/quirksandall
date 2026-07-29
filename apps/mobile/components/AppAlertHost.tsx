@@ -1,6 +1,7 @@
 // Single host for every branded popup in the app (replaces native Alert.alert
 // everywhere — see stores/appAlert.ts). Mount once, at the root layout.
-import { Modal, View, Text, TouchableOpacity } from "react-native";
+import { useRef } from "react";
+import { Modal, View, Text, TouchableOpacity, Platform } from "react-native";
 import { colors } from "@quirksandall/shared";
 import { useAppAlertStore, type AppAlertButton } from "../stores/appAlert";
 
@@ -13,9 +14,24 @@ function buttonColors(style: AppAlertButton["style"]) {
 export default function AppAlertHost() {
   const { visible, title, message, buttons, dismiss } = useAppAlertStore();
 
+  // Run the button's action only once this modal is fully off screen. iOS
+  // silently drops a share sheet (or any other presentation) requested while
+  // another modal is still dismissing — which is why acknowledging the
+  // "tell your vet" nudge appeared to do nothing and left the owner to tap
+  // Share a second time. onDismiss fires after the animation completes;
+  // Android has no such restriction and no onDismiss, so it runs inline.
+  const pending = useRef<(() => void) | null>(null);
+
+  const flushPending = () => {
+    const run = pending.current;
+    pending.current = null;
+    run?.();
+  };
+
   const press = (b: AppAlertButton) => {
+    pending.current = b.onPress ?? null;
     dismiss();
-    b.onPress?.();
+    if (Platform.OS !== "ios") flushPending();
   };
 
   // 1-2 buttons sit side by side (matches ConfirmModal); 3+ (an action-sheet
@@ -23,7 +39,7 @@ export default function AppAlertHost() {
   const stacked = buttons.length > 2;
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={dismiss}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={dismiss} onDismiss={flushPending}>
       <View style={{ flex: 1, backgroundColor: "rgba(31,26,23,0.45)", alignItems: "center", justifyContent: "center", paddingHorizontal: 32 }}>
         <View style={{ width: "100%", maxWidth: 360, backgroundColor: "#FFFFFF", borderRadius: 16, padding: 22 }}>
           <Text style={{ fontFamily: "Tanker", fontSize: 22, lineHeight: 26, color: colors.textDark }}>{title}</Text>
