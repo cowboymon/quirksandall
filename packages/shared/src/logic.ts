@@ -219,8 +219,23 @@ export type StayPreset = "hours" | "overnight" | "days" | "longer";
 export function stayPhrase(preset?: string | null, endsAt?: string | null): string | null {
   if (endsAt) {
     const d = new Date(endsAt);
+    // A stay that has already ended tells a sitter something false — "until
+    // Sat 3 Aug" read on the 10th implies they're still on duty. Once the end
+    // date passes, the date stops counting and we fall through to the preset
+    // (or to nothing), rather than showing a stale instruction. Enforced here
+    // so every surface — recipient page, in-app preview, dashboard — inherits
+    // it without each having to remember.
     if (!isNaN(d.getTime())) {
-      return `until ${d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}`;
+      // Valid through the whole of the end day, not up to its midnight — a
+      // stay "until Sat 3 Aug" still applies at 6pm on Sat 3 Aug.
+      const endOfDay = new Date(d);
+      endOfDay.setHours(23, 59, 59, 999);
+      if (endOfDay.getTime() >= Date.now()) {
+        return `until ${d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}`;
+      }
+      // Expired: don't fall through to the preset either — "for a few days"
+      // is equally stale once the stay it described is over.
+      return null;
     }
   }
   switch (preset) {

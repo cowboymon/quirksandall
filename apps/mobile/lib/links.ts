@@ -34,7 +34,30 @@ export async function listLinks(petId: string): Promise<OwnerLink[]> {
     .eq("pet_id", petId)
     .eq("revoked", false)
     .order("created_at", { ascending: true });
-  return data ?? [];
+  const links = data ?? [];
+
+  // A stay that has already finished shouldn't linger on the dashboard as if
+  // it were still running. stayPhrase() already refuses to render an expired
+  // date to a sitter; this clears it at the source so the owner's own view is
+  // accurate too, and so a link they reuse next month doesn't carry last
+  // month's dates. Silent by design — telling someone their pet's stay ended
+  // is news they already have. Fire-and-forget: a failed cleanup is cosmetic,
+  // and stayPhrase still hides it.
+  const expired = links.filter((l) => {
+    if (!l.ends_at) return false;
+    const d = new Date(l.ends_at);
+    if (isNaN(d.getTime())) return false;
+    d.setHours(23, 59, 59, 999);
+    return d.getTime() < Date.now();
+  });
+  if (expired.length) {
+    const ids = expired.map((l) => l.id);
+    supabase.from("share_links").update({ duration_preset: null, ends_at: null }).in("id", ids).then(() => {});
+    for (const l of links) {
+      if (ids.includes(l.id)) { l.duration_preset = null; l.ends_at = null; }
+    }
+  }
+  return links;
 }
 
 // Create a new named link. New links inherit the pet's existing PIN hash (if any
