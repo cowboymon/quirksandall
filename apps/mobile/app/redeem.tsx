@@ -8,10 +8,10 @@ import { View, Text, TextInput, TouchableOpacity, ScrollView } from "react-nativ
 import { AppAlert } from "../stores/appAlert";
 import { router } from "expo-router";
 import { colors } from "@quirksandall/shared";
-import { usePrice } from "../hooks/usePrice";
+import { usePrices } from "../hooks/usePrices";
 
 export default function Redeem() {
-  const price = usePrice();
+  const prices = usePrices();
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -79,7 +79,7 @@ export default function Redeem() {
       </TouchableOpacity>
 
       <Text style={{ color: colors.textMuted, fontSize: 12, lineHeight: 18, marginTop: 16, fontFamily: "Satoshi-Light" }}>
-        No code? Head back and unlock for {price} — once, forever.
+        No code? Head back and unlock — {prices.annual} a year, or {prices.lifetime} once.
       </Text>
     </ScrollView>
   );

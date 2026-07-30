@@ -21,14 +21,20 @@ serve(async (req) => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return new Response("Unauthorized", { status: 401 });
 
-  // Check paid tier
+  // Check paid tier. Deno can't import @quirksandall/shared, so this inlines
+  // isUnlocked() from packages/shared/src/logic.ts — paid AND not lapsed
+  // (expires_at null = lifetime; a date = subscription period end). Keep the
+  // two in sync.
   const { data: owner } = await supabase
     .from("owners")
-    .select("purchase_status")
+    .select("purchase_status, expires_at")
     .eq("id", user.id)
     .single();
 
-  if (owner?.purchase_status !== "paid") {
+  const unlocked =
+    owner?.purchase_status === "paid" &&
+    (!owner.expires_at || new Date(owner.expires_at).getTime() > Date.now());
+  if (!unlocked) {
     return new Response(JSON.stringify({ error: "Paid feature" }), { status: 403 });
   }
 

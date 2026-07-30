@@ -12,8 +12,8 @@ import { supabase } from "../../lib/supabase";
 import { uploadPetPhoto } from "../../lib/uploadPhoto";
 import { randomToken } from "../../lib/links";
 import { rememberPin } from "../../lib/pinVault";
-import { colors, displayDateToISO, capitalizeFirst } from "@quirksandall/shared";
-import { usePrice } from "../../hooks/usePrice";
+import { colors, displayDateToISO, capitalizeFirst, isUnlocked } from "@quirksandall/shared";
+import { usePrices } from "../../hooks/usePrices";
 import { useState, useEffect } from "react";
 
 const mealInput = {
@@ -43,7 +43,7 @@ function MealBlock({ label, time, amount, onTime, onAmount, divider, defaultPeri
 }
 
 export default function Step4() {
-  const price = usePrice();
+  const prices = usePrices();
   const { pet, setPet, reset } = useOnboardingStore();
   const [saving, setSaving] = useState(false);
   // The unlock is account-wide, so a paid owner adding another pet should never
@@ -53,8 +53,8 @@ export default function Step4() {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase.from("owners").select("purchase_status").eq("id", user.id).single();
-      if (data?.purchase_status === "paid") setIsPaid(true);
+      const { data } = await supabase.from("owners").select("purchase_status, expires_at").eq("id", user.id).single();
+      if (isUnlocked(data)) setIsPaid(true);
     })();
   }, []);
 
@@ -186,7 +186,7 @@ export default function Step4() {
       {/* Paywall only for free owners — paid access is account-wide (#86). */}
       {!isPaid && (
         <View style={{ marginTop: 12 }}>
-          <InlineNote variant="paywall" cta={`Unlock for ${price}`} onCta={() => router.push("/upgrade")}>
+          <InlineNote variant="paywall" cta={`Unlock from ${prices.annual}/yr`} onCta={() => router.push("/upgrade")}>
             Routine's saved. Sitters won't see it until you unlock.
           </InlineNote>
         </View>

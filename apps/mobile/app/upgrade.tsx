@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Linking } from "react-native";
 import { AppAlert } from "../stores/appAlert";
 import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "../lib/supabase";
-import { purchasePro, restorePurchases } from "../lib/purchases";
+import { purchasePlan, restorePurchases, identifyPurchaser, type Plan, type UnlockRecord } from "../lib/purchases";
 import { colors } from "@quirksandall/shared";
-import { usePrice } from "../hooks/usePrice";
-import { REDEMPTION_ENABLED } from "../lib/config";
+import { usePrices } from "../hooks/usePrices";
+import { REDEMPTION_ENABLED, TERMS_URL, PRIVACY_URL } from "../lib/config";
 import { track, AnalyticsEvent } from "../lib/analytics";
 
 const FEATURES = [
@@ -17,21 +17,32 @@ const FEATURES = [
   { label: "Unlimited pets", sub: "Add as many as you need" },
 ];
 
+// Persist the unlock on the owners row. Client-side stopgap: the RevenueCat
+// webhook (supabase/functions/revenuecat-webhook) writes the same shape
+// server-side and is the authority once configured — this write just makes
+// the unlock instant in-session instead of waiting a webhook round-trip.
+async function persistUnlock(record: UnlockRecord) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) await supabase.from("owners").update(record).eq("id", user.id);
+}
+
 export default function Upgrade() {
-  const price = usePrice();
+  const prices = usePrices();
+  const [plan, setPlan] = useState<Plan>("lifetime");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => { track(AnalyticsEvent.PaywallViewed, { source: "upgrade" }); }, []);
 
   const handlePurchase = async () => {
     setLoading(true);
-    track(AnalyticsEvent.PurchaseStarted, { source: "upgrade" });
+    track(AnalyticsEvent.PurchaseStarted, { source: "upgrade", plan });
     try {
-      const success = await purchasePro();
-      if (success) {
-        track(AnalyticsEvent.PurchaseCompleted, { source: "upgrade" });
-        const { data: { user } } = await supabase.auth.getUser();
-        await supabase.from("owners").update({ purchase_status: "paid" }).eq("id", user!.id);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) await identifyPurchaser(user.id);
+      const record = await purchasePlan(plan);
+      if (record) {
+        track(AnalyticsEvent.PurchaseCompleted, { source: "upgrade", plan });
+        await persistUnlock(record);
         AppAlert.alert(
           "Unlocked.",
           "The full picture is live now — routines and the softer stuff.",
@@ -48,11 +59,12 @@ export default function Upgrade() {
   const handleRestore = async () => {
     setLoading(true);
     try {
-      const success = await restorePurchases();
-      if (success) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) await identifyPurchaser(user.id);
+      const record = await restorePurchases();
+      if (record) {
         track(AnalyticsEvent.PurchaseRestored, { source: "upgrade" });
-        const { data: { user } } = await supabase.auth.getUser();
-        await supabase.from("owners").update({ purchase_status: "paid" }).eq("id", user!.id);
+        await persistUnlock(record);
         AppAlert.alert("Restored", "Full access is back.", [{ text: "Got it", onPress: () => router.back() }]);
       } else {
         AppAlert.alert("Nothing to restore", "No previous purchase found for this account.");
@@ -76,28 +88,9 @@ export default function Upgrade() {
           <Text style={{ fontFamily: "Tanker", fontSize: 42, lineHeight: 42, color: "#F8ECEE", marginBottom: 14 }}>
             Unlock the full picture.
           </Text>
-          <Text style={{ color: "rgba(248,236,238,0.7)", fontSize: 15, lineHeight: 22, fontFamily: "Satoshi-Light", marginBottom: 24 }}>
+          <Text style={{ color: "rgba(248,236,238,0.7)", fontSize: 15, lineHeight: 22, fontFamily: "Satoshi-Light" }}>
             Routines and the softer stuff that makes the handoff feel less like a stranger and more like you.
           </Text>
-
-          {/* Price pill */}
-          <View
-            style={{
-              alignSelf: "flex-start",
-              flexDirection: "row",
-              alignItems: "baseline",
-              gap: 8,
-              backgroundColor: "rgba(248,236,238,0.1)",
-              borderWidth: 1,
-              borderColor: "rgba(248,236,238,0.2)",
-              borderRadius: 999,
-              paddingHorizontal: 20,
-              paddingVertical: 10,
-            }}
-          >
-            <Text style={{ fontFamily: "Tanker", fontSize: 30, color: "#F8ECEE" }}>{price}</Text>
-            <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, fontFamily: "Satoshi-Light" }}>once, forever</Text>
-          </View>
         </View>
 
         {/* ── Light panel ───────────────────────────── */}
@@ -159,8 +152,57 @@ export default function Upgrade() {
             ))}
           </View>
 
+          {/* Plan picker — two options, one entitlement. Same features either
+              way; the choice is only how it's paid for, and the cards say so
+              rather than inventing tiers that don't exist. */}
+          <View style={{ flexDirection: "row", gap: 10, marginTop: 28 }}>
+            {(
+              [
+                { id: "annual" as Plan, title: "Yearly", price: prices.annual, sub: "per year" },
+                { id: "lifetime" as Plan, title: "Forever", price: prices.lifetime, sub: "once, that's it" },
+              ]
+            ).map((p) => {
+              const selected = plan === p.id;
+              return (
+                <TouchableOpacity
+                  key={p.id}
+                  onPress={() => setPlan(p.id)}
+                  activeOpacity={0.85}
+                  style={{
+                    flex: 1,
+                    borderRadius: 12,
+                    borderWidth: 2,
+                    borderColor: selected ? "#510000" : colors.border,
+                    backgroundColor: selected ? "#FFFFFF" : colors.cardBg,
+                    paddingHorizontal: 14,
+                    paddingVertical: 14,
+                    gap: 2,
+                  }}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                    <Text style={{ color: colors.textMuted, fontSize: 11, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                      {p.title}
+                    </Text>
+                    <View
+                      style={{
+                        width: 16, height: 16, borderRadius: 8, borderWidth: 2,
+                        borderColor: selected ? "#510000" : colors.border,
+                        backgroundColor: selected ? "#510000" : "transparent",
+                        alignItems: "center", justifyContent: "center",
+                      }}
+                    >
+                      {selected && <Ionicons name="checkmark" size={10} color="#F8ECEE" />}
+                    </View>
+                  </View>
+                  <Text style={{ fontFamily: "Tanker", fontSize: 24, color: "#510000", marginTop: 6 }}>{p.price}</Text>
+                  <Text style={{ color: colors.textMuted, fontSize: 11, fontFamily: "Satoshi-Light" }}>{p.sub}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
           {/* CTA footer */}
-          <View style={{ marginTop: 28, alignItems: "center", gap: 12 }}>
+          <View style={{ marginTop: 16, alignItems: "center", gap: 12 }}>
             <TouchableOpacity
               onPress={handlePurchase}
               disabled={loading}
@@ -176,7 +218,11 @@ export default function Upgrade() {
               }}
             >
               <Text style={{ color: "#F8ECEE", fontSize: 15, fontFamily: "Satoshi-Medium", letterSpacing: 0.3 }}>
-                {loading ? "Working…" : `Unlock for ${price}`}
+                {loading
+                  ? "Working…"
+                  : plan === "lifetime"
+                  ? `Unlock forever — ${prices.lifetime}`
+                  : `Unlock for ${prices.annual} a year`}
               </Text>
             </TouchableOpacity>
 
@@ -187,7 +233,7 @@ export default function Upgrade() {
             {/* Batch-licensing redemption (breeders, insurance partners). Hidden
                 until the backend exists — an unexplained link to a "coming
                 soon" placeholder is unnecessary risk on an App Review whose
-                only job is activating the app's one real IAP.
+                only job is activating the app's real IAPs.
                 Intended architecture: code lives in a redemption_codes table →
                 a Supabase Edge Function validates it → the function calls the
                 RevenueCat API to grant a Promotional Entitlement to this user's
@@ -201,9 +247,24 @@ export default function Upgrade() {
               </TouchableOpacity>
             )}
 
+            {/* App Review requires auto-renewal terms and working Terms/Privacy
+                links on any paywall selling a subscription. Plain-worded, but
+                the required facts are all present: price, term, renewal,
+                cancellation. */}
             <Text style={{ color: colors.textMuted, fontSize: 10, fontFamily: "Satoshi-Light", textAlign: "center", lineHeight: 15 }}>
-              Charged to your App Store / Google Play account. Unlocks account-wide — every pet you add, covered.
+              {plan === "annual"
+                ? `Renews automatically at ${prices.annual} a year until cancelled — manage or cancel any time in your App Store / Google Play account settings. `
+                : "One payment, charged to your App Store / Google Play account. "}
+              Unlocks account-wide — every pet you add, covered.
             </Text>
+            <View style={{ flexDirection: "row", gap: 16 }}>
+              <TouchableOpacity onPress={() => Linking.openURL(TERMS_URL)}>
+                <Text style={{ color: colors.textMuted, fontSize: 10, fontFamily: "Satoshi", textDecorationLine: "underline" }}>Terms of Use</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => Linking.openURL(PRIVACY_URL)}>
+                <Text style={{ color: colors.textMuted, fontSize: 10, fontFamily: "Satoshi", textDecorationLine: "underline" }}>Privacy Policy</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </ScrollView>

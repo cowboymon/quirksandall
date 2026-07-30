@@ -8,8 +8,8 @@ import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
 import { Input, Eyebrow, Card, InlineNote, TimeInput, FieldTier, Select } from "../../components/ui";
 import MedicationsEditor, { medsToRows, rowsToMeds, type EditableMedication } from "../../components/MedicationsEditor";
-import { colors, capitalizeFirst } from "@quirksandall/shared";
-import { usePrice } from "../../hooks/usePrice";
+import { colors, capitalizeFirst, isUnlocked } from "@quirksandall/shared";
+import { usePrices } from "../../hooks/usePrices";
 
 const mealInput = {
   minHeight: 38, borderRadius: 8, borderWidth: 1, borderColor: colors.border,
@@ -31,7 +31,7 @@ function RoutineMeal({ label, time, amount, onTime, onAmount, divider, defaultPe
 }
 
 export default function EditRoutine() {
-  const price = usePrice();
+  const prices = usePrices();
   const { petId, pet, loading } = useActivePet();
   const { section } = useLocalSearchParams<{ section?: string }>();
   const scrollRef = useRef<ScrollView>(null);
@@ -75,12 +75,12 @@ export default function EditRoutine() {
     (async () => {
       const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       const [{ data: owner }, { data: routine }, { data: medical }] = await Promise.all([
-        supabase.from("owners").select("purchase_status").eq("id", user!.id).single(),
+        supabase.from("owners").select("purchase_status, expires_at").eq("id", user!.id).single(),
         supabase.from("pet_routine").select("*").eq("pet_id", petId).single(),
         supabase.from("pet_medical").select("*").eq("pet_id", petId).single(),
       ]);
 
-      setIsPaid(owner?.purchase_status === "paid");
+      setIsPaid(isUnlocked(owner));
 
       if (routine) {
         const f = routine.feeding ?? {};
@@ -159,7 +159,7 @@ export default function EditRoutine() {
     <EditShell title="Routine & Medical" onSave={save} saving={saving} loading={loading} scrollRef={scrollRef}>
       {!isPaid && (
         <View style={{ marginBottom: 16 }}>
-          <InlineNote variant="paywall" cta={`Unlock for ${price}`} onCta={() => router.push("/upgrade")}>
+          <InlineNote variant="paywall" cta={`Unlock from ${prices.annual}/yr`} onCta={() => router.push("/upgrade")}>
             Feeding shows on every link. The rest of the routine stays saved until you unlock.
           </InlineNote>
         </View>

@@ -54,30 +54,33 @@ export const typography = {
 
 export const buttonHeight = 44;
 
-// Pricing — the one-time unlock, shown on the marketing site and as the
-// mobile fallback.
+// Pricing — two plans: a one-time lifetime unlock and an auto-renewing
+// annual subscription. Both open the same entitlement ("pro"); they differ
+// only in how it's paid for and whether it can lapse.
 //
-// The mobile app does NOT render this directly: usePrice() reads the store's
-// own localized priceString (RevenueCat → App Store / Play) so each user sees
-// their real charge in their own currency, and a price change in App Store
-// Connect needs no app update. This constant is what usePrice() falls back to
-// while loading or when the store is unreachable, and it's what the marketing
-// site (which has no store connection) displays.
+// The mobile app does NOT render these directly: usePrices() reads the
+// store's own localized priceString per package (RevenueCat → App Store /
+// Play) so each user sees their real charge in their own currency, and a
+// price change in App Store Connect needs no app update. These constants are
+// what usePrices() falls back to while loading or when the store is
+// unreachable, and what the marketing site (which has no store connection)
+// displays.
 //
-// The base price is set in the AU storefront, so this string is AUD. Keep it in
-// sync with that, not with the US price.
-//
-// TODO — revisit both together when the pricing model lands (annual + lifetime
-// is under discussion, and the one-time price is expected to rise from launch):
-//   1. This value.
-//   2. The currency marker. The marketing site renders PRICE verbatim
-//      (apps/marketing/app/page.tsx:84, 311, 354, and a derived number at 139)
-//      with no currency shown, so a non-AU reader takes A$7.99 for US$7.99 —
-//      roughly a 50% understatement. Either write it "A$7.99" here or qualify
-//      it at those call sites. Real buyers are unaffected: usePrice() shows
-//      StoreKit's own localized priceString, and this constant is only the
-//      offline fallback.
-export const PRICE = "$7.99";
+// PROVISIONAL VALUES — the final numbers aren't locked yet. This object is
+// the single place to edit when they are; everything else derives from it.
+// Two rules when updating:
+//   1. The base price is set in the AU storefront, so these strings are AUD
+//      and carry the A$ marker (the marketing site renders them verbatim to
+//      a worldwide audience — an unmarked "$" reads as USD and understates
+//      the price by ~50%). Keep them in sync with App Store Connect's AU
+//      figures, not the US ones.
+//   2. Deploy the marketing site in the same breath as the App Store Connect
+//      price change, so the site never advertises a price the store isn't
+//      charging.
+export const PRICING = {
+  lifetime: "A$29.99",
+  annual: "A$9.99",
+} as const;
 
 // Stamped onto every consent record (owners.consent_policy_version + each
 // consent_log row) so we can prove which privacy-policy version a user agreed
