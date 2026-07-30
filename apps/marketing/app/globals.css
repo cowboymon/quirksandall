@@ -90,3 +90,33 @@ body {
   color: var(--foreground);
   font-weight: 600;
 }
+
+/* ── Cat-paw "swipe the bar away" confirmation (desktop delight) ──
+   Ported from the modelled single-swat interaction: a paw swats up over the
+   form, knocks it away with a rotate + fade, then the confirmation drops in. */
+@keyframes paw-swat {
+  0%   { transform: translate(-6%, 130%) rotate(-4deg); }
+  45%  { transform: translate(2%, -6%) rotate(6deg); }
+  60%  { transform: translate(30%, 30%) rotate(38deg); }
+  100% { transform: translate(30%, 140%) rotate(38deg); }
+}
+@keyframes bar-knock {
+  0%, 55% { transform: translate(0, 0) rotate(0); opacity: 1; }
+  100%    { transform: translate(60%, 90%) rotate(24deg); opacity: 0; }
+}
+@keyframes confirm-drop {
+  0%   { transform: translateY(-32px); opacity: 0; }
+  60%  { transform: translateY(6px); opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.animate-paw-swat  { animation: paw-swat 0.95s cubic-bezier(.4, 0, .2, 1) forwards; }
+.animate-bar-knock { animation: bar-knock 0.95s cubic-bezier(.4, 0, .2, 1) forwards; }
+.animate-confirm-drop { animation: confirm-drop 0.5s cubic-bezier(.34, 1.56, .64, 1) forwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-paw-swat,
+  .animate-bar-knock,
+  .animate-confirm-drop {
+    animation: none;
+  }
+}
