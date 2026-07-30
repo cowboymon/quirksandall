@@ -1,6 +1,6 @@
 // Central place for the handful of values the marketing site references.
 // Update these when the real store listings / contact address are live.
-import { PRICE } from "@quirksandall/shared";
+import { PRICING } from "@quirksandall/shared";
 
 export const site = {
   name: "Quirks & All",
@@ -39,6 +39,7 @@ export const site = {
   makerOtherProduct: "Loud & Fine",
   // Keep in sync when you revise the legal pages.
   legalLastUpdated: "28 July 2026",
-  // Single source of truth for the price lives in @quirksandall/shared.
-  proPrice: PRICE,
+  // Single source of truth for prices lives in @quirksandall/shared —
+  // PRICING.lifetime (one-time) and PRICING.annual (auto-renewing yearly).
+  pricing: PRICING,
 } as const;

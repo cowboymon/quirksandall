@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import type { RecipientProfile } from "@quirksandall/shared";
+import { isUnlocked } from "@quirksandall/shared";
 import LinkUnavailable from "../../components/LinkUnavailable";
 import RecipientView from "./RecipientView";
 import { fetchEmergencyContacts } from "../../lib/emergency";
@@ -61,7 +62,7 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
   if (!pet || (pet as any).status === "archived") return null;
 
   const [{ data: ownerRow }, { data: behaviorRow }, { data: medicalRow }, { data: routineRow }, { data: vetRow }] = await Promise.all([
-    supabase.from("owners").select("purchase_status, name, primary_phone, backup_contacts").eq("id", pet.owner_id).single(),
+    supabase.from("owners").select("purchase_status, expires_at, name, primary_phone, backup_contacts").eq("id", pet.owner_id).single(),
     supabase.from("pet_behavior").select("commands, quirks_triggers, escape_risk, scared, no_go, flight_risk, temperament_summary").eq("pet_id", pet.id).maybeSingle(),
     supabase.from("pet_medical").select("allergies, conditions, medications").eq("pet_id", pet.id).maybeSingle(),
     supabase.from("pet_routine").select("feeding, walks, sleep, bathroom_habits, left_alone, toileting_frequency").eq("pet_id", pet.id).maybeSingle(),
@@ -69,7 +70,7 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
   ]);
 
   const owner = (ownerRow ?? {}) as any;
-  const isPaid = owner.purchase_status === "paid";
+  const isPaid = isUnlocked(owner);
   const behavior = (behaviorRow ?? {}) as any;
   const medical = (medicalRow ?? {}) as any;
   const routine = routineRow as any;

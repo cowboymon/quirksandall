@@ -5,10 +5,9 @@ import { AppAlert } from "../stores/appAlert";
 import Constants from "expo-constants";
 import { router } from "expo-router";
 import { supabase } from "../lib/supabase";
-import { checkEntitlement, purchasePro, restorePurchases } from "../lib/purchases";
+import { checkEntitlement, restorePurchases, identifyPurchaser } from "../lib/purchases";
 import { REDEMPTION_ENABLED, MARKETING_URL } from "../lib/config";
-import { colors, CONSENT_POLICY_VERSION } from "@quirksandall/shared";
-import { usePrice } from "../hooks/usePrice";
+import { colors, CONSENT_POLICY_VERSION, isUnlocked } from "@quirksandall/shared";
 import { Platform } from "react-native";
 import { track, resetAnalytics, AnalyticsEvent } from "../lib/analytics";
 import { Eyebrow, Input } from "../components/ui";
@@ -18,7 +17,6 @@ import ConfirmModal from "../components/ConfirmModal";
 const SUPPORT_EMAIL = "quirksandall@itshypothetical.com";
 
 export default function Account() {
-  const price = usePrice();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -38,13 +36,13 @@ export default function Account() {
       if (!user) { router.replace("/auth"); return; }
       const { data: owner } = await supabase
         .from("owners")
-        .select("name, primary_phone, primary_email, purchase_status, consent_insurance_offers, consent_marketing")
+        .select("name, primary_phone, primary_email, purchase_status, expires_at, consent_insurance_offers, consent_marketing")
         .eq("id", user.id)
         .single();
       setName(owner?.name ?? "");
       setPhone(owner?.primary_phone ?? "");
       setEmail(owner?.primary_email ?? user.email ?? "");
-      setIsPaid(owner?.purchase_status === "paid");
+      setIsPaid(isUnlocked(owner));
       // Read the consent state back from the source of truth every time the
       // screen opens — reflects changes made on another device or a withdrawal.
       setInsuranceConsent(owner?.consent_insurance_offers ?? false);
@@ -103,31 +101,15 @@ export default function Account() {
     router.back();
   };
 
-  const handlePurchase = async () => {
-    setLoading(true);
-    track(AnalyticsEvent.PurchaseStarted, { source: "account" });
-    try {
-      if (await purchasePro()) {
-        track(AnalyticsEvent.PurchaseCompleted, { source: "account" });
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) await supabase.from("owners").update({ purchase_status: "paid" }).eq("id", user.id);
-        setIsPaid(true);
-        AppAlert.alert("Unlocked", "Full access is now active across all your pets.");
-      }
-    } catch (e: any) {
-      if (!e.message?.toLowerCase().includes("cancel")) AppAlert.alert("Purchase failed", e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleRestore = async () => {
     setLoading(true);
     try {
-      if (await restorePurchases()) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) await identifyPurchaser(user.id);
+      const record = await restorePurchases();
+      if (record) {
         track(AnalyticsEvent.PurchaseRestored, { source: "account" });
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) await supabase.from("owners").update({ purchase_status: "paid" }).eq("id", user.id);
+        if (user) await supabase.from("owners").update(record).eq("id", user.id);
         setIsPaid(true);
         AppAlert.alert("Restored", "Your purchase has been restored.");
       } else {
@@ -264,15 +246,11 @@ export default function Account() {
           <Text style={{ fontFamily: "Tanker", fontSize: 26, lineHeight: 26, color: "#F8ECEE" }}>
             Unlock full access.
           </Text>
-          <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6, marginTop: 8, marginBottom: 16 }}>
-            <Text style={{ fontFamily: "Tanker", fontSize: 20, lineHeight: 20, color: "#F8ECEE" }}>{price}</Text>
-            <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 11, fontFamily: "Satoshi-Light" }}>once, forever</Text>
-          </View>
-          <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, lineHeight: 17, fontFamily: "Satoshi-Light", marginBottom: 20 }}>
-            The full picture — routines and the softer stuff that makes the handoff feel like you. Unlimited pets, too.
+          <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, lineHeight: 17, fontFamily: "Satoshi-Light", marginTop: 8, marginBottom: 20 }}>
+            The full picture — routines and the softer stuff that makes the handoff feel like you. Unlimited pets, too. Pay yearly, or once and never again.
           </Text>
-          <TouchableOpacity onPress={handlePurchase} disabled={loading} activeOpacity={0.85} style={{ height: 44, borderRadius: 10, backgroundColor: "#F8ECEE", alignItems: "center", justifyContent: "center", opacity: loading ? 0.6 : 1 }}>
-            <Text style={{ color: "#510000", fontSize: 14, fontFamily: "Satoshi-Medium" }}>{loading ? "Working…" : `Unlock for ${price}`}</Text>
+          <TouchableOpacity onPress={() => router.push("/upgrade")} disabled={loading} activeOpacity={0.85} style={{ height: 44, borderRadius: 10, backgroundColor: "#F8ECEE", alignItems: "center", justifyContent: "center", opacity: loading ? 0.6 : 1 }}>
+            <Text style={{ color: "#510000", fontSize: 14, fontFamily: "Satoshi-Medium" }}>See plans</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={handleRestore} disabled={loading} style={{ alignItems: "center", marginTop: 10, paddingVertical: 4 }}>
             <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, fontFamily: "Satoshi" }}>Restore purchases</Text>
@@ -285,7 +263,7 @@ export default function Account() {
         </View>
       ) : (
         <View style={{ marginTop: 24, backgroundColor: "#510000", borderRadius: 14, paddingHorizontal: 20, paddingVertical: 20 }}>
-          <Text style={{ color: "#F8ECEE", fontFamily: "Satoshi-Medium", fontSize: 15 }}>You're in. For good.</Text>
+          <Text style={{ color: "#F8ECEE", fontFamily: "Satoshi-Medium", fontSize: 15 }}>You're in — full access is active.</Text>
           <TouchableOpacity onPress={handleRestore} disabled={loading} style={{ marginTop: 8 }}>
             <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, fontFamily: "Satoshi" }}>Restore purchases</Text>
           </TouchableOpacity>

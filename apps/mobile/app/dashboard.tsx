@@ -11,9 +11,10 @@ import PetSwitcher from "../components/PetSwitcher";
 import ConfirmModal from "../components/ConfirmModal";
 import DurationModal from "../components/DurationModal";
 import { useActivePetStore } from "../stores/activePet";
-import { colors, computeAge, capitalizeFirst, orderedCommands, possessive, stayPhrase } from "@quirksandall/shared";
-import { usePrice } from "../hooks/usePrice";
+import { colors, computeAge, capitalizeFirst, orderedCommands, possessive, stayPhrase, isUnlocked } from "@quirksandall/shared";
+import { usePrices } from "../hooks/usePrices";
 import { recallPin } from "../lib/pinVault";
+import { identifyPurchaser } from "../lib/purchases";
 import { firstShareMessage, pinMessage } from "../lib/shareMessage";
 import { WEB_URL } from "../lib/config";
 import { listLinks, createLink, renameLink, revokeLink, setLinkDuration, markLinkShared, type OwnerLink } from "../lib/links";
@@ -47,7 +48,7 @@ function viewedLabel(iso: string | null) {
 }
 
 export default function Dashboard() {
-  const price = usePrice();
+  const prices = usePrices();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const { petId: selectedPetId, setCachedPet } = useActivePetStore();
@@ -83,10 +84,14 @@ export default function Dashboard() {
   const loadDashboard = async () => {
     const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
     if (!user) { router.replace("/auth"); return; }
+    // Tie the RevenueCat customer to this user so purchases and webhook
+    // events carry the Supabase id, not an anonymous one. Guarded internally,
+    // so calling it on every dashboard load is one no-op after the first.
+    identifyPurchaser(user.id);
 
     const { data: ownerData } = await supabase
       .from("owners")
-      .select("name, purchase_status")
+      .select("name, purchase_status, expires_at")
       .eq("id", user.id)
       .single();
 
@@ -121,7 +126,7 @@ export default function Dashboard() {
     ]);
     const docCount = docCountRes.count ?? 0;
 
-    const isPaid = ownerData?.purchase_status === "paid";
+    const isPaid = isUnlocked(ownerData);
     // Same visible/ordered list a recipient sees (manual order, hidden
     // withheld for paid) so the dashboard count/preview never disagree.
     const visibleCommands = orderedCommands((behavior?.commands ?? []) as any[], isPaid, false);
@@ -534,7 +539,7 @@ export default function Dashboard() {
                   {pet.name}'s routine is saved, not shared yet.
                 </Text>
                 <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 3, fontFamily: "Satoshi-Light" }}>
-                  Unlock so sitters get {pet.name}'s full day — {price}, once.
+                  Unlock so sitters get {pet.name}'s full day — from {prices.annual} a year.
                 </Text>
                 <Text style={{ color: colors.primary, fontSize: 12, marginTop: 6, fontFamily: "Satoshi-Medium" }}>Unlock full access →</Text>
               </View>

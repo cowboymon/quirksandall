@@ -81,7 +81,7 @@ const FAQS = [
   },
   {
     q: "Can I use this for more than one pet?",
-    a: `One pet is free. Unlock unlimited pets for ${site.proPrice}, once.`,
+    a: `One pet is free. Unlock unlimited pets for ${site.pricing.annual} a year — or ${site.pricing.lifetime} once, yours forever.`,
   },
   {
     q: "Can I give different stand-ins different links?",
@@ -136,7 +136,8 @@ const STEPS = [
 // Homepage structured data. SoftwareApplication tells search + AI engines what
 // the product is, what it runs on, and what it costs; FAQPage marks up the Q&A
 // so it's eligible for rich results and easy for LLMs to quote verbatim.
-const priceNum = site.proPrice.replace(/[^0-9.]/g, "");
+const lifetimeNum = site.pricing.lifetime.replace(/[^0-9.]/g, "");
+const annualNum = site.pricing.annual.replace(/[^0-9.]/g, "");
 const homeLd = {
   "@context": "https://schema.org",
   "@graph": [
@@ -162,11 +163,19 @@ const homeLd = {
         },
         {
           "@type": "Offer",
-          name: "Unlock the rest",
-          price: priceNum,
+          name: "Unlock the rest — yearly",
+          price: annualNum,
           priceCurrency: "AUD",
           description:
-            "One-time purchase: unlimited pets, a separate live link per stand-in, and the full daily routine.",
+            "Auto-renewing yearly subscription: unlimited pets, a separate live link per stand-in, and the full daily routine.",
+        },
+        {
+          "@type": "Offer",
+          name: "Unlock the rest — forever",
+          price: lifetimeNum,
+          priceCurrency: "AUD",
+          description:
+            "One-time purchase, no renewal: unlimited pets, a separate live link per stand-in, and the full daily routine.",
         },
       ],
     },
@@ -308,10 +317,10 @@ export default function Home() {
           <h2 className="mt-3 max-w-2xl font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
             Free to start.{" "}
             <span className="relative inline-block">
-              <span className="relative z-10">{site.proPrice}</span>
+              <span className="relative z-10">{site.pricing.annual}</span>
               <CircleMark className="absolute left-1/2 top-1/2 h-[1.6em] w-[128%] -translate-x-1/2 -translate-y-1/2 text-primary" />
             </span>{" "}
-            to unlock the rest.
+            a year to unlock the rest — or {site.pricing.lifetime} once, yours forever.
           </h2>
 
           <div className="mt-12 grid gap-6 md:grid-cols-2">
@@ -347,11 +356,17 @@ export default function Home() {
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold">Unlock the rest</h3>
                 <span className="eyebrow rounded-full bg-card-dark-deep px-2.5 py-1 text-card-dark-label">
-                  One-time
+                  Yearly, or once
                 </span>
               </div>
-              <p className="mt-1 text-sm text-card-dark-label">One payment, all your pets, forever.</p>
-              <p className="mt-6 font-tanker text-4xl">{site.proPrice}</p>
+              <p className="mt-1 text-sm text-card-dark-label">All your pets, the full picture.</p>
+              <p className="mt-6 font-tanker text-4xl">
+                {site.pricing.annual}
+                <span className="ml-1 text-lg text-card-dark-label">/year</span>
+              </p>
+              <p className="mt-1 text-sm text-card-dark-label">
+                or {site.pricing.lifetime} once — yours forever, no renewal
+              </p>
               <ul className="mt-6 flex flex-1 flex-col gap-3 text-sm text-card-dark-text/90">
                 <Check light>Full daily routine — walks, sleep, bathroom</Check>
                 <Check light>The soft stuff — fears, no-go zones, temperament</Check>

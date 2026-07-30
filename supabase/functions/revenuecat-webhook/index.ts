@@ -1,0 +1,95 @@
+// RevenueCat server webhook → the authority on unlock state.
+//
+// The client writes owners.purchase_status/unlock_source/expires_at right
+// after a purchase so the unlock is instant, but the client can't be trusted
+// for the one transition it never witnesses: a subscription lapsing. Nobody
+// opens the app to tell us they stopped paying. This webhook hears about it
+// from RevenueCat instead — renewals push expires_at forward, expirations
+// close the entitlement, refunds revoke it.
+//
+// Setup (RevenueCat dashboard → Integrations → Webhooks):
+//   URL:    {SUPABASE_URL}/functions/v1/revenuecat-webhook
+//   Header: Authorization: Bearer {RC_WEBHOOK_SECRET}   (set the same value
+//           as a function secret: `supabase secrets set RC_WEBHOOK_SECRET=…`)
+//   Deploy with --no-verify-jwt: RevenueCat is not a Supabase user, so the
+//   platform JWT check must be off and the shared secret above is the auth.
+//
+// app_user_id is the Supabase user id because the app calls Purchases.logIn
+// with it (lib/purchases.ts identifyPurchaser). Anonymous ids
+// ($RCAnonymousID:…) are acknowledged with 200 and skipped — returning an
+// error would just make RevenueCat retry an event we can never attribute.
+
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+// Event types that (re)grant access vs. the ones that end it. CANCELLATION is
+// deliberately neither: it means auto-renew was switched off, but the user
+// keeps what they paid for until the period ends — EXPIRATION is the event
+// that actually closes the door.
+const GRANTS = new Set([
+  "INITIAL_PURCHASE",
+  "RENEWAL",
+  "UNCANCELLATION",
+  "NON_RENEWING_PURCHASE",
+  "PRODUCT_CHANGE",
+  "SUBSCRIPTION_EXTENDED",
+]);
+const REVOKES = new Set(["EXPIRATION"]);
+
+serve(async (req) => {
+  if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
+
+  const secret = Deno.env.get("RC_WEBHOOK_SECRET");
+  const auth = req.headers.get("Authorization") ?? "";
+  if (!secret || auth !== `Bearer ${secret}`) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  const { event } = await req.json().catch(() => ({ event: null }));
+  if (!event?.type) return new Response(JSON.stringify({ error: "No event" }), { status: 400 });
+
+  const userId: string = event.app_user_id ?? "";
+  if (!userId || userId.startsWith("$RCAnonymousID:")) {
+    return new Response(JSON.stringify({ skipped: "anonymous app_user_id" }), { status: 200 });
+  }
+
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+  );
+
+  if (GRANTS.has(event.type)) {
+    // expiration_at_ms is set for subscriptions and absent for the lifetime
+    // non-consumable — which is also how the source is derived, so a product
+    // rename can't misfile buyers.
+    const expiresAt = event.expiration_at_ms ? new Date(event.expiration_at_ms).toISOString() : null;
+    const { error } = await supabase
+      .from("owners")
+      .update({
+        purchase_status: "paid",
+        unlock_source: expiresAt ? "iap_annual" : "iap_lifetime",
+        unlocked_at: new Date(event.purchased_at_ms ?? Date.now()).toISOString(),
+        expires_at: expiresAt,
+      })
+      .eq("id", userId);
+    if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  }
+
+  if (REVOKES.has(event.type)) {
+    // Never downgrade a lifetime holder on a subscription event: someone who
+    // once subscribed and later bought lifetime has expires_at null, and an
+    // EXPIRATION for the old subscription must not touch them.
+    const { error } = await supabase
+      .from("owners")
+      .update({ purchase_status: "expired" })
+      .eq("id", userId)
+      .eq("unlock_source", "iap_annual");
+    if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  }
+
+  // TRANSFER, BILLING_ISSUE, CANCELLATION, TEST … — nothing to write, but
+  // acknowledge so RevenueCat doesn't retry.
+  return new Response(JSON.stringify({ ignored: event.type }), { status: 200 });
+});

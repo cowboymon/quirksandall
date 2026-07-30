@@ -9,7 +9,7 @@ import { supabase } from "../lib/supabase";
 import { AppAlert } from "../stores/appAlert";
 import { useActivePetStore } from "../stores/activePet";
 import { FieldTier } from "../components/ui";
-import { colors, computeAge, formatWeight, formatPhone, formatVetName, possessive, orderedCommands, commandStrengthLabel, mealSlotLabel, shortAddress } from "@quirksandall/shared";
+import { colors, computeAge, formatWeight, formatPhone, formatVetName, possessive, orderedCommands, commandStrengthLabel, mealSlotLabel, shortAddress, isUnlocked } from "@quirksandall/shared";
 
 type Data = {
   name: string; breed: string; age: string; photoUrl: string | null;
@@ -83,10 +83,10 @@ export default function Preview() {
         supabase.from("pet_medical").select("*").eq("pet_id", pet.id).maybeSingle(),
         supabase.from("pet_routine").select("*").eq("pet_id", pet.id).maybeSingle(),
         supabase.from("pet_vet_info").select("*").eq("pet_id", pet.id).maybeSingle(),
-        supabase.from("owners").select("backup_contacts, purchase_status").eq("id", user.id).single(),
+        supabase.from("owners").select("backup_contacts, purchase_status, expires_at").eq("id", user.id).single(),
       ]);
 
-      const paid = owner?.purchase_status === "paid";
+      const paid = isUnlocked(owner);
       setIsPaid(paid);
       // Only preview backup contacts the owner consented to share — this
       // screen's whole point is showing exactly what a sitter would see.

@@ -278,3 +278,23 @@ export function shortAddress(address: string): string {
   }
   return parts.join(", ");
 }
+
+/** The one question every paywall check asks: is this owner unlocked?
+ *
+ * Every surface — mobile screens, the SSR recipient page, edge functions —
+ * must go through this rather than reading purchase_status inline. The reason
+ * is the annual plan: a subscription can lapse, so "paid" is no longer a
+ * boolean fact about the row, it's purchase_status plus whether expires_at
+ * (null for the lifetime unlock, a real date for subscriptions) is still in
+ * the future. Nine scattered inline checks each remembering that rule is how
+ * a lapsed subscriber keeps paid access on the one surface somebody forgot.
+ *
+ * Callers must select expires_at alongside purchase_status. */
+export function isUnlocked(
+  owner: { purchase_status?: string | null; expires_at?: string | null } | null | undefined
+): boolean {
+  if (!owner || owner.purchase_status !== "paid") return false;
+  if (!owner.expires_at) return true; // lifetime, or a grant with no end
+  const t = new Date(owner.expires_at).getTime();
+  return isNaN(t) ? false : t > Date.now();
+}

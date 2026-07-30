@@ -8,7 +8,7 @@ import EditShell from "../../components/EditShell";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Input, Eyebrow, Card, FieldTier } from "../../components/ui";
 import ConfirmModal from "../../components/ConfirmModal";
-import { colors, orderedCommands } from "@quirksandall/shared";
+import { colors, orderedCommands, isUnlocked } from "@quirksandall/shared";
 import type { Command, CommandStrength } from "@quirksandall/shared";
 
 const STRENGTHS: { key: CommandStrength; label: string }[] = [
@@ -48,9 +48,9 @@ export default function EditBehavior() {
       const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       const [{ data }, { data: owner }] = await Promise.all([
         supabase.from("pet_behavior").select("commands, scared, no_go, flight_risk, temperament_summary").eq("pet_id", petId).single(),
-        supabase.from("owners").select("purchase_status").eq("id", user!.id).single(),
+        supabase.from("owners").select("purchase_status, expires_at").eq("id", user!.id).single(),
       ]);
-      setIsPaid(owner?.purchase_status === "paid");
+      setIsPaid(isUnlocked(owner));
       if (!data) return;
       setCommands(
         (data.commands ?? []).map((c: any, i: number) => ({ ...c, id: c.id ?? String(i + 1) }))
