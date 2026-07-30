@@ -141,7 +141,7 @@ export default function WaitlistForm({
           src="/brand/cat-arm-claws.svg"
           alt=""
           aria-hidden
-          className="animate-paw-swat pointer-events-none absolute -bottom-[200px] left-1/2 z-10 -ml-[52px] w-[104px] drop-shadow-[0_10px_16px_rgba(0,0,0,0.32)]"
+          className="animate-paw-swat pointer-events-none absolute -bottom-[250px] left-1/2 z-10 -ml-[52px] w-[104px] drop-shadow-[0_10px_16px_rgba(0,0,0,0.32)]"
         />
       )}
     </div>
