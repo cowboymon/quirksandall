@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { track } from "../lib/pirsch";
-import CatPaw from "../components/CatPaw";
 
 // Desktop + motion-safe only: a cat paw swipes the form away on success.
 // Everywhere else (mobile, reduced-motion) we swap straight to the confirmation.
@@ -51,7 +50,7 @@ export default function SuggestForm() {
     "w-full rounded-button border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-text-muted focus:border-primary";
 
   return (
-    <div className="mx-auto max-w-xl rounded-card border border-border bg-card-bg p-6 text-left shadow-sm sm:p-8">
+    <div className="relative mx-auto max-w-xl overflow-hidden rounded-card border border-border bg-card-bg p-6 text-left shadow-sm sm:p-8">
       <h2 className="font-tanker text-2xl leading-tight text-foreground">Missing something?</h2>
       <p className="mt-2 text-sm leading-relaxed text-text-muted">
         Tell us what would make Quirks &amp; All better for your pet — we read every one.
@@ -73,13 +72,12 @@ export default function SuggestForm() {
             </p>
           </div>
         ) : (
-          <>
-            <form
-              onSubmit={onSubmit}
-              noValidate
-              className={swiping ? "animate-bar-knock pointer-events-none" : ""}
-              aria-hidden={swiping}
-            >
+          <form
+            onSubmit={onSubmit}
+            noValidate
+            className={swiping ? "animate-bar-knock pointer-events-none" : ""}
+            aria-hidden={swiping}
+          >
               <label className="sr-only" htmlFor="suggest-text">
                 Your idea
               </label>
@@ -131,18 +129,22 @@ export default function SuggestForm() {
                   ? "Something went wrong — please try again."
                   : "No account needed. Email is optional."}
               </p>
-            </form>
-
-            {/* The paw only exists during the swipe; a decorative flourish. */}
-            {swiping && (
-              <CatPaw
-                variant="arm"
-                className="animate-paw-swat pointer-events-none absolute -bottom-12 left-[42%] z-10 w-[78px] drop-shadow-[0_8px_14px_rgba(81,0,0,0.22)]"
-              />
-            )}
-          </>
+          </form>
         )}
       </div>
+
+      {/* The arm only exists during the swipe. Anchored to the card and clipped
+         by its overflow-hidden, so the cut end of the arm is never visible —
+         it reads as reaching up from beneath the form. */}
+      {swiping && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src="/brand/cat-arm.svg"
+          alt=""
+          aria-hidden
+          className="animate-paw-swat pointer-events-none absolute -bottom-[150px] left-[40%] z-10 w-[78px] drop-shadow-[0_8px_14px_rgba(81,0,0,0.22)]"
+        />
+      )}
     </div>
   );
 }
