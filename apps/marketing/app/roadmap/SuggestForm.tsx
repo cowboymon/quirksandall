@@ -24,7 +24,7 @@ export default function SuggestForm() {
         track("Suggestion Submitted");
         if (prefersPawSwipe()) {
           setStatus("swiping");
-          window.setTimeout(() => setStatus("done"), 1200);
+          window.setTimeout(() => setStatus("done"), 1600);
         } else {
           setStatus("done");
         }
