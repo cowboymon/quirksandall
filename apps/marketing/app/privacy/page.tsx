@@ -100,7 +100,7 @@ export default function PrivacyPage() {
           <ul>
             <li>run the Service — store your pet&apos;s profile and show it to people you share a link with;</li>
             <li>keep your account and your emergency details secure, including PIN checks and rate limiting;</li>
-            <li>process your one-time purchase and remember that you&apos;ve made it;</li>
+            <li>process your purchase and remember that you&apos;ve made it;</li>
             <li>understand how the app is used so we can improve it;</li>
             <li>respond to you when you get in touch;</li>
             <li>meet our legal obligations;</li>
@@ -174,7 +174,7 @@ export default function PrivacyPage() {
               it can be improved.
             </li>
             <li>
-              <strong>Apple App Store and Google Play</strong> — to process the one-time purchase. We
+              <strong>Apple App Store and Google Play</strong> — to process your purchase. We
               don&apos;t receive your full payment details.
             </li>
             <li>

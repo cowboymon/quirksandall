@@ -5,6 +5,7 @@ import WaitlistForm from "./components/WaitlistForm";
 import { Underline, CircleMark, MarginArrow } from "./components/Annotations";
 import { site } from "./site";
 import TrackedLink from "./components/TrackedLink";
+import PricingCards from "./components/PricingCards";
 
 // Homepage-specific metadata. Names both dogs and cats explicitly (the default
 // description is species-neutral) so the page surfaces for cat-sitter searches
@@ -315,78 +316,14 @@ export default function Home() {
         <section id="pricing" className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
           <p className="eyebrow text-primary">Pricing</p>
           <h2 className="mt-3 max-w-2xl font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
-            Free to start.{" "}
+            Start free. Go Pro{" "}
             <span className="relative inline-block">
-              <span className="relative z-10">{site.pricing.annual}</span>
-              <CircleMark className="absolute left-1/2 top-1/2 h-[1.6em] w-[128%] -translate-x-1/2 -translate-y-1/2 text-primary" />
-            </span>{" "}
-            a year to unlock the rest — or {site.pricing.lifetime} once, yours forever.
+              <span className="relative z-10">your way.</span>
+              <CircleMark className="absolute left-1/2 top-1/2 h-[1.6em] w-[118%] -translate-x-1/2 -translate-y-1/2 text-primary" />
+            </span>
           </h2>
 
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
-            {/* Free */}
-            <div className="flex flex-col rounded-card border border-border bg-card-bg p-8">
-              <h3 className="text-lg font-bold text-foreground">Free, always</h3>
-              <p className="mt-1 text-sm text-text-muted">Everything you need to hand off one pet.</p>
-              <p className="mt-6 font-tanker text-4xl text-foreground">$0</p>
-              <ul className="mt-6 flex flex-1 flex-col gap-3 text-sm text-text-muted">
-                <Check>Pet ID — photo, breed, age, microchip &amp; more</Check>
-                <Check>Commands, with how solid each one is</Check>
-                <Check>Allergies, medications &amp; doses</Check>
-                <Check>Escape / flight-risk flag</Check>
-                <Check>PIN-gated emergency contacts</Check>
-                <Check>Feeding times &amp; one live link</Check>
-                <Check>Missing poster &amp; document vault</Check>
-              </ul>
-              <TrackedLink
-                href="/#get"
-                event="Get Notified Clicked"
-                meta={{ location: "pricing-free" }}
-                className="mt-8 rounded-button border border-border bg-background px-5 py-3 text-center text-sm font-medium text-foreground transition-colors hover:border-primary"
-              >
-                Get notified at launch
-              </TrackedLink>
-              <p className="mt-4 min-h-[2.5rem] text-center text-xs text-text-muted">
-                Free forever. No card, no subscription.
-              </p>
-            </div>
-
-            {/* Unlock */}
-            <div className="flex flex-col rounded-card border border-transparent bg-card-dark p-8 text-card-dark-text">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold">Unlock the rest</h3>
-                <span className="eyebrow rounded-full bg-card-dark-deep px-2.5 py-1 text-card-dark-label">
-                  Yearly, or once
-                </span>
-              </div>
-              <p className="mt-1 text-sm text-card-dark-label">All your pets, the full picture.</p>
-              <p className="mt-6 font-tanker text-4xl">
-                {site.pricing.annual}
-                <span className="ml-1 text-lg text-card-dark-label">/year</span>
-              </p>
-              <p className="mt-1 text-sm text-card-dark-label">
-                or {site.pricing.lifetime} once — yours forever, no renewal
-              </p>
-              <ul className="mt-6 flex flex-1 flex-col gap-3 text-sm text-card-dark-text/90">
-                <Check light>Full daily routine — walks, sleep, bathroom</Check>
-                <Check light>The soft stuff — fears, no-go zones, temperament</Check>
-                <Check light>A separate live link per stand-in</Check>
-                <Check light>Unlimited pets</Check>
-                <Check light>Everything in Free, always included</Check>
-              </ul>
-              <TrackedLink
-                href="/#get"
-                event="Get Notified Clicked"
-                meta={{ location: "pricing-pro" }}
-                className="mt-8 rounded-button bg-background px-5 py-3 text-center text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-              >
-                Get notified at launch
-              </TrackedLink>
-              <p className="mt-4 min-h-[2.5rem] text-center text-xs text-card-dark-label">
-                No subscription. Purchased in-app, unlocks account-wide.
-              </p>
-            </div>
-          </div>
+          <PricingCards />
         </section>
 
         {/* 6 — FAQ (#F8ECEE) */}
@@ -494,17 +431,6 @@ function PhoneShot({ src, caption, alt }: { src?: string; caption: string; alt?:
       </div>
       <figcaption className="mt-4 text-center text-sm font-medium text-foreground">{caption}</figcaption>
     </figure>
-  );
-}
-
-function Check({ children, light }: { children: React.ReactNode; light?: boolean }) {
-  return (
-    <li className="flex items-start gap-2.5">
-      <span className={light ? "text-card-dark-label" : "text-success"} aria-hidden>
-        ✓
-      </span>
-      <span>{children}</span>
-    </li>
   );
 }
 

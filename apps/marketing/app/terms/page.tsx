@@ -110,10 +110,17 @@ export default function TermsPage() {
 
           <h2>8. Purchases</h2>
           <p>
-            {site.name} is free to start. Some features are unlocked by a one-time in-app purchase (the
-            &quot;Pro&quot; unlock). Purchases are processed by the Apple App Store or Google Play under
-            their terms, and are charged to your store account. The Pro unlock is a one-time purchase, not
-            a subscription. Refunds are handled by the relevant app store according to their policies.
+            {site.name} is free to start. Pro features can be unlocked in one of two ways: an
+            auto-renewing yearly subscription, or a one-time payment that unlocks them for the life of
+            the app (the &quot;Lifetime&quot; option). Purchases are processed by the Apple App Store or
+            Google Play under their terms, and are charged to your store account.
+          </p>
+          <p>
+            The yearly subscription renews automatically at the then-current price unless you cancel at
+            least 24 hours before the current period ends. You can manage or cancel it at any time in
+            your Apple App Store or Google Play account settings. The Lifetime option is a single
+            payment, not a subscription. Refunds are handled by the relevant app store according to
+            their policies.
           </p>
 
           <h2>9. Availability &amp; changes</h2>
