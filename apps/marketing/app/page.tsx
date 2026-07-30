@@ -365,7 +365,9 @@ export default function Home() {
 
         {/* 7 — Final CTA (#510000 full bleed) */}
         <section id="get" className="scroll-mt-20 bg-card-dark text-card-dark-text">
-          <div className="mx-auto max-w-3xl px-6 py-20 text-center sm:py-24">
+          {/* relative + overflow-hidden so the waitlist's cat arm can sweep up
+             from the bottom edge of the maroon box, its cut end clipped here. */}
+          <div className="relative mx-auto max-w-3xl overflow-hidden px-6 py-20 text-center sm:py-24">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/brand/cta-dog.svg"

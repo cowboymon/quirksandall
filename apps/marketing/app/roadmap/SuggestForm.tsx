@@ -2,16 +2,7 @@
 
 import { useState } from "react";
 import { track } from "../lib/pirsch";
-
-// Desktop + motion-safe only: a cat paw swipes the form away on success.
-// Everywhere else (mobile, reduced-motion) we swap straight to the confirmation.
-function prefersPawSwipe() {
-  if (typeof window === "undefined" || !window.matchMedia) return false;
-  return (
-    window.matchMedia("(min-width: 768px)").matches &&
-    !window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  );
-}
+import { prefersPawSwipe } from "../lib/anim";
 
 export default function SuggestForm() {
   const [suggestion, setSuggestion] = useState("");
@@ -56,9 +47,11 @@ export default function SuggestForm() {
         Tell us what would make Quirks &amp; All better for your pet — we read every one.
       </p>
 
-      <div className="relative mt-5 sm:min-h-[184px]">
+      {/* Hold the form's height only while the paw swipes, so the card doesn't
+         jump mid-animation; once done, collapse to the compact confirmation. */}
+      <div className={`relative mt-5 ${swiping ? "sm:min-h-[184px]" : ""}`}>
         {status === "done" ? (
-          <div className="animate-confirm-drop flex items-center gap-3 sm:pt-2">
+          <div className="animate-confirm-drop flex items-center gap-3">
             <span
               aria-hidden
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary text-primary"
@@ -142,7 +135,7 @@ export default function SuggestForm() {
           src="/brand/cat-arm.svg"
           alt=""
           aria-hidden
-          className="animate-paw-swat pointer-events-none absolute -bottom-[150px] left-[40%] z-10 w-[78px] drop-shadow-[0_8px_14px_rgba(81,0,0,0.22)]"
+          className="animate-paw-swat pointer-events-none absolute -bottom-[380px] left-[38%] z-10 w-[112px] drop-shadow-[0_8px_14px_rgba(81,0,0,0.22)]"
         />
       )}
     </div>

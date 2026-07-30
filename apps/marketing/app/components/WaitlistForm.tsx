@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { track } from "../lib/pirsch";
+import { prefersPawSwipe } from "../lib/anim";
 
 type Tone = "light" | "dark";
 
@@ -16,10 +17,11 @@ export default function WaitlistForm({
 }) {
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState(""); // honeypot
-  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "swiping" | "done" | "error">("idle");
 
   const dark = tone === "dark";
   const noteColor = dark ? "text-card-dark-label" : "text-text-muted";
+  const swiping = status === "swiping";
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -32,8 +34,13 @@ export default function WaitlistForm({
         body: JSON.stringify({ email, source, company }),
       });
       if (res.ok) {
-        setStatus("done");
         track("Waitlist Joined", { source });
+        if (prefersPawSwipe()) {
+          setStatus("swiping");
+          window.setTimeout(() => setStatus("done"), 900);
+        } else {
+          setStatus("done");
+        }
       } else {
         setStatus("error");
       }
@@ -42,24 +49,26 @@ export default function WaitlistForm({
     }
   }
 
+  const confirmation = (
+    <div className="flex items-center justify-center gap-3 sm:justify-start">
+      <span
+        aria-hidden
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+          dark ? "bg-card-dark-deep text-card-dark-label" : "bg-secondary text-primary"
+        }`}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20 6 9 17l-5-5" />
+        </svg>
+      </span>
+      <p className={`text-base font-medium ${dark ? "text-card-dark-text" : "text-foreground"}`}>
+        You&apos;re on the list. We&apos;ll be in touch when it&apos;s live.
+      </p>
+    </div>
+  );
+
   if (status === "done") {
-    return (
-      <div className="flex items-center justify-center gap-3 sm:justify-start">
-        <span
-          aria-hidden
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
-            dark ? "bg-card-dark-deep text-card-dark-label" : "bg-secondary text-primary"
-          }`}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20 6 9 17l-5-5" />
-          </svg>
-        </span>
-        <p className={`text-base font-medium ${dark ? "text-card-dark-text" : "text-foreground"}`}>
-          You&apos;re on the list. We&apos;ll be in touch when it&apos;s live.
-        </p>
-      </div>
-    );
+    return <div className="animate-confirm-drop">{confirmation}</div>;
   }
 
   return (
@@ -73,7 +82,7 @@ export default function WaitlistForm({
           {intro}
         </p>
       )}
-      <form onSubmit={onSubmit} noValidate>
+      <form onSubmit={onSubmit} noValidate className={swiping ? "animate-bar-knock pointer-events-none" : ""} aria-hidden={swiping}>
         <div className="flex flex-col gap-2.5 sm:flex-row">
         <label className="sr-only" htmlFor={`waitlist-email-${source}`}>
           Email address
@@ -123,6 +132,18 @@ export default function WaitlistForm({
             : "We'll email you once. Nothing else."}
         </p>
       </form>
+
+      {/* Clawed cat arm sweeps up from the bottom of the maroon box (its parent
+         provides relative + overflow-hidden) — desktop only. */}
+      {swiping && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src="/brand/cat-arm-claws.svg"
+          alt=""
+          aria-hidden
+          className="animate-paw-swat pointer-events-none absolute -bottom-[200px] left-1/2 z-10 -ml-[52px] w-[104px] drop-shadow-[0_10px_16px_rgba(0,0,0,0.32)]"
+        />
+      )}
     </div>
   );
 }
