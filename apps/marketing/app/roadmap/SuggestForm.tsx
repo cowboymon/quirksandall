@@ -24,7 +24,7 @@ export default function SuggestForm() {
         track("Suggestion Submitted");
         if (prefersPawSwipe()) {
           setStatus("swiping");
-          window.setTimeout(() => setStatus("done"), 900);
+          window.setTimeout(() => setStatus("done"), 1200);
         } else {
           setStatus("done");
         }
@@ -135,7 +135,7 @@ export default function SuggestForm() {
           src="/brand/cat-arm.svg"
           alt=""
           aria-hidden
-          className="animate-paw-swat pointer-events-none absolute -bottom-[380px] left-[38%] z-10 w-[112px] drop-shadow-[0_8px_14px_rgba(81,0,0,0.22)]"
+          className="animate-paw-swat pointer-events-none absolute -bottom-[540px] left-[40%] z-10 w-[128px] drop-shadow-[0_8px_14px_rgba(81,0,0,0.22)]"
         />
       )}
     </div>
