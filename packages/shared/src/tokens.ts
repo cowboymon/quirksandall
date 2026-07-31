@@ -78,9 +78,17 @@ export const buttonHeight = 44;
 //      price change, so the site never advertises a price the store isn't
 //      charging.
 export const PRICING = {
+  // Not on sale yet — see LIFETIME_AVAILABLE. Placeholder for when it launches.
   lifetime: "A$29.99",
-  annual: "A$9.99",
+  annual: "A$7.99",
 } as const;
+
+// Launch is annual-only; the lifetime plan comes later. Flipping this to true
+// restores the plan picker on the paywall and the lifetime copy on the
+// marketing site — but only after the lifetime product exists in App Store
+// Connect and is attached to the "pro" entitlement and the current Offering
+// in RevenueCat, or the paywall would show a plan that can't be bought.
+export const LIFETIME_AVAILABLE = false;
 
 // Stamped onto every consent record (owners.consent_policy_version + each
 // consent_log row) so we can prove which privacy-policy version a user agreed

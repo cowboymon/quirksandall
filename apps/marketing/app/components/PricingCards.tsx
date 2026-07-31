@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { site } from "../site";
+import { LIFETIME_AVAILABLE } from "@quirksandall/shared";
 import { track } from "../lib/pirsch";
 import TrackedLink from "./TrackedLink";
 
@@ -40,6 +41,11 @@ function Tick({ tone }: { tone: string }) {
 // Free stays a static card; Pro carries an Annual/Lifetime toggle that swaps
 // the whole card's theme — light for Annual, deep crimson for Lifetime — so
 // choosing "forever" reads as the premium pick. Defaults to Annual.
+//
+// Launch is annual-only (LIFETIME_AVAILABLE in shared tokens): until the
+// lifetime product actually exists to buy, the toggle hides and the card
+// stays pinned to the Annual state — advertising a plan the store doesn't
+// sell is worse than a quieter card.
 export default function PricingCards() {
   const [plan, setPlan] = useState<"annual" | "lifetime">("annual");
   const life = plan === "lifetime";
@@ -90,6 +96,7 @@ export default function PricingCards() {
         <h3 className="text-lg font-bold">Pro</h3>
 
         {/* segmented toggle */}
+        {LIFETIME_AVAILABLE && (
         <div
           role="tablist"
           aria-label="Choose a Pro plan"
@@ -120,6 +127,7 @@ export default function PricingCards() {
             Lifetime
           </button>
         </div>
+        )}
 
         {/* price */}
         <p className="mt-6 flex items-baseline gap-2">

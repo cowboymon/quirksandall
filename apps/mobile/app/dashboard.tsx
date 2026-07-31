@@ -539,7 +539,7 @@ export default function Dashboard() {
                   {pet.name}'s routine is saved, not shared yet.
                 </Text>
                 <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 3, fontFamily: "Satoshi-Light" }}>
-                  Unlock so sitters get {pet.name}'s full day — from {prices.annual} a year.
+                  Unlock so sitters get {pet.name}'s full day — {prices.annual} a year.
                 </Text>
                 <Text style={{ color: colors.primary, fontSize: 12, marginTop: 6, fontFamily: "Satoshi-Medium" }}>Unlock full access →</Text>
               </View>

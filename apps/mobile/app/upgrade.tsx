@@ -5,7 +5,7 @@ import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "../lib/supabase";
 import { purchasePlan, restorePurchases, identifyPurchaser, type Plan, type UnlockRecord } from "../lib/purchases";
-import { colors } from "@quirksandall/shared";
+import { colors, LIFETIME_AVAILABLE } from "@quirksandall/shared";
 import { usePrices } from "../hooks/usePrices";
 import { REDEMPTION_ENABLED, TERMS_URL, PRIVACY_URL } from "../lib/config";
 import { track, AnalyticsEvent } from "../lib/analytics";
@@ -28,7 +28,7 @@ async function persistUnlock(record: UnlockRecord) {
 
 export default function Upgrade() {
   const prices = usePrices();
-  const [plan, setPlan] = useState<Plan>("lifetime");
+  const [plan, setPlan] = useState<Plan>(LIFETIME_AVAILABLE ? "lifetime" : "annual");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => { track(AnalyticsEvent.PaywallViewed, { source: "upgrade" }); }, []);
@@ -91,6 +91,30 @@ export default function Upgrade() {
           <Text style={{ color: "rgba(248,236,238,0.7)", fontSize: 15, lineHeight: 22, fontFamily: "Satoshi-Light" }}>
             Routines and the softer stuff that makes the handoff feel less like a stranger and more like you.
           </Text>
+
+          {/* Single-plan launch: the price lives here in the hero. When the
+              lifetime plan ships (LIFETIME_AVAILABLE), the picker below takes
+              over and this pill retires. */}
+          {!LIFETIME_AVAILABLE && (
+            <View
+              style={{
+                alignSelf: "flex-start",
+                flexDirection: "row",
+                alignItems: "baseline",
+                gap: 8,
+                backgroundColor: "rgba(248,236,238,0.1)",
+                borderWidth: 1,
+                borderColor: "rgba(248,236,238,0.2)",
+                borderRadius: 999,
+                paddingHorizontal: 20,
+                paddingVertical: 10,
+                marginTop: 24,
+              }}
+            >
+              <Text style={{ fontFamily: "Tanker", fontSize: 30, color: "#F8ECEE" }}>{prices.annual}</Text>
+              <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, fontFamily: "Satoshi-Light" }}>a year</Text>
+            </View>
+          )}
         </View>
 
         {/* ── Light panel ───────────────────────────── */}
@@ -154,7 +178,9 @@ export default function Upgrade() {
 
           {/* Plan picker — two options, one entitlement. Same features either
               way; the choice is only how it's paid for, and the cards say so
-              rather than inventing tiers that don't exist. */}
+              rather than inventing tiers that don't exist. Hidden until the
+              lifetime product actually exists to buy. */}
+          {LIFETIME_AVAILABLE && (
           <View style={{ flexDirection: "row", gap: 10, marginTop: 28 }}>
             {(
               [
@@ -200,6 +226,7 @@ export default function Upgrade() {
               );
             })}
           </View>
+          )}
 
           {/* CTA footer */}
           <View style={{ marginTop: 16, alignItems: "center", gap: 12 }}>

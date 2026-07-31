@@ -4,6 +4,7 @@ import Footer from "./components/Footer";
 import WaitlistForm from "./components/WaitlistForm";
 import { Underline, CircleMark, MarginArrow } from "./components/Annotations";
 import { site } from "./site";
+import { LIFETIME_AVAILABLE } from "@quirksandall/shared";
 import TrackedLink from "./components/TrackedLink";
 import PricingCards from "./components/PricingCards";
 
@@ -82,7 +83,9 @@ const FAQS = [
   },
   {
     q: "Can I use this for more than one pet?",
-    a: `One pet is free. Unlock unlimited pets for ${site.pricing.annual} a year — or ${site.pricing.lifetime} once, yours forever.`,
+    a: LIFETIME_AVAILABLE
+      ? `One pet is free. Unlock unlimited pets for ${site.pricing.annual} a year — or ${site.pricing.lifetime} once, yours forever.`
+      : `One pet is free. Unlock unlimited pets for ${site.pricing.annual} a year.`,
   },
   {
     q: "Can I give different stand-ins different links?",
@@ -170,14 +173,18 @@ const homeLd = {
           description:
             "Auto-renewing yearly subscription: unlimited pets, a separate live link per stand-in, and the full daily routine.",
         },
-        {
-          "@type": "Offer",
-          name: "Unlock the rest — forever",
-          price: lifetimeNum,
-          priceCurrency: "AUD",
-          description:
-            "One-time purchase, no renewal: unlimited pets, a separate live link per stand-in, and the full daily routine.",
-        },
+        ...(LIFETIME_AVAILABLE
+          ? [
+              {
+                "@type": "Offer",
+                name: "Unlock the rest — forever",
+                price: lifetimeNum,
+                priceCurrency: "AUD",
+                description:
+                  "One-time purchase, no renewal: unlimited pets, a separate live link per stand-in, and the full daily routine.",
+              },
+            ]
+          : []),
       ],
     },
     {
@@ -318,7 +325,7 @@ export default function Home() {
           <h2 className="mt-3 max-w-2xl font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
             Start free. Go Pro{" "}
             <span className="relative inline-block">
-              <span className="relative z-10">your way.</span>
+              <span className="relative z-10">{LIFETIME_AVAILABLE ? "your way." : "when you're ready."}</span>
               <CircleMark className="absolute left-1/2 top-1/2 h-[1.6em] w-[118%] -translate-x-1/2 -translate-y-1/2 text-primary" />
             </span>
           </h2>

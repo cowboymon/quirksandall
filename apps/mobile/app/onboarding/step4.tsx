@@ -186,7 +186,7 @@ export default function Step4() {
       {/* Paywall only for free owners — paid access is account-wide (#86). */}
       {!isPaid && (
         <View style={{ marginTop: 12 }}>
-          <InlineNote variant="paywall" cta={`Unlock from ${prices.annual}/yr`} onCta={() => router.push("/upgrade")}>
+          <InlineNote variant="paywall" cta={`Unlock for ${prices.annual}/yr`} onCta={() => router.push("/upgrade")}>
             Routine's saved. Sitters won't see it until you unlock.
           </InlineNote>
         </View>
