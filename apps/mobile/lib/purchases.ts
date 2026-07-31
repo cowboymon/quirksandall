@@ -21,7 +21,10 @@ const PLAN_PACKAGE_TYPE: Record<Plan, PACKAGE_TYPE> = {
 // buyer, so old products stay mapped forever.
 export const PRODUCT_IDS: Record<Plan, string> = {
   lifetime: "quirksandall_unlocked",
-  annual: "quirksandall_annual",
+  // Not "quirksandall_annual": that ID collided with an earlier (deleted)
+  // subscription in App Store Connect, and deleted subscription IDs are
+  // burned forever. This is the live product's actual identifier.
+  annual: "quirksandall_pro_annual",
 };
 
 // What a successful purchase/restore means for the owners row. Written by the
