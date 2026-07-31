@@ -288,6 +288,7 @@ export default function Dashboard() {
   const visibleLinks = showAllLinks ? links : links.slice(0, LINKS_COLLAPSED_COUNT);
 
   return (
+    <View style={{ flex: 1 }}>
     <ScrollView className="flex-1 bg-background" contentContainerStyle={{ paddingBottom: 40 }}>
       {/* Top bar — label + owner avatar */}
       <View style={{ paddingHorizontal: 24, paddingTop: 56, paddingBottom: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
@@ -659,22 +660,26 @@ export default function Dashboard() {
         onCancel={() => setRevokeTarget(null)}
       />
 
-      {durationTarget && (
-        <DurationModal
-          visible={!!durationTarget}
-          petName={data?.pet.name ?? ""}
-          initialPreset={durationTarget.duration_preset}
-          initialEndsAt={durationTarget.ends_at}
-          onSave={async (preset, endsAt) => {
-            const id = durationTarget.id;
-            setDurationTarget(null);
-            await setLinkDuration(id, preset, endsAt);
-            loadDashboard();
-          }}
-          onClose={() => setDurationTarget(null)}
-        />
-      )}
-
     </ScrollView>
+
+    {/* Outside the ScrollView: DurationModal is an absolute-fill overlay, not
+        an RN Modal, and an absolute child of scroll content scrolls away with
+        it. As a sibling it pins to the viewport. */}
+    {durationTarget && (
+      <DurationModal
+        visible={!!durationTarget}
+        petName={data?.pet.name ?? ""}
+        initialPreset={durationTarget.duration_preset}
+        initialEndsAt={durationTarget.ends_at}
+        onSave={async (preset, endsAt) => {
+          const id = durationTarget.id;
+          setDurationTarget(null);
+          await setLinkDuration(id, preset, endsAt);
+          loadDashboard();
+        }}
+        onClose={() => setDurationTarget(null)}
+      />
+    )}
+    </View>
   );
 }

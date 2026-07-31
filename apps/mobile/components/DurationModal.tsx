@@ -1,8 +1,16 @@
 // Stay-duration picker (§5.1) — set how long a pet is staying, per link.
 // Presets are the primary choice; an exact end date is the tap-through option.
 // Choosing one clears the other.
-import { useState } from "react";
-import { Modal, View, Text, TouchableOpacity } from "react-native";
+//
+// Deliberately NOT an RN <Modal>: the exact-date field opens DatePickerSheet,
+// which on iOS is itself a Modal, and presenting a modal from inside another
+// modal is the same iOS presentation race that broke the share sheet (#6) —
+// intermittent crashes when the second presentation lands while the first
+// still owns the transition. As a plain absolute-fill overlay (mounted as a
+// sibling of the dashboard's ScrollView, so it pins to the viewport), the
+// date sheet is the only real modal on screen.
+import { useEffect, useState } from "react";
+import { BackHandler, Platform, View, Text, TouchableOpacity } from "react-native";
 import { colors, displayDateToISO, isoToDisplayDate } from "@quirksandall/shared";
 import { DateInput } from "./ui";
 
@@ -35,9 +43,17 @@ export default function DurationModal({ visible, petName, initialPreset, initial
     else onSave(preset, null);
   };
 
+  // What <Modal onRequestClose> used to give us on Android.
+  useEffect(() => {
+    if (!visible || Platform.OS !== "android") return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => { onClose(); return true; });
+    return () => sub.remove();
+  }, [visible, onClose]);
+
+  if (!visible) return null;
+
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: "rgba(31,26,23,0.45)", alignItems: "center", justifyContent: "center", paddingHorizontal: 28 }}>
+      <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, elevation: 100, backgroundColor: "rgba(31,26,23,0.45)", alignItems: "center", justifyContent: "center", paddingHorizontal: 28 }}>
         <View style={{ width: "100%", maxWidth: 380, backgroundColor: "#FFFFFF", borderRadius: 16, padding: 22 }}>
           <Text style={{ fontFamily: "Tanker", fontSize: 22, lineHeight: 26, color: colors.textDark }}>
             How long is {petName || "your pet"} staying?
@@ -99,6 +115,5 @@ export default function DurationModal({ visible, petName, initialPreset, initial
           </View>
         </View>
       </View>
-    </Modal>
   );
 }
