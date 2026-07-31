@@ -49,6 +49,12 @@ function Tick({ tone }: { tone: string }) {
 export default function PricingCards() {
   const [plan, setPlan] = useState<"annual" | "lifetime">("annual");
   const life = plan === "lifetime";
+  // Theme and copy are separate axes: `life` drives WHAT is said (lifetime vs
+  // annual copy), `dark` drives HOW it looks. During the annual-only launch
+  // the card keeps the premium dark treatment even though the copy is annual —
+  // it's the only paid plan, so it gets the flagship look. Once the toggle
+  // returns, dark goes back to meaning "lifetime selected".
+  const dark = life || !LIFETIME_AVAILABLE;
 
   function select(next: "annual" | "lifetime") {
     if (next === plan) return;
@@ -88,12 +94,22 @@ export default function PricingCards() {
       {/* Pro — theme swaps with the toggle */}
       <div
         className={`flex flex-col rounded-card p-8 ring-2 ring-primary transition-colors duration-300 md:col-span-3 ${
-          life
+          dark
             ? "border border-transparent bg-card-dark text-card-dark-text"
             : "border border-border bg-card-bg text-foreground"
         }`}
       >
-        <h3 className="text-lg font-bold">Pro</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-bold">Pro</h3>
+          {/* Honest urgency, not a countdown: subscribers keep the rate they
+              joined at when the price later rises (Apple preserved pricing) —
+              so "launch price" is a real promise, not decoration. */}
+          {!LIFETIME_AVAILABLE && (
+            <span className="eyebrow rounded-full bg-card-dark-deep px-2.5 py-1 text-card-dark-label">
+              Launch price
+            </span>
+          )}
+        </div>
 
         {/* segmented toggle */}
         {LIFETIME_AVAILABLE && (
@@ -134,22 +150,22 @@ export default function PricingCards() {
           <span className="font-tanker text-5xl leading-none">
             {life ? site.pricing.lifetime : site.pricing.annual}
           </span>
-          <span className={`text-base ${life ? "text-card-dark-label" : "text-text-muted"}`}>
+          <span className={`text-base ${dark ? "text-card-dark-label" : "text-text-muted"}`}>
             {life ? "one-time" : "/year"}
           </span>
         </p>
-        <p className={`mt-1.5 text-xs ${life ? "text-card-dark-label" : "text-text-muted"}`}>
+        <p className={`mt-1.5 text-xs ${dark ? "text-card-dark-label" : "text-text-muted"}`}>
           {life ? "Pay once. Yours forever." : "Auto-renews yearly. Cancel anytime."}
         </p>
 
         <ul
           className={`mt-6 flex flex-1 flex-col gap-3 text-sm ${
-            life ? "text-card-dark-text/90" : "text-text-muted"
+            dark ? "text-card-dark-text/90" : "text-text-muted"
           }`}
         >
           {PRO.map((f) => (
             <li key={f} className="flex gap-2.5">
-              <Tick tone={life ? "text-card-dark-label" : "text-success"} />
+              <Tick tone={dark ? "text-card-dark-label" : "text-success"} />
               {f}
             </li>
           ))}
@@ -160,14 +176,14 @@ export default function PricingCards() {
           event="Get Notified Clicked"
           meta={{ location: `pricing-${plan}` }}
           className={`mt-8 rounded-button px-5 py-3.5 text-center text-sm font-semibold transition-colors ${
-            life
+            dark
               ? "bg-background text-foreground hover:bg-secondary"
               : "bg-button text-card-dark-text hover:bg-button-pressed"
           }`}
         >
           Get notified at launch
         </TrackedLink>
-        <p className={`mt-4 min-h-[2.5rem] text-center text-xs ${life ? "text-card-dark-label" : "text-text-muted"}`}>
+        <p className={`mt-4 min-h-[2.5rem] text-center text-xs ${dark ? "text-card-dark-label" : "text-text-muted"}`}>
           {life
             ? "One-time purchase, in-app. Unlocks account-wide."
             : "Billed yearly through the app store. Cancel anytime."}
