@@ -21,6 +21,9 @@ export default function Account() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [isPaid, setIsPaid] = useState(false);
+  // Subscription period end (owners.expires_at) — null for lifetime/grants.
+  // Drives the "Renews …" line; the webhook pushes it forward on renewal.
+  const [renewsAt, setRenewsAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   // null = not yet read from the DB. The toggle stays disabled until we've
@@ -43,6 +46,7 @@ export default function Account() {
       setPhone(owner?.primary_phone ?? "");
       setEmail(owner?.primary_email ?? user.email ?? "");
       setIsPaid(isUnlocked(owner));
+      setRenewsAt(owner?.expires_at ?? null);
       // Read the consent state back from the source of truth every time the
       // screen opens — reflects changes made on another device or a withdrawal.
       setInsuranceConsent(owner?.consent_insurance_offers ?? false);
@@ -111,6 +115,7 @@ export default function Account() {
         track(AnalyticsEvent.PurchaseRestored, { source: "account" });
         if (user) await supabase.from("owners").update(record).eq("id", user.id);
         setIsPaid(true);
+        setRenewsAt(record.expires_at);
         AppAlert.alert("Restored", "Your purchase has been restored.");
       } else {
         AppAlert.alert("Nothing to restore", "No previous purchase found for this account.");
@@ -263,7 +268,12 @@ export default function Account() {
         </View>
       ) : (
         <View style={{ marginTop: 24, backgroundColor: "#510000", borderRadius: 14, paddingHorizontal: 20, paddingVertical: 20 }}>
-          <Text style={{ color: "#F8ECEE", fontFamily: "Satoshi-Medium", fontSize: 15 }}>You're in — full access is active.</Text>
+          <Text style={{ color: "#F8ECEE", fontFamily: "Satoshi-Medium", fontSize: 15 }}>You're in. Everything's open.</Text>
+          {renewsAt && !isNaN(new Date(renewsAt).getTime()) && (
+            <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, fontFamily: "Satoshi-Light", marginTop: 4 }}>
+              Renews {new Date(renewsAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}.
+            </Text>
+          )}
           <TouchableOpacity onPress={handleRestore} disabled={loading} style={{ marginTop: 8 }}>
             <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, fontFamily: "Satoshi" }}>Restore purchases</Text>
           </TouchableOpacity>
