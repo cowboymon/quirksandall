@@ -91,7 +91,7 @@ export default function Dashboard() {
 
     const { data: ownerData } = await supabase
       .from("owners")
-      .select("name, purchase_status, expires_at")
+      .select("name, purchase_status, expires_at, backup_contacts")
       .eq("id", user.id)
       .single();
 
@@ -117,14 +117,33 @@ export default function Dashboard() {
     // blocking on their own round-trip.
     setCachedPet(pet);
 
-    const [links, { data: behavior }, docCountRes] = await Promise.all([
+    const [links, { data: behavior }, docCountRes, { data: vetInfo }, { data: routine }, { data: medical }] = await Promise.all([
       listLinks(pet.id),
-      supabase.from("pet_behavior").select("commands").eq("pet_id", pet.id).single(),
+      supabase.from("pet_behavior").select("commands, scared, no_go, flight_risk, temperament_summary").eq("pet_id", pet.id).maybeSingle(),
       // Defensive: pet_documents may not exist until its migration is applied —
       // a missing table returns an error (not a throw), so count falls back to 0.
       supabase.from("pet_documents").select("id", { count: "exact", head: true }).eq("pet_id", pet.id),
+      supabase.from("pet_vet_info").select("primary_vet, emergency_vet, insurance").eq("pet_id", pet.id).maybeSingle(),
+      supabase.from("pet_routine").select("feeding, walks, sleep, bathroom_habits").eq("pet_id", pet.id).maybeSingle(),
+      supabase.from("pet_medical").select("allergies, conditions, medications").eq("pet_id", pet.id).maybeSingle(),
     ]);
     const docCount = docCountRes.count ?? 0;
+
+    // "Filled" for dot purposes: any non-blank text anywhere in the value —
+    // nested objects/arrays included, so a feeding jsonb with one meal time
+    // counts and an object of empty strings doesn't.
+    const hasContent = (v: any): boolean => {
+      if (v == null) return false;
+      if (typeof v === "string") return v.trim().length > 0;
+      if (Array.isArray(v)) return v.some(hasContent);
+      if (typeof v === "object") return Object.values(v).some(hasContent);
+      return true; // numbers/booleans are content
+    };
+    const emergencyFilled = hasContent([vetInfo?.primary_vet, vetInfo?.emergency_vet, vetInfo?.insurance, ownerData?.backup_contacts]);
+    const quirksFilled = hasContent([behavior?.scared, behavior?.no_go, behavior?.flight_risk, behavior?.temperament_summary]);
+    const routineFilled = hasContent([routine?.feeding, routine?.walks, routine?.sleep, routine?.bathroom_habits]);
+    const medicalFilled = hasContent([medical?.allergies, medical?.conditions, medical?.medications]);
+    const basicsFilled = hasContent([pet.breed, pet.sex, pet.dob, pet.weight, pet.photo_url]);
 
     const isPaid = isUnlocked(ownerData);
     // Same visible/ordered list a recipient sees (manual order, hidden
@@ -144,13 +163,22 @@ export default function Dashboard() {
       firstCommand: visibleCommands[0]?.word ?? null,
       needsReview,
       isPaid,
+      // One dot, one meaning: green = something's filled in, grey = nothing
+      // yet. Amber is reserved for the single genuine mismatch — routine
+      // content a free account's sitters can't see. Free-vs-paid otherwise
+      // lives in words (detail text, lock callouts), never in the dot.
       sections: [
-        { label: "Pet Basics", detail: `${pet.breed ?? ""}${pet.breed && pet.sex ? " · " : ""}${pet.sex ?? ""}`.trim() || "Name, breed, photo", status: pet.breed ? "done" : "empty", route: "/edit/pet" },
-        { label: "In an Emergency", detail: "Vet, emergency vet, emergency contacts", status: "done", route: "/edit/emergency" },
+        { label: "Pet Basics", detail: `${pet.breed ?? ""}${pet.breed && pet.sex ? " · " : ""}${pet.sex ?? ""}`.trim() || "Name, breed, photo", status: basicsFilled ? "done" : "empty", route: "/edit/pet" },
+        { label: "In an Emergency", detail: "Vet, emergency vet, emergency contacts", status: emergencyFilled ? "done" : "empty", route: "/edit/emergency" },
         { label: "Commands", detail: commandCount ? `${commandCount} command${commandCount === 1 ? "" : "s"} saved` : "None saved yet", status: commandCount ? "done" : "empty", route: "/edit/behavior" },
-        { label: "Quirks & Triggers", detail: "Escape risk, fears, off-limits zones", status: "done", route: "/edit/behavior?section=quirks" },
-        { label: "Routine", detail: isPaid ? "Shown to sitters" : "Saved — not shown to sitters yet", status: "saved", route: "/edit/routine" },
-        { label: "Medical", detail: "Shown to sitters", status: "done", route: "/edit/routine?section=medical" },
+        { label: "Quirks & Triggers", detail: "Escape risk, fears, off-limits zones", status: quirksFilled ? "done" : "empty", route: "/edit/behavior?section=quirks" },
+        {
+          label: "Routine",
+          detail: !routineFilled ? "Feeding, walks, sleep" : isPaid ? "Shown to sitters" : "Saved — not shown to sitters yet",
+          status: !routineFilled ? "empty" : isPaid ? "done" : "saved",
+          route: "/edit/routine",
+        },
+        { label: "Medical", detail: medicalFilled ? "Shown to sitters" : "Allergies, meds, conditions", status: medicalFilled ? "done" : "empty", route: "/edit/routine?section=medical" },
         { label: "Documents", detail: docCount ? `${docCount} file${docCount === 1 ? "" : "s"}` : "Vaccinations, flea & worm", status: docCount ? "done" : "empty", route: "/edit/documents" },
       ],
     });
