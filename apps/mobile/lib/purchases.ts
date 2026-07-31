@@ -15,12 +15,17 @@ const PLAN_PACKAGE_TYPE: Record<Plan, PACKAGE_TYPE> = {
 
 // Not read anywhere at runtime — the purchase flow goes through RevenueCat's
 // "current" Offering. Kept as documentation of which App Store Connect /
-// RevenueCat products this app's unlock maps to. Both must be attached to the
-// "pro" entitlement; when the annual product is added in RevenueCat, removing
-// the lifetime product from that entitlement would revoke every existing
-// buyer, so old products stay mapped forever.
+// RevenueCat products this app's unlock maps to. Whatever sells must be
+// attached to the "pro" entitlement — and once a product has REAL buyers,
+// never unmap it from that entitlement: doing so revokes every one of them.
 export const PRODUCT_IDS: Record<Plan, string> = {
-  lifetime: "quirksandall_unlocked",
+  // NOT LIVE. The pre-launch one-time product ("quirksandall_unlocked") was
+  // deleted from App Store Connect before anyone real bought it, and deleted
+  // IAP ids can't be reused. When the lifetime plan launches
+  // (LIFETIME_AVAILABLE in shared tokens), create a NEW non-consumable under
+  // a fresh id, attach it to "pro" and the Offering's Lifetime package, and
+  // record the real id here.
+  lifetime: "TBD_at_lifetime_launch",
   // Not "quirksandall_annual": that ID collided with an earlier (deleted)
   // subscription in App Store Connect, and deleted subscription IDs are
   // burned forever. This is the live product's actual identifier.
