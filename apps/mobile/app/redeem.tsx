@@ -79,7 +79,7 @@ export default function Redeem() {
       </TouchableOpacity>
 
       <Text style={{ color: colors.textMuted, fontSize: 12, lineHeight: 18, marginTop: 16, fontFamily: "Satoshi-Light" }}>
-        No code? Head back and unlock — {prices.annual} a year, or {prices.lifetime} once.
+        No code? Head back and unlock for {prices.annual} a year.
       </Text>
     </ScrollView>
   );

@@ -247,7 +247,7 @@ export default function Account() {
             Unlock full access.
           </Text>
           <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, lineHeight: 17, fontFamily: "Satoshi-Light", marginTop: 8, marginBottom: 20 }}>
-            The full picture — routines and the softer stuff that makes the handoff feel like you. Unlimited pets, too. Pay yearly, or once and never again.
+            The full picture — routines and the softer stuff that makes the handoff feel like you. Unlimited pets, too. Pay yearly, cancel anytime.
           </Text>
           <TouchableOpacity onPress={() => router.push("/upgrade")} disabled={loading} activeOpacity={0.85} style={{ height: 44, borderRadius: 10, backgroundColor: "#F8ECEE", alignItems: "center", justifyContent: "center", opacity: loading ? 0.6 : 1 }}>
             <Text style={{ color: "#510000", fontSize: 14, fontFamily: "Satoshi-Medium" }}>See plans</Text>

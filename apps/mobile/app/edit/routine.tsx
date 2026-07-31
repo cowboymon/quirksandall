@@ -159,7 +159,7 @@ export default function EditRoutine() {
     <EditShell title="Routine & Medical" onSave={save} saving={saving} loading={loading} scrollRef={scrollRef}>
       {!isPaid && (
         <View style={{ marginBottom: 16 }}>
-          <InlineNote variant="paywall" cta={`Unlock from ${prices.annual}/yr`} onCta={() => router.push("/upgrade")}>
+          <InlineNote variant="paywall" cta={`Unlock for ${prices.annual}/yr`} onCta={() => router.push("/upgrade")}>
             Feeding shows on every link. The rest of the routine stays saved until you unlock.
           </InlineNote>
         </View>
