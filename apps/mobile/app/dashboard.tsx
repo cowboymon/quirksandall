@@ -349,7 +349,7 @@ export default function Dashboard() {
                 // anyone holding the link, which is worth saying out loud.
                 <TouchableOpacity onPress={() => router.push("/edit/emergency?section=pin")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                   <Text style={{ color: colors.cardDarkLabel, fontSize: 11, fontFamily: "Satoshi-Medium" }}>
-                    Your vet, insurer and emergency contacts sit behind a PIN you set
+                    We'd set a PIN. Your vet, insurer and emergency contacts sit behind a PIN you set.
                   </Text>
                 </TouchableOpacity>
               ) : petPin ? (
