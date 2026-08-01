@@ -35,7 +35,7 @@ export default function WaitlistForm({
       });
       if (res.ok) {
         track("Waitlist Joined", { source });
-        if (prefersPawSwipe()) {
+        if (prefersPawSwipe(true)) {
           setStatus("swiping");
           window.setTimeout(() => setStatus("done"), 1600);
         } else {
@@ -134,14 +134,15 @@ export default function WaitlistForm({
       </form>
 
       {/* Clawed cat arm sweeps up from the bottom of the maroon box (its parent
-         provides relative + overflow-hidden) — desktop only. */}
+         provides relative + overflow-hidden). Runs on mobile too here — sized
+         down and re-anchored to the stacked bar via the base/sm: classes. */}
       {swiping && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src="/brand/cat-arm-claws.svg"
           alt=""
           aria-hidden
-          className="animate-paw-swat pointer-events-none absolute -bottom-[320px] left-1/2 z-10 -ml-[60px] w-[120px] drop-shadow-[0_10px_16px_rgba(0,0,0,0.32)]"
+          className="animate-paw-swat pointer-events-none absolute left-1/2 z-10 w-[76px] -ml-[38px] -bottom-[150px] drop-shadow-[0_10px_16px_rgba(0,0,0,0.32)] sm:w-[120px] sm:-ml-[60px] sm:-bottom-[320px]"
         />
       )}
     </div>
