@@ -39,11 +39,21 @@ export default function Index() {
   // that they turn over unhurried.
   const [msg, setMsg] = useState<string | null>(null);
   useEffect(() => {
+    // Species-agnostic where possible, and where not, alternating dog and
+    // cat energy — a cat owner should feel seen by the second line.
     const LINES = [
       "Fluffing the pillows…",
       "Counting the treats…",
-      "Checking the water bowl…",
+      "Finding the sunny spot…",
       "Warming up the zoomies…",
+      "Rattling the biscuit tin…",
+      "Chasing the red dot…",
+      "Checking the water bowl…",
+      "Circling before settling…",
+      "Knocking things off the shelf…",
+      "Sniffing everything twice…",
+      "Judging you, affectionately…",
+      "Untangling the leads…",
     ];
     let i = 0;
     const first = setTimeout(() => {
