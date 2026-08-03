@@ -17,6 +17,26 @@ import { FORMATS, renderTemplate, type PosterData, type PosterFormat } from "../
 
 export const runtime = "nodejs";
 
+// Best-effort in-memory throttle (per serverless instance), same pattern as
+// the marketing site's public routes. This endpoint is the most expensive one
+// we serve per-request (photo fetch + resize + Satori render + sharp
+// rasterisation at up to 2×), and it's reachable by anyone with a valid,
+// unrevoked share token — so unlike the marketing forms, a leaked/brute-forced
+// token has no other gate slowing repeat calls down.
+const hits = new Map<string, number[]>();
+const WINDOW_MS = 60_000;
+const MAX_PER_WINDOW = 10;
+
+function rateLimited(req: Request): boolean {
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const now = Date.now();
+  const recent = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
+  if (recent.length >= MAX_PER_WINDOW) return true;
+  recent.push(now);
+  hits.set(ip, recent);
+  return false;
+}
+
 let fontCache: { name: string; data: Buffer; weight: 400 | 700; style: "normal" }[] | null = null;
 
 async function loadFonts() {
@@ -170,6 +190,9 @@ async function generate(params: Params): Promise<Response> {
 }
 
 export async function POST(req: Request) {
+  if (rateLimited(req)) {
+    return Response.json({ error: "rate_limited" }, { status: 429 });
+  }
   const body = await req.json().catch(() => ({}));
   return generate({
     token: body.token ?? "",
