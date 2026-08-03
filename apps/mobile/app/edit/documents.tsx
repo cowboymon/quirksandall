@@ -140,8 +140,16 @@ export default function Documents() {
           </Text>
         </View>
       ) : (
-        <View style={{ gap: 10 }}>
-          {docs.map((doc) => (
+        <View style={{ gap: 18 }}>
+          {/* Grouped by the kind chosen at upload (#9) — the categorisation
+              already happens in the add flow, so the list just honours it.
+              KINDS order, empty groups skipped. */}
+          {KINDS.filter((k) => docs.some((d) => d.kind === k.key)).map((k) => (
+          <View key={k.key} style={{ gap: 10 }}>
+          <Text style={{ color: colors.textMuted, fontSize: 11, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.5 }}>
+            {k.label}
+          </Text>
+          {docs.filter((d) => d.kind === k.key).map((doc) => (
             <View key={doc.id} style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14 }}>
               <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: colors.secondary, alignItems: "center", justifyContent: "center" }}>
                 <Ionicons name={iconFor(doc.mime_type)} size={18} color={colors.primary} />
@@ -149,7 +157,7 @@ export default function Documents() {
               <TouchableOpacity style={{ flex: 1 }} onPress={() => view(doc.storage_path)} activeOpacity={0.7}>
                 <Text numberOfLines={1} style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>{doc.title || doc.file_name}</Text>
                 <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 2, fontFamily: "Satoshi-Light" }}>
-                  {kindLabel(doc.kind)} · {new Date(doc.uploaded_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                  {new Date(doc.uploaded_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -166,6 +174,8 @@ export default function Documents() {
                 <Ionicons name="trash-outline" size={18} color={colors.danger} />
               </TouchableOpacity>
             </View>
+          ))}
+          </View>
           ))}
         </View>
       )}
