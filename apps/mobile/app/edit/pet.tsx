@@ -240,8 +240,10 @@ export default function EditPet() {
     // Soft-archive: keeps history, and the dashboard only shows active pets.
     // Revoke the pet's links so they stop resolving immediately. Surface any
     // failure rather than leaving the pet/links live (#57/#65).
-    const { error: petErr } = await supabase.from("pets").update({ status: "archived" }).eq("id", petId);
-    const { error: linkErr } = await supabase.from("share_links").update({ revoked: true }).eq("pet_id", petId);
+    const [{ error: petErr }, { error: linkErr }] = await Promise.all([
+      supabase.from("pets").update({ status: "archived" }).eq("id", petId),
+      supabase.from("share_links").update({ revoked: true }).eq("pet_id", petId),
+    ]);
     if (petErr || linkErr) {
       AppAlert.alert("Couldn't delete", (petErr ?? linkErr)!.message);
       return;

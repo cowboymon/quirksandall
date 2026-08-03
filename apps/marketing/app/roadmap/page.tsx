@@ -6,6 +6,9 @@ import { SHIPPED } from "./data";
 import RoadmapBoard from "./RoadmapBoard";
 import SuggestForm from "./SuggestForm";
 
+// The shell is static; live vote counts load client-side in RoadmapBoard.
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "Roadmap",
   description: `What ${site.name} has shipped, what it's building now, and what's next. Vote on ideas or suggest your own.`,
