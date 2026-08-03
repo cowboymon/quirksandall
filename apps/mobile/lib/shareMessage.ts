@@ -25,8 +25,16 @@ export function firstShareMessage(petName: string, url: string, pinSet: boolean)
 }
 
 /** The PIN, sent on its own. Deliberately a separate message — a PIN that
- * travels beside the link it guards protects nothing. */
+ * travels beside the link it guards protects nothing.
+ *
+ * Worded for SEARCH, not just for reading: a sitter digs this out of their
+ * messages days later, mid-errand, and "PIN for the link" matches nothing
+ * memorable. Pet name + brand name give them two distinctive things to type
+ * into search ("Olive", "Quirks") and make the message self-explanatory
+ * out of context. */
 export function pinMessage(petName: string, pin: string): string {
   const name = petName.trim();
-  return name ? `PIN for ${possessive(name)} link: ${pin}` : `PIN for the link: ${pin}`;
+  return name
+    ? `${possessive(name)} Quirks & All PIN: ${pin}`
+    : `Quirks & All PIN: ${pin}`;
 }
