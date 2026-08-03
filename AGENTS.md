@@ -27,6 +27,76 @@ Guidance for AI agents working in this repo.
   `meals` filter) — it's easy to accidentally re-gate on food alone and silently
   drop a dose from the sitter's view.
 
+## Security conventions — apply these to new code, not just audits
+
+These came out of four hardening passes (auth, injection/unsafe input, AI/prompt
+injection, misconfiguration). The point of writing them down here is that they
+apply going forward, not just to the code that was already audited — a new API
+route, screen, or edge function should follow these from the start rather than
+waiting for the next audit to catch it.
+
+- **Never trust the client to gate access.** Every sensitive server action
+  (API route, Server Action, edge function) must check auth/ownership itself,
+  even if a UI-level guard also exists. Pattern: `useRequireAuth()`
+  (`apps/mobile/hooks/useRequireAuth.ts`) for screens is UX, not security — the
+  real gate is server-side RLS + an explicit ownership check
+  (`.eq("owner_id", user.id)` or equivalent), matching `set-pin`/`rotate-link`
+  in `supabase/functions/`.
+- **Admin routes re-check auth themselves**, not just via middleware —
+  `isAuthorizedAdmin()` (`apps/marketing/app/lib/adminAuth.ts`), called both in
+  `middleware.ts` and inside each `/api/admin/*` route and `admin/page.tsx`. A
+  matcher typo must not silently expose an endpoint.
+- **Rate-limit anything public that costs money, DB writes, or brute-forceable
+  secrets** (login, PIN checks, expensive rendering, public forms) — use the
+  durable Postgres-backed `checkRateLimit()`
+  (`apps/web/app/lib/rateLimit.ts` / `apps/marketing/app/lib/rateLimit.ts`,
+  backed by the `rate_limit_hits` table), not an in-memory `Map` — that resets
+  per serverless instance and is trivially bypassed.
+- **Validate every input server-side** — type, length, format, allowlist.
+  Reuse `apps/web/lib/inputSanitize.ts` (free text, image data URIs, header
+  filename components) and `packages/shared/src/fileSafety.ts` (file
+  extensions, storage path segments) rather than re-deriving ad hoc checks. A
+  filename/extension/path segment that influences a storage path must go
+  through an allowlist, never a free split-on-`.`.
+- **Generic errors to the client, full detail only server-side** — never
+  return `error.message`/stack traces from a caught exception. Log with
+  `logSupabaseError()` (`apps/marketing/app/lib/logSafe.ts`) rather than the
+  raw error object, since Postgres constraint-violation errors can embed the
+  submitted value (e.g. an email) in `details`.
+- **Guard every `req.json()`** with `.catch(() => null)` (or equivalent) and
+  type-check the parsed shape before use — a malformed body must return a
+  clean 400, not throw uncaught into the framework's default error handler.
+- **New API routes and edge functions inherit the security headers** set in
+  `apps/web/next.config.mjs` / `apps/marketing/next.config.mjs`
+  (CSP/HSTS/frame-ancestors/etc, applied globally) — if a route needs a new
+  external origin (a new analytics vendor, a new API), update the CSP there
+  rather than loosening it broadly.
+- **Cookies**: `httpOnly: true`, `sameSite: "lax"` (or `"strict"` if it never
+  needs cross-site GET), and `secure` should default to `true`/fail-safe
+  rather than being gated on an exact `NODE_ENV === "production"` match (see
+  `apps/web/app/api/pin-check/route.ts`).
+- **Constant-time compare any shared secret** (webhook secrets, admin
+  passwords) — never `===`/`!==` on a secret string. See `safeEqual()` in
+  `apps/marketing/app/lib/adminAuth.ts` and
+  `supabase/functions/revenuecat-webhook/validate.ts`.
+- **AI/LLM calls** (currently just `apps/marketing/app/lib/classify.ts`): user
+  content is untrusted — never concatenate it into the system prompt, wrap it
+  in an explicit delimiter, and instruct the model to treat it as data, not
+  instructions. Never trust or store the model's raw output — match it against
+  a fixed allowlist (and ideally back that with a DB `CHECK` constraint, as
+  `roadmap_suggestions.theme` now has) before it's used for anything.
+- **Tests**: this repo now has Vitest (`pnpm test`, root `vitest.config.mts`,
+  covering `apps/web`, `apps/marketing`, `packages/shared`,
+  `supabase/functions`). New pure validation/security logic should get unit
+  tests covering malformed, oversized, and injection-shaped input — see
+  `apps/web/lib/inputSanitize.test.ts` or
+  `supabase/functions/revenuecat-webhook/validate.test.ts` for the pattern.
+
+None of this is enforced by CI/lint yet — it relies on being followed, not
+caught. If a new sensitive route or feature is added, treat this list as the
+checklist before considering it done, not just something to fix later in an
+audit.
+
 ## Analytics — Mixpanel
 
 Product analytics is **Mixpanel**, wired per the Mixpanel setup skill.
