@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { STATUSES } from "../../../lib/themes";
 import { isAuthorizedAdmin, unauthorizedResponse } from "../../../lib/adminAuth";
+import { logSupabaseError } from "../../../lib/logSafe";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest) {
   const supabase = createClient(url, key);
   const { error } = await supabase.from("roadmap_suggestions").update(patch).eq("id", id);
   if (error) {
-    console.error("suggestion update failed", error);
+    logSupabaseError("suggestion update failed", error);
     return NextResponse.json({ ok: false, error: "server" }, { status: 500 });
   }
   return NextResponse.json({ ok: true });

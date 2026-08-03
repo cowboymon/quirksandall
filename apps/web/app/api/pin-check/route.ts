@@ -77,7 +77,11 @@ export async function POST(req: NextRequest) {
     name: unlockCookieName(token),
     value: signUnlock(token, link.pin_hash!),
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    // Fail-safe default: secure unless explicitly running local dev over
+    // http://localhost. `!== "development"` (rather than `=== "production"`)
+    // means an unset/unexpected NODE_ENV value still gets the secure cookie,
+    // instead of silently downgrading to insecure.
+    secure: process.env.NODE_ENV !== "development",
     sameSite: "lax",
     path: "/",
     maxAge: UNLOCK_MAX_AGE_SECONDS,

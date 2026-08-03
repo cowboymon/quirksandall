@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { VOTABLE_IDS, type CountsMap } from "../../roadmap/data";
+import { logSupabaseError } from "../../lib/logSafe";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -48,7 +49,7 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await supabase.from("roadmap_votes").select("item_id, vote, voter_id");
   if (error) {
-    console.error("roadmap counts failed", error);
+    logSupabaseError("roadmap counts failed", error);
     return NextResponse.json({ counts: aggregate([]), mine: {} });
   }
 
@@ -107,7 +108,7 @@ export async function POST(req: NextRequest) {
       .eq("item_id", itemId)
       .eq("voter_id", voter);
     if (error) {
-      console.error("roadmap unvote failed", error);
+      logSupabaseError("roadmap unvote failed", error);
       return NextResponse.json({ ok: false, error: "server" }, { status: 500 });
     }
   } else {
@@ -118,7 +119,7 @@ export async function POST(req: NextRequest) {
         { onConflict: "item_id,voter_id" },
       );
     if (error) {
-      console.error("roadmap vote failed", error);
+      logSupabaseError("roadmap vote failed", error);
       return NextResponse.json({ ok: false, error: "server" }, { status: 500 });
     }
   }

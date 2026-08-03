@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { checkRateLimit, clientIp } from "../../lib/rateLimit";
+import { logSupabaseError } from "../../lib/logSafe";
 
 export const runtime = "nodejs";
 
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
   // Duplicate email → unique violation (23505). Treat as success: a repeat
   // signup should land on the success state, not an error.
   if (error && error.code !== "23505") {
-    console.error("waitlist insert failed", error);
+    logSupabaseError("waitlist insert failed", error);
     return NextResponse.json({ ok: false, error: "server" }, { status: 500 });
   }
 

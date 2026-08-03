@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { COLUMNS } from "../../../roadmap/data";
 import { isAuthorizedAdmin, unauthorizedResponse } from "../../../lib/adminAuth";
+import { logSupabaseError } from "../../../lib/logSafe";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -61,7 +62,7 @@ export async function GET(req: NextRequest) {
       .select("email, source, created_at")
       .order("created_at", { ascending: false });
     if (error) {
-      console.error("admin export: waitlist query failed", error);
+      logSupabaseError("admin export: waitlist query failed", error);
       return NextResponse.json({ error: "server_error" }, { status: 500 });
     }
     csv = toCsv(
@@ -75,7 +76,7 @@ export async function GET(req: NextRequest) {
       .select("suggestion, email, theme, status, notified_at, created_at")
       .order("created_at", { ascending: false });
     if (error) {
-      console.error("admin export: suggestions query failed", error);
+      logSupabaseError("admin export: suggestions query failed", error);
       return NextResponse.json({ error: "server_error" }, { status: 500 });
     }
     csv = toCsv(
@@ -86,7 +87,7 @@ export async function GET(req: NextRequest) {
   } else if (type === "votes") {
     const { data, error } = await supabase.from("roadmap_votes").select("item_id, vote");
     if (error) {
-      console.error("admin export: votes query failed", error);
+      logSupabaseError("admin export: votes query failed", error);
       return NextResponse.json({ error: "server_error" }, { status: 500 });
     }
     const counts: Record<string, number> = {};
