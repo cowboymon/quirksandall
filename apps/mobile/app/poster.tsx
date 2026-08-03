@@ -16,6 +16,7 @@ import { supabase } from "../lib/supabase";
 import { Eyebrow, Input, DateInput } from "../components/ui";
 import { useActivePetStore } from "../stores/activePet";
 import { colors, computeAge, formatWeight, isoToDisplayDate, displayDateToISO, capitalizeFirst } from "@quirksandall/shared";
+import { useRequireAuth } from "../hooks/useRequireAuth";
 
 import { WEB_URL } from "../lib/config";
 
@@ -42,6 +43,7 @@ const SOCIAL_FORMATS: OutputFormat[] = [
 ];
 
 export default function MissingPoster() {
+  useRequireAuth();
   const { petId: selectedPetId } = useActivePetStore();
   const [profile, setProfile] = useState<PosterProfile | null>(null);
   const [loading, setLoading] = useState(true);

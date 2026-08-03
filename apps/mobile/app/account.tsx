@@ -13,10 +13,12 @@ import { track, resetAnalytics, AnalyticsEvent } from "../lib/analytics";
 import { Eyebrow, Input } from "../components/ui";
 import EditShell from "../components/EditShell";
 import ConfirmModal from "../components/ConfirmModal";
+import { useRequireAuth } from "../hooks/useRequireAuth";
 
 const SUPPORT_EMAIL = "quirksandall@itshypothetical.com";
 
 export default function Account() {
+  useRequireAuth();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -129,7 +131,11 @@ export default function Account() {
 
   const signOut = async () => {
     resetAnalytics(); // clear identity so the next account isn't merged into this one
-    await supabase.auth.signOut();
+    // scope: "global" (also the library default, made explicit here so it
+    // can't silently change) revokes the refresh token server-side, not just
+    // locally — signing out actually invalidates the session, not just the
+    // on-device copy of it.
+    await supabase.auth.signOut({ scope: "global" });
     router.replace("/auth");
   };
 
@@ -166,7 +172,11 @@ export default function Account() {
       }
     }
     resetAnalytics();
-    await supabase.auth.signOut();
+    // scope: "global" (also the library default, made explicit here so it
+    // can't silently change) revokes the refresh token server-side, not just
+    // locally — signing out actually invalidates the session, not just the
+    // on-device copy of it.
+    await supabase.auth.signOut({ scope: "global" });
     router.replace("/auth");
   };
 

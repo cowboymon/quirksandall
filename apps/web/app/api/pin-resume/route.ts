@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { fetchEmergencyContacts } from "../../lib/emergency";
 import { unlockCookieName, verifyUnlock } from "../../lib/unlock";
+import { checkRateLimit, clientIp } from "../../lib/rateLimit";
 
 export const runtime = "nodejs";
 
@@ -16,6 +17,9 @@ export async function POST(req: NextRequest) {
   );
   const { token } = await req.json();
   if (!token) return NextResponse.json({ success: false }, { status: 400 });
+
+  const allowed = await checkRateLimit(supabase, "pin_resume", `${token}:${clientIp(req)}`, 30, 15 * 60);
+  if (!allowed) return NextResponse.json({ success: false, cooldown: true });
 
   const cookie = req.cookies.get(unlockCookieName(token))?.value;
   if (!cookie) return NextResponse.json({ success: false });

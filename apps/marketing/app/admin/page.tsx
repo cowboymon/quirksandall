@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { unstable_noStore as noStore } from "next/cache";
+import { headers } from "next/headers";
+import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { COLUMNS } from "../roadmap/data";
 import SuggestionsAdmin, { type Suggestion } from "./SuggestionsAdmin";
+import { isAuthorizedAdmin } from "../lib/adminAuth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic"; // always fresh; never cached
@@ -134,6 +137,14 @@ function TableNote({ error, name }: { error: string | null; name: string }) {
 
 export default async function AdminPage() {
   noStore();
+
+  // Primary auth gate is middleware.ts (Basic Auth on /admin/:path*), but
+  // this page re-checks the same credentials itself as defense-in-depth —
+  // see api/admin/export/route.ts for why. 404 rather than 401 here since a
+  // Server Component can't send a WWW-Authenticate challenge; the browser's
+  // Basic Auth prompt from middleware.ts already handled that.
+  if (!isAuthorizedAdmin(headers())) notFound();
+
   const data = await load();
 
   if (!data) {

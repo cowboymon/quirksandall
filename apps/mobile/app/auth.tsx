@@ -29,7 +29,17 @@ export default function AuthScreen() {
     });
     setLoading(false);
     if (error) {
-      AppAlert.alert("Couldn't send code", error.message);
+      // Generic on purpose — Supabase's own error text can otherwise hint at
+      // account state (e.g. distinguishing rate-limit vs. other failures in
+      // ways that add up to an email-enumeration signal across repeated
+      // requests). The one exception worth surfacing is the rate limit itself,
+      // since "try again in a bit" is actionable and reveals nothing about
+      // whether the email is registered.
+      const isRateLimited = /rate limit/i.test(error.message);
+      AppAlert.alert(
+        "Couldn't send code",
+        isRateLimited ? "Too many attempts — please wait a bit and try again." : "Something went wrong. Please try again."
+      );
     } else {
       setStage("code");
     }

@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { COLUMNS } from "../../../roadmap/data";
+import { isAuthorizedAdmin, unauthorizedResponse } from "../../../lib/adminAuth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Auth is handled upstream by middleware.ts (Basic Auth on /api/admin/*).
+// Primary auth gate is middleware.ts (Basic Auth on /api/admin/*), but this
+// route re-checks the same credentials itself as defense-in-depth: a matcher
+// typo or a config change in middleware.ts must not silently expose this
+// data export.
 
 function cell(v: unknown): string {
   let s = v == null ? "" : String(v);
@@ -37,6 +41,8 @@ const STATUS: Record<string, string> = Object.fromEntries(
 );
 
 export async function GET(req: NextRequest) {
+  if (!isAuthorizedAdmin(req)) return unauthorizedResponse();
+
   const type = req.nextUrl.searchParams.get("type") ?? "waitlist";
 
   const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;

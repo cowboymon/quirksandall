@@ -8,6 +8,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "../lib/supabase";
 import { AppAlert } from "../stores/appAlert";
 import { useActivePetStore } from "../stores/activePet";
+import { useRequireAuth } from "../hooks/useRequireAuth";
 import { FieldTier } from "../components/ui";
 import { colors, computeAge, formatWeight, formatPhone, formatVetName, possessive, orderedCommands, commandStrengthLabel, mealSlotLabel, shortAddress, isUnlocked } from "@quirksandall/shared";
 
@@ -48,6 +49,7 @@ const microLabel = { fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: 
 const BODY = "#1F1A17";
 
 export default function Preview() {
+  useRequireAuth();
   const { petId: selectedPetId } = useActivePetStore();
   const [data, setData] = useState<Data | null>(null);
   const [loading, setLoading] = useState(true);

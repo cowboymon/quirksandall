@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { classifyTheme } from "../../../lib/classify";
+import { checkRateLimit, clientIp } from "../../../lib/rateLimit";
 
 export const runtime = "nodejs";
 
-// Best-effort in-memory throttle (per serverless instance), same as the other
-// public forms.
-const hits = new Map<string, number[]>();
-const WINDOW_MS = 60_000;
+const WINDOW_SECONDS = 60;
 const MAX_PER_WINDOW = 5;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -51,16 +49,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "invalid_email" }, { status: 400 });
   }
 
-  // Throttle by IP.
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  const now = Date.now();
-  const recent = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
-  if (recent.length >= MAX_PER_WINDOW) {
-    return NextResponse.json({ ok: false, error: "rate_limited" }, { status: 429 });
-  }
-  recent.push(now);
-  hits.set(ip, recent);
-
   // Runtime env — see the waitlist route for why the plain names are preferred.
   const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -70,6 +58,13 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = createClient(url, key);
+
+  // Durable, cross-instance throttle by IP.
+  const allowed = await checkRateLimit(supabase, "roadmap_suggest", clientIp(req), MAX_PER_WINDOW, WINDOW_SECONDS);
+  if (!allowed) {
+    return NextResponse.json({ ok: false, error: "rate_limited" }, { status: 429 });
+  }
+
   const { data, error } = await supabase
     .from("roadmap_suggestions")
     .insert({ suggestion, email })

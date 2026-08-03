@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { STATUSES } from "../../../lib/themes";
+import { isAuthorizedAdmin, unauthorizedResponse } from "../../../lib/adminAuth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Auth is handled upstream by middleware.ts (Basic Auth on /api/admin/*).
+// Primary auth gate is middleware.ts (Basic Auth on /api/admin/*), but this
+// route re-checks the same credentials itself as defense-in-depth — see
+// export/route.ts for why.
 // Updates a suggestion's resolution status and/or its notified stamp.
 export async function POST(req: NextRequest) {
+  if (!isAuthorizedAdmin(req)) return unauthorizedResponse();
+
   let body: { id?: string; status?: string; markNotified?: boolean };
   try {
     body = await req.json();

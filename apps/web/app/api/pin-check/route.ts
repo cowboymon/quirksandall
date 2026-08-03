@@ -27,8 +27,11 @@ export async function POST(req: NextRequest) {
     .eq("token", token)
     .single();
 
+  // Same shape (200, success:false) as a wrong PIN below — a 404 here would
+  // let an attacker distinguish "no such link" from "link exists, wrong PIN"
+  // and enumerate valid share tokens.
   if (!link || link.revoked) {
-    return NextResponse.json({ success: false }, { status: 404 });
+    return NextResponse.json({ success: false });
   }
 
   // Rate limit check: count recent attempts for this link+ip in the window

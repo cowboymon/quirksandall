@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { checkRateLimit, clientIp } from "../../lib/rateLimit";
 
 export const runtime = "nodejs";
 
-// Best-effort in-memory throttle (per serverless instance). Enough to blunt
-// casual abuse; upgrade to Cloudflare Turnstile / a shared store if a public
-// form starts attracting real bot traffic.
-const hits = new Map<string, number[]>();
-const WINDOW_MS = 60_000;
+const WINDOW_SECONDS = 60;
 const MAX_PER_WINDOW = 5;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -30,16 +27,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "invalid_email" }, { status: 400 });
   }
 
-  // Throttle by IP.
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  const now = Date.now();
-  const recent = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
-  if (recent.length >= MAX_PER_WINDOW) {
-    return NextResponse.json({ ok: false, error: "rate_limited" }, { status: 429 });
-  }
-  recent.push(now);
-  hits.set(ip, recent);
-
   // Read at runtime. Prefer the plain (non-public) names so the value isn't
   // baked into the build like a NEXT_PUBLIC_* var — that inlining is why a
   // build compiled before the var was set keeps returning "unconfigured".
@@ -52,6 +39,14 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = createClient(url, key);
+
+  // Durable, cross-instance throttle by IP (survives cold starts, unlike an
+  // in-memory Map).
+  const allowed = await checkRateLimit(supabase, "waitlist", clientIp(req), MAX_PER_WINDOW, WINDOW_SECONDS);
+  if (!allowed) {
+    return NextResponse.json({ ok: false, error: "rate_limited" }, { status: 429 });
+  }
+
   const { error } = await supabase.from("waitlist").insert({ email, source });
 
   // Duplicate email → unique violation (23505). Treat as success: a repeat

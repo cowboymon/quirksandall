@@ -32,8 +32,11 @@ serve(async (req) => {
     .eq("token", token)
     .single();
 
+  // Same shape (200, success:false) as a wrong PIN below — a 404 here would
+  // let an attacker distinguish "no such link" from "link exists, wrong PIN"
+  // and enumerate valid share tokens.
   if (!link || link.revoked) {
-    return new Response(JSON.stringify({ success: false }), { status: 404 });
+    return new Response(JSON.stringify({ success: false }), { status: 200 });
   }
 
   // Rate limit

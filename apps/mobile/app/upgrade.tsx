@@ -6,6 +6,7 @@ import { type Plan } from "../lib/purchases";
 import { colors, LIFETIME_AVAILABLE } from "@quirksandall/shared";
 import { usePrices } from "../hooks/usePrices";
 import { usePurchaseFlow } from "../hooks/usePurchaseFlow";
+import { useRequireAuth } from "../hooks/useRequireAuth";
 import { REDEMPTION_ENABLED, TERMS_URL, PRIVACY_URL } from "../lib/config";
 import { track, AnalyticsEvent } from "../lib/analytics";
 
@@ -17,6 +18,7 @@ const FEATURES = [
 ];
 
 export default function Upgrade() {
+  useRequireAuth();
   const prices = usePrices();
   const [plan, setPlan] = useState<Plan>(LIFETIME_AVAILABLE ? "lifetime" : "annual");
   const { loading, purchase, restore } = usePurchaseFlow("upgrade");

@@ -14,6 +14,7 @@ import satori from "satori";
 import sharp from "sharp";
 import { computeAge } from "@quirksandall/shared";
 import { FORMATS, renderTemplate, type PosterData, type PosterFormat } from "../../../lib/poster/templates";
+import { checkRateLimit, clientIp } from "../../lib/rateLimit";
 
 export const runtime = "nodejs";
 
@@ -76,6 +77,7 @@ type Params = {
   // On-screen thumbnail → render at 1× so it downloads fast. Save/share omits
   // this and gets the full 2× (300dpi) export.
   preview: boolean;
+  ip: string;
 };
 
 async function generate(params: Params): Promise<Response> {
@@ -93,6 +95,12 @@ async function generate(params: Params): Promise<Response> {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_KEY!
   );
+
+  // Satori+sharp rendering is CPU/memory-costly — cap requests per link+IP so
+  // this can't be turned into a DoS/cost amplifier. Generous enough for the
+  // preview-toggling UX (view switches re-request at 1×) noted above.
+  const allowed = await checkRateLimit(supabase, "generate_poster", `${token}:${params.ip}`, 40, 10 * 60);
+  if (!allowed) return Response.json({ error: "rate_limited" }, { status: 429 });
 
   const { data: link } = await supabase
     .from("share_links")
@@ -179,5 +187,6 @@ export async function POST(req: Request) {
     lookFor: body.lookFor ?? null,
     photoDataUri: body.photoDataUri ?? null,
     preview: body.preview ?? false,
+    ip: clientIp(req),
   });
 }
