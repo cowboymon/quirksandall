@@ -55,9 +55,13 @@ export default function Index() {
       "Judging you, affectionately…",
       "Untangling the leads…",
     ];
-    let i = 0;
+    // Start somewhere random each launch — a fixed order means everyone only
+    // ever sees the first two or three lines and the rest of the list is
+    // dead weight. Still rotates in sequence from there, so no repeats
+    // within a single load.
+    let i = Math.floor(Math.random() * LINES.length);
     const first = setTimeout(() => {
-      setMsg(LINES[0]);
+      setMsg(LINES[i]);
       interval = setInterval(() => { i = (i + 1) % LINES.length; setMsg(LINES[i]); }, 1600);
     }, 500);
     let interval: ReturnType<typeof setInterval>;
