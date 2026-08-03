@@ -127,8 +127,8 @@ export default function Step3() {
             <Textarea style={{ marginTop: 4 }} placeholder="e.g. The back bedroom…" value={pet.noGo ?? ""} onChangeText={(v) => setPet({ noGo: v })} />
           </View>
           <View>
-            <Eyebrow>A flight risk if a door's left open?</Eyebrow>
-            <Textarea style={{ marginTop: 4 }} placeholder="e.g. Yes — always check the gate." value={pet.flightRisk ?? ""} onChangeText={(v) => setPet({ flightRisk: v })} />
+            <Eyebrow>Do they bolt if they get the chance?</Eyebrow>
+            <Textarea style={{ marginTop: 4 }} placeholder="e.g. Doors, gates, slipped leads — always check the latch." value={pet.flightRisk ?? ""} onChangeText={(v) => setPet({ flightRisk: v })} />
           </View>
           <View>
             <Eyebrow>What's their temperament like?</Eyebrow>
