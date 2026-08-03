@@ -15,6 +15,11 @@ import sharp from "sharp";
 import { computeAge } from "@quirksandall/shared";
 import { FORMATS, renderTemplate, type PosterData, type PosterFormat } from "../../../lib/poster/templates";
 import { checkRateLimit, clientIp } from "../../lib/rateLimit";
+import { sanitizeFreeText, isValidImageDataUri, sanitizeHeaderFilenameComponent } from "../../../lib/inputSanitize";
+
+const MAX_AREA_LEN = 200;
+const MAX_DATE_LEN = 40;
+const MAX_LOOKFOR_LEN = 400;
 
 export const runtime = "nodejs";
 
@@ -57,11 +62,39 @@ async function photoToDataUri(url: string): Promise<string | null> {
     const res = await fetch(url);
     if (!res.ok) return null;
     const buf = Buffer.from(await res.arrayBuffer());
-    // Normalise + bound size. Cap at 2500 so the hero photo stays crisp at the
-    // 2× output scale (the poster photo band is ~2480px wide at 300dpi) without
-    // letting an unbounded upload blow up memory.
+    return reencodePhoto(buf);
+  } catch {
+    return null;
+  }
+}
+
+// Normalise + bound size. Cap at 2500 so the hero photo stays crisp at the
+// 2× output scale (the poster photo band is ~2480px wide at 300dpi) without
+// letting an unbounded upload blow up memory. Shared by both the trusted-URL
+// fetch above and the client-supplied data URI path below — a client-sent
+// photoDataUri is untrusted input and must be decoded/re-encoded through the
+// same pipeline rather than passed straight into the template as raw bytes.
+async function reencodePhoto(buf: Buffer): Promise<string | null> {
+  try {
     const jpeg = await sharp(buf).rotate().resize(2500, 2500, { fit: "inside", withoutEnlargement: true }).jpeg({ quality: 88 }).toBuffer();
     return `data:image/jpeg;base64,${jpeg.toString("base64")}`;
+  } catch {
+    return null;
+  }
+}
+
+// Client-supplied photoDataUri override: format/size-bounded first (rejects
+// anything that isn't a small, well-formed image data URI), then still
+// decoded and re-encoded through sharp rather than trusted verbatim — a
+// syntactically valid data URI can still contain a hostile/malformed image
+// payload, and re-encoding is what actually normalises it.
+async function sanitizeClientPhotoDataUri(input: unknown): Promise<string | null> {
+  if (!isValidImageDataUri(input)) return null;
+  const comma = input.indexOf(",");
+  if (comma < 0) return null;
+  try {
+    const buf = Buffer.from(input.slice(comma + 1), "base64");
+    return await reencodePhoto(buf);
   } catch {
     return null;
   }
@@ -82,9 +115,19 @@ type Params = {
 
 async function generate(params: Params): Promise<Response> {
   const { token, format } = params;
-  if (!token) return Response.json({ error: "token required" }, { status: 400 });
+  if (!token || typeof token !== "string") return Response.json({ error: "token required" }, { status: 400 });
   if (!(format in FORMATS)) {
     return Response.json({ error: "format must be poster | 1x1 | 4x5 | 9x16" }, { status: 400 });
+  }
+
+  // Free-text fields are attacker-controlled and unbounded by default —
+  // cap length and strip control characters before they reach the
+  // Satori-rendered template. null here just means "use empty", not reject.
+  const lastSeenArea = sanitizeFreeText(params.lastSeenArea, MAX_AREA_LEN) ?? "";
+  const lastSeenDate = sanitizeFreeText(params.lastSeenDate, MAX_DATE_LEN) ?? "";
+  const lookForInput = params.lookFor == null ? null : sanitizeFreeText(params.lookFor, MAX_LOOKFOR_LEN);
+  if (params.lookFor != null && lookForInput === null) {
+    return Response.json({ error: "lookFor is too long" }, { status: 400 });
   }
 
   // Kick off the font read now so it overlaps the DB lookups and photo fetch
@@ -127,8 +170,9 @@ async function generate(params: Params): Promise<Response> {
   // Watermark is tier-independent (free and paid alike); it renders on the
   // poster and 9:16 only, decided per-format inside the templates.
 
-  const photoDataUri =
-    params.photoDataUri ?? (pet.photo_url ? await photoToDataUri(pet.photo_url) : null);
+  const photoDataUri = params.photoDataUri != null
+    ? await sanitizeClientPhotoDataUri(params.photoDataUri)
+    : pet.photo_url ? await photoToDataUri(pet.photo_url) : null;
 
   if (!photoDataUri) {
     return Response.json(
@@ -146,11 +190,11 @@ async function generate(params: Params): Promise<Response> {
     colorMarkings: pet.color_markings ?? "",
     microchip: pet.microchip_number ?? "",
     photoDataUri,
-    descriptionForId: params.lookFor ?? pet.description_for_id ?? "",
+    descriptionForId: lookForInput ?? pet.description_for_id ?? "",
     ownerName: owner?.name ?? "",
     ownerPhone: owner?.primary_phone ?? "",
-    lastSeenArea: params.lastSeenArea,
-    lastSeenDate: params.lastSeenDate,
+    lastSeenArea,
+    lastSeenDate,
   };
 
   const { width, height } = FORMATS[format];
@@ -166,10 +210,14 @@ async function generate(params: Params): Promise<Response> {
     .png()
     .toBuffer();
 
+  // pet.name is a DB value the owner controls — never interpolate it into an
+  // HTTP header verbatim (quotes/CR/LF could inject additional header
+  // content depending on runtime header serialization).
+  const safeName = sanitizeHeaderFilenameComponent(pet.name.toLowerCase(), "pet");
   return new Response(new Uint8Array(png), {
     headers: {
       "Content-Type": "image/png",
-      "Content-Disposition": `attachment; filename="${pet.name.toLowerCase()}-missing-${format}.png"`,
+      "Content-Disposition": `attachment; filename="${safeName}-missing-${format}.png"`,
       // Thumbnails are re-requested as the user toggles views, so let the client
       // cache them briefly; the full export is always fresh.
       "Cache-Control": params.preview ? "private, max-age=300" : "no-store",
@@ -179,14 +227,21 @@ async function generate(params: Params): Promise<Response> {
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
-  return generate({
-    token: body.token ?? "",
-    format: (body.format ?? "poster") as PosterFormat,
-    lastSeenArea: body.lastSeenArea ?? "",
-    lastSeenDate: body.lastSeenDate ?? "",
-    lookFor: body.lookFor ?? null,
-    photoDataUri: body.photoDataUri ?? null,
-    preview: body.preview ?? false,
-    ip: clientIp(req),
-  });
+  try {
+    return await generate({
+      token: typeof body.token === "string" ? body.token : "",
+      format: (typeof body.format === "string" ? body.format : "poster") as PosterFormat,
+      lastSeenArea: body.lastSeenArea ?? "",
+      lastSeenDate: body.lastSeenDate ?? "",
+      lookFor: body.lookFor ?? null,
+      photoDataUri: body.photoDataUri ?? null,
+      preview: body.preview === true,
+      ip: clientIp(req),
+    });
+  } catch (err) {
+    // Never leak internals (stack trace, file paths, satori/sharp error
+    // detail) to the client — log server-side, return a generic message.
+    console.error("generate-poster failed", err);
+    return Response.json({ error: "Couldn't generate the poster. Please try again." }, { status: 500 });
+  }
 }

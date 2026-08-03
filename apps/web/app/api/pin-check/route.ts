@@ -13,10 +13,12 @@ export async function POST(req: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_KEY!
   );
-  const { token, pin } = await req.json();
+  const body = await req.json().catch(() => null);
+  const token = body && typeof body === "object" ? body.token : undefined;
+  const pin = body && typeof body === "object" ? body.pin : undefined;
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
 
-  if (!token || !pin || pin.length !== 4) {
+  if (typeof token !== "string" || !token || typeof pin !== "string" || !/^\d{4}$/.test(pin)) {
     return NextResponse.json({ success: false }, { status: 400 });
   }
 

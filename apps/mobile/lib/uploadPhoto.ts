@@ -2,6 +2,7 @@
 import * as FileSystem from "expo-file-system/legacy";
 import { supabase } from "./supabase";
 import { decode } from "base64-arraybuffer";
+import { safeImageExtension, isSafePathSegment } from "@quirksandall/shared";
 
 /**
  * Upload a local file:// URI to Supabase Storage under owners/{ownerId}/pets/{petId}.
@@ -15,8 +16,10 @@ export async function uploadPetPhoto(petId: string, localUri: string): Promise<s
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not logged in");
 
-  // Determine extension from URI
-  const ext = localUri.split(".").pop()?.toLowerCase() ?? "jpg";
+  // Determine extension from URI — allowlisted, not trusted verbatim, since
+  // it ends up as a storage-path suffix.
+  const ext = safeImageExtension(localUri) ?? "jpg";
+  if (!isSafePathSegment(petId)) throw new Error("Invalid pet.");
   const mimeType = ext === "png" ? "image/png" : "image/jpeg";
   const path = `${user.id}/${petId}.${ext}`;
 

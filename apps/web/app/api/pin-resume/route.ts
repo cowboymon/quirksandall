@@ -15,8 +15,9 @@ export async function POST(req: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_KEY!
   );
-  const { token } = await req.json();
-  if (!token) return NextResponse.json({ success: false }, { status: 400 });
+  const body = await req.json().catch(() => null);
+  const token = body && typeof body === "object" ? body.token : undefined;
+  if (typeof token !== "string" || !token) return NextResponse.json({ success: false }, { status: 400 });
 
   const allowed = await checkRateLimit(supabase, "pin_resume", `${token}:${clientIp(req)}`, 30, 15 * 60);
   if (!allowed) return NextResponse.json({ success: false, cooldown: true });

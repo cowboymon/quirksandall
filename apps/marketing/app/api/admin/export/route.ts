@@ -60,7 +60,10 @@ export async function GET(req: NextRequest) {
       .from("waitlist")
       .select("email, source, created_at")
       .order("created_at", { ascending: false });
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      console.error("admin export: waitlist query failed", error);
+      return NextResponse.json({ error: "server_error" }, { status: 500 });
+    }
     csv = toCsv(
       ["email", "source", "created_at"],
       (data ?? []).map((r) => [r.email, r.source, r.created_at]),
@@ -71,7 +74,10 @@ export async function GET(req: NextRequest) {
       .from("roadmap_suggestions")
       .select("suggestion, email, theme, status, notified_at, created_at")
       .order("created_at", { ascending: false });
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      console.error("admin export: suggestions query failed", error);
+      return NextResponse.json({ error: "server_error" }, { status: 500 });
+    }
     csv = toCsv(
       ["suggestion", "email", "theme", "status", "notified_at", "created_at"],
       (data ?? []).map((r) => [r.suggestion, r.email, r.theme, r.status, r.notified_at, r.created_at]),
@@ -79,7 +85,10 @@ export async function GET(req: NextRequest) {
     name = "suggestions";
   } else if (type === "votes") {
     const { data, error } = await supabase.from("roadmap_votes").select("item_id, vote");
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      console.error("admin export: votes query failed", error);
+      return NextResponse.json({ error: "server_error" }, { status: 500 });
+    }
     const counts: Record<string, number> = {};
     for (const id of Object.keys(TITLES)) counts[id] = 0;
     for (const v of data ?? []) if (v.vote === 1 && v.item_id in counts) counts[v.item_id] += 1;

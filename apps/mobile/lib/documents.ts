@@ -5,6 +5,7 @@
 import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import { decode } from "base64-arraybuffer";
+import { safeDocumentExtension, isSafePathSegment } from "@quirksandall/shared";
 import { supabase } from "./supabase";
 import { randomToken } from "./links";
 
@@ -34,7 +35,15 @@ export async function uploadDocument(doc: NewDocument) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not logged in");
 
-  const ext = (doc.fileName.split(".").pop() || "bin").toLowerCase();
+  // Strict allowlist, not a free split on the last ".": a filename crafted
+  // with an embedded "/" (e.g. "x.foo/bar") must never reach the storage
+  // path below. petId is similarly constrained to a single safe path
+  // segment before it's allowed into the path, as defense-in-depth on top
+  // of the storage RLS policy.
+  const ext = safeDocumentExtension(doc.fileName);
+  if (!ext) throw new Error("That file type isn't supported.");
+  if (!isSafePathSegment(doc.petId)) throw new Error("Invalid pet.");
+
   // {owner}/{pet}/{random}.{ext} — first segment must be the owner uid for the
   // storage RLS policy to allow the write.
   const path = `${user.id}/${doc.petId}/${randomToken()}.${ext}`;
