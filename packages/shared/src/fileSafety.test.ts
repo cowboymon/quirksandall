@@ -7,6 +7,7 @@ import {
   matchesFileSignature,
   isValidUploadSize,
   isOwnedStoragePath,
+  isOwnedPet,
   MAX_IMAGE_UPLOAD_BYTES,
   MAX_DOCUMENT_UPLOAD_BYTES,
 } from "./fileSafety";
@@ -228,5 +229,27 @@ describe("isOwnedStoragePath — private-file cross-user access guard", () => {
     expect(isOwnedStoragePath(undefined, OWNER)).toBe(false);
     expect(isOwnedStoragePath(42, OWNER)).toBe(false);
     expect(isOwnedStoragePath(`${OWNER}/pet123/doc.pdf`, "")).toBe(false);
+  });
+});
+
+describe("isOwnedPet — document-upload cross-user access guard", () => {
+  const OWNER = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
+  const OTHER = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+
+  it("allows the actual owner", () => {
+    expect(isOwnedPet({ owner_id: OWNER }, OWNER)).toBe(true);
+  });
+
+  it("denies a pet owned by someone else — the core cross-user-access threat this guards against in uploadDocument()", () => {
+    expect(isOwnedPet({ owner_id: OTHER }, OWNER)).toBe(false);
+  });
+
+  it("denies a nonexistent pet (a forged/guessed petId)", () => {
+    expect(isOwnedPet(null, OWNER)).toBe(false);
+    expect(isOwnedPet(undefined, OWNER)).toBe(false);
+  });
+
+  it("denies when the caller id is empty", () => {
+    expect(isOwnedPet({ owner_id: OWNER }, "")).toBe(false);
   });
 });

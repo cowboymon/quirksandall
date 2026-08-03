@@ -3,6 +3,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, rateLimitClient, rateLimitEnv } from "../_shared/rateLimit.ts";
+import { isOwnedPet } from "../_shared/authz.ts";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -64,7 +65,7 @@ serve(async (req) => {
       .eq("id", pet_id)
       .single();
 
-    if (!pet || pet.owner_id !== user.id) {
+    if (!isOwnedPet(pet, user.id)) {
       return new Response("Forbidden", { status: 403 });
     }
 

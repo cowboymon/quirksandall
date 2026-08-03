@@ -5,6 +5,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { hashSync } from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 import { checkRateLimit, rateLimitClient, rateLimitEnv } from "../_shared/rateLimit.ts";
+import { isAuthorizedForLink } from "../_shared/authz.ts";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -53,15 +54,14 @@ serve(async (req) => {
       .eq("id", link_id)
       .single();
 
-    if (!link) return new Response("Not found", { status: 404 });
-
-    const { data: pet } = await supabase
-      .from("pets")
-      .select("owner_id")
-      .eq("id", link.pet_id)
-      .single();
-
-    if (!pet || pet.owner_id !== user.id) return new Response("Forbidden", { status: 403 });
+    const pet = link
+      ? (await supabase.from("pets").select("owner_id").eq("id", link.pet_id).single()).data
+      : null;
+    // Same response for "no such link" and "link exists but isn't yours" —
+    // see _shared/authz.ts for why these must never be distinguishable.
+    if (!isAuthorizedForLink(link, pet, user.id)) {
+      return new Response("Forbidden", { status: 403 });
+    }
 
     // bcrypt (salted, slow) — a 4-digit PIN must never sit behind a fast unsalted hash
     const pinHash = hashSync(pin);

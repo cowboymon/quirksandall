@@ -13,6 +13,7 @@ import {
   matchesFileSignature,
   isValidUploadSize,
   isOwnedStoragePath,
+  isOwnedPet,
   MAX_DOCUMENT_UPLOAD_BYTES,
 } from "@quirksandall/shared";
 import { supabase } from "./supabase";
@@ -58,6 +59,15 @@ export async function uploadDocument(doc: NewDocument) {
   const ext = safeDocumentExtension(doc.fileName);
   if (!ext) throw new Error("That file type isn't supported.");
   if (!isSafePathSegment(doc.petId)) throw new Error("Invalid pet.");
+
+  // Explicit ownership check before any upload work happens, rather than
+  // relying solely on the metadata-insert RLS rejection + rollback below to
+  // catch a forged petId after the fact — that combination is safe today,
+  // but it means "no cross-owner document" depends on the rollback code
+  // staying in place. Checking up front means a forged petId is rejected
+  // immediately, with nothing written anywhere first.
+  const { data: pet } = await supabase.from("pets").select("owner_id").eq("id", doc.petId).maybeSingle();
+  if (!isOwnedPet(pet, user.id)) throw new Error("Invalid pet.");
 
   const base64 = await FileSystem.readAsStringAsync(doc.uri, {
     encoding: FileSystem.EncodingType.Base64,

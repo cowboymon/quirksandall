@@ -186,6 +186,41 @@ waiting for the next audit to catch it.
   get it working." Never add a template/example file outside the standard
   `.env.example` name — a second file (like a stray `env.template`) is easy
   to forget belongs to the same gitignore/placeholder discipline.
+- **Authorization (as distinct from authentication)**: knowing who's calling
+  isn't the same as checking they may act on the specific resource in the
+  request. Where this app gets its ownership guarantee differs by layer —
+  know which one applies before adding a new query:
+  - **Mobile, using the anon-key client under the user's own session**: RLS
+    (`for all using (auth.uid() = owner_id)`-style policies, see every
+    `*_owner` policy in `supabase/migrations/`) IS the real, sufficient
+    boundary — a query filtered by a client-supplied `petId` belonging to
+    another owner returns zero rows / is rejected, not an error that leaks
+    anything. You don't need an app-level re-check on top of this for a
+    plain RLS-covered table.
+  - **Any route/function using a service-role client** (`apps/web/app/api/*`,
+    `supabase/functions/*`) — RLS is bypassed entirely, so the ONLY
+    protection is what the code explicitly checks. Every id used to select
+    data must be re-derived from something already verified (a `token`
+    resolved from the DB, `getUser()`'s JWT-verified identity), never
+    trusted as a standalone client-supplied value. Get the caller's own
+    identity from `supabase.auth.getUser()` (Supabase-verified from the JWT),
+    never from a `user_id`/`owner_id` field in the request body.
+  - **A resource that "doesn't exist" and one that "exists but isn't yours"
+    must produce the identical response** — a status-code or body split
+    between the two (404 vs 403) becomes an oracle an authenticated caller
+    can use to enumerate other accounts' resource ids. Use
+    `isOwnedPet()`/`isAuthorizedForLink()`
+    (`packages/shared/src/fileSafety.ts` for app code,
+    `supabase/functions/_shared/authz.ts` for edge functions) rather than a
+    hand-rolled `if (!row) 404 else if (wrong owner) 403` — both paths
+    collapse to the same denial by construction.
+  - There's no role/permission system to get confused by: admin access is a
+    single shared Basic-Auth credential (`isAuthorizedAdmin()`), entirely
+    separate from the Supabase user/owners table — there's no `owners.role`
+    column, so there's nothing for an authenticated owner to self-promote
+    via a normal profile update. If that ever changes (a real role column
+    gets added), the same "never trust a client-supplied role value, always
+    read it fresh from the DB" rule applies.
 
 None of this is enforced by CI/lint yet — it relies on being followed, not
 caught. If a new sensitive route or feature is added, treat this list as the

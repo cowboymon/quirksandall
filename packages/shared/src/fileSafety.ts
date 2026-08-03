@@ -150,3 +150,13 @@ export function isOwnedStoragePath(storagePath: unknown, ownerId: string): boole
   const firstSegment = storagePath.split("/")[0];
   return firstSegment === ownerId;
 }
+
+// Confirms a `pets` row's owner_id matches the calling (authenticated) user.
+// Used as an explicit, up-front ownership check before acting on a
+// client-supplied petId, rather than relying solely on RLS to reject the
+// eventual write — same decision a "found but belongs to someone else" and
+// "doesn't exist at all" must produce identically (both false), so callers
+// don't accidentally build a 404-vs-403-style existence oracle around it.
+export function isOwnedPet(pet: { owner_id: string } | null | undefined, callerId: string): boolean {
+  return !!pet && !!callerId && pet.owner_id === callerId;
+}
