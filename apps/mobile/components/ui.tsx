@@ -174,6 +174,21 @@ export function DateInput({
   const parsed = displayDateToISO(value as string);
   const seed = useMemo(() => (parsed ? new Date(`${parsed}T00:00:00`) : new Date()), [parsed]);
 
+  // The parser already rejects impossible dates (35/08/1936 round-trips to
+  // null) — but silently, so the form just accepted the text and dropped it
+  // on save. Say so instead, once a full date has been typed. Range errors
+  // follow the field's meaning: a birthday can't be in the future, an end
+  // date can't be in the past (today is fine for both).
+  const dateError = useMemo(() => {
+    const s = (value as string) ?? "";
+    if (s.length !== 10) return null;
+    if (!parsed) return "That date doesn't exist — check the day and month";
+    const todayISO = new Date().toISOString().slice(0, 10);
+    if ((range === "birthday" || range === "past") && parsed > todayISO) return "That's in the future";
+    if (range === "future" && parsed < todayISO) return "That date has already passed";
+    return null;
+  }, [value, parsed, range]);
+
   const commit = (d: Date) => {
     onChangeText(
       `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`
@@ -181,14 +196,15 @@ export function DateInput({
   };
 
   return (
-    <View style={{ position: "relative", justifyContent: "center" }}>
+    <View>
+      <View style={{ position: "relative", justifyContent: "center" }}>
       <Input
         value={value}
         onChangeText={handle}
         placeholder="DD/MM/YYYY"
         keyboardType="number-pad"
         maxLength={10}
-        style={[{ paddingRight: 40 }, style]}
+        style={[{ paddingRight: 40 }, dateError ? { borderColor: colors.danger } : null, style]}
         {...props}
       />
       <TouchableOpacity
@@ -198,6 +214,7 @@ export function DateInput({
       >
         <Ionicons name="calendar-outline" size={17} color={colors.textMuted} />
       </TouchableOpacity>
+      </View>
 
       <DatePickerSheet
         visible={showPicker}
@@ -206,6 +223,9 @@ export function DateInput({
         onCancel={() => setShowPicker(false)}
         onConfirm={(d) => { commit(d); setShowPicker(false); }}
       />
+      {dateError && (
+        <Text style={{ color: colors.danger, fontSize: 11, marginTop: 4, fontFamily: "Satoshi" }}>{dateError}</Text>
+      )}
     </View>
   );
 }

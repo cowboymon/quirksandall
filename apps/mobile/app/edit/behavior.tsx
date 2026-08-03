@@ -282,10 +282,10 @@ export default function EditBehavior() {
         </Card>
 
         <Card>
-          <Eyebrow>Do they bolt if they get the chance?</Eyebrow>
+          <Eyebrow>A flight risk if a door's left open?</Eyebrow>
           <Input
             className="mt-2"
-            placeholder="Yes / No — and what to watch for"
+            placeholder="e.g. Yes — always check the gate."
             value={flightRisk}
             onChangeText={setFlightRisk}
             multiline

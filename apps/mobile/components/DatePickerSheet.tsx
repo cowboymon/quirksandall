@@ -88,23 +88,23 @@ function IOSSheet({
 
           <DateTimePicker
             mode="date"
-            // A birthday means scrolling back through years, which the wheel
-            // does far faster than paging a calendar; the other two are
-            // "which day" decisions, where seeing the week laid out is
-            // the point.
-            display={range === "birthday" ? "spinner" : "inline"}
+            // Spinner for EVERY range, not just birthdays. The inline
+            // calendar (UICalendarView) kept crashing on device — it survived
+            // the seed/bounds fixes AND the modal de-nesting (build 20), so
+            // it's the component itself that's fragile inside RN layouts.
+            // The wheel with an explicit height is the one variant that has
+            // never crashed since the DOB fix; a calendar grid isn't worth
+            // another build finding out why Apple's view throws.
+            display="spinner"
             value={draft}
             {...bounds}
             onChange={(_, d) => d && setDraft(d)}
             themeVariant="light"
             accentColor={colors.primary}
-            // The wheel needs a concrete height. Unlike the inline calendar,
-            // which sizes itself, a spinner in a flex container can end up
-            // with an unresolved height and take the view down with it — which
-            // is why the birthday picker crashed while the stay-date one, on
-            // identical seed and bounds code, didn't. 216 is the standard iOS
-            // wheel height.
-            style={range === "birthday" ? { alignSelf: "stretch", height: 216 } : { alignSelf: "center" }}
+            // The wheel needs a concrete height — in a flex container it can
+            // end up unresolved and take the view down. 216 is the standard
+            // iOS wheel height.
+            style={{ alignSelf: "stretch", height: 216 }}
           />
         </View>
       </View>
