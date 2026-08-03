@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { View, ActivityIndicator, Platform } from "react-native";
+import { useEffect, useState } from "react";
+import { View, Text, ActivityIndicator, Platform } from "react-native";
 import { router } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { initAnalytics, identify, track, AnalyticsEvent } from "../lib/analytics";
@@ -33,9 +33,34 @@ export default function Index() {
     });
   }, []);
 
+  // While the account loads, rotate through a few lines in the app's voice —
+  // dead time reads shorter when something's alive on screen. The first line
+  // waits 500ms so a fast load never flashes a message for a blink; after
+  // that they turn over unhurried.
+  const [msg, setMsg] = useState<string | null>(null);
+  useEffect(() => {
+    const LINES = [
+      "Fluffing the pillows…",
+      "Counting the treats…",
+      "Checking the water bowl…",
+      "Warming up the zoomies…",
+    ];
+    let i = 0;
+    const first = setTimeout(() => {
+      setMsg(LINES[0]);
+      interval = setInterval(() => { i = (i + 1) % LINES.length; setMsg(LINES[i]); }, 1600);
+    }, 500);
+    let interval: ReturnType<typeof setInterval>;
+    return () => { clearTimeout(first); if (interval) clearInterval(interval); };
+  }, []);
+
   return (
     <View className="flex-1 items-center justify-center bg-background">
       <ActivityIndicator color="#510000" />
+      {/* Fixed-height slot so the spinner doesn't jump when the line appears */}
+      <Text style={{ height: 22, marginTop: 14, color: "#74555D", fontSize: 14, fontFamily: "Satoshi-Light" }}>
+        {msg ?? ""}
+      </Text>
     </View>
   );
 }
