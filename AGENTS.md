@@ -91,6 +91,36 @@ waiting for the next audit to catch it.
   tests covering malformed, oversized, and injection-shaped input — see
   `apps/web/lib/inputSanitize.test.ts` or
   `supabase/functions/revenuecat-webhook/validate.test.ts` for the pattern.
+- **File uploads** (any new upload feature, not just the two that exist
+  today) must, before storing anything:
+  - Validate the extension against a strict allowlist
+    (`packages/shared/src/fileSafety.ts` — `safeDocumentExtension`/
+    `safeImageExtension`), never a free split on the filename.
+  - Content-sniff the actual bytes against the claimed type
+    (`matchesFileSignature`) — a filename/extension is a claim, not proof.
+  - Enforce a size ceiling server-side (`isValidUploadSize` +
+    `MAX_IMAGE_UPLOAD_BYTES`/`MAX_DOCUMENT_UPLOAD_BYTES`), and back it with a
+    Supabase Storage bucket-level `file_size_limit`/`allowed_mime_types`
+    (see the `storage_bucket_limits` migration) so the API itself refuses an
+    oversized/wrong-type upload even if application code has a bug.
+  - Derive the stored `Content-Type` from the validated extension
+    (`contentTypeForExtension`) — never trust a client-supplied
+    mimeType/contentType for what gets served back, or an allowlisted file
+    can be served as `text/html` and execute in a browser.
+  - Generate the storage path server/app-side (owner id + random token +
+    validated extension) — never the original filename, and validate every
+    path segment with `isSafePathSegment`/`isOwnedStoragePath`.
+  - Strip metadata (EXIF/GPS) before storing anything in a **public**
+    bucket — re-encode through an image library (`expo-image-manipulator`
+    on mobile, `sharp` on the server) rather than uploading the original
+    bytes verbatim.
+  - A function that mints a signed URL for a private object
+    (`documentSignedUrl`-style) should re-verify the path belongs to the
+    calling user itself, not only trust that every caller already scoped it
+    correctly — RLS is the real enforcement, but the function shouldn't be
+    "correct by convention" alone.
+  - Never add SVG or HTML to an upload allowlist unless there's a specific,
+    reviewed reason — both can execute active content in a browser.
 
 None of this is enforced by CI/lint yet — it relies on being followed, not
 caught. If a new sensitive route or feature is added, treat this list as the
