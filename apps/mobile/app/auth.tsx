@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
+import { splashHidden } from "../lib/splash";
 import { AppAlert } from "../stores/appAlert";
 import { router, useFocusEffect } from "expo-router";
 import { supabase } from "../lib/supabase";
@@ -18,6 +19,14 @@ const RESEND_COOLDOWN_SECONDS = 30;
 // Deep-linking a magic link back into the app is unreliable in Expo Go and
 // fiddly in builds; a code the user types works everywhere.
 export default function AuthScreen() {
+  const emailRef = useRef<TextInput>(null);
+  // Focus only once the splash is gone — autoFocus fired while this screen
+  // sat under the held splash, raising the keyboard before anything visible.
+  useEffect(() => {
+    let active = true;
+    splashHidden.then(() => { if (active) setTimeout(() => emailRef.current?.focus(), 80); });
+    return () => { active = false; };
+  }, []);
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [stage, setStage] = useState<"email" | "code">("email");
@@ -146,7 +155,7 @@ export default function AuthScreen() {
               autoCapitalize="none"
               keyboardType="email-address"
               autoComplete="email"
-              autoFocus
+              ref={emailRef}
             />
             <TouchableOpacity
               className="h-[44px] rounded-button items-center justify-center mt-5"

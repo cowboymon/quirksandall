@@ -53,7 +53,10 @@ export function InsurerInput({
   // Hide once the typed value is already an exact pick — no point offering a
   // suggestion identical to what's in the field.
   const exact = matches.length === 1 && matches[0].toLowerCase() === value.trim().toLowerCase();
-  const showDropdown = focused && matches.length > 0 && !exact && !!anchor;
+  // Nothing until they type: an empty field matches the whole list, and six
+  // insurers appearing on first tap read as "pick from these" — the opposite
+  // of what this field promises (type anything; suggestions are a shortcut).
+  const showDropdown = focused && value.trim().length > 0 && matches.length > 0 && !exact && !!anchor;
 
   const pick = (name: string) => { onChangeText(name); close(); };
 

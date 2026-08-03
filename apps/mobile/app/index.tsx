@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { View, ActivityIndicator, Platform } from "react-native";
+import { useEffect, useState } from "react";
+import { View, Text, ActivityIndicator, Platform } from "react-native";
 import { router } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { initAnalytics, identify, track, AnalyticsEvent } from "../lib/analytics";
@@ -33,9 +33,48 @@ export default function Index() {
     });
   }, []);
 
+  // While the account loads, rotate through a few lines in the app's voice —
+  // dead time reads shorter when something's alive on screen. The first line
+  // waits 500ms so a fast load never flashes a message for a blink; after
+  // that they turn over unhurried.
+  const [msg, setMsg] = useState<string | null>(null);
+  useEffect(() => {
+    // Species-agnostic where possible, and where not, alternating dog and
+    // cat energy — a cat owner should feel seen by the second line.
+    const LINES = [
+      "Fluffing the pillows…",
+      "Counting the treats…",
+      "Finding the sunny spot…",
+      "Warming up the zoomies…",
+      "Rattling the biscuit tin…",
+      "Chasing the red dot…",
+      "Checking the water bowl…",
+      "Circling before settling…",
+      "Knocking things off the shelf…",
+      "Sniffing everything twice…",
+      "Judging you, affectionately…",
+      "Untangling the leads…",
+    ];
+    // Start somewhere random each launch — a fixed order means everyone only
+    // ever sees the first two or three lines and the rest of the list is
+    // dead weight. Still rotates in sequence from there, so no repeats
+    // within a single load.
+    let i = Math.floor(Math.random() * LINES.length);
+    const first = setTimeout(() => {
+      setMsg(LINES[i]);
+      interval = setInterval(() => { i = (i + 1) % LINES.length; setMsg(LINES[i]); }, 1600);
+    }, 500);
+    let interval: ReturnType<typeof setInterval>;
+    return () => { clearTimeout(first); if (interval) clearInterval(interval); };
+  }, []);
+
   return (
     <View className="flex-1 items-center justify-center bg-background">
       <ActivityIndicator color="#510000" />
+      {/* Fixed-height slot so the spinner doesn't jump when the line appears */}
+      <Text style={{ height: 22, marginTop: 14, color: "#74555D", fontSize: 14, fontFamily: "Satoshi-Light" }}>
+        {msg ?? ""}
+      </Text>
     </View>
   );
 }

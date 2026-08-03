@@ -285,7 +285,7 @@ export default function EditBehavior() {
           <Eyebrow>Do they bolt if they get the chance?</Eyebrow>
           <Input
             className="mt-2"
-            placeholder="Yes / No — and what to watch for"
+            placeholder="e.g. Doors, gates, slipped leads — always check the latch."
             value={flightRisk}
             onChangeText={setFlightRisk}
             multiline

@@ -2,6 +2,7 @@ import "../global.css";
 import { useEffect } from "react";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import { markSplashHidden } from "../lib/splash";
 import { useFonts } from "expo-font";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Entypo from "@expo/vector-icons/Entypo";
@@ -41,7 +42,7 @@ export default function RootLayout() {
     initAnalytics();
     configureNotifications();
     const remaining = Math.max(0, MIN_SPLASH_MS - (Date.now() - startedAt));
-    const t = setTimeout(() => SplashScreen.hideAsync(), remaining);
+    const t = setTimeout(() => { SplashScreen.hideAsync(); markSplashHidden(); }, remaining);
     return () => clearTimeout(t);
   }, [fontsLoaded]);
 

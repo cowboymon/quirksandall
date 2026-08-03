@@ -239,8 +239,7 @@ export default function Home() {
         {/* 1b — How it works (#F8ECEE — same as What's inside) */}
         <section>
           <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
-            <p className="eyebrow text-primary">How it works</p>
-            <h2 className="mt-3 max-w-xl font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
+            <h2 className="max-w-xl font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
               Three steps, then you can actually leave.
             </h2>
             <ol className="mt-12 grid gap-8 sm:grid-cols-3">
@@ -259,8 +258,7 @@ export default function Home() {
 
         {/* 2 — Features (#F8ECEE) */}
         <section id="how" className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
-          <p className="eyebrow text-primary">What&apos;s inside</p>
-          <h2 className="mt-3 max-w-xl font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
+          <h2 className="max-w-xl font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
             Write them down before someone else has to guess.
           </h2>
 
@@ -279,8 +277,7 @@ export default function Home() {
         {/* 2b — A look inside (#E5BEC4 surface, phone screenshots) */}
         <section className="bg-[#E5BEC4]">
           <div className="mx-auto max-w-5xl px-6 py-16 sm:py-24">
-            <p className="eyebrow text-primary">A look inside</p>
-            <h2 className="mt-3 max-w-xl font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
+            <h2 className="max-w-xl font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
               Fill it in fast. They read it faster.
             </h2>
             <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-3">
@@ -321,8 +318,7 @@ export default function Home() {
 
         {/* 5 — Pricing (#F8ECEE) */}
         <section id="pricing" className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
-          <p className="eyebrow text-primary">Pricing</p>
-          <h2 className="mt-3 max-w-2xl font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
+          <h2 className="max-w-2xl font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
             Start free. Go Pro{" "}
             <span className="relative inline-block">
               <span className="relative z-10">{LIFETIME_AVAILABLE ? "your way." : "when you're ready."}</span>
@@ -335,8 +331,7 @@ export default function Home() {
 
         {/* 6 — FAQ (#F8ECEE) */}
         <section id="faq" className="mx-auto max-w-3xl px-6 py-16 sm:py-20">
-          <p className="eyebrow text-primary">FAQ</p>
-          <h2 className="mt-3 font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
+          <h2 className="font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
             Questions, answered plainly.
           </h2>
 
