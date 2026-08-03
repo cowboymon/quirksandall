@@ -17,6 +17,7 @@ export default function Step2() {
   // is the only way to unlock them for manual entry. Vet name is always
   // free-text; Places has no idea who the actual vet is.
   const [vetManual, setVetManual] = useState(false);
+  const [emergManual, setEmergManual] = useState(false);
 
   return (
     <ScrollView className="flex-1 bg-background" keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 24, paddingTop: 60, width: "100%", maxWidth: 600, alignSelf: "center" }}>
@@ -73,10 +74,35 @@ export default function Step2() {
 
         <Card>
           <Eyebrow bold>Emergency vet</Eyebrow>
+          {/* Same search flow as the Vet card above — this card had been left
+              on plain inputs, so the two vet fields behaved differently in
+              the same screen (#4, build-20 smoke test). */}
           <View style={{ gap: 8, marginTop: 12 }}>
-            <LabeledInput label="Clinic name" placeholder="Clinic name" value={pet.emergVetClinic ?? ""} onChangeText={(v) => setPet({ emergVetClinic: v })} />
-            <LabeledInput label="Address" placeholder="Address" value={pet.emergVetAddress ?? ""} onChangeText={(v) => setPet({ emergVetAddress: v })} />
-            <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={pet.emergVetPhone ?? ""} onChangeText={(v) => setPet({ emergVetPhone: v })} />
+            <LabeledPlacesInput
+              label="Clinic name"
+              placeholder="Search clinic name"
+              value={pet.emergVetClinic ?? ""}
+              onChangeText={(v) => { setPet({ emergVetClinic: v }); setEmergManual(false); }}
+              onSelectPlace={(p) => { setPet({ emergVetClinic: p.name, emergVetPhone: p.phone, emergVetAddress: p.address }); setEmergManual(false); }}
+              onManualEntry={() => setEmergManual(true)}
+              onClear={() => { setPet({ emergVetAddress: "", emergVetPhone: "" }); setEmergManual(false); }}
+            />
+            <LabeledInput
+              label="Address"
+              placeholder={emergManual ? "Address" : "Fills in from your clinic search"}
+              editable={emergManual}
+              value={pet.emergVetAddress ?? ""}
+              onChangeText={(v) => setPet({ emergVetAddress: v })}
+            />
+            <LabeledInput
+              label="Phone"
+              placeholder={emergManual ? "Phone" : "Fills in from your clinic search"}
+              editable={emergManual}
+              phone
+              keyboardType="phone-pad"
+              value={pet.emergVetPhone ?? ""}
+              onChangeText={(v) => setPet({ emergVetPhone: v })}
+            />
           </View>
         </Card>
 
