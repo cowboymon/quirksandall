@@ -24,7 +24,15 @@ export function isAuthorizedAdmin(reqOrHeaders: HeaderSource | Request): boolean
   if (!expectedPass) return false;
   const expectedUser = process.env.ADMIN_USER || "admin";
 
-  const h: HeaderSource = "headers" in reqOrHeaders ? reqOrHeaders.headers : reqOrHeaders;
+  // ReadonlyHeaders (next/headers) and a bare Headers expose get() directly;
+  // a Request/NextRequest carries it on .headers. Detect a callable get()
+  // rather than sniffing a "headers" property — ReadonlyHeaders also exposes
+  // a (non-callable) .headers, which the old check wrongly unwrapped into,
+  // throwing "h.get is not a function" and 500ing the admin page.
+  const h: HeaderSource =
+    typeof (reqOrHeaders as HeaderSource).get === "function"
+      ? (reqOrHeaders as HeaderSource)
+      : (reqOrHeaders as Request).headers;
   const header = h.get("authorization") ?? "";
   const [scheme, encoded] = header.split(" ");
   if (scheme !== "Basic" || !encoded) return false;
