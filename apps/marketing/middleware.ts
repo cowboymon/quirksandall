@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { isAuthorizedAdmin } from "./app/lib/adminAuth";
-import { checkRateLimit, clientIp } from "./app/lib/rateLimit";
+import { checkRateLimit, clientIp, rateLimitEnv } from "./app/lib/rateLimit";
 
 // HTTP Basic Auth gate for /admin. The browser shows a native login prompt;
 // credentials are checked against env vars. Set ADMIN_PASSWORD (and optionally
@@ -29,7 +29,9 @@ export async function middleware(req: NextRequest) {
   const key = process.env.SUPABASE_SERVICE_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (url && key) {
     const supabase = createClient(url, key);
-    const allowed = await checkRateLimit(supabase, "admin_login", clientIp(req), 10, 15 * 60);
+    const max = rateLimitEnv("RATE_LIMIT_ADMIN_LOGIN_MAX", 10);
+    const windowSeconds = rateLimitEnv("RATE_LIMIT_ADMIN_LOGIN_WINDOW_SECONDS", 15 * 60);
+    const allowed = await checkRateLimit(supabase, "admin_login", clientIp(req), max, windowSeconds);
     if (!allowed) {
       return new NextResponse("Too many attempts. Try again later.", { status: 429 });
     }

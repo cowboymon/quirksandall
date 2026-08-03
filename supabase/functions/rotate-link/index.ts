@@ -2,8 +2,16 @@
 // Paid-tier only — ownership validated server-side.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, rateLimitClient, rateLimitEnv } from "../_shared/rateLimit.ts";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Rotating a link revokes every existing link for the pet — a legitimate
+// but infrequent action. The limit bounds a compromised session (or a buggy
+// client retry loop) from repeatedly invalidating a pet's share link out
+// from under whoever it was shared with.
+const MAX_PER_WINDOW = rateLimitEnv("RATE_LIMIT_ROTATE_LINK_MAX", 10);
+const WINDOW_SECONDS = rateLimitEnv("RATE_LIMIT_ROTATE_LINK_WINDOW_SECONDS", 60 * 60);
 
 serve(async (req) => {
   try {
@@ -26,6 +34,11 @@ serve(async (req) => {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return new Response("Unauthorized", { status: 401 });
+
+    const allowed = await checkRateLimit(rateLimitClient(), "rotate_link", user.id, MAX_PER_WINDOW, WINDOW_SECONDS);
+    if (!allowed) {
+      return new Response(JSON.stringify({ error: "rate_limited" }), { status: 429 });
+    }
 
     // Check paid tier. Deno can't import @quirksandall/shared, so this inlines
     // isUnlocked() from packages/shared/src/logic.ts — paid AND not lapsed

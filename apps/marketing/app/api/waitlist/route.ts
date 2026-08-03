@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { checkRateLimit, clientIp } from "../../lib/rateLimit";
+import { checkRateLimit, clientIp, rateLimitEnv } from "../../lib/rateLimit";
 import { logSupabaseError } from "../../lib/logSafe";
 
 export const runtime = "nodejs";
 
-const WINDOW_SECONDS = 60;
-const MAX_PER_WINDOW = 5;
+const WINDOW_SECONDS = rateLimitEnv("RATE_LIMIT_WAITLIST_WINDOW_SECONDS", 60);
+const MAX_PER_WINDOW = rateLimitEnv("RATE_LIMIT_WAITLIST_MAX", 5);
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

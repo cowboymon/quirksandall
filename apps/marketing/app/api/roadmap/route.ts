@@ -2,15 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { VOTABLE_IDS, type CountsMap } from "../../roadmap/data";
 import { logSupabaseError } from "../../lib/logSafe";
+import { checkRateLimit, clientIp, rateLimitEnv } from "../../lib/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Best-effort in-memory throttle (per serverless instance), mirroring the
-// waitlist route. Enough to blunt casual abuse of the vote endpoint.
-const hits = new Map<string, number[]>();
-const WINDOW_MS = 60_000;
-const MAX_PER_WINDOW = 30;
+// Durable, cross-instance throttle (was an in-memory Map, which resets per
+// serverless instance/cold start and is trivially bypassed by hitting a
+// fresh one). Keyed on BOTH ip and voter — `voter` is a client-generated id
+// (crypto.randomUUID() in localStorage), so it's trivially rotatable by an
+// attacker; keying only on it would let a vote-spam script mint a fresh
+// voter id per request to bypass the limit entirely. Keying only on IP would
+// let a single real visitor behind a shared IP (e.g. a NAT/office network)
+// get wrongly bucketed with unrelated users. Requiring BOTH checks to pass
+// closes the rotate-the-other-value bypass either way.
+const WINDOW_SECONDS = rateLimitEnv("RATE_LIMIT_ROADMAP_VOTE_WINDOW_SECONDS", 60);
+const MAX_PER_WINDOW = rateLimitEnv("RATE_LIMIT_ROADMAP_VOTE_MAX", 30);
 
 const VOTER_RE = /^[a-zA-Z0-9-]{8,64}$/;
 
@@ -86,19 +93,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "bad_vote" }, { status: 400 });
   }
 
-  // Throttle by IP.
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  const now = Date.now();
-  const recent = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
-  if (recent.length >= MAX_PER_WINDOW) {
-    return NextResponse.json({ ok: false, error: "rate_limited" }, { status: 429 });
-  }
-  recent.push(now);
-  hits.set(ip, recent);
-
   const supabase = client();
   if (!supabase) {
     return NextResponse.json({ ok: false, error: "unconfigured" }, { status: 503 });
+  }
+
+  // Both must pass — see the comment above on why IP-only or voter-only
+  // isn't enough on its own.
+  const ip = clientIp(req);
+  const [ipAllowed, voterAllowed] = await Promise.all([
+    checkRateLimit(supabase, "roadmap_vote_ip", ip, MAX_PER_WINDOW, WINDOW_SECONDS),
+    checkRateLimit(supabase, "roadmap_vote_voter", voter, MAX_PER_WINDOW, WINDOW_SECONDS),
+  ]);
+  if (!ipAllowed || !voterAllowed) {
+    return NextResponse.json({ ok: false, error: "rate_limited" }, { status: 429 });
   }
 
   if (vote === 0) {

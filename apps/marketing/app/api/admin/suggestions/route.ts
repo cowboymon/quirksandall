@@ -3,9 +3,13 @@ import { createClient } from "@supabase/supabase-js";
 import { STATUSES } from "../../../lib/themes";
 import { isAuthorizedAdmin, unauthorizedResponse } from "../../../lib/adminAuth";
 import { logSupabaseError } from "../../../lib/logSafe";
+import { checkRateLimit, clientIp, rateLimitEnv } from "../../../lib/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+const MAX_PER_WINDOW = rateLimitEnv("RATE_LIMIT_ADMIN_SUGGESTIONS_MAX", 60);
+const WINDOW_SECONDS = rateLimitEnv("RATE_LIMIT_ADMIN_SUGGESTIONS_WINDOW_SECONDS", 60);
 
 // Primary auth gate is middleware.ts (Basic Auth on /api/admin/*), but this
 // route re-checks the same credentials itself as defense-in-depth — see
@@ -47,6 +51,12 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = createClient(url, key);
+
+  const allowed = await checkRateLimit(supabase, "admin_suggestions", clientIp(req), MAX_PER_WINDOW, WINDOW_SECONDS);
+  if (!allowed) {
+    return NextResponse.json({ ok: false, error: "rate_limited" }, { status: 429 });
+  }
+
   const { error } = await supabase.from("roadmap_suggestions").update(patch).eq("id", id);
   if (error) {
     logSupabaseError("suggestion update failed", error);

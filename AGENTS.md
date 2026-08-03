@@ -46,12 +46,38 @@ waiting for the next audit to catch it.
   `isAuthorizedAdmin()` (`apps/marketing/app/lib/adminAuth.ts`), called both in
   `middleware.ts` and inside each `/api/admin/*` route and `admin/page.tsx`. A
   matcher typo must not silently expose an endpoint.
-- **Rate-limit anything public that costs money, DB writes, or brute-forceable
-  secrets** (login, PIN checks, expensive rendering, public forms) — use the
-  durable Postgres-backed `checkRateLimit()`
-  (`apps/web/app/lib/rateLimit.ts` / `apps/marketing/app/lib/rateLimit.ts`,
-  backed by the `rate_limit_hits` table), not an in-memory `Map` — that resets
-  per serverless instance and is trivially bypassed.
+- **Rate-limit every sensitive or expensive endpoint** — login, OTP/PIN
+  checks, expensive rendering, public forms, and any write. Use the durable
+  Postgres-backed `checkRateLimit()` — `apps/web/app/lib/rateLimit.ts` /
+  `apps/marketing/app/lib/rateLimit.ts` for the two Next.js apps,
+  `supabase/functions/_shared/rateLimit.ts` for edge functions — never an
+  in-memory `Map`, which resets per serverless instance and is trivially
+  bypassed by hitting a fresh one.
+  - **Always read the threshold/window through `rateLimitEnv()`** (or its
+    Deno twin in `_shared/rateLimit.ts`), never a bare numeric literal —
+    every limit should be tunable per deployment via an env var
+    (`RATE_LIMIT_<THING>_MAX` / `RATE_LIMIT_<THING>_WINDOW_SECONDS`) without a
+    code change.
+  - **Key the limiter on what actually identifies the caller, not on
+    something they can freely rotate.** IP alone is usually right for
+    unauthenticated public endpoints. For an authenticated action, key on
+    `user.id` (see `set-pin`/`rotate-link`). If a request carries a
+    client-generated value (a `voter` id, a nonce), do NOT key on that value
+    alone — an attacker mints a fresh one per request for free. Either key
+    on IP instead, or require BOTH IP and the client value to pass (see
+    `roadmap/route.ts`'s vote limiter) so rotating one alone doesn't reset
+    the bucket.
+  - **Return 429 when a limit is hit**, with a body that says only "you're
+    rate limited," never anything that reveals account/resource state (e.g.
+    `pin-check`'s cooldown response is the same shape whether the link
+    exists or not — only *whether you're rate limited* is safe to disclose).
+  - **An endpoint with no server-owned route can't be rate-limited
+    server-side** — mobile's OTP send (`app/auth.tsx`) calls Supabase's
+    `signInWithOtp` directly from the client, so the real limit is Supabase's
+    own GoTrue throttle, which this codebase doesn't control. The client-side
+    resend cooldown there is UX (stop mashing "resend"), not a security
+    control — don't mistake one for the other when adding a similar direct
+    -to-provider client call.
 - **Validate every input server-side** — type, length, format, allowlist.
   Reuse `apps/web/lib/inputSanitize.ts` (free text, image data URIs, header
   filename components) and `packages/shared/src/fileSafety.ts` (file

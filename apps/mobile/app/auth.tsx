@@ -1,10 +1,18 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
 import { AppAlert } from "../stores/appAlert";
 import { router, useFocusEffect } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { initAnalytics, identify, setUserProps, track, AnalyticsEvent } from "../lib/analytics";
 import { CONSENT_POLICY_VERSION } from "@quirksandall/shared";
+
+// Client-side-only cooldown between OTP sends. This is UX, not real
+// protection — the actual rate limit is Supabase's own server-side GoTrue
+// throttle, which this app doesn't control or see the config for. What this
+// DOES do: stop someone from mashing "Resend code" and burning through
+// Supabase's own limit (and their inbox) in a few seconds, and give a clear
+// "try again in Ns" signal instead of a bare error once they do hit it.
+const RESEND_COOLDOWN_SECONDS = 30;
 
 // Mobile sign-in uses a 6-digit email code (OTP) rather than a magic link.
 // Deep-linking a magic link back into the app is unreliable in Expo Go and
@@ -14,14 +22,33 @@ export default function AuthScreen() {
   const [code, setCode] = useState("");
   const [stage, setStage] = useState<"email" | "code">("email");
   const [loading, setLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+  const cooldownInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   // Bumped whenever the screen regains focus so the code field remounts fresh —
   // iOS otherwise shows the alpha keyboard on refocus instead of the numeric one
   // the field asks for (keyboardType only reliably applies on mount).
   const [focusKey, setFocusKey] = useState(0);
   useFocusEffect(useCallback(() => { setFocusKey((k) => k + 1); }, []));
 
+  useEffect(() => {
+    return () => {
+      if (cooldownInterval.current) clearInterval(cooldownInterval.current);
+    };
+  }, []);
+
+  const startCooldown = () => {
+    if (cooldownInterval.current) clearInterval(cooldownInterval.current);
+    setCooldown(RESEND_COOLDOWN_SECONDS);
+    cooldownInterval.current = setInterval(() => {
+      setCooldown((s) => {
+        if (s <= 1 && cooldownInterval.current) clearInterval(cooldownInterval.current);
+        return Math.max(0, s - 1);
+      });
+    }, 1000);
+  };
+
   const sendCode = async () => {
-    if (!email.trim()) return;
+    if (!email.trim() || cooldown > 0) return;
     setLoading(true);
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
@@ -36,11 +63,13 @@ export default function AuthScreen() {
       // since "try again in a bit" is actionable and reveals nothing about
       // whether the email is registered.
       const isRateLimited = /rate limit/i.test(error.message);
+      if (isRateLimited) startCooldown();
       AppAlert.alert(
         "Couldn't send code",
         isRateLimited ? "Too many attempts — please wait a bit and try again." : "Something went wrong. Please try again."
       );
     } else {
+      startCooldown();
       setStage("code");
     }
   };
@@ -121,12 +150,12 @@ export default function AuthScreen() {
             />
             <TouchableOpacity
               className="h-[44px] rounded-button items-center justify-center mt-5"
-              style={{ backgroundColor: "#510000", opacity: loading || !email.trim() ? 0.6 : 1 }}
+              style={{ backgroundColor: "#510000", opacity: loading || cooldown > 0 || !email.trim() ? 0.6 : 1 }}
               onPress={sendCode}
-              disabled={loading || !email.trim()}
+              disabled={loading || cooldown > 0 || !email.trim()}
             >
               <Text className="text-[#F8ECEE] font-semibold text-base">
-                {loading ? "Sending…" : "Send sign-in code"}
+                {loading ? "Sending…" : cooldown > 0 ? `Try again in ${cooldown}s` : "Send sign-in code"}
               </Text>
             </TouchableOpacity>
           </>
@@ -161,8 +190,10 @@ export default function AuthScreen() {
               <TouchableOpacity onPress={() => { setStage("email"); setCode(""); }}>
                 <Text className="text-text-muted text-sm">Change email</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={sendCode} disabled={loading}>
-                <Text className="text-primary text-sm font-medium">Resend code</Text>
+              <TouchableOpacity onPress={sendCode} disabled={loading || cooldown > 0}>
+                <Text className="text-primary text-sm font-medium" style={{ opacity: cooldown > 0 ? 0.5 : 1 }}>
+                  {cooldown > 0 ? `Resend in ${cooldown}s` : "Resend code"}
+                </Text>
               </TouchableOpacity>
             </View>
           </>

@@ -4,8 +4,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { hashSync } from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+import { checkRateLimit, rateLimitClient, rateLimitEnv } from "../_shared/rateLimit.ts";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Generous — this is a legitimate, infrequent owner action, not a public
+// endpoint. The limit exists to bound a compromised/leaked session hammering
+// PIN changes, not to throttle normal use.
+const MAX_PER_WINDOW = rateLimitEnv("RATE_LIMIT_SET_PIN_MAX", 10);
+const WINDOW_SECONDS = rateLimitEnv("RATE_LIMIT_SET_PIN_WINDOW_SECONDS", 60 * 60);
 
 serve(async (req) => {
   try {
@@ -31,6 +38,14 @@ serve(async (req) => {
     // Verify ownership
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return new Response("Unauthorized", { status: 401 });
+
+    // Per-account cooldown — bounds a compromised/leaked session from
+    // hammering PIN changes. Checked against a dedicated service-role
+    // client since rate_limit_hits denies anon/user-scoped access by RLS.
+    const allowed = await checkRateLimit(rateLimitClient(), "set_pin", user.id, MAX_PER_WINDOW, WINDOW_SECONDS);
+    if (!allowed) {
+      return new Response(JSON.stringify({ error: "rate_limited" }), { status: 429 });
+    }
 
     const { data: link } = await supabase
       .from("share_links")

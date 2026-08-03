@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { classifyTheme } from "../../../lib/classify";
-import { checkRateLimit, clientIp } from "../../../lib/rateLimit";
+import { checkRateLimit, clientIp, rateLimitEnv } from "../../../lib/rateLimit";
 import { logSupabaseError } from "../../../lib/logSafe";
 
 export const runtime = "nodejs";
 
-const WINDOW_SECONDS = 60;
-const MAX_PER_WINDOW = 5;
+const WINDOW_SECONDS = rateLimitEnv("RATE_LIMIT_ROADMAP_SUGGEST_WINDOW_SECONDS", 60);
+const MAX_PER_WINDOW = rateLimitEnv("RATE_LIMIT_ROADMAP_SUGGEST_MAX", 5);
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -16,8 +16,8 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // and cap total tagging calls per instance per hour so a flood can't run up
 // the Anthropic bill. Neither affects whether the suggestion is stored.
 const URL_RE = /(https?:\/\/|www\.)/i;
-const TAG_WINDOW_MS = 3_600_000;
-const TAG_MAX_PER_WINDOW = 100;
+const TAG_WINDOW_MS = rateLimitEnv("RATE_LIMIT_ROADMAP_TAG_WINDOW_MS", 3_600_000);
+const TAG_MAX_PER_WINDOW = rateLimitEnv("RATE_LIMIT_ROADMAP_TAG_MAX", 100);
 let tagCalls: number[] = [];
 function underTagCap(): boolean {
   const now = Date.now();

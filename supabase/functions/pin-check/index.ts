@@ -6,9 +6,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { compareSync } from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+import { rateLimitEnv } from "../_shared/rateLimit.ts";
 
-const PIN_MAX_ATTEMPTS = 20;
-const PIN_WINDOW_MINUTES = 15;
+// Defaults mirror packages/shared/src/logic.ts's PIN_MAX_ATTEMPTS/
+// PIN_WINDOW_MINUTES (kept as separate literals here since Deno can't
+// import @quirksandall/shared — see rotate-link/index.ts for the same
+// constraint), overridable per deployment via `supabase secrets set`.
+const PIN_MAX_ATTEMPTS = rateLimitEnv("RATE_LIMIT_PIN_CHECK_MAX", 20);
+const PIN_WINDOW_MINUTES = rateLimitEnv("RATE_LIMIT_PIN_CHECK_WINDOW_MINUTES", 15);
 
 serve(async (req) => {
   try {

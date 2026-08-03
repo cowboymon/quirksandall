@@ -14,12 +14,15 @@ import satori from "satori";
 import sharp from "sharp";
 import { computeAge } from "@quirksandall/shared";
 import { FORMATS, renderTemplate, type PosterData, type PosterFormat } from "../../../lib/poster/templates";
-import { checkRateLimit, clientIp } from "../../lib/rateLimit";
+import { checkRateLimit, clientIp, rateLimitEnv } from "../../lib/rateLimit";
 import { sanitizeFreeText, isValidImageDataUri, sanitizeHeaderFilenameComponent } from "../../../lib/inputSanitize";
 
 const MAX_AREA_LEN = 200;
 const MAX_DATE_LEN = 40;
 const MAX_LOOKFOR_LEN = 400;
+
+const MAX_PER_WINDOW = rateLimitEnv("RATE_LIMIT_GENERATE_POSTER_MAX", 40);
+const WINDOW_SECONDS = rateLimitEnv("RATE_LIMIT_GENERATE_POSTER_WINDOW_SECONDS", 10 * 60);
 
 export const runtime = "nodejs";
 
@@ -142,7 +145,7 @@ async function generate(params: Params): Promise<Response> {
   // Satori+sharp rendering is CPU/memory-costly — cap requests per link+IP so
   // this can't be turned into a DoS/cost amplifier. Generous enough for the
   // preview-toggling UX (view switches re-request at 1×) noted above.
-  const allowed = await checkRateLimit(supabase, "generate_poster", `${token}:${params.ip}`, 40, 10 * 60);
+  const allowed = await checkRateLimit(supabase, "generate_poster", `${token}:${params.ip}`, MAX_PER_WINDOW, WINDOW_SECONDS);
   if (!allowed) return Response.json({ error: "rate_limited" }, { status: 429 });
 
   const { data: link } = await supabase

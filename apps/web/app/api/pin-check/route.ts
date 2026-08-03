@@ -4,8 +4,15 @@ import { PIN_MAX_ATTEMPTS, PIN_WINDOW_MINUTES } from "@quirksandall/shared";
 import { compareSync } from "bcryptjs";
 import { fetchEmergencyContacts } from "../../lib/emergency";
 import { UNLOCK_MAX_AGE_SECONDS, signUnlock, unlockCookieName } from "../../lib/unlock";
+import { rateLimitEnv, clientIp } from "../../lib/rateLimit";
 
 export const runtime = "nodejs";
+
+// Env-overridable, defaulting to the shared constants used app-wide for PIN
+// attempts (packages/shared/src/logic.ts) so this stays in sync with the
+// default everywhere else unless explicitly overridden here.
+const MAX_ATTEMPTS = rateLimitEnv("RATE_LIMIT_PIN_CHECK_MAX", PIN_MAX_ATTEMPTS);
+const WINDOW_MINUTES = rateLimitEnv("RATE_LIMIT_PIN_CHECK_WINDOW_MINUTES", PIN_WINDOW_MINUTES);
 
 export async function POST(req: NextRequest) {
   // Client created per-request so builds don't require env vars at import time
@@ -16,7 +23,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const token = body && typeof body === "object" ? body.token : undefined;
   const pin = body && typeof body === "object" ? body.pin : undefined;
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
+  const ip = clientIp(req);
 
   if (typeof token !== "string" || !token || typeof pin !== "string" || !/^\d{4}$/.test(pin)) {
     return NextResponse.json({ success: false }, { status: 400 });
@@ -37,7 +44,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Rate limit check: count recent attempts for this link+ip in the window
-  const windowStart = new Date(Date.now() - PIN_WINDOW_MINUTES * 60 * 1000).toISOString();
+  const windowStart = new Date(Date.now() - WINDOW_MINUTES * 60 * 1000).toISOString();
   const { count } = await supabase
     .from("pin_attempts")
     .select("id", { count: "exact", head: true })
@@ -45,8 +52,12 @@ export async function POST(req: NextRequest) {
     .eq("ip", ip)
     .gte("attempted_at", windowStart);
 
-  if ((count ?? 0) >= PIN_MAX_ATTEMPTS) {
-    return NextResponse.json({ success: false, cooldown: true });
+  if ((count ?? 0) >= MAX_ATTEMPTS) {
+    // 429 here doesn't reveal link existence/PIN correctness — those stay on
+    // the shared 200/{success:false} shape above and below — it only says
+    // "this specific link+IP pair is rate limited right now", which is safe
+    // to disclose per the "return a proper 429" requirement.
+    return NextResponse.json({ success: false, cooldown: true }, { status: 429 });
   }
 
   // Check PIN — bcrypt (salted, slow); a 4-digit PIN must never sit behind

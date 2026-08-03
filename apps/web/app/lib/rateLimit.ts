@@ -43,3 +43,16 @@ export async function checkRateLimit(
 export function clientIp(req: Request): string {
   return (req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown").trim();
 }
+
+// Reads a rate-limit threshold/window from an env var, falling back to the
+// given default when unset, non-numeric, or non-positive. Lets ops tune
+// limits per deployment (e.g. loosen a limit temporarily during a launch
+// spike, or tighten one under active abuse) without a code change/redeploy —
+// every route's limit should be read through this rather than a bare
+// numeric literal.
+export function rateLimitEnv(name: string, fallback: number): number {
+  const raw = process.env[name];
+  if (!raw) return fallback;
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}

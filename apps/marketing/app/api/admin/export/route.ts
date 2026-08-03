@@ -3,9 +3,13 @@ import { createClient } from "@supabase/supabase-js";
 import { COLUMNS } from "../../../roadmap/data";
 import { isAuthorizedAdmin, unauthorizedResponse } from "../../../lib/adminAuth";
 import { logSupabaseError } from "../../../lib/logSafe";
+import { checkRateLimit, clientIp, rateLimitEnv } from "../../../lib/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+const MAX_PER_WINDOW = rateLimitEnv("RATE_LIMIT_ADMIN_EXPORT_MAX", 30);
+const WINDOW_SECONDS = rateLimitEnv("RATE_LIMIT_ADMIN_EXPORT_WINDOW_SECONDS", 60);
 
 // Primary auth gate is middleware.ts (Basic Auth on /api/admin/*), but this
 // route re-checks the same credentials itself as defense-in-depth: a matcher
@@ -52,6 +56,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "unconfigured" }, { status: 503 });
   }
   const supabase = createClient(url, key);
+
+  // Defense-in-depth: this route already requires admin credentials, but a
+  // credential leak/replay shouldn't also mean unlimited full-table exports.
+  const allowed = await checkRateLimit(supabase, "admin_export", clientIp(req), MAX_PER_WINDOW, WINDOW_SECONDS);
+  if (!allowed) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+  }
 
   let csv = "";
   let name = "export";

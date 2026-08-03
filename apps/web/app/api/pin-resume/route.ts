@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { fetchEmergencyContacts } from "../../lib/emergency";
 import { unlockCookieName, verifyUnlock } from "../../lib/unlock";
-import { checkRateLimit, clientIp } from "../../lib/rateLimit";
+import { checkRateLimit, clientIp, rateLimitEnv } from "../../lib/rateLimit";
 
 export const runtime = "nodejs";
+
+const MAX_PER_WINDOW = rateLimitEnv("RATE_LIMIT_PIN_RESUME_MAX", 30);
+const WINDOW_SECONDS = rateLimitEnv("RATE_LIMIT_PIN_RESUME_WINDOW_SECONDS", 15 * 60);
 
 // Persisted unlock resume (#87). A device that previously entered the correct
 // PIN holds a signed cookie; this returns the contacts without re-entry — but
@@ -19,8 +22,8 @@ export async function POST(req: NextRequest) {
   const token = body && typeof body === "object" ? body.token : undefined;
   if (typeof token !== "string" || !token) return NextResponse.json({ success: false }, { status: 400 });
 
-  const allowed = await checkRateLimit(supabase, "pin_resume", `${token}:${clientIp(req)}`, 30, 15 * 60);
-  if (!allowed) return NextResponse.json({ success: false, cooldown: true });
+  const allowed = await checkRateLimit(supabase, "pin_resume", `${token}:${clientIp(req)}`, MAX_PER_WINDOW, WINDOW_SECONDS);
+  if (!allowed) return NextResponse.json({ success: false, cooldown: true }, { status: 429 });
 
   const cookie = req.cookies.get(unlockCookieName(token))?.value;
   if (!cookie) return NextResponse.json({ success: false });
