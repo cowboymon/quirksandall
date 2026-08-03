@@ -147,6 +147,35 @@ waiting for the next audit to catch it.
     "correct by convention" alone.
   - Never add SVG or HTML to an upload allowlist unless there's a specific,
     reviewed reason — both can execute active content in a browser.
+- **XSS**: this app's actual defense is React's JSX auto-escaping — render
+  user/DB text as a plain `{value}` child, never via
+  `dangerouslySetInnerHTML`, `innerHTML`, or a manual DOM write. There is
+  currently no markdown/rich-text renderer anywhere in this codebase — if
+  one is ever added, it MUST go through a sanitizer with a strict allowlist
+  (e.g. DOMPurify) before rendering, never raw.
+  - Text interpolation (`{value}`) is safe **for text nodes**. It is NOT
+    safe for a value that becomes an `href`/`src`/redirect target — those
+    are browser-interpreted, not just displayed, so a `javascript:`/`data:`
+    URL there executes regardless of JSX escaping. Validate any DB/user
+    -controlled URL with `isSafeHttpsUrl()` before an `<img src>`/`<a href>`,
+    and any DB/user-controlled phone value with `sanitizeTelValue()` before
+    a `tel:` href (both in `packages/shared/src/urlSafety.ts`) — even when
+    the scheme prefix is a fixed literal your code writes (e.g. `` `tel:${phone}` ``),
+    validate/sanitize the value anyway rather than relying on "the prefix
+    can't be overridden" as the only defense.
+  - The CSP's `script-src 'unsafe-inline'` (both `next.config.mjs` files) is
+    NOT a substitute for the above — it's a defense-in-depth layer that
+    doesn't block inline-script injection specifically (verified
+    empirically: Next.js's own hydration scripts require it, so it can't be
+    removed without nonce-based CSP, which nothing here wires up yet). Don't
+    treat "we have a CSP" as XSS coverage — the coverage is JSX escaping +
+    the two validators above.
+  - Auth/session tokens: mobile uses `expo-secure-store` (OS keychain), never
+    `AsyncStorage`/`localStorage` — keep it that way for anything
+    session-shaped. `localStorage` is fine for genuinely non-sensitive,
+    trivially-rotatable values (the anonymous roadmap voter id, Mixpanel's
+    own analytics persistence) — know which category a new value falls into
+    before reaching for either store.
 
 None of this is enforced by CI/lint yet — it relies on being followed, not
 caught. If a new sensitive route or feature is added, treat this list as the

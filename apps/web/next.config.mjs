@@ -2,13 +2,21 @@
 // layer regardless of whether it came from middleware, an API route, or a
 // page — so this is the one place to set them, not each route individually.
 //
-// script-src/style-src need 'unsafe-inline' because this app has no
-// per-request nonce plumbing (Next.js's own inline hydration/bootstrap
-// scripts, and this app's inline style={{}} usage, both need it) — a nonce
-// -based CSP would be stricter but is a bigger, riskier change than a
-// hardening pass should make. default-src 'self' + the explicit allowlists
-// below still block arbitrary third-party script/resource injection, which
-// is the actual goal here.
+// script-src/style-src need 'unsafe-inline'. Verified empirically, not just
+// assumed: removing it from script-src and loading real pages in a headless
+// browser throws "Refused to execute inline script" against Next.js's own
+// hydration/RSC-payload scripts on every page — this app has no per-request
+// nonce plumbing (which Next.js does support, but wiring it up needs
+// middleware generating a nonce and forwarding it through headers() to
+// every page — a bigger, separately-worth-doing change, not a drop-in for
+// this pass). This CSP is defense-in-depth on top of the actual XSS
+// defense, which is React's JSX auto-escaping — there is no
+// dangerouslySetInnerHTML/innerHTML/DOM-write sink anywhere in this app
+// (audited, see the XSS hardening pass) for 'unsafe-inline' to matter
+// against today. default-src 'self' + the explicit allowlists below still
+// block loading an external attacker-hosted script and constrain
+// exfiltration channels (connect-src/img-src), which is real value even
+// with 'unsafe-inline' present.
 const CSP = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline'",
