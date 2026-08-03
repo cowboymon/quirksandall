@@ -13,6 +13,7 @@ import DurationModal from "../components/DurationModal";
 import { useActivePetStore } from "../stores/activePet";
 import { colors, computeAge, capitalizeFirst, orderedCommands, possessive, stayPhrase, isUnlocked } from "@quirksandall/shared";
 import { usePrices } from "../hooks/usePrices";
+import { useRequireAuth } from "../hooks/useRequireAuth";
 import { recallPin } from "../lib/pinVault";
 import { identifyPurchaser } from "../lib/purchases";
 import { firstShareMessage, pinMessage } from "../lib/shareMessage";
@@ -48,6 +49,7 @@ function viewedLabel(iso: string | null) {
 }
 
 export default function Dashboard() {
+  useRequireAuth();
   const prices = usePrices();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);

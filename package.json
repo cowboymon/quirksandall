@@ -6,12 +6,14 @@
     "web": "pnpm --filter web dev",
     "mobile": "pnpm --filter mobile start",
     "build:web": "pnpm --filter web build",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "test": "vitest run"
   },
   "engines": {
     "node": ">=20"
   },
   "devDependencies": {
-    "supabase": "^2.110.0"
+    "supabase": "^2.110.0",
+    "vitest": "^4.1.10"
   }
 }

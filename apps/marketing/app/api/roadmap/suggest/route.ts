@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { classifyTheme } from "../../../lib/classify";
+import { checkRateLimit, clientIp, rateLimitEnv } from "../../../lib/rateLimit";
+import { logSupabaseError } from "../../../lib/logSafe";
 
 export const runtime = "nodejs";
 
-// Best-effort in-memory throttle (per serverless instance), same as the other
-// public forms.
-const hits = new Map<string, number[]>();
-const WINDOW_MS = 60_000;
-const MAX_PER_WINDOW = 5;
+const WINDOW_SECONDS = rateLimitEnv("RATE_LIMIT_ROADMAP_SUGGEST_WINDOW_SECONDS", 60);
+const MAX_PER_WINDOW = rateLimitEnv("RATE_LIMIT_ROADMAP_SUGGEST_MAX", 5);
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -17,8 +16,8 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // and cap total tagging calls per instance per hour so a flood can't run up
 // the Anthropic bill. Neither affects whether the suggestion is stored.
 const URL_RE = /(https?:\/\/|www\.)/i;
-const TAG_WINDOW_MS = 3_600_000;
-const TAG_MAX_PER_WINDOW = 100;
+const TAG_WINDOW_MS = rateLimitEnv("RATE_LIMIT_ROADMAP_TAG_WINDOW_MS", 3_600_000);
+const TAG_MAX_PER_WINDOW = rateLimitEnv("RATE_LIMIT_ROADMAP_TAG_MAX", 100);
 let tagCalls: number[] = [];
 function underTagCap(): boolean {
   const now = Date.now();
@@ -51,16 +50,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "invalid_email" }, { status: 400 });
   }
 
-  // Throttle by IP.
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  const now = Date.now();
-  const recent = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
-  if (recent.length >= MAX_PER_WINDOW) {
-    return NextResponse.json({ ok: false, error: "rate_limited" }, { status: 429 });
-  }
-  recent.push(now);
-  hits.set(ip, recent);
-
   // Runtime env — see the waitlist route for why the plain names are preferred.
   const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -70,13 +59,20 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = createClient(url, key);
+
+  // Durable, cross-instance throttle by IP.
+  const allowed = await checkRateLimit(supabase, "roadmap_suggest", clientIp(req), MAX_PER_WINDOW, WINDOW_SECONDS);
+  if (!allowed) {
+    return NextResponse.json({ ok: false, error: "rate_limited" }, { status: 429 });
+  }
+
   const { data, error } = await supabase
     .from("roadmap_suggestions")
     .insert({ suggestion, email })
     .select("id")
     .single();
   if (error) {
-    console.error("suggestion insert failed", error);
+    logSupabaseError("suggestion insert failed", error);
     return NextResponse.json({ ok: false, error: "server" }, { status: 500 });
   }
 

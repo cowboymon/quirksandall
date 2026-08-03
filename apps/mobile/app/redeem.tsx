@@ -9,8 +9,10 @@ import { AppAlert } from "../stores/appAlert";
 import { router } from "expo-router";
 import { colors } from "@quirksandall/shared";
 import { usePrices } from "../hooks/usePrices";
+import { useRequireAuth } from "../hooks/useRequireAuth";
 
 export default function Redeem() {
+  useRequireAuth();
   const prices = usePrices();
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);

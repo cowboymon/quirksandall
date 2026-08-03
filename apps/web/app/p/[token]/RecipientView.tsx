@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { RecipientProfile } from "@quirksandall/shared";
-import { formatWeight, formatPhone, formatVetName, possessive, commandStrengthLabel, mealSlotLabel, shortAddress } from "@quirksandall/shared";
+import { formatWeight, formatPhone, formatVetName, possessive, commandStrengthLabel, mealSlotLabel, shortAddress, isSafeHttpsUrl, sanitizeTelValue } from "@quirksandall/shared";
 import PINGate from "./PINGate";
 import { trackWeb, WebAnalyticsEvent } from "../../lib/analytics";
 
@@ -111,7 +111,7 @@ export default function RecipientView({ profile, token }: Props) {
       {/* Pet identity */}
       <div className="pt-10 pb-5">
         <div className="flex items-center gap-4 mb-4">
-          {pet.photoUrl && (
+          {pet.photoUrl && isSafeHttpsUrl(pet.photoUrl) && (
             <img
               src={pet.photoUrl}
               alt={name}
@@ -459,8 +459,8 @@ function DarkContact({ label, name, place, address, phone }: { label: string; na
         </a>
       )}
       {address && <p className="text-sm" style={{ color: "rgba(248,236,238,0.6)" }}>{shortAddress(address)}</p>}
-      {phone && (
-        <a href={`tel:${phone}`} className="text-sm" style={{ color: "rgba(248,236,238,0.85)" }}>
+      {phone && sanitizeTelValue(phone) && (
+        <a href={`tel:${sanitizeTelValue(phone)}`} className="text-sm" style={{ color: "rgba(248,236,238,0.85)" }}>
           {formatPhone(phone)}
         </a>
       )}

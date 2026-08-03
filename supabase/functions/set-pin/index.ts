@@ -4,48 +4,76 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { hashSync } from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+import { checkRateLimit, rateLimitClient, rateLimitEnv } from "../_shared/rateLimit.ts";
+import { isAuthorizedForLink } from "../_shared/authz.ts";
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Generous — this is a legitimate, infrequent owner action, not a public
+// endpoint. The limit exists to bound a compromised/leaked session hammering
+// PIN changes, not to throttle normal use.
+const MAX_PER_WINDOW = rateLimitEnv("RATE_LIMIT_SET_PIN_MAX", 10);
+const WINDOW_SECONDS = rateLimitEnv("RATE_LIMIT_SET_PIN_WINDOW_SECONDS", 60 * 60);
 
 serve(async (req) => {
-  if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
+  try {
+    if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
 
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader) return new Response("Unauthorized", { status: 401 });
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) return new Response("Unauthorized", { status: 401 });
 
-  const { link_id, pin } = await req.json();
+    const body = await req.json().catch(() => null);
+    const link_id = body && typeof body === "object" ? (body as { link_id?: unknown }).link_id : undefined;
+    const pin = body && typeof body === "object" ? (body as { pin?: unknown }).pin : undefined;
 
-  if (!link_id || !pin || !/^\d{4}$/.test(pin)) {
-    return new Response(JSON.stringify({ error: "Invalid input" }), { status: 400 });
+    if (typeof link_id !== "string" || !UUID_RE.test(link_id) || typeof pin !== "string" || !/^\d{4}$/.test(pin)) {
+      return new Response(JSON.stringify({ error: "invalid_input" }), { status: 400 });
+    }
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    // Verify ownership
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return new Response("Unauthorized", { status: 401 });
+
+    // Per-account cooldown — bounds a compromised/leaked session from
+    // hammering PIN changes. Checked against a dedicated service-role
+    // client since rate_limit_hits denies anon/user-scoped access by RLS.
+    const allowed = await checkRateLimit(rateLimitClient(), "set_pin", user.id, MAX_PER_WINDOW, WINDOW_SECONDS);
+    if (!allowed) {
+      return new Response(JSON.stringify({ error: "rate_limited" }), { status: 429 });
+    }
+
+    const { data: link } = await supabase
+      .from("share_links")
+      .select("id, pet_id")
+      .eq("id", link_id)
+      .single();
+
+    const pet = link
+      ? (await supabase.from("pets").select("owner_id").eq("id", link.pet_id).single()).data
+      : null;
+    // Same response for "no such link" and "link exists but isn't yours" —
+    // see _shared/authz.ts for why these must never be distinguishable.
+    if (!isAuthorizedForLink(link, pet, user.id)) {
+      return new Response("Forbidden", { status: 403 });
+    }
+
+    // bcrypt (salted, slow) — a 4-digit PIN must never sit behind a fast unsalted hash
+    const pinHash = hashSync(pin);
+    const { error } = await supabase.from("share_links").update({ pin_hash: pinHash }).eq("id", link_id);
+    if (error) {
+      console.error("set-pin: update failed", error);
+      return new Response(JSON.stringify({ error: "server_error" }), { status: 500 });
+    }
+
+    return new Response(JSON.stringify({ ok: true }), { headers: { "Content-Type": "application/json" } });
+  } catch (err) {
+    console.error("set-pin: unhandled error", err);
+    return new Response(JSON.stringify({ error: "server_error" }), { status: 500 });
   }
-
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    { global: { headers: { Authorization: authHeader } } }
-  );
-
-  // Verify ownership
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return new Response("Unauthorized", { status: 401 });
-
-  const { data: link } = await supabase
-    .from("share_links")
-    .select("id, pet_id")
-    .eq("id", link_id)
-    .single();
-
-  if (!link) return new Response("Not found", { status: 404 });
-
-  const { data: pet } = await supabase
-    .from("pets")
-    .select("owner_id")
-    .eq("id", link.pet_id)
-    .single();
-
-  if (!pet || pet.owner_id !== user.id) return new Response("Forbidden", { status: 403 });
-
-  // bcrypt (salted, slow) — a 4-digit PIN must never sit behind a fast unsalted hash
-  const pinHash = hashSync(pin);
-  await supabase.from("share_links").update({ pin_hash: pinHash }).eq("id", link_id);
-
-  return new Response(JSON.stringify({ ok: true }), { headers: { "Content-Type": "application/json" } });
 });

@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, ScrollView, Linking } from "react-native";
-import { AppAlert } from "../stores/appAlert";
 import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { supabase } from "../lib/supabase";
-import { purchasePlan, restorePurchases, identifyPurchaser, type Plan, type UnlockRecord } from "../lib/purchases";
+import { type Plan } from "../lib/purchases";
 import { colors, LIFETIME_AVAILABLE } from "@quirksandall/shared";
 import { usePrices } from "../hooks/usePrices";
+import { usePurchaseFlow } from "../hooks/usePurchaseFlow";
+import { useRequireAuth } from "../hooks/useRequireAuth";
 import { REDEMPTION_ENABLED, TERMS_URL, PRIVACY_URL } from "../lib/config";
 import { track, AnalyticsEvent } from "../lib/analytics";
 
@@ -17,64 +17,16 @@ const FEATURES = [
   { label: "Unlimited pets", sub: "Add as many as you need" },
 ];
 
-// Persist the unlock on the owners row. Client-side stopgap: the RevenueCat
-// webhook (supabase/functions/revenuecat-webhook) writes the same shape
-// server-side and is the authority once configured — this write just makes
-// the unlock instant in-session instead of waiting a webhook round-trip.
-async function persistUnlock(record: UnlockRecord) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user) await supabase.from("owners").update(record).eq("id", user.id);
-}
-
 export default function Upgrade() {
+  useRequireAuth();
   const prices = usePrices();
   const [plan, setPlan] = useState<Plan>(LIFETIME_AVAILABLE ? "lifetime" : "annual");
-  const [loading, setLoading] = useState(false);
+  const { loading, purchase, restore } = usePurchaseFlow("upgrade");
 
   useEffect(() => { track(AnalyticsEvent.PaywallViewed, { source: "upgrade" }); }, []);
 
-  const handlePurchase = async () => {
-    setLoading(true);
-    track(AnalyticsEvent.PurchaseStarted, { source: "upgrade", plan });
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) await identifyPurchaser(user.id);
-      const record = await purchasePlan(plan);
-      if (record) {
-        track(AnalyticsEvent.PurchaseCompleted, { source: "upgrade", plan });
-        await persistUnlock(record);
-        AppAlert.alert(
-          "Unlocked.",
-          "The full picture is live now — routines and the softer stuff.",
-          [{ text: "Got it", onPress: () => router.back() }]
-        );
-      }
-    } catch (e: any) {
-      if (!e.message?.includes("cancel")) AppAlert.alert("Purchase failed", e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRestore = async () => {
-    setLoading(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) await identifyPurchaser(user.id);
-      const record = await restorePurchases();
-      if (record) {
-        track(AnalyticsEvent.PurchaseRestored, { source: "upgrade" });
-        await persistUnlock(record);
-        AppAlert.alert("Restored", "Full access is back.", [{ text: "Got it", onPress: () => router.back() }]);
-      } else {
-        AppAlert.alert("Nothing to restore", "No previous purchase found for this account.");
-      }
-    } catch (e: any) {
-      AppAlert.alert("Restore failed", e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const handlePurchase = () => purchase(plan, () => router.back());
+  const handleRestore = () => restore(() => router.back());
 
   return (
     <View style={{ flex: 1, backgroundColor: "#510000" }}>

@@ -11,6 +11,24 @@ you go. Newest work is at the top of each section.
 
 ## ▶️ Run now
 
+- [x] **`20260804000002_storage_bucket_limits.sql`** — sets `file_size_limit` +
+  `allowed_mime_types` on the `pet-photos`/`pet-documents` buckets so Supabase
+  Storage itself rejects oversized/wrong-type uploads. *(Run 3 Aug 2026.)*
+
+- [x] **`20260804000001_pet_documents_content_hash.sql`** — adds
+  `content_hash` to `pet_documents` for duplicate-upload detection.
+  *(Run 3 Aug 2026.)*
+
+- [x] **`20260803000002_roadmap_suggestion_theme_check.sql`** — DB-level
+  `CHECK` constraint restricting `roadmap_suggestions.theme` to the fixed
+  allowlist. *(Run 3 Aug 2026.)*
+
+- [x] **`20260803000001_rate_limit_hits.sql`** — durable, cross-instance rate
+  limiter table. **Required** for admin-login, waitlist, roadmap-suggestion,
+  pin-resume, and generate-poster rate limiting to actually work — without
+  this table those routes fail open (no limiting) rather than erroring.
+  *(Run 3 Aug 2026.)*
+
 - [ ] **`20260725000004_consent_marketing.sql`** — adds `consent_marketing` to
   `owners` for the "Product news & tips" opt-in. **Required before that toggle
   works.**
