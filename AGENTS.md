@@ -176,6 +176,16 @@ waiting for the next audit to catch it.
     trivially-rotatable values (the anonymous roadmap voter id, Mixpanel's
     own analytics persistence) — know which category a new value falls into
     before reaching for either store.
+- **Secrets/env files**: every real `.env`/`.env.local`/`.env.production` (at
+  any depth, any app) is gitignored (`.gitignore`'s `.env*` pattern) — only
+  `.env.example` files are ever committed, and only with placeholder values,
+  never a real key. Keep each app's `.env.example` in sync with what its
+  source actually reads (`process.env.X`/`Deno.env.get("X")`) — an
+  undocumented required var is config drift, not a leak, but it's the thing
+  that leads someone to paste a real value into a committed file "just to
+  get it working." Never add a template/example file outside the standard
+  `.env.example` name — a second file (like a stray `env.template`) is easy
+  to forget belongs to the same gitignore/placeholder discipline.
 
 None of this is enforced by CI/lint yet — it relies on being followed, not
 caught. If a new sensitive route or feature is added, treat this list as the

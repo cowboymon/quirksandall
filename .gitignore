@@ -13,6 +13,14 @@ bun.lockb
 .env
 .env.local
 .env*.local
+# Broader net for any other .env variant (e.g. a plain .env.production with
+# no .local suffix, which the three patterns above wouldn't otherwise catch)
+# at any depth — apps/web/.env.production, apps/mobile/.env.staging, etc.
+# The negation keeps the actual template files (which must stay committed)
+# out of this ignore.
+.env*
+!.env.example
+!**/.env.example
 dist
 .next
 out
