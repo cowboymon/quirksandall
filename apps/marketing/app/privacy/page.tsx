@@ -3,6 +3,8 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { site } from "../site";
 
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description: `How ${site.name} collects, uses and protects your information.`,

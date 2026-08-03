@@ -275,15 +275,30 @@ export default function Dashboard() {
     const link = revokeTarget;
     setRevokeTarget(null);
     if (!link) return;
+    // Optimistic: the link disappears from the list immediately (listLinks
+    // only returns non-revoked links), and rolls back if the write fails.
+    const prevLinks = data?.links ?? null;
+    setData((d) => (d ? { ...d, links: d.links.filter((l) => l.id !== link.id) } : d));
     const { error } = await revokeLink(link.id);
-    if (error) { AppAlert.alert("Couldn't revoke", error); return; }
+    if (error) {
+      setData((d) => (d && prevLinks ? { ...d, links: prevLinks } : d));
+      AppAlert.alert("Couldn't revoke", error);
+      return;
+    }
     loadDashboard();
   };
 
   const cancelDeletion = async () => {
-    const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
-    if (user) await supabase.from("owners").update({ deletion_scheduled_at: null }).eq("id", user.id);
+    // Optimistic: hide the deletion banner right away, restore it if the
+    // write fails.
     setDeletionScheduled(false);
+    const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
+    if (!user) return;
+    const { error } = await supabase.from("owners").update({ deletion_scheduled_at: null }).eq("id", user.id);
+    if (error) {
+      setDeletionScheduled(true);
+      AppAlert.alert("Couldn't cancel deletion", error.message);
+    }
   };
 
   const handleAddLink = async () => {
@@ -292,11 +307,25 @@ export default function Dashboard() {
     // once a create is in flight, ignore further taps until it resolves.
     if (!name || !data || creatingLink) return;
     setCreatingLink(true);
+    setNewLinkName("");
+    setShowNewLink(false);
+    // Optimistic: show the new link immediately with a temporary id, then
+    // reconcile with the real row (or roll back on failure).
+    const tempId = `temp-${Date.now()}`;
+    const optimisticLink: OwnerLink = {
+      id: tempId, token: "", label: name, revoked: false, last_viewed_at: null,
+      created_at: new Date().toISOString(), pin_hash: null, duration_preset: null, ends_at: null, first_shared_at: null,
+    };
+    setData((d) => (d ? { ...d, links: [...d.links, optimisticLink] } : d));
     try {
-      await createLink(data.pet.id, name);
-      setNewLinkName("");
-      setShowNewLink(false);
-      await loadDashboard();
+      const created = await createLink(data.pet.id, name);
+      if (!created) {
+        setData((d) => (d ? { ...d, links: d.links.filter((l) => l.id !== tempId) } : d));
+        AppAlert.alert("Couldn't create link", "Please try again.");
+        return;
+      }
+      setData((d) => (d ? { ...d, links: d.links.map((l) => (l.id === tempId ? created : l)) } : d));
+      loadDashboard();
     } finally {
       setCreatingLink(false);
     }

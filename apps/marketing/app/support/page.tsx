@@ -4,6 +4,8 @@ import Footer from "../components/Footer";
 import { site } from "../site";
 import TrackedLink from "../components/TrackedLink";
 
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "Support",
   description: `Get help with ${site.name} — contact our team.`,

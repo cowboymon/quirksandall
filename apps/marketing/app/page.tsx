@@ -11,6 +11,9 @@ import PricingCards from "./components/PricingCards";
 // Homepage-specific metadata. Names both dogs and cats explicitly (the default
 // description is species-neutral) so the page surfaces for cat-sitter searches
 // too, not just generic pet ones.
+// Static marketing copy — regenerate hourly rather than on every request.
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   description:
     "Fill in your pet's profile once — dog or cat — and share a link with whoever's looking after them. Feeding, litter, medications, walks and the quirks only you know, all in one link. No app needed on their end.",

@@ -85,13 +85,6 @@ export default function Step4() {
         await supabase.from("pets").update({ photo_url: photoUrl }).eq("id", newPet.id);
       }
 
-      await supabase.from("pet_vet_info").insert({
-        pet_id: newPet.id,
-        primary_vet: { contact_name: pet.vetContactName, clinic: pet.vetClinic, address: pet.vetAddress, phone: pet.vetPhone },
-        emergency_vet: { clinic: pet.emergVetClinic, address: pet.emergVetAddress, phone: pet.emergVetPhone },
-        insurance: { provider: pet.insuranceProvider, policy_number: pet.insurancePolicy },
-      });
-
       const backups = [];
       if (pet.backupName) backups.push({ name: pet.backupName, relationship: pet.backupRelationship, phone: pet.backupPhone, consent_to_share: pet.backupConsent ?? false, is_decision_contact: pet.backupIsDecisionContact ?? false });
       if (pet.backup2Name) backups.push({ name: pet.backup2Name, relationship: pet.backup2Relationship ?? "", phone: pet.backup2Phone, consent_to_share: pet.backup2Consent ?? false, is_decision_contact: pet.backup2IsDecisionContact ?? false });
@@ -101,33 +94,41 @@ export default function Step4() {
       for (const b of backups) {
         if (b.is_decision_contact) (b as any).decision_priority = priority++;
       }
-      if (backups.length) await supabase.from("owners").update({ backup_contacts: backups }).eq("id", user.id);
 
-      await supabase.from("pet_behavior").insert({
-        pet_id: newPet.id, commands: pet.commands ?? [], scared: pet.scared, no_go: pet.noGo, flight_risk: pet.flightRisk,
-        escape_risk: { flag: !!pet.flightRisk, notes: pet.flightRisk }, quirks_triggers: [], temperament_summary: pet.temperament,
-      });
-
-      await supabase.from("pet_medical").insert({
-        pet_id: newPet.id,
-        allergies: pet.allergies ? [pet.allergies] : [],
-        conditions: pet.conditions ? [pet.conditions] : [],
-        medications: medsToRows(pet.medications ?? []),
-      });
-
-      await supabase.from("pet_routine").insert({
-        pet_id: newPet.id,
-        feeding: {
-          breakfast: { time: pet.feedingBreakfastTime, amount: pet.feedingBreakfastAmount },
-          lunch: { time: pet.feedingLunchTime, amount: pet.feedingLunchAmount },
-          dinner: { time: pet.feedingDinnerTime, amount: pet.feedingDinnerAmount },
-          treats: { type: pet.feedingTreatsType, limit: pet.feedingTreatsLimit },
-          notes: pet.feedingNotes,
-        },
-        walks: pet.walks, sleep: pet.sleep, bathroom_habits: pet.bathroomHabits,
-        left_alone: { ok: pet.leftAloneOk, detail: pet.leftAloneDetail },
-        toileting_frequency: pet.toileting,
-      });
+      // These writes touch independent tables/rows, so run them concurrently
+      // instead of paying for each round trip serially.
+      await Promise.all([
+        supabase.from("pet_vet_info").insert({
+          pet_id: newPet.id,
+          primary_vet: { contact_name: pet.vetContactName, clinic: pet.vetClinic, address: pet.vetAddress, phone: pet.vetPhone },
+          emergency_vet: { clinic: pet.emergVetClinic, address: pet.emergVetAddress, phone: pet.emergVetPhone },
+          insurance: { provider: pet.insuranceProvider, policy_number: pet.insurancePolicy },
+        }),
+        backups.length ? supabase.from("owners").update({ backup_contacts: backups }).eq("id", user.id) : Promise.resolve(),
+        supabase.from("pet_behavior").insert({
+          pet_id: newPet.id, commands: pet.commands ?? [], scared: pet.scared, no_go: pet.noGo, flight_risk: pet.flightRisk,
+          escape_risk: { flag: !!pet.flightRisk, notes: pet.flightRisk }, quirks_triggers: [], temperament_summary: pet.temperament,
+        }),
+        supabase.from("pet_medical").insert({
+          pet_id: newPet.id,
+          allergies: pet.allergies ? [pet.allergies] : [],
+          conditions: pet.conditions ? [pet.conditions] : [],
+          medications: medsToRows(pet.medications ?? []),
+        }),
+        supabase.from("pet_routine").insert({
+          pet_id: newPet.id,
+          feeding: {
+            breakfast: { time: pet.feedingBreakfastTime, amount: pet.feedingBreakfastAmount },
+            lunch: { time: pet.feedingLunchTime, amount: pet.feedingLunchAmount },
+            dinner: { time: pet.feedingDinnerTime, amount: pet.feedingDinnerAmount },
+            treats: { type: pet.feedingTreatsType, limit: pet.feedingTreatsLimit },
+            notes: pet.feedingNotes,
+          },
+          walks: pet.walks, sleep: pet.sleep, bathroom_habits: pet.bathroomHabits,
+          left_alone: { ok: pet.leftAloneOk, detail: pet.leftAloneDetail },
+          toileting_frequency: pet.toileting,
+        }),
+      ]);
 
       // Crypto-random token (same source as every other link) — never
       // Math.random(), which is predictable and would make the main link
