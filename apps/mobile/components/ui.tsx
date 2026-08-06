@@ -1,6 +1,6 @@
 // Shared primitive UI components for the mobile app.
 // Mirrors the prototype's primitives.tsx (fonts, buttons, dots, inputs).
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState, useRef, forwardRef } from "react";
 import { Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, useNavigation } from "expo-router";
@@ -99,19 +99,20 @@ export function FieldLabel({ children }: { children: React.ReactNode }) {
 
 // A micro-labelled blush input — the standard field inside emergency-contact
 // cards (Screen 2). 14px value on #F8ECEE, rose focus border.
-export function LabeledInput({
+export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: string; phone?: boolean; name?: boolean }>(function LabeledInput({
   label,
   style,
   onChangeText,
   phone,
   name,
   ...props
-}: TextInputProps & { label: string; phone?: boolean; name?: boolean }) {
+}, ref) {
   const [focused, setFocused] = useState(false);
   return (
     <View>
       <FieldLabel>{label}</FieldLabel>
       <TextInput
+        ref={ref}
         autoCapitalize={name ? "words" : "sentences"}
         onChangeText={phone && onChangeText ? (t) => onChangeText(formatPhone(t)) : name ? wordCased(onChangeText) : sentenceCased(props.keyboardType, onChangeText)}
         style={[
@@ -131,7 +132,7 @@ export function LabeledInput({
       />
     </View>
   );
-}
+});
 
 // Masked DD/MM/YYYY (AU) text field. Operates on the display string; callers
 // convert to/from ISO with displayDateToISO / isoToDisplayDate.
@@ -380,10 +381,11 @@ export function Card({ children, style, ...props }: ViewProps) {
 
 // Single-line input. `filled` uses the blush surface the prototype uses inside
 // emergency/routine cards; default is white with a rose focus border.
-export function Input({ style, filled, phone, name, onFocus, onBlur, onChangeText, ...props }: TextInputProps & { filled?: boolean; phone?: boolean; name?: boolean }) {
+export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; phone?: boolean; name?: boolean }>(function Input({ style, filled, phone, name, onFocus, onBlur, onChangeText, ...props }, ref) {
   const [focused, setFocused] = useState(false);
   return (
     <TextInput
+      ref={ref}
       // Sentence-case the first char programmatically so it works regardless of
       // the device's keyboard auto-capitalize setting (text fields only). Name
       // fields title-case every word instead ("monica ralph" → "Monica Ralph").
@@ -411,7 +413,7 @@ export function Input({ style, filled, phone, name, onFocus, onBlur, onChangeTex
       {...props}
     />
   );
-}
+});
 
 // Numeric weight field with a persistent "kg" suffix (the unit stays visible
 // after a value is entered). Stores the bare number.

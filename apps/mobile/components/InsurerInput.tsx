@@ -9,7 +9,7 @@
 // Presentation matches LabeledPlacesInput (dimming modal, measured anchor) so
 // the two suggestion fields in this screen behave identically.
 import { useEffect, useRef, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Modal, Pressable, Animated, Keyboard, Dimensions } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, Modal, Pressable, Animated, Keyboard, Dimensions, ScrollView } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import * as Localization from "expo-localization";
 import { colors } from "@quirksandall/shared";
@@ -32,8 +32,16 @@ export function InsurerInput({
   const [focused, setFocused] = useState(false);
   const [anchor, setAnchor] = useState<Anchor | null>(null);
   const [list, setList] = useState<string[]>([]);
+  // Debounced copy of the typed value — the dropdown filters on this, so it
+  // waits for a pause in typing instead of popping open mid-word.
+  const [debounced, setDebounced] = useState(value);
   const fieldRef = useRef<View>(null);
   const fade = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), 350);
+    return () => clearTimeout(t);
+  }, [value]);
 
   // Device region, not store region — reflects where the user actually is and
   // needs no permission. Read once; it can't change mid-session.
@@ -49,24 +57,36 @@ export function InsurerInput({
   const closeDropdown = () => { setFocused(false); fade.setValue(0); };
   const close = () => { closeDropdown(); Keyboard.dismiss(); };
 
-  const matches = filterInsurers(list, value).slice(0, 6);
+  // All matches, names starting with the query first — "b" lists every
+  // B-insurer before names that merely contain a b. The list scrolls past
+  // eight rows rather than being cut off.
+  const q = debounced.trim().toLowerCase();
+  const matches = [...filterInsurers(list, debounced)].sort(
+    (a, b) => Number(b.toLowerCase().startsWith(q)) - Number(a.toLowerCase().startsWith(q))
+  );
   // Hide once the typed value is already an exact pick — no point offering a
   // suggestion identical to what's in the field.
   const exact = matches.length === 1 && matches[0].toLowerCase() === value.trim().toLowerCase();
-  // Nothing until they type: an empty field matches the whole list, and six
-  // insurers appearing on first tap read as "pick from these" — the opposite
-  // of what this field promises (type anything; suggestions are a shortcut).
-  const showDropdown = focused && value.trim().length > 0 && matches.length > 0 && !exact && !!anchor;
+  // Nothing until they type: an empty field matches the whole list, and the
+  // whole list appearing on first tap reads as "pick from these" — the
+  // opposite of what this field promises (type anything; suggestions are a
+  // shortcut).
+  const showDropdown = focused && q.length > 0 && value.trim().length > 0 && matches.length > 0 && !exact && !!anchor;
 
   const pick = (name: string) => { onChangeText(name); close(); };
+  const clear = () => { onChangeText(""); setDebounced(""); closeDropdown(); };
 
   return (
     <View>
       <FieldLabel>{label}</FieldLabel>
       <View ref={fieldRef} collapsable={false} style={{ justifyContent: "center" }}>
-        <View style={{ position: "absolute", left: 10, zIndex: 1 }}>
+        <TouchableOpacity
+          onPress={() => { setDebounced(value); setFocused(true); measure(); }}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          style={{ position: "absolute", left: 10, zIndex: 1 }}
+        >
           <Ionicons name="search" size={16} color={colors.textMuted} />
-        </View>
+        </TouchableOpacity>
         <TextInput
           value={value}
           // Deliberately no measure() here: it's a native round-trip, and on
@@ -80,16 +100,31 @@ export function InsurerInput({
           placeholderTextColor={colors.textMuted}
           autoCapitalize="words"
           returnKeyType="search"
-          // Nothing to submit — the list filters locally as you type — so
-          // the return key takes the single remaining match if there is one,
-          // and otherwise just gets out of the way.
-          onSubmitEditing={() => { if (matches.length === 1) pick(matches[0]); else close(); }}
+          // The search key takes the single remaining match if there is one;
+          // otherwise it shows the list immediately (skipping the debounce)
+          // and keeps the keyboard up so the user can keep refining.
+          submitBehavior="submit"
+          onSubmitEditing={() => {
+            if (matches.length === 1) { pick(matches[0]); return; }
+            setDebounced(value);
+            setFocused(true);
+            measure();
+          }}
           style={{
             minHeight: 40, borderRadius: 8, borderWidth: 1,
             borderColor: focused ? colors.primary : colors.border, backgroundColor: colors.background,
-            paddingLeft: 34, paddingRight: 12, paddingVertical: 8, fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: colors.textDark,
+            paddingLeft: 34, paddingRight: value ? 34 : 12, paddingVertical: 8, fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: colors.textDark,
           }}
         />
+        {!!value && (
+          <TouchableOpacity
+            onPress={clear}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            style={{ position: "absolute", right: 10, height: 20, width: 20, borderRadius: 10, backgroundColor: colors.textMuted, alignItems: "center", justifyContent: "center" }}
+          >
+            <Text style={{ color: "#FFFFFF", fontSize: 12, fontFamily: "Satoshi-Bold", lineHeight: 14 }}>×</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <Modal
@@ -115,15 +150,17 @@ export function InsurerInput({
                 elevation: 8,
               }}
             >
-              {matches.map((name, i) => (
-                <TouchableOpacity
-                  key={name}
-                  onPress={() => pick(name)}
-                  style={{ paddingHorizontal: 12, paddingVertical: 12, borderTopWidth: i === 0 ? 0 : 1, borderTopColor: colors.border }}
-                >
-                  <Text style={{ color: colors.textDark, fontSize: 13, fontFamily: "Satoshi" }} numberOfLines={1}>{name}</Text>
-                </TouchableOpacity>
-              ))}
+              <ScrollView style={{ maxHeight: 316 }} keyboardShouldPersistTaps="handled">
+                {matches.map((name, i) => (
+                  <TouchableOpacity
+                    key={name}
+                    onPress={() => pick(name)}
+                    style={{ paddingHorizontal: 12, paddingVertical: 12, borderTopWidth: i === 0 ? 0 : 1, borderTopColor: colors.border }}
+                  >
+                    <Text style={{ color: colors.textDark, fontSize: 13, fontFamily: "Satoshi" }} numberOfLines={1}>{name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
             </Animated.View>
           )}
         </Pressable>

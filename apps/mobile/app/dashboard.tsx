@@ -10,6 +10,7 @@ import { Eyebrow, Card } from "../components/ui";
 import PetSwitcher from "../components/PetSwitcher";
 import ConfirmModal from "../components/ConfirmModal";
 import DurationModal from "../components/DurationModal";
+import { Skeleton } from "../components/Skeleton";
 import { useActivePetStore } from "../stores/activePet";
 import { colors, computeAge, capitalizeFirst, orderedCommands, possessive, stayPhrase, isUnlocked } from "@quirksandall/shared";
 import { usePrices } from "../hooks/usePrices";
@@ -340,7 +341,26 @@ export default function Dashboard() {
   };
 
   if (loading || !data) {
-    return <View className="flex-1 bg-background items-center justify-center"><Text className="text-text-muted">Loading…</Text></View>;
+    // Skeleton mirroring the real layout (top bar, switcher, cards) — reads
+    // as "loading" where a bare spinner or blank screen reads as "stuck".
+    return (
+      <View className="flex-1 bg-background">
+        <View style={{ paddingHorizontal: 24, paddingTop: 56, paddingBottom: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+          <Skeleton style={{ width: 80, height: 12, borderRadius: 6 }} />
+          <Skeleton style={{ width: 34, height: 34, borderRadius: 17 }} />
+        </View>
+        <View style={{ flexDirection: "row", gap: 12, paddingHorizontal: 24, marginTop: 8 }}>
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} style={{ width: 56, height: 56, borderRadius: 28 }} />
+          ))}
+        </View>
+        <View style={{ paddingHorizontal: 24, marginTop: 24, gap: 12 }}>
+          <Skeleton style={{ height: 150, borderRadius: 12 }} />
+          <Skeleton style={{ height: 90, borderRadius: 12 }} />
+          <Skeleton style={{ height: 240, borderRadius: 12 }} />
+        </View>
+      </View>
+    );
   }
 
   const { pet, ownerInitials, links, firstCommand, needsReview, sections, isPaid } = data;

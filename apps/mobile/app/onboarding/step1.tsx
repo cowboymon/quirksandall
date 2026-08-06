@@ -1,10 +1,10 @@
 // Screen 1 — Pet basics: photo, name, breed/species, sex, colour, microchip,
 // weight, DOB (with live age). Mirrors the prototype's Screen1PetBasics.
-import { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Image } from "react-native";
-import { AppAlert } from "../../stores/appAlert";
+import { useState, useRef } from "react";
+import { View, Text, ScrollView, TouchableOpacity, Image, type TextInput } from "react-native";
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+import { ensurePhotoPermission } from "../../lib/photoPermission";
 import { Headline, Input, Select, DateInput, WeightInput, PrimaryButton, ProgressDots, Eyebrow, BackButton } from "../../components/ui";
 import { RollingAnimal } from "../../components/Underlined";
 import { useOnboardingStore } from "../../stores/onboarding";
@@ -16,13 +16,17 @@ const SPECIES_OPTIONS = ["Dog", "Cat", "Bird", "Rabbit", "Other"];
 export default function Step1() {
   const { pet, setPet } = useOnboardingStore();
   const [photoUri, setPhotoUri] = useState<string | null>(pet.photoUri ?? null);
+  // Keyboard "next" hops between the free-text fields; selects/pickers between
+  // them are tap-driven and stay out of the chain.
+  const breedRef = useRef<TextInput>(null);
+  const colourRef = useRef<TextInput>(null);
+  const chipRef = useRef<TextInput>(null);
 
   const pickPhoto = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      AppAlert.alert("Permission needed", "Allow photo access to add a pet photo.");
-      return;
-    }
+    const ok = await ensurePhotoPermission(
+      "Pick a photo of your pet for their profile. We only ever see the photos you choose."
+    );
+    if (!ok) return;
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -81,7 +85,7 @@ export default function Step1() {
       <View style={{ gap: 16 }}>
         <View>
           <Eyebrow>Name *</Eyebrow>
-          <Input name className="mt-1" placeholder="e.g. Biscuit" value={pet.name ?? ""} onChangeText={(v) => setPet({ name: v })} autoFocus autoComplete="off" textContentType="none" />
+          <Input name className="mt-1" placeholder="e.g. Biscuit" value={pet.name ?? ""} onChangeText={(v) => setPet({ name: v })} autoFocus autoComplete="off" textContentType="none" returnKeyType="next" submitBehavior="submit" onSubmitEditing={() => breedRef.current?.focus()} />
         </View>
 
         <View>
@@ -113,7 +117,7 @@ export default function Step1() {
 
         <View>
           <Eyebrow>Breed</Eyebrow>
-          <Input className="mt-1" placeholder="e.g. Golden Retriever mix" value={pet.breed ?? ""} onChangeText={(v) => setPet({ breed: v })} />
+          <Input ref={breedRef} className="mt-1" placeholder="e.g. Golden Retriever mix" value={pet.breed ?? ""} onChangeText={(v) => setPet({ breed: v })} returnKeyType="next" submitBehavior="submit" onSubmitEditing={() => colourRef.current?.focus()} />
         </View>
 
         <View>
@@ -125,12 +129,12 @@ export default function Step1() {
 
         <View>
           <Eyebrow>Colour & markings</Eyebrow>
-          <Input className="mt-1" placeholder="e.g. Golden, white chest patch" value={pet.colorMarkings ?? ""} onChangeText={(v) => setPet({ colorMarkings: v })} />
+          <Input ref={colourRef} className="mt-1" placeholder="e.g. Golden, white chest patch" value={pet.colorMarkings ?? ""} onChangeText={(v) => setPet({ colorMarkings: v })} returnKeyType="next" submitBehavior="submit" onSubmitEditing={() => chipRef.current?.focus()} />
         </View>
 
         <View>
           <Eyebrow>Microchip number</Eyebrow>
-          <Input className="mt-1" placeholder="e.g. 985141002345678" keyboardType="numeric" value={pet.microchipNumber ?? ""} onChangeText={(v) => setPet({ microchipNumber: v })} />
+          <Input ref={chipRef} className="mt-1" placeholder="e.g. 985141002345678" keyboardType="numeric" value={pet.microchipNumber ?? ""} onChangeText={(v) => setPet({ microchipNumber: v })} />
         </View>
 
         <View>
