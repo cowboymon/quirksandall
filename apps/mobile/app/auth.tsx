@@ -74,9 +74,11 @@ export default function AuthScreen() {
       // whether the email is registered.
       const isRateLimited = /rate limit/i.test(error.message);
       if (isRateLimited) startCooldown();
+      // TEMP DEBUG: surface the raw error on screen while diagnosing the
+      // migration — revert to the generic message before shipping.
       AppAlert.alert(
-        "Couldn't send code",
-        isRateLimited ? "Too many attempts — please wait a bit and try again." : "Something went wrong. Please try again."
+        "Couldn't send code (debug)",
+        `${error.name}: ${error.message}\nurl: ${process.env.EXPO_PUBLIC_SUPABASE_URL ?? "(undefined)"}`
       );
     } else {
       startCooldown();
