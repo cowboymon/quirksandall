@@ -1,6 +1,6 @@
 // Screen 2 — Emergency essentials
-import { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { useState, useRef } from "react";
+import { View, Text, ScrollView, TouchableOpacity, type TextInput } from "react-native";
 import { router } from "expo-router";
 import { Headline, LabeledInput, InlineNote, PrimaryButton, SkipButton, ProgressDots, Eyebrow, Card, BackButton } from "../../components/ui";
 import { LabeledPlacesInput } from "../../components/PlacesInput";
@@ -18,6 +18,10 @@ export default function Step2() {
   // free-text; Places has no idea who the actual vet is.
   const [vetManual, setVetManual] = useState(false);
   const [emergManual, setEmergManual] = useState(false);
+  // Keyboard "next" chains within each card's free-text fields. Phone fields
+  // end a chain (the phone pad has no return key on iOS).
+  const backupRelRef = useRef<TextInput>(null);
+  const backup2RelRef = useRef<TextInput>(null);
 
   return (
     <ScrollView className="flex-1 bg-background" keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 24, paddingTop: 60, width: "100%", maxWidth: 600, alignSelf: "center" }}>
@@ -117,8 +121,8 @@ export default function Step2() {
         <Card>
           <Eyebrow bold>Backup contact</Eyebrow>
           <View style={{ gap: 8, marginTop: 12 }}>
-            <LabeledInput name label="Name" placeholder="Name" value={pet.backupName ?? ""} onChangeText={(v) => setPet({ backupName: v })} />
-            <LabeledInput label="Relationship" placeholder="e.g. sister" value={pet.backupRelationship ?? ""} onChangeText={(v) => setPet({ backupRelationship: v })} />
+            <LabeledInput name label="Name" placeholder="Name" value={pet.backupName ?? ""} onChangeText={(v) => setPet({ backupName: v })} returnKeyType="next" submitBehavior="submit" onSubmitEditing={() => backupRelRef.current?.focus()} />
+            <LabeledInput ref={backupRelRef} label="Relationship" placeholder="e.g. sister" value={pet.backupRelationship ?? ""} onChangeText={(v) => setPet({ backupRelationship: v })} />
             <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={pet.backupPhone ?? ""} onChangeText={(v) => setPet({ backupPhone: v })} />
           </View>
           <CheckboxRow
@@ -146,8 +150,8 @@ export default function Step2() {
           <Card>
             <Eyebrow bold>Second backup contact</Eyebrow>
             <View style={{ gap: 8, marginTop: 12 }}>
-              <LabeledInput name label="Name" placeholder="Name" value={pet.backup2Name ?? ""} onChangeText={(v) => setPet({ backup2Name: v })} />
-              <LabeledInput label="Relationship" placeholder="e.g. neighbour" value={pet.backup2Relationship ?? ""} onChangeText={(v) => setPet({ backup2Relationship: v })} />
+              <LabeledInput name label="Name" placeholder="Name" value={pet.backup2Name ?? ""} onChangeText={(v) => setPet({ backup2Name: v })} returnKeyType="next" submitBehavior="submit" onSubmitEditing={() => backup2RelRef.current?.focus()} />
+              <LabeledInput ref={backup2RelRef} label="Relationship" placeholder="e.g. neighbour" value={pet.backup2Relationship ?? ""} onChangeText={(v) => setPet({ backup2Relationship: v })} />
               <LabeledInput label="Phone" placeholder="Phone" phone keyboardType="phone-pad" value={pet.backup2Phone ?? ""} onChangeText={(v) => setPet({ backup2Phone: v })} />
             </View>
             <CheckboxRow

@@ -15,6 +15,7 @@ import { computeAge, colors, isoToDisplayDate, displayDateToISO, capitalizeFirst
 
 const SPECIES_OPTIONS = ["Dog", "Cat", "Bird", "Rabbit", "Other"];
 import { uploadPetPhoto } from "../../lib/uploadPhoto";
+import { ensurePhotoPermission } from "../../lib/photoPermission";
 
 // Turn the pet's stored records into a readable plain-text profile the owner can
 // keep after deleting. Every field is optional — empty ones are skipped.
@@ -143,11 +144,10 @@ export default function EditPet() {
   }, [pet]);
 
   const pickPhoto = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      AppAlert.alert("Permission needed", "Allow photo access to change the pet photo.");
-      return;
-    }
+    const ok = await ensurePhotoPermission(
+      "Pick a photo of your pet for their profile. We only ever see the photos you choose."
+    );
+    if (!ok) return;
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,

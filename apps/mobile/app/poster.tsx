@@ -17,6 +17,8 @@ import { Eyebrow, Input, DateInput } from "../components/ui";
 import { useActivePetStore } from "../stores/activePet";
 import { colors, computeAge, formatWeight, isoToDisplayDate, displayDateToISO, capitalizeFirst } from "@quirksandall/shared";
 import { useRequireAuth } from "../hooks/useRequireAuth";
+import { ensurePhotoPermission } from "../lib/photoPermission";
+import { Skeleton } from "../components/Skeleton";
 
 import { WEB_URL } from "../lib/config";
 
@@ -142,11 +144,10 @@ export default function MissingPoster() {
   };
 
   const pickPhotoFor = async (key: string) => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      AppAlert.alert("Permission needed", "Allow photo access to change the photo.");
-      return;
-    }
+    const ok = await ensurePhotoPermission(
+      "Pick a clear, recent photo for the poster. We only ever see the photos you choose."
+    );
+    if (!ok) return;
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
@@ -281,7 +282,7 @@ export default function MissingPoster() {
                     resizeMode="contain"
                   />
                 ) : (
-                  <View style={{ width: "100%", aspectRatio: f.aspect, borderRadius: 8, backgroundColor: colors.secondary }} />
+                  <Skeleton style={{ width: "100%", aspectRatio: f.aspect }} />
                 )}
                 {regenerating === f.key && (
                   <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(248,236,238,0.6)", borderRadius: 8 }}>
