@@ -80,9 +80,13 @@ export function InsurerInput({
     <View>
       <FieldLabel>{label}</FieldLabel>
       <View ref={fieldRef} collapsable={false} style={{ justifyContent: "center" }}>
-        <View style={{ position: "absolute", left: 10, zIndex: 1 }}>
+        <TouchableOpacity
+          onPress={() => { setDebounced(value); setFocused(true); measure(); }}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          style={{ position: "absolute", left: 10, zIndex: 1 }}
+        >
           <Ionicons name="search" size={16} color={colors.textMuted} />
-        </View>
+        </TouchableOpacity>
         <TextInput
           value={value}
           // Deliberately no measure() here: it's a native round-trip, and on
@@ -96,10 +100,16 @@ export function InsurerInput({
           placeholderTextColor={colors.textMuted}
           autoCapitalize="words"
           returnKeyType="search"
-          // Nothing to submit — the list filters locally as you type — so
-          // the return key takes the single remaining match if there is one,
-          // and otherwise just gets out of the way.
-          onSubmitEditing={() => { if (matches.length === 1) pick(matches[0]); else close(); }}
+          // The search key takes the single remaining match if there is one;
+          // otherwise it shows the list immediately (skipping the debounce)
+          // and keeps the keyboard up so the user can keep refining.
+          submitBehavior="submit"
+          onSubmitEditing={() => {
+            if (matches.length === 1) { pick(matches[0]); return; }
+            setDebounced(value);
+            setFocused(true);
+            measure();
+          }}
           style={{
             minHeight: 40, borderRadius: 8, borderWidth: 1,
             borderColor: focused ? colors.primary : colors.border, backgroundColor: colors.background,

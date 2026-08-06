@@ -16,5 +16,7 @@ export function Skeleton({ style }: { style?: StyleProp<ViewStyle> }) {
     loop.start();
     return () => loop.stop();
   }, [pulse]);
-  return <Animated.View style={[{ backgroundColor: colors.secondary, borderRadius: 8, opacity: pulse }, style]} />;
+  // colors.border, not colors.secondary — secondary is near-identical to the
+  // blush app background, which made the skeleton effectively invisible.
+  return <Animated.View style={[{ backgroundColor: colors.border, borderRadius: 8, opacity: pulse }, style]} />;
 }

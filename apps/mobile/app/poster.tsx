@@ -116,7 +116,9 @@ export default function MissingPoster() {
         format: key,
         lastSeenArea,
         lastSeenDate,
-        lookFor: whatToLookFor,
+        // Blank means "no override" — send null, not "": the API's sanitizer
+        // rejects an empty string as invalid rather than treating it as unset.
+        lookFor: whatToLookFor.trim() || null,
         preview,
         ...(photoDataUri ? { photoDataUri } : {}),
       }),
@@ -238,9 +240,10 @@ export default function MissingPoster() {
       format === "poster" ? [{ key: "poster", label: "Poster", aspect: 1240 / 1754 }] : SOCIAL_FORMATS;
 
     return (
-      <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={{ paddingTop: 56, paddingBottom: 40 }}>
-        <View style={{ paddingHorizontal: 24, flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-          <TouchableOpacity onPress={() => setView("form")}>
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        {/* Sticky header — matches EditShell's fixed bar; content scrolls under it. */}
+        <View style={{ paddingHorizontal: 24, paddingTop: 58, paddingBottom: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: colors.background, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+          <TouchableOpacity onPress={() => setView("form")} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
             <Text style={{ color: colors.textMuted, fontSize: 14 }}>‹ Back</Text>
           </TouchableOpacity>
           <View style={{ flexDirection: "row", backgroundColor: colors.secondary, borderRadius: 999, padding: 2 }}>
@@ -262,6 +265,7 @@ export default function MissingPoster() {
           <View style={{ width: 48 }} />
         </View>
 
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingTop: 16, paddingBottom: 40 }}>
         <Text style={{ color: colors.textMuted, fontSize: 12, textAlign: "center", marginBottom: 16 }}>
           Done. Walls, feeds, group chats — wherever.
         </Text>
@@ -323,16 +327,20 @@ export default function MissingPoster() {
           {format === "poster" ? "Print at A4 for best results." : "Each format downloads as a high-res PNG."}
         </Text>
       </ScrollView>
+      </View>
     );
   }
 
   // ── Form view ───────────────────────────────────────────────────────────────
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.background }} keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingTop: 56, paddingBottom: 40, paddingHorizontal: 24 }}>
-      <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 28 }}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+    {/* Sticky header — matches EditShell's fixed bar; content scrolls under it. */}
+    <View style={{ paddingHorizontal: 24, paddingTop: 58, paddingBottom: 12, backgroundColor: colors.background, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+      <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} style={{ alignSelf: "flex-start" }}>
         <Text style={{ color: colors.textMuted, fontSize: 14 }}>‹ Dashboard</Text>
       </TouchableOpacity>
-
+    </View>
+    <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingTop: 20, paddingBottom: 40, paddingHorizontal: 24 }}>
       <Eyebrow>Just in case</Eyebrow>
       <Text style={{ fontFamily: "Tanker", fontSize: 34, lineHeight: 40, color: colors.textDark, marginTop: 6 }}>
         If {profile.name} goes missing.
@@ -436,5 +444,6 @@ export default function MissingPoster() {
         </View>
       </View>
     </ScrollView>
+    </View>
   );
 }
