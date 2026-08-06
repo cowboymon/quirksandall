@@ -65,6 +65,7 @@ export default function AuthScreen() {
     });
     setLoading(false);
     if (error) {
+      console.error("sendCode raw error:", error.name, error.message, JSON.stringify(error));
       // Generic on purpose — Supabase's own error text can otherwise hint at
       // account state (e.g. distinguishing rate-limit vs. other failures in
       // ways that add up to an email-enumeration signal across repeated
