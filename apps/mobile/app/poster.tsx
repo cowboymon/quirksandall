@@ -119,10 +119,7 @@ export default function MissingPoster() {
         ...(photoDataUri ? { photoDataUri } : {}),
       }),
     });
-    if (!res.ok) {
-      const body = await res.text().catch(() => "(no body)");
-      throw new Error(`Generation failed: ${res.status} ${body}`);
-    }
+    if (!res.ok) throw new Error("Generation failed");
     const blob = await res.blob();
     const base64 = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
@@ -153,8 +150,8 @@ export default function MissingPoster() {
       const fileUri = await generate(key, dataUri, true);
       setOverrides((o) => ({ ...o, [key]: dataUri }));
       setPreviews((p) => ({ ...p, [key]: fileUri }));
-    } catch (e: any) {
-      AppAlert.alert("Couldn't generate (debug)", e?.message ?? "Check your connection and try again.");
+    } catch {
+      AppAlert.alert("Couldn't generate", "Check your connection and try again.");
     } finally {
       setRegenerating(null);
     }
@@ -200,8 +197,8 @@ export default function MissingPoster() {
       // Generate the full-res (2×) export via POST — the on-screen preview is 1×.
       const uri = await generate(key, overrides[key], false);
       await Share.share({ url: uri, message: `${profile.name} is missing.` });
-    } catch (e: any) {
-      AppAlert.alert("Couldn't save (debug)", e?.message ?? "Check your connection and try again.");
+    } catch {
+      AppAlert.alert("Couldn't save", "Check your connection and try again.");
     } finally {
       setSaving(null);
     }
@@ -372,6 +369,7 @@ export default function MissingPoster() {
           placeholderTextColor={colors.textMuted}
           multiline
           numberOfLines={3}
+          maxLength={400}
           style={{
             marginTop: 6, backgroundColor: colors.cardBg, borderWidth: 1, borderColor: colors.border,
             borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15,
