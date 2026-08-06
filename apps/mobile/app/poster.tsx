@@ -119,7 +119,16 @@ export default function MissingPoster() {
         ...(photoDataUri ? { photoDataUri } : {}),
       }),
     });
-    if (!res.ok) throw new Error("Generation failed");
+    if (!res.ok) {
+      // The API's JSON errors are written to be user-readable (e.g. "Millie
+      // needs a photo for the poster.") — surface them instead of a generic
+      // "check your connection" that hides the actual fix from the user.
+      const message = await res
+        .json()
+        .then((b) => (typeof b?.error === "string" ? b.error : null))
+        .catch(() => null);
+      throw new Error(message ?? "Generation failed");
+    }
     const blob = await res.blob();
     const base64 = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
@@ -150,8 +159,8 @@ export default function MissingPoster() {
       const fileUri = await generate(key, dataUri, true);
       setOverrides((o) => ({ ...o, [key]: dataUri }));
       setPreviews((p) => ({ ...p, [key]: fileUri }));
-    } catch {
-      AppAlert.alert("Couldn't generate", "Check your connection and try again.");
+    } catch (e: any) {
+      AppAlert.alert("Couldn't generate", e?.message && e.message !== "Generation failed" ? e.message : "Check your connection and try again.");
     } finally {
       setRegenerating(null);
     }
@@ -197,8 +206,8 @@ export default function MissingPoster() {
       // Generate the full-res (2×) export via POST — the on-screen preview is 1×.
       const uri = await generate(key, overrides[key], false);
       await Share.share({ url: uri, message: `${profile.name} is missing.` });
-    } catch {
-      AppAlert.alert("Couldn't save", "Check your connection and try again.");
+    } catch (e: any) {
+      AppAlert.alert("Couldn't save", e?.message && e.message !== "Generation failed" ? e.message : "Check your connection and try again.");
     } finally {
       setSaving(null);
     }
