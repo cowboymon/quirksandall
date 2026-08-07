@@ -30,7 +30,6 @@ export const POSTS: PostMeta[] = [
   { slug: "multi-cat-household-quirks", draft: false, category: "Cats", publishAt: "2026-09-22" },
   { slug: "toxic-foods-and-plants-for-dogs", draft: false, category: "Dogs", publishAt: "2026-09-18" },
   { slug: "briefing-a-sitter-on-a-senior-cat", draft: false, category: "Cats", publishAt: "2026-09-15" },
-  { slug: "hot-weather-safety-for-dogs", draft: false, category: "Dogs", publishAt: "2026-09-11" },
   { slug: "dangerous-houseplants-for-cats", draft: false, category: "Cats", publishAt: "2026-09-08" },
   { slug: "what-to-do-when-your-pet-goes-missing", draft: false, category: "General", publishAt: "2026-09-04" },
   { slug: "briefing-a-sitter-for-a-multi-pet-household", draft: false, category: "General", publishAt: "2026-09-01" },
