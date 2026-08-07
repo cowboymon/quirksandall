@@ -150,7 +150,7 @@ export function InsurerInput({
                 elevation: 8,
               }}
             >
-              <ScrollView style={{ maxHeight: 316 }} keyboardShouldPersistTaps="handled">
+              <ScrollView style={{ maxHeight: 316 }} keyboardShouldPersistTaps="handled" bounces={false} overScrollMode="never">
                 {matches.map((name, i) => (
                   <TouchableOpacity
                     key={name}

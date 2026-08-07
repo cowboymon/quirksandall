@@ -1,5 +1,28 @@
 import type { Metadata } from "next";
+import localFont from "next/font/local";
 import "./globals.css";
+
+// Self-hosted brand fonts — same licensed files the app and marketing site
+// ship with. The recipient page is loaded by people without our app context
+// (sitters on hotel wifi, etc.), so it must not depend on a third-party font
+// CDN resolving at request time.
+const satoshi = localFont({
+  src: [
+    { path: "./fonts/Satoshi-Light.ttf", weight: "300", style: "normal" },
+    { path: "./fonts/Satoshi-Regular.ttf", weight: "400", style: "normal" },
+    { path: "./fonts/Satoshi-Medium.ttf", weight: "500", style: "normal" },
+    { path: "./fonts/Satoshi-Bold.ttf", weight: "700", style: "normal" },
+  ],
+  variable: "--font-satoshi",
+  display: "swap",
+});
+
+const tanker = localFont({
+  src: "./fonts/Tanker-Regular.ttf",
+  weight: "400",
+  variable: "--font-tanker",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Quirks & All",
@@ -19,7 +42,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${satoshi.variable} ${tanker.variable}`}>
       <body>{children}</body>
     </html>
   );
