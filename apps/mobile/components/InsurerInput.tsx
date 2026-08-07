@@ -38,11 +38,23 @@ export function InsurerInput({
   const fieldRef = useRef<View>(null);
   const listRef = useRef<ScrollView>(null);
   const fade = useRef(new Animated.Value(0)).current;
+  // The field's onBlur schedules a delayed close (so tapping a suggestion row
+  // doesn't get pre-empted by the blur that same tap causes), but tapping the
+  // dim backdrop closes immediately — leaving that delayed close still
+  // pending. When it fired a beat later it re-ran on an already-closed
+  // dropdown, and the resulting extra render made the Modal flash open/closed
+  // again before settling. Tracking the timeout lets an immediate close
+  // cancel it outright.
+  const blurTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(value), 350);
     return () => clearTimeout(t);
   }, [value]);
+
+  useEffect(() => {
+    return () => { if (blurTimeout.current) clearTimeout(blurTimeout.current); };
+  }, []);
 
   // The list re-sorts (prefix matches first) every time `debounced` changes —
   // without this, a reorder could land completely different rows underneath
@@ -63,7 +75,11 @@ export function InsurerInput({
   };
 
   const closeDropdown = () => { setFocused(false); fade.setValue(0); };
-  const close = () => { closeDropdown(); Keyboard.dismiss(); };
+  const close = () => {
+    if (blurTimeout.current) { clearTimeout(blurTimeout.current); blurTimeout.current = null; }
+    closeDropdown();
+    Keyboard.dismiss();
+  };
 
   // All matches, names starting with the query first — "b" lists every
   // B-insurer before names that merely contain a b. The list scrolls past
@@ -82,7 +98,12 @@ export function InsurerInput({
   const showDropdown = focused && q.length > 0 && value.trim().length > 0 && matches.length > 0 && !exact && !!anchor;
 
   const pick = (name: string) => { onChangeText(name); close(); };
-  const clear = () => { onChangeText(""); setDebounced(""); closeDropdown(); };
+  const clear = () => {
+    if (blurTimeout.current) { clearTimeout(blurTimeout.current); blurTimeout.current = null; }
+    onChangeText("");
+    setDebounced("");
+    closeDropdown();
+  };
 
   return (
     <View>
@@ -103,7 +124,7 @@ export function InsurerInput({
           // on focus covers it.
           onChangeText={onChangeText}
           onFocus={() => { setFocused(true); measure(); }}
-          onBlur={() => setTimeout(closeDropdown, 150)}
+          onBlur={() => { blurTimeout.current = setTimeout(closeDropdown, 150); }}
           placeholder={placeholder}
           placeholderTextColor={colors.textMuted}
           autoCapitalize="words"
