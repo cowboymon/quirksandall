@@ -12,6 +12,19 @@ Guidance for AI agents working in this repo.
   `apps/web/app/p/[token]/page.tsx` (documents are not added to the recipient
   profile).
 
+- **Policy acceptance is recorded as two independent rows, not one.**
+  `policy_acceptances` (`privacy_policy` / `terms_of_service`, each its own
+  row) records signup-time consent so each policy type can version
+  independently later — separate from `owners.terms_accepted_at` +
+  `consent_log`, which gate the accept-terms screen itself. Written together
+  in `apps/mobile/app/accept-terms.tsx`'s `accept()`. `PRIVACY_POLICY_VERSION`
+  / `TERMS_VERSION` (`packages/shared/src/tokens.ts`) are hardcoded, deliberate
+  strings — never derive from a date or file hash, only bump on a human
+  decision that an update is material. A failed insert throws inside the same
+  try block as the `router.replace("/dashboard")` call, so a write failure
+  blocks navigation and surfaces an error rather than silently proceeding as
+  if consent were recorded.
+
 ## Manual QA — smoke test before shipping recipient-page changes
 
 - **Medication anchored to an empty meal slot must still render.** Configure a

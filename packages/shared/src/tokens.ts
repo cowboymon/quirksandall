@@ -96,3 +96,9 @@ export const LIFETIME_AVAILABLE = false;
 // real policy is published, and every subsequent consent write records the new
 // version. Existing rows keep the version that was current when they were made.
 export const CONSENT_POLICY_VERSION = "draft-2026-07";
+
+// Stamped onto policy_acceptances rows (privacy_policy / terms_of_service).
+// Hardcoded, deliberate values — never derive from a date or file hash. Only
+// bump when a human decides a policy update is material enough to require it.
+export const PRIVACY_POLICY_VERSION = "1.0";
+export const TERMS_VERSION = "1.0";
