@@ -24,7 +24,14 @@ export type PostMeta = {
 // Order here is the order shown on the index (newest first). Drafts/scheduled
 // posts are excluded until live (see isLive / getPost).
 export const POSTS: PostMeta[] = [
-  // Scheduled drops — two per week over the next month, revealed by date.
+  // Scheduled drops — two per week, revealed by date (newest first).
+  { slug: "briefing-a-sitter-on-a-senior-dog", draft: false, category: "Dogs", publishAt: "2026-09-29" },
+  { slug: "briefing-a-sitter-on-noise-phobia", draft: false, category: "Dogs", publishAt: "2026-09-25" },
+  { slug: "multi-cat-household-quirks", draft: false, category: "Cats", publishAt: "2026-09-22" },
+  { slug: "toxic-foods-and-plants-for-dogs", draft: false, category: "Dogs", publishAt: "2026-09-18" },
+  { slug: "briefing-a-sitter-on-a-senior-cat", draft: false, category: "Cats", publishAt: "2026-09-15" },
+  { slug: "hot-weather-safety-for-dogs", draft: false, category: "Dogs", publishAt: "2026-09-11" },
+  { slug: "dangerous-houseplants-for-cats", draft: false, category: "Cats", publishAt: "2026-09-08" },
   { slug: "what-to-do-when-your-pet-goes-missing", draft: false, category: "General", publishAt: "2026-09-04" },
   { slug: "briefing-a-sitter-for-a-multi-pet-household", draft: false, category: "General", publishAt: "2026-09-01" },
   { slug: "what-to-put-in-writing-before-a-friend-house-sits", draft: false, category: "General", publishAt: "2026-08-28" },
@@ -34,18 +41,18 @@ export const POSTS: PostMeta[] = [
   { slug: "choosing-boarding-marketplace-or-friend", draft: false, category: "General", publishAt: "2026-08-14" },
   { slug: "dog-escape-prevention", draft: false, category: "Dogs", publishAt: "2026-08-11" },
 
-  { slug: "pet-sitter-handover-checklist", draft: false, category: "General", freebie: "Free template" },
-  { slug: "free-pet-sitter-instructions-template", draft: false, category: "General", freebie: "Free template" },
-  { slug: "emergency-information-for-pet-sitters", draft: false, category: "General", freebie: "Free template" },
-  { slug: "preparing-a-friend-to-pet-sit", draft: false, category: "General" },
-  { slug: "things-owners-forget-to-tell-sitters", draft: false, category: "General" },
-  { slug: "weird-habits-your-pet-sitter-needs-to-know", draft: false, category: "General" },
-  { slug: "what-to-leave-for-a-dog-sitter", draft: false, category: "Dogs" },
-  { slug: "explaining-your-dogs-commands-and-triggers", draft: false, category: "Dogs" },
-  { slug: "what-to-leave-for-a-cat-sitter", draft: false, category: "Cats" },
-  { slug: "what-to-do-when-a-cat-hides-from-their-sitter", draft: false, category: "Cats" },
-  { slug: "indoor-cat-escape-prevention-checklist", draft: false, category: "Cats" },
-  { slug: "leaving-an-anxious-dog-with-a-sitter", draft: false, category: "Dogs" },
+  { slug: "pet-sitter-handover-checklist", draft: false, category: "General", freebie: "Free template", publishAt: "2026-08-04" },
+  { slug: "free-pet-sitter-instructions-template", draft: false, category: "General", freebie: "Free template", publishAt: "2026-07-31" },
+  { slug: "emergency-information-for-pet-sitters", draft: false, category: "General", freebie: "Free template", publishAt: "2026-07-28" },
+  { slug: "preparing-a-friend-to-pet-sit", draft: false, category: "General", publishAt: "2026-07-24" },
+  { slug: "things-owners-forget-to-tell-sitters", draft: false, category: "General", publishAt: "2026-07-21" },
+  { slug: "weird-habits-your-pet-sitter-needs-to-know", draft: false, category: "General", publishAt: "2026-07-17" },
+  { slug: "what-to-leave-for-a-dog-sitter", draft: false, category: "Dogs", publishAt: "2026-07-14" },
+  { slug: "explaining-your-dogs-commands-and-triggers", draft: false, category: "Dogs", publishAt: "2026-07-10" },
+  { slug: "what-to-leave-for-a-cat-sitter", draft: false, category: "Cats", publishAt: "2026-07-07" },
+  { slug: "what-to-do-when-a-cat-hides-from-their-sitter", draft: false, category: "Cats", publishAt: "2026-07-03" },
+  { slug: "indoor-cat-escape-prevention-checklist", draft: false, category: "Cats", publishAt: "2026-06-30" },
+  { slug: "leaving-an-anxious-dog-with-a-sitter", draft: false, category: "Dogs", publishAt: "2026-06-26" },
 ];
 
 // Publish date for the current content set (matches the privacy v1.0 date).
@@ -77,7 +84,18 @@ export type Post = {
   illustration: string;
   draft: boolean;
   date: string;
+  dateLabel: string;
 };
+
+// "2026-08-04" → "4 August 2026", parsed by parts to avoid any timezone shift.
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+function formatDate(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return `${d} ${MONTHS[(m ?? 1) - 1]} ${y}`;
+}
 
 const BLOG_DIR = path.join(process.cwd(), "content", "blog");
 
@@ -128,6 +146,7 @@ function readPost(meta: PostMeta): Post {
     illustration: illustrationFor(POSTS.indexOf(meta)),
     draft: meta.draft,
     date: meta.publishAt ?? BLOG_DATE,
+    dateLabel: formatDate(meta.publishAt ?? BLOG_DATE),
   };
 }
 

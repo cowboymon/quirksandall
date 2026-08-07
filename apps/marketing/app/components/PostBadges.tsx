@@ -6,11 +6,13 @@ export default function PostBadges({
   category,
   readingMinutes,
   freebie,
+  date,
   tone = "light",
 }: {
   category: Category;
   readingMinutes: number;
   freebie?: string;
+  date?: string;
   tone?: "light" | "dark";
 }) {
   const tagClass =
@@ -37,6 +39,7 @@ export default function PostBadges({
         </span>
       ) : null}
       <span className={`text-xs ${timeClass}`}>{readingMinutes} min read</span>
+      {date ? <span className={`text-xs ${timeClass}`}>{date}</span> : null}
     </div>
   );
 }
