@@ -108,19 +108,17 @@ body {
   color: var(--foreground);
   margin-bottom: 1.5rem;
 }
-/* Section headers use the body sans (Satoshi) rather than the display face at
-   a smaller size, so the display face stays a once-per-page signal (the H1)
-   and the hierarchy actually reads. Weights are pinned to the ones we actually
-   ship (300/400/500/700) — 700 here — so the browser never synthesises a faux
-   weight, which distorts the letterforms. Hierarchy comes from size + case +
-   tracking, not a fake weight step. */
+/* Heading ladder: the big display-face title lives once per page in the hero
+   (H1). Section headers (H2) use the display face too, but clearly smaller, so
+   they read as native to the brand rather than an off-key bold sans. H3 steps
+   down to the body sans at a real bold weight (700 — one we actually ship, so
+   no synthesised faux weight). */
 .prose-post h2 {
-  font-family: inherit;
-  font-weight: 700;
-  font-size: 1.35rem;
-  line-height: 1.25;
-  text-transform: uppercase;
-  letter-spacing: 0.045em;
+  font-family: var(--font-tanker), serif;
+  font-weight: 400;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
   color: var(--foreground);
   margin-top: 2.75rem;
   margin-bottom: 0.85rem;
