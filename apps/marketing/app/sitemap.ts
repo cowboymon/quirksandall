@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { site } from "./site";
 import { publishedPosts } from "./lib/blog";
+import { PRINTABLES } from "./printables/data";
 
 // Public, indexable pages. /admin and the API routes are intentionally omitted.
 // Blog posts are appended from the content source so new posts show up
@@ -36,5 +37,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
-  return [...staticEntries, ...postEntries];
+  const printableEntries = PRINTABLES.map((p) => ({
+    url: `${site.url}/printables/${p.slug}`,
+    lastModified: now,
+    changeFrequency: "yearly" as const,
+    priority: 0.5,
+  }));
+
+  return [...staticEntries, ...postEntries, ...printableEntries];
 }

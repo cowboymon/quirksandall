@@ -9,14 +9,16 @@ import path from "node:path";
 // To publish a held post: flip draft to false. To add a post: drop a
 // <slug>.md in content/blog and add a row here.
 export type Category = "Dogs" | "Cats" | "General";
-export type PostMeta = { slug: string; draft: boolean; category: Category };
+// `freebie` marks posts that offer a printable download — surfaced as a
+// secondary tag (the label is the tag text).
+export type PostMeta = { slug: string; draft: boolean; category: Category; freebie?: string };
 
 // Order here is the order shown on the index. Drafts are staged but excluded
 // from the index, sitemap, llms.txt, and 404 in production (see getPost).
 export const POSTS: PostMeta[] = [
-  { slug: "pet-sitter-handover-checklist", draft: false, category: "General" },
-  { slug: "free-pet-sitter-instructions-template", draft: false, category: "General" },
-  { slug: "emergency-information-for-pet-sitters", draft: false, category: "General" },
+  { slug: "pet-sitter-handover-checklist", draft: false, category: "General", freebie: "Free template" },
+  { slug: "free-pet-sitter-instructions-template", draft: false, category: "General", freebie: "Free template" },
+  { slug: "emergency-information-for-pet-sitters", draft: false, category: "General", freebie: "Free template" },
   { slug: "preparing-a-friend-to-pet-sit", draft: false, category: "General" },
   { slug: "things-owners-forget-to-tell-sitters", draft: false, category: "General" },
   { slug: "weird-habits-your-pet-sitter-needs-to-know", draft: false, category: "General" },
@@ -52,6 +54,7 @@ export type Post = {
   description: string;
   body: string;
   category: Category;
+  freebie?: string;
   readingMinutes: number;
   illustration: string;
   draft: boolean;
@@ -102,6 +105,7 @@ function readPost(meta: PostMeta): Post {
     description,
     body,
     category: meta.category,
+    freebie: meta.freebie,
     readingMinutes: readingMinutes(afterTitle),
     illustration: illustrationFor(POSTS.indexOf(meta)),
     draft: meta.draft,

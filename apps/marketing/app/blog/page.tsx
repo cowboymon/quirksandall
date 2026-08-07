@@ -52,6 +52,7 @@ export default function BlogIndex() {
               title: p.title,
               description: p.description,
               category: p.category,
+              freebie: p.freebie,
             }))}
           />
         </div>

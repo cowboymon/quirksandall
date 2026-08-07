@@ -59,4 +59,4 @@ This is the exact problem Quirks & All is built around: one link with all of thi
 
 ---
 
-*Want a printable version of this checklist? Coming soon — we'll link it here once it's live.*
+→ [Open the printable Pet Sitter Instructions template](/printables/pet-sitter-instructions?from=pet-sitter-handover-checklist) — everything above as a clean page you can print or save as a PDF.

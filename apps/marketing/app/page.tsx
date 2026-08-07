@@ -3,7 +3,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import WaitlistForm from "./components/WaitlistForm";
 import StoreBadge from "./components/StoreBadge";
-import { Underline, CircleMark, MarginArrow } from "./components/Annotations";
+import { Underline, MarginArrow } from "./components/Annotations";
 import { site } from "./site";
 import { LIFETIME_AVAILABLE } from "@quirksandall/shared";
 import TrackedLink from "./components/TrackedLink";
@@ -323,11 +323,7 @@ export default function Home() {
         {/* 5 — Pricing (#F8ECEE) */}
         <section id="pricing" className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
           <h2 className="max-w-2xl font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
-            Start free. Go Pro{" "}
-            <span className="relative inline-block">
-              <span className="relative z-10">{LIFETIME_AVAILABLE ? "your way." : "when you're ready."}</span>
-              <CircleMark className="absolute left-1/2 top-1/2 h-[1.6em] w-[118%] -translate-x-1/2 -translate-y-1/2 text-primary" />
-            </span>
+            Start free. Go Pro {LIFETIME_AVAILABLE ? "your way." : "when you're ready."}
           </h2>
 
           <PricingCards />

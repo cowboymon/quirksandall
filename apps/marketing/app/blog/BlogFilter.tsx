@@ -4,7 +4,13 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { Category } from "../lib/blog";
 
-type Item = { slug: string; title: string; description: string; category: Category };
+type Item = {
+  slug: string;
+  title: string;
+  description: string;
+  category: Category;
+  freebie?: string;
+};
 
 // Category filter chips + the filtered list. Client-side and instant — the
 // full post list is already in the page, so filtering is just local state.
@@ -56,9 +62,16 @@ export default function BlogFilter({ posts }: { posts: Item[] }) {
               href={`/blog/${post.slug}`}
               className="group block rounded-card border border-border bg-card-bg p-6 transition-colors hover:border-primary/50 sm:p-7"
             >
-              <h2 className="text-xl font-bold leading-tight text-foreground group-hover:text-primary">
-                {post.title}
-              </h2>
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="text-xl font-bold leading-tight text-foreground group-hover:text-primary">
+                  {post.title}
+                </h2>
+                {post.freebie ? (
+                  <span className="mt-0.5 shrink-0 rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-card-dark-text">
+                    {post.freebie}
+                  </span>
+                ) : null}
+              </div>
               <p className="mt-2 text-base leading-relaxed text-text-muted">{post.description}</p>
               <span className="mt-3 inline-block text-sm font-medium text-primary">
                 Read the guide →
