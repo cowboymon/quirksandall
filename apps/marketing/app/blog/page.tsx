@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import WaitlistForm from "../components/WaitlistForm";
 import StoreBadge from "../components/StoreBadge";
+import BlogFilter from "./BlogFilter";
 import { site } from "../site";
 import { publishedPosts } from "../lib/blog";
 
@@ -45,24 +46,14 @@ export default function BlogIndex() {
         </section>
 
         <div className="mx-auto w-full max-w-3xl px-6 py-14 sm:py-20">
-          <ul className="flex flex-col gap-4">
-            {posts.map((post) => (
-              <li key={post.slug}>
-                <Link
-                  href={`/blog/${post.slug}`}
-                  className="group block rounded-card border border-border bg-card-bg p-6 transition-colors hover:border-primary/50 sm:p-7"
-                >
-                  <h2 className="text-xl font-bold leading-tight text-foreground group-hover:text-primary">
-                    {post.title}
-                  </h2>
-                  <p className="mt-2 text-base leading-relaxed text-text-muted">{post.description}</p>
-                  <span className="mt-3 inline-block text-sm font-medium text-primary">
-                    Read the guide →
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <BlogFilter
+            posts={posts.map((p) => ({
+              slug: p.slug,
+              title: p.title,
+              description: p.description,
+              category: p.category,
+            }))}
+          />
         </div>
 
         {/* Waitlist module — same one as the home page's final CTA. */}
