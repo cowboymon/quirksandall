@@ -9,7 +9,7 @@
 // Presentation matches LabeledPlacesInput (dimming modal, measured anchor) so
 // the two suggestion fields in this screen behave identically.
 import { useEffect, useRef, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Modal, Pressable, Animated, Keyboard, Dimensions, ScrollView } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, Modal, Pressable, Keyboard, Dimensions, ScrollView } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import * as Localization from "expo-localization";
 import { colors } from "@quirksandall/shared";
@@ -37,14 +37,10 @@ export function InsurerInput({
   const [debounced, setDebounced] = useState(value);
   const fieldRef = useRef<View>(null);
   const listRef = useRef<ScrollView>(null);
-  const fade = useRef(new Animated.Value(0)).current;
   // The field's onBlur schedules a delayed close (so tapping a suggestion row
-  // doesn't get pre-empted by the blur that same tap causes), but tapping the
-  // dim backdrop closes immediately — leaving that delayed close still
-  // pending. When it fired a beat later it re-ran on an already-closed
-  // dropdown, and the resulting extra render made the Modal flash open/closed
-  // again before settling. Tracking the timeout lets an immediate close
-  // cancel it outright.
+  // doesn't get pre-empted by the blur that same tap causes); an immediate
+  // close cancels it so it can't redundantly re-fire on an already-closed
+  // dropdown.
   const blurTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -74,7 +70,7 @@ export function InsurerInput({
     fieldRef.current?.measureInWindow((x, y, width, height) => setAnchor({ x, y: y + height + 4, width }));
   };
 
-  const closeDropdown = () => { setFocused(false); fade.setValue(0); };
+  const closeDropdown = () => { setFocused(false); };
   const close = () => {
     if (blurTimeout.current) { clearTimeout(blurTimeout.current); blurTimeout.current = null; }
     closeDropdown();
@@ -159,16 +155,18 @@ export function InsurerInput({
       <Modal
         visible={showDropdown}
         transparent
-        animationType="none"
-        onShow={() => Animated.timing(fade, { toValue: 1, duration: 160, useNativeDriver: true }).start()}
+        // Native fade for both open AND close — a manually-driven Animated.Value
+        // paired with animationType="none" made the backdrop vanish in the same
+        // instant Keyboard.dismiss() started its own ~250ms slide-down, so the
+        // two mismatched timings read as a flash. Letting the OS coordinate one
+        // transition removes that mismatch instead of chasing the race.
+        animationType="fade"
         onRequestClose={close}
       >
         <Pressable style={{ flex: 1, backgroundColor: "rgba(30,10,14,0.35)" }} onPress={close}>
           {anchor && (
-            <Animated.View
+            <View
               style={{
-                opacity: fade,
-                transform: [{ translateY: fade.interpolate({ inputRange: [0, 1], outputRange: [-6, 0] }) }],
                 position: "absolute",
                 top: anchor.y,
                 left: anchor.x,
@@ -190,7 +188,7 @@ export function InsurerInput({
                   </TouchableOpacity>
                 ))}
               </ScrollView>
-            </Animated.View>
+            </View>
           )}
         </Pressable>
       </Modal>
