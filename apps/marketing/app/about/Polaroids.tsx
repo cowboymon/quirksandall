@@ -5,7 +5,7 @@ const PHOTOS = [
   {
     src: "/about/olive-1.webp",
     alt: "One of Olive's owners lying with her on a beanbag",
-    caption: "Owner #1",
+    caption: "Spare human",
     tilt: "-rotate-6",
     lift: "sm:mt-2",
     tape: "rotate-3",
@@ -13,7 +13,7 @@ const PHOTOS = [
   {
     src: "/about/olive-2.webp",
     alt: "Olive, a chocolate cocker spaniel, tucked into the couch under a blanket",
-    caption: "The 2am negotiator",
+    caption: "Boss",
     tilt: "rotate-3",
     lift: "sm:mt-10",
     tape: "-rotate-6",
@@ -21,7 +21,7 @@ const PHOTOS = [
   {
     src: "/about/olive-3.webp",
     alt: "Another of Olive's owners holding her at a beer garden",
-    caption: "Owner #3",
+    caption: "Olive's favourite, apparently",
     tilt: "-rotate-2",
     lift: "sm:mt-4",
     tape: "rotate-6",
