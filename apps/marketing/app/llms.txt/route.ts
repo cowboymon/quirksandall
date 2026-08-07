@@ -64,14 +64,14 @@ ${pricingSection()}
 
 ## Pages
 
-${STATIC_PAGES.map((p) => `- ${p.title}: ${site.url}${p.path}`).join("\n")}
-- Contact: ${site.contactEmail}
+${STATIC_PAGES.map((p) => `- [${p.title}](${site.url}${p.path})`).join("\n")}
+- [Contact](mailto:${site.contactEmail})
 
 ## Blog
 
 Practical guides on handing a pet over to a sitter, walker, or boarder.
 
-${posts.map((p) => `- ${p.title}: ${site.url}/blog/${p.slug}`).join("\n")}
+${posts.map((p) => `- [${p.title}](${site.url}/blog/${p.slug}): ${p.description}`).join("\n")}
 `;
 
   return new Response(body, {
