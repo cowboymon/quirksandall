@@ -220,140 +220,99 @@ body {
 }
 
 /* ── Printable templates (/printables/[slug]) ───────────────────────────
-   Deliberately plain and form-like ("boring government document") so it's
-   quick to fill in by hand and photocopies cleanly. The single branded
-   moment is the footer sign-off. */
+   Official-form look (after the AEC declaration form): faint paper tint,
+   numbered sections with a rotated category label in a left gutter, boxed
+   fill-in fields with the label beside the box. Monochrome and utilitarian;
+   the only brand moment is the footer sign-off. */
 .printable-screen {
-  background: #e9e7e3;                 /* neutral "desk" grey, not brand pink */
+  background: #dcd9d3;                 /* "desk" grey behind the sheet */
   min-height: 100vh;
   padding-bottom: 3rem;
 }
 .print-only { display: none; }
 
 .doc {
-  background: #ffffff;
-  color: #1a1a1a;
+  background: #f5f3ef;                 /* faint recycled-paper tint */
+  color: #222222;
   font-family: "Segoe UI", -apple-system, Roboto, Arial, sans-serif;
-  border: 1px solid #c7c7c7;
-  padding: 2.5rem 2.25rem 2rem;
+  border: 1px solid #b9b9b9;
+  padding: 2.25rem 2rem 1.5rem;
 }
 .doc-header {
   border-bottom: 3px double #333333;
-  padding-bottom: 0.9rem;
-  margin-bottom: 1.4rem;
+  padding-bottom: 0.8rem;
+  margin-bottom: 0.4rem;
 }
 .doc-kicker {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #555555;
+  font-size: 0.66rem; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: #666666;
 }
-.doc-title {
-  font-size: 1.7rem;
-  font-weight: 700;
-  color: #111111;
-  line-height: 1.12;
-  margin-top: 0.3rem;
-}
-.doc-intro {
-  margin-top: 0.5rem;
-  color: #444444;
-  font-size: 0.85rem;
-  line-height: 1.45;
-}
+.doc-title { font-size: 1.55rem; font-weight: 700; color: #111111; line-height: 1.1; margin-top: 0.25rem; }
+.doc-formid { font-size: 0.66rem; color: #777777; margin-top: 0.35rem; letter-spacing: 0.02em; }
+.doc-intro { margin-top: 0.45rem; color: #555555; font-size: 0.8rem; line-height: 1.4; }
+
 .doc-block {
-  margin-top: 1.25rem;
+  display: flex; gap: 0.55rem;
+  border-top: 1px solid #cbcbc5; padding-top: 0.85rem; margin-top: 0.85rem;
   break-inside: avoid;
 }
-.doc-h2 {
-  font-size: 0.76rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #111111;
-  background: #ececec;
-  border: 1px solid #cfcfcf;
-  padding: 0.3rem 0.55rem;
-  margin-bottom: 0.85rem;
+.doc-gutter { flex-shrink: 0; width: 32px; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+.doc-num {
+  width: 22px; height: 22px; border-radius: 9999px; background: #2b2b2b; color: #ffffff;
+  font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
 }
-.doc-note {
-  color: #555555;
-  font-size: 0.8rem;
-  font-style: italic;
-  margin-bottom: 0.75rem;
+.doc-vlabel {
+  writing-mode: vertical-rl; transform: rotate(180deg);
+  font-size: 0.6rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: #666666; white-space: nowrap;
 }
-.fill-grid { display: flex; flex-direction: column; gap: 0.8rem; }
-.fill-label {
-  display: block;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #222222;
-  margin-bottom: 0.3rem;
+.doc-content { flex: 1; min-width: 0; }
+.doc-note { color: #555555; font-size: 0.77rem; font-style: italic; margin-bottom: 0.65rem; }
+
+.fbox { display: flex; flex-direction: column; margin-bottom: 0.5rem; }
+.fbox-label { font-size: 0.76rem; font-weight: 700; color: #333333; margin-bottom: 0.22rem; }
+.fbox-hint { font-weight: 400; color: #777777; }
+.fbox-input { display: block; border: 1px solid #8a8a8a; background: #ffffff; height: 1.7rem; }
+@media (min-width: 640px) {
+  .fbox { flex-direction: row; align-items: stretch; gap: 0.55rem; }
+  .fbox-label { width: 38%; text-align: right; padding-top: 0.35rem; margin-bottom: 0; }
+  .fbox-input { flex: 1; }
 }
-.fill-hint { font-weight: 400; color: #666666; }
-.fill-line {
-  display: block;
-  border-bottom: 1px solid #333333;
-  height: 1.5rem;
-}
-.write-area { display: flex; flex-direction: column; gap: 1.1rem; }
+
+.write-box { border: 1px solid #8a8a8a; background: #ffffff; }
 .doc-quote {
-  border: 1px solid #999999;
-  background: #f7f7f7;
-  padding: 0.6rem 0.85rem;
-  margin-bottom: 0.9rem;
-  color: #222222;
-  font-style: italic;
+  border: 1px solid #8a8a8a; background: #ffffff; padding: 0.55rem 0.75rem;
+  margin-bottom: 0.65rem; color: #222222; font-style: italic; font-size: 0.83rem;
 }
 .doc-table-wrap { overflow-x: auto; }
-.doc-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+.doc-table { width: 100%; border-collapse: collapse; font-size: 0.74rem; }
 .doc-table th {
-  text-align: left;
-  font-weight: 700;
-  color: #111111;
-  background: #ececec;
-  border: 1px solid #999999;
-  padding: 0.4rem 0.5rem;
+  text-align: left; font-weight: 700; color: #222222;
+  background: #e4e1db; border: 1px solid #8a8a8a; padding: 0.35rem 0.45rem;
 }
-.doc-table td { border: 1px solid #999999; padding: 0.8rem 0.5rem; }
+.doc-table td { border: 1px solid #8a8a8a; padding: 0.85rem 0.45rem; background: #ffffff; }
 
 /* The one branded element — footer sign-off. */
 .doc-brand {
-  margin-top: 2.25rem;
-  border-top: 2px solid var(--primary);
-  padding-top: 1.1rem;
-  display: flex;
-  gap: 0.9rem;
-  align-items: flex-start;
+  margin-top: 1.8rem; border-top: 2px solid var(--primary); padding-top: 1rem;
+  display: flex; gap: 0.9rem; align-items: flex-start;
 }
-.doc-brand-logo { height: 34px; width: auto; flex-shrink: 0; }
+.doc-brand-logo { height: 32px; width: auto; flex-shrink: 0; }
 .doc-brand-text {
   font-family: var(--font-satoshi), system-ui, sans-serif;
-  color: var(--foreground);
-  font-size: 0.8rem;
-  line-height: 1.5;
+  color: var(--foreground); font-size: 0.78rem; line-height: 1.5;
 }
 .doc-brand-url {
-  font-family: var(--font-satoshi), system-ui, sans-serif;
-  margin-top: 0.35rem;
-  color: var(--primary);
-  font-size: 0.72rem;
-  font-weight: 700;
+  font-family: var(--font-satoshi), system-ui, sans-serif; margin-top: 0.3rem;
+  color: var(--primary); font-size: 0.7rem; font-weight: 700;
 }
 
 @media print {
   .print-hide { display: none !important; }
   .print-only { display: block; }
   .printable-screen { background: #ffffff; padding: 0; }
-  .doc {
-    max-width: none;
-    margin: 0;
-    border: 0;
-    padding: 0;
-    color: #000000;
-  }
-  .doc-block { margin-top: 0.95rem; }
-  .fill-line { border-bottom-color: #000000; }
-  @page { margin: 16mm; }
+  .doc { max-width: none; margin: 0; border: 0; padding: 0; background: #ffffff; color: #000000; }
+  .fbox-input, .write-box, .doc-table td, .doc-table th, .doc-quote { border-color: #000000 !important; }
+  .doc-block { margin-top: 0.7rem; padding-top: 0.7rem; }
+  @page { margin: 14mm; }
 }

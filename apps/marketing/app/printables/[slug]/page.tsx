@@ -20,74 +20,78 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
   };
 }
 
-// A labelled blank line to write on.
-function FillLine({ label, hint }: { label: string; hint?: string }) {
+// A labelled field: label beside a bordered box to write in (official-form style).
+function Field({ label, hint }: { label: string; hint?: string }) {
   return (
-    <div className="fill">
-      <span className="fill-label">
+    <div className="fbox">
+      <span className="fbox-label">
         {label}
-        {hint ? <span className="fill-hint"> ({hint})</span> : null}
+        {hint ? <span className="fbox-hint"> ({hint})</span> : null}
       </span>
-      <span className="fill-line" aria-hidden />
+      <span className="fbox-input" aria-hidden />
     </div>
   );
 }
 
-function BlockView({ block }: { block: Block }) {
-  return (
-    <section className="doc-block">
-      <h2 className="doc-h2">{block.heading}</h2>
-      {"note" in block && block.note ? <p className="doc-note">{block.note}</p> : null}
-
-      {block.kind === "fields" && (
-        <div className="fill-grid">
-          {block.items.map((it) => (
-            <FillLine key={it.label} label={it.label} hint={it.hint} />
-          ))}
-        </div>
-      )}
-
-      {block.kind === "permission" && (
-        <>
-          <blockquote className="doc-quote">“{block.quote}”</blockquote>
-          <div className="fill-grid">
-            {block.items.map((it) => (
-              <FillLine key={it.label} label={it.label} hint={it.hint} />
-            ))}
-          </div>
-        </>
-      )}
-
-      {block.kind === "table" && (
-        <div className="doc-table-wrap">
-          <table className="doc-table">
-            <thead>
-              <tr>
+function BlockBody({ block }: { block: Block }) {
+  if (block.kind === "fields") {
+    return (
+      <>
+        {block.items.map((it) => (
+          <Field key={it.label} label={it.label} hint={it.hint} />
+        ))}
+      </>
+    );
+  }
+  if (block.kind === "permission") {
+    return (
+      <>
+        <blockquote className="doc-quote">“{block.quote}”</blockquote>
+        {block.items.map((it) => (
+          <Field key={it.label} label={it.label} hint={it.hint} />
+        ))}
+      </>
+    );
+  }
+  if (block.kind === "table") {
+    return (
+      <div className="doc-table-wrap">
+        <table className="doc-table">
+          <thead>
+            <tr>
+              {block.columns.map((c) => (
+                <th key={c}>{c}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from({ length: block.rows }).map((_, r) => (
+              <tr key={r}>
                 {block.columns.map((c) => (
-                  <th key={c}>{c}</th>
+                  <td key={c}>&nbsp;</td>
                 ))}
               </tr>
-            </thead>
-            <tbody>
-              {Array.from({ length: block.rows }).map((_, r) => (
-                <tr key={r}>
-                  {block.columns.map((c) => (
-                    <td key={c}>&nbsp;</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+  // write
+  return <div className="write-box" style={{ height: `${block.lines * 1.7}rem` }} aria-hidden />;
+}
 
-      {block.kind === "write" && (
-        <div className="write-area">
-          {Array.from({ length: block.lines }).map((_, i) => (
-            <span key={i} className="fill-line" aria-hidden />
-          ))}
-        </div>
-      )}
+function BlockView({ block, index }: { block: Block; index: number }) {
+  return (
+    <section className="doc-block">
+      <div className="doc-gutter">
+        <span className="doc-num">{index}</span>
+        <span className="doc-vlabel">{block.heading}</span>
+      </div>
+      <div className="doc-content">
+        {"note" in block && block.note ? <p className="doc-note">{block.note}</p> : null}
+        <BlockBody block={block} />
+      </div>
     </section>
   );
 }
@@ -111,11 +115,12 @@ export default function PrintablePage({ params }: { params: { slug: string } }) 
           <header className="doc-header">
             <p className="doc-kicker">Pet care handover template</p>
             <h1 className="doc-title">{doc.title}</h1>
+            <p className="doc-formid">Please complete in pen · one form per pet</p>
             <p className="doc-intro">{doc.intro}</p>
           </header>
 
-          {doc.blocks.map((b) => (
-            <BlockView key={b.heading} block={b} />
+          {doc.blocks.map((b, i) => (
+            <BlockView key={b.heading} block={b} index={i + 1} />
           ))}
 
           {/* The single branded element. */}
