@@ -55,10 +55,10 @@ export default function BlogPost({ params }: { params: { slug: string } }) {
                 category={post.category}
                 readingMinutes={post.readingMinutes}
                 freebie={post.freebie}
-                date={post.dateLabel}
                 tone="dark"
               />
               <h1 className="mt-3 font-tanker text-3xl leading-tight sm:text-4xl">{post.title}</h1>
+              <p className="mt-3 text-sm text-card-dark-text/70">{post.dateLabel}</p>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={post.illustration}
