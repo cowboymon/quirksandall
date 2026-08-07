@@ -48,21 +48,19 @@ export default function BlogPost({ params }: { params: { slug: string } }) {
             >
               ← All guides
             </Link>
-            <div className="mt-6 flex items-start justify-between gap-6">
-              <div>
-                <PostBadges
-                  category={post.category}
-                  readingMinutes={post.readingMinutes}
-                  tone="dark"
-                />
-                <h1 className="mt-3 font-tanker text-3xl leading-tight sm:text-4xl">{post.title}</h1>
-              </div>
+            <div className="mt-6">
+              <PostBadges
+                category={post.category}
+                readingMinutes={post.readingMinutes}
+                tone="dark"
+              />
+              <h1 className="mt-3 font-tanker text-3xl leading-tight sm:text-4xl">{post.title}</h1>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={post.illustration}
                 alt=""
                 aria-hidden
-                className="hidden h-20 w-20 shrink-0 object-contain sm:block"
+                className="mt-7 h-20 w-20 object-contain sm:h-24 sm:w-24"
               />
             </div>
           </div>
