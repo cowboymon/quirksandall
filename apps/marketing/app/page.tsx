@@ -105,17 +105,17 @@ const FAQS = [
 // names; an empty src renders a labelled placeholder frame until they exist.
 const SHOTS = [
   {
-    src: "/shots/onboarding.png",
+    src: "/shots/onboarding.webp",
     caption: "Set it up in minutes",
     alt: "Quirks & All onboarding screen for introducing your dog's profile",
   },
   {
-    src: "/shots/share.png",
+    src: "/shots/share.webp",
     caption: "What a stand-in opens",
     alt: "The shared pet care cheat-sheet a stand-in opens in their browser, no app needed",
   },
   {
-    src: "/shots/poster.png",
+    src: "/shots/poster.webp",
     caption: "If they ever go missing",
     alt: "A printable missing-pet poster generated from the pet's profile",
   },
@@ -429,7 +429,14 @@ function PhoneShot({ src, caption, alt }: { src?: string; caption: string; alt?:
         <div className="relative aspect-[9/19] overflow-hidden rounded-[1.8rem] bg-card-bg">
           {src ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={src} alt={alt ?? caption} className="h-full w-full object-cover" />
+            <img
+              src={src}
+              alt={alt ?? caption}
+              width={560}
+              height={1218}
+              loading="lazy"
+              className="h-full w-full object-cover"
+            />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-secondary">
               <span className="eyebrow text-text-muted">Screenshot</span>
