@@ -77,8 +77,8 @@ function BlockBody({ block }: { block: Block }) {
       </div>
     );
   }
-  // write
-  return <div className="write-box" style={{ height: `${block.lines * 1.7}rem` }} aria-hidden />;
+  // write — grows to fill the section (min height keeps it usable in short ones)
+  return <div className="write-box" style={{ minHeight: `${block.lines * 1.7}rem` }} aria-hidden />;
 }
 
 function BlockView({ block, index }: { block: Block; index: number }) {

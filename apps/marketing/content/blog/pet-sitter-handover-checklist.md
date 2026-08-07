@@ -59,4 +59,4 @@ This is the exact problem Quirks & All is built around: one link with all of thi
 
 ---
 
-→ **[Open the printable Pet Sitter Instructions template](/printables/pet-sitter-instructions)** — everything above as a clean page you can print or save as a PDF.
+→ [Open the printable Pet Sitter Instructions template](/printables/pet-sitter-instructions) — everything above as a clean page you can print or save as a PDF.
