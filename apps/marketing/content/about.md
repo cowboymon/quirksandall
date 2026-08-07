@@ -14,6 +14,6 @@ There wasn't one place any of it lived. Not a document, not a note, nothing anyo
 
 Olive's quirks are still hers. Every pet has their own version — the cat who only eats if you leave the room, the dog who's fine with strangers but not strangers in hats. Quirks & All is just somewhere to put all of it down, once, properly, so the next person looking after them isn't guessing.
 
-*With love, Olive's humans*
+*With love,<br>Olive's humans*
 
 **[Get notified when it launches →]**

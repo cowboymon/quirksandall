@@ -140,8 +140,8 @@ export const PRINTABLES: Printable[] = [
         kind: "permission",
         heading: "Permission to act",
         quote:
-          "[Sitter's name] is authorised to seek emergency veterinary treatment for [pet's name] on my behalf while I'm away.",
-        items: [{ label: "Sitter name" }, { label: "Signed / date" }],
+          "The person listed below is authorised to seek emergency veterinary treatment for my pet on my behalf while I'm away.",
+        items: [{ label: "Sitter's name" }, { label: "Your name (signed)" }, { label: "Date" }],
       },
       {
         kind: "fields",
