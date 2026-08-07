@@ -429,9 +429,12 @@ export default function MissingPoster() {
         <Text style={{ color: colors.buttonText, fontSize: 15, fontFamily: "Satoshi-Medium" }}>Generate</Text>
       </TouchableOpacity>
       {!hasPhoto && (
-        <Text style={{ color: colors.textMuted, fontSize: 12, textAlign: "center", marginTop: 8 }}>
-          Add a photo to {profile.name}'s profile first.
-        </Text>
+        <TouchableOpacity onPress={() => router.push("/edit/pet")} hitSlop={{ top: 8, bottom: 8 }} style={{ marginTop: 8 }}>
+          <Text style={{ color: colors.textMuted, fontSize: 12, textAlign: "center" }}>
+            Add a photo to {profile.name}'s profile first —{" "}
+            <Text style={{ color: colors.primary, fontFamily: "Satoshi-Medium", textDecorationLine: "underline" }}>add one now</Text>
+          </Text>
+        </TouchableOpacity>
       )}
 
       {/* First steps if the worst happens */}

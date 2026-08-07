@@ -1,8 +1,9 @@
 // Screen 3 — Behavior / quirks
 import { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
-import { Headline, Textarea, Input, Card, PrimaryButton, SkipButton, ProgressDots, Eyebrow, BackButton } from "../../components/ui";
+import { Headline, Textarea, Input, Card, PrimaryButton, SkipButton, Eyebrow } from "../../components/ui";
+import OnboardingShell from "../../components/OnboardingShell";
 import { Underlined } from "../../components/Underlined";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { colors } from "@quirksandall/shared";
@@ -44,11 +45,8 @@ export default function Step3() {
   const filled = commands.filter((c) => c.word.trim()).length;
 
   return (
-    <ScrollView className="flex-1 bg-background" keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 24, paddingTop: 60, width: "100%", maxWidth: 600, alignSelf: "center" }}>
-      <BackButton />
-      <ProgressDots total={4} current={3} />
-
-      <View style={{ marginTop: 20, marginBottom: 6 }}><Eyebrow>Step 3 of 4</Eyebrow></View>
+    <OnboardingShell step={3}>
+      <View style={{ marginBottom: 6 }}><Eyebrow>Step 3 of 4</Eyebrow></View>
       <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-end", marginBottom: 4 }}>
         <Headline>{pet.name ? `${pet.name}'s ` : "Your pet's "}</Headline>
         <Underlined><Headline>got words.</Headline></Underlined>
@@ -141,6 +139,6 @@ export default function Step3() {
         <PrimaryButton label="Save and continue" onPress={() => router.push("/onboarding/step4")} />
         <SkipButton label="Skip for now" onPress={() => router.push("/onboarding/step4")} />
       </View>
-    </ScrollView>
+    </OnboardingShell>
   );
 }

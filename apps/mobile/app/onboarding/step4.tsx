@@ -1,9 +1,10 @@
 // Screen 4 — Routine & medical
-import { View, Text, ScrollView, TextInput, TouchableOpacity, Platform } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, Platform } from "react-native";
 import { AppAlert } from "../../stores/appAlert";
 import { router } from "expo-router";
 import { track, AnalyticsEvent } from "../../lib/analytics";
-import { Headline, Textarea, InlineNote, PrimaryButton, SkipButton, ProgressDots, Eyebrow, TimeInput, BackButton, Select } from "../../components/ui";
+import { Headline, Textarea, InlineNote, PrimaryButton, SkipButton, Eyebrow, TimeInput, Select } from "../../components/ui";
+import OnboardingShell from "../../components/OnboardingShell";
 import { Underlined } from "../../components/Underlined";
 import MedicationsEditor, { medsToRows } from "../../components/MedicationsEditor";
 import { useOnboardingStore } from "../../stores/onboarding";
@@ -172,11 +173,8 @@ export default function Step4() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-background" keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 24, paddingTop: 60, width: "100%", maxWidth: 600, alignSelf: "center" }}>
-      <BackButton />
-      <ProgressDots total={4} current={4} />
-
-      <View style={{ marginTop: 20, marginBottom: 6 }}><Eyebrow>Step 4 of 4</Eyebrow></View>
+    <OnboardingShell step={4}>
+      <View style={{ marginBottom: 6 }}><Eyebrow>Step 4 of 4</Eyebrow></View>
       <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-end" }}>
         <Headline>A normal day </Headline>
         <Underlined><Headline>for {pet.name ?? "them"}.</Headline></Underlined>
@@ -264,6 +262,6 @@ export default function Step4() {
             empty. Previously it navigated away without saving anything. */}
         <SkipButton label={`Skip for now — save ${pet.name ? `${pet.name}'s` : "their"} profile`} onPress={finish} disabled={saving} />
       </View>
-    </ScrollView>
+    </OnboardingShell>
   );
 }
