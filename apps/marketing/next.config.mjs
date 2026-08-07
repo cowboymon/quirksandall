@@ -26,6 +26,20 @@ const CSP = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ["@quirksandall/shared"],
+  // Bundle the Markdown content with the routes that read it at runtime
+  // (the ISR llms.txt/privacy/terms routes; blog posts served on-demand).
+  // Static pages read it at build, but tracing these guarantees the files are
+  // present when a route regenerates on the server. In Next 14 this option
+  // lives under `experimental` — at the top level it's silently ignored.
+  experimental: {
+    outputFileTracingIncludes: {
+      "/llms.txt": ["./content/**/*"],
+      "/blog/[slug]": ["./content/blog/**/*"],
+      "/sitemap.xml": ["./content/blog/**/*"],
+      "/privacy": ["./content/privacy.md"],
+      "/terms": ["./content/terms.md"],
+    },
+  },
   // Drop the "X-Powered-By: Next.js" fingerprinting header.
   poweredByHeader: false,
   // Explicit, not just relying on the (also-false) default: never ship

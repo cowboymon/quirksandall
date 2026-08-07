@@ -42,6 +42,14 @@ body {
 }
 
 /* Legal / long-form prose */
+.prose-legal h1 {
+  font-family: var(--font-tanker), serif;
+  letter-spacing: -0.01em;
+  font-size: 2.25rem;
+  line-height: 1.05;
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+}
 .prose-legal h2 {
   font-family: var(--font-tanker), serif;
   letter-spacing: -0.01em;
@@ -88,7 +96,91 @@ body {
 
 .prose-legal strong {
   color: var(--foreground);
-  font-weight: 600;
+  font-weight: 700;
+}
+
+/* Long-form article prose — blog posts and the About page. */
+.prose-post h1 {
+  font-family: var(--font-tanker), serif;
+  letter-spacing: -0.01em;
+  font-size: 2.25rem;
+  line-height: 1.08;
+  color: var(--foreground);
+  margin-bottom: 1.5rem;
+}
+/* Heading ladder: the big display-face title lives once per page in the hero
+   (H1). Section headers (H2) use the display face too, but clearly smaller, so
+   they read as native to the brand rather than an off-key bold sans. H3 steps
+   down to the body sans at a real bold weight (700 — one we actually ship, so
+   no synthesised faux weight). */
+.prose-post h2 {
+  font-family: var(--font-tanker), serif;
+  font-weight: 400;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+  margin-top: 2.75rem;
+  margin-bottom: 0.85rem;
+}
+.prose-post h3 {
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 1.05rem;
+  line-height: 1.35;
+  color: var(--foreground);
+  margin-top: 1.85rem;
+  margin-bottom: 0.5rem;
+}
+.prose-post p,
+.prose-post li {
+  color: #6b4a54;
+  line-height: 1.75;
+  font-size: 1.02rem;
+}
+.prose-post p {
+  margin-bottom: 1.1rem;
+}
+.prose-post ul,
+.prose-post ol {
+  padding-left: 1.35rem;
+  margin-bottom: 1.2rem;
+}
+.prose-post ul {
+  list-style: disc;
+}
+.prose-post ol {
+  list-style: decimal;
+}
+.prose-post li {
+  margin-bottom: 0.45rem;
+}
+.prose-post li::marker {
+  color: var(--primary);
+}
+.prose-post a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 500;
+}
+.prose-post strong {
+  color: var(--foreground);
+  font-weight: 700;
+}
+.prose-post hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+.prose-post em {
+  font-style: italic;
+}
+/* The trailing CTA line renders as a bold link — give it presence. */
+.prose-post p > strong > a {
+  display: inline-block;
+  margin-top: 0.5rem;
+  color: var(--primary);
 }
 
 /* ── Cat-paw "swipe the bar away" confirmation (desktop delight) ──
