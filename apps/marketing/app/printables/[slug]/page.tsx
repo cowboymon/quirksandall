@@ -106,21 +106,29 @@ export default function PrintablePage({ params }: { params: { slug: string } }) 
         <PrintButton />
       </div>
 
-      <article className="doc mx-auto my-8 max-w-3xl px-6">
-        <header className="doc-header">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/logo-footer.png" alt={site.name} className="doc-logo" />
-          <h1 className="doc-title">{doc.title}</h1>
-          <p className="doc-intro">{doc.intro}</p>
-        </header>
+      <div className="mx-auto my-8 w-full max-w-3xl px-4 sm:px-6">
+        <article className="doc">
+          <header className="doc-header">
+            <p className="doc-kicker">Pet care handover template</p>
+            <h1 className="doc-title">{doc.title}</h1>
+            <p className="doc-intro">{doc.intro}</p>
+          </header>
 
-        {doc.blocks.map((b) => (
-          <BlockView key={b.heading} block={b} />
-        ))}
+          {doc.blocks.map((b) => (
+            <BlockView key={b.heading} block={b} />
+          ))}
 
-        <p className="doc-footnote">{doc.footnote}</p>
-        <p className="doc-url print-only">{site.url.replace(/^https?:\/\//, "")}</p>
-      </article>
+          {/* The single branded element. */}
+          <footer className="doc-brand">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/logo-footer.png" alt={site.name} className="doc-brand-logo" />
+            <div>
+              <p className="doc-brand-text">{doc.footnote}</p>
+              <p className="doc-brand-url">{site.url.replace(/^https?:\/\//, "")}</p>
+            </div>
+          </footer>
+        </article>
+      </div>
     </div>
   );
 }
