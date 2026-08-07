@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Markdown from "../components/Markdown";
+import Polaroids from "./Polaroids";
 import { site } from "../site";
 
 export const metadata: Metadata = {
@@ -44,11 +45,13 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <div className="mx-auto w-full max-w-3xl px-6 py-14 sm:py-20">
+        <div className="mx-auto w-full max-w-3xl px-6 pt-14 pb-10 sm:pt-20">
           <article className="prose-post">
             <Markdown>{body}</Markdown>
           </article>
         </div>
+
+        <Polaroids />
       </main>
 
       <Footer />
