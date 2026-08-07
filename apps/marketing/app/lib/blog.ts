@@ -22,11 +22,10 @@ export const POSTS: PostMeta[] = [
   { slug: "weird-habits-your-pet-sitter-needs-to-know", draft: false, category: "General" },
   { slug: "what-to-leave-for-a-dog-sitter", draft: false, category: "Dogs" },
   { slug: "explaining-your-dogs-commands-and-triggers", draft: false, category: "Dogs" },
-  // Held for veterinary review before publishing — behavioural/medical claims.
-  { slug: "what-to-leave-for-a-cat-sitter", draft: true, category: "Cats" },
-  { slug: "what-to-do-when-a-cat-hides-from-their-sitter", draft: true, category: "Cats" },
-  { slug: "indoor-cat-escape-prevention-checklist", draft: true, category: "Cats" },
-  { slug: "leaving-an-anxious-dog-with-a-sitter", draft: true, category: "Dogs" },
+  { slug: "what-to-leave-for-a-cat-sitter", draft: false, category: "Cats" },
+  { slug: "what-to-do-when-a-cat-hides-from-their-sitter", draft: false, category: "Cats" },
+  { slug: "indoor-cat-escape-prevention-checklist", draft: false, category: "Cats" },
+  { slug: "leaving-an-anxious-dog-with-a-sitter", draft: false, category: "Dogs" },
 ];
 
 // Publish date for the current content set (matches the privacy v1.0 date).
