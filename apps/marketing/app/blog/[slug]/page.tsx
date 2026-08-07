@@ -55,6 +55,7 @@ export default function BlogPost({ params }: { params: { slug: string } }) {
                 category={post.category}
                 readingMinutes={post.readingMinutes}
                 freebie={post.freebie}
+                date={post.dateLabel}
                 tone="dark"
               />
               <h1 className="mt-3 font-tanker text-3xl leading-tight sm:text-4xl">{post.title}</h1>
