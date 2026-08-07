@@ -21,6 +21,12 @@ export default function Footer() {
           <Link href="/roadmap" className="text-text-muted transition-colors hover:text-foreground">
             Roadmap
           </Link>
+          <Link href="/blog" className="text-text-muted transition-colors hover:text-foreground">
+            Blog
+          </Link>
+          <Link href="/about" className="text-text-muted transition-colors hover:text-foreground">
+            About
+          </Link>
           <Link href="/privacy" className="text-text-muted transition-colors hover:text-foreground">
             Privacy Policy
           </Link>

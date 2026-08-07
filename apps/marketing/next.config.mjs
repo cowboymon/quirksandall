@@ -26,6 +26,14 @@ const CSP = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ["@quirksandall/shared"],
+  // Bundle the Markdown content with the routes that read it at runtime
+  // (the ISR llms.txt route; blog posts served on-demand). Static pages read
+  // it at build, but tracing these guarantees the files are always present.
+  outputFileTracingIncludes: {
+    "/llms.txt": ["./content/**/*"],
+    "/blog/[slug]": ["./content/blog/**/*"],
+    "/sitemap.xml": ["./content/blog/**/*"],
+  },
   // Drop the "X-Powered-By: Next.js" fingerprinting header.
   poweredByHeader: false,
   // Explicit, not just relying on the (also-false) default: never ship
