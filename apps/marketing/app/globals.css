@@ -295,7 +295,7 @@ body {
 /* The one branded element — footer sign-off. */
 .doc-brand {
   margin-top: 1.8rem; border-top: 2px solid var(--primary); padding-top: 1rem;
-  display: flex; gap: 0.9rem; align-items: flex-start;
+  display: flex; gap: 1.75rem; align-items: flex-start;
 }
 .doc-brand-logo { height: 32px; width: auto; flex-shrink: 0; }
 .doc-brand-text {
