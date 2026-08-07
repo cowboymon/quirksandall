@@ -3,10 +3,10 @@
 // corrections. Generation happens server-side (Satori + sharp) via the
 // Next.js API route; this screen collects the ephemeral fields and downloads
 // the finished PNGs.
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Image, TextInput, Share, ActivityIndicator } from "react-native";
 import { AppAlert } from "../stores/appAlert";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 // SDK 54 moved the classic download/read/write API to /legacy; the new
 // File/Directory API isn't needed for these one-shot poster downloads.
 import * as FileSystem from "expo-file-system/legacy";
@@ -19,6 +19,7 @@ import { colors, computeAge, formatWeight, isoToDisplayDate, displayDateToISO, c
 import { useRequireAuth } from "../hooks/useRequireAuth";
 import { ensurePhotoPermission } from "../lib/photoPermission";
 import { Skeleton } from "../components/Skeleton";
+import { SmoothImage } from "../components/SmoothImage";
 
 import { WEB_URL } from "../lib/config";
 
@@ -61,9 +62,18 @@ export default function MissingPoster() {
   const [previews, setPreviews] = useState<Record<string, string>>({});
   const [regenerating, setRegenerating] = useState<string | null>(null);
 
-  useEffect(() => {
-    load();
-  }, [selectedPetId]);
+  // Refetch on every focus, not just mount: this screen stays mounted in the
+  // stack while the user edits the pet's photo/description elsewhere and
+  // comes back, so a plain mount-only effect kept showing/using the stale
+  // photo_url (and description) until the screen was torn down and rebuilt
+  // by leaving the section entirely (#17, build-21 smoke test) — which also
+  // explained poster generation failing on a photo that had, in fact, saved.
+  useFocusEffect(
+    useCallback(() => {
+      load();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedPetId])
+  );
 
   const load = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -353,7 +363,7 @@ export default function MissingPoster() {
       <View style={{ backgroundColor: colors.cardBg, borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden", marginBottom: 16 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.border }}>
           {profile.photoUrl ? (
-            <Image source={{ uri: profile.photoUrl }} style={{ width: 40, height: 40, borderRadius: 20, borderWidth: 1, borderColor: colors.border }} />
+            <SmoothImage uri={profile.photoUrl} style={{ width: 40, height: 40, borderRadius: 20, borderWidth: 1, borderColor: colors.border }} />
           ) : (
             <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.secondary, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}>
               <Ionicons name="camera-outline" size={18} color={colors.textMuted} />
@@ -419,9 +429,12 @@ export default function MissingPoster() {
         <Text style={{ color: colors.buttonText, fontSize: 15, fontFamily: "Satoshi-Medium" }}>Generate</Text>
       </TouchableOpacity>
       {!hasPhoto && (
-        <Text style={{ color: colors.textMuted, fontSize: 12, textAlign: "center", marginTop: 8 }}>
-          Add a photo to {profile.name}'s profile first.
-        </Text>
+        <TouchableOpacity onPress={() => router.push("/edit/pet")} hitSlop={{ top: 8, bottom: 8 }} style={{ marginTop: 8 }}>
+          <Text style={{ color: colors.textMuted, fontSize: 12, textAlign: "center" }}>
+            Add a photo to {profile.name}'s profile first —{" "}
+            <Text style={{ color: colors.primary, fontFamily: "Satoshi-Medium", textDecorationLine: "underline" }}>add one now</Text>
+          </Text>
+        </TouchableOpacity>
       )}
 
       {/* First steps if the worst happens */}

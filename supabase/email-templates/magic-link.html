@@ -1,0 +1,97 @@
+<!-- Quirks & All — OTP sign-in email.
+
+     Paste into Supabase → Authentication → Email Templates → "Magic Link".
+     (The mobile app signs in with the 6-digit {{ .Token }} code, not a link,
+     so this template intentionally has no magic-link URL in it.)
+
+     Subject: {{ .Token }} — that's the one
+     (Code first so it shows in the inbox preview without opening the email.)
+
+     The logo is served from the project's own public "brand" storage bucket —
+     if this template moves to a new Supabase project, re-upload
+     email-header-1x.webp to that project's brand bucket and update the host
+     in the <img> src below. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>HERE'S YOUR WAY IN</title>
+<style>
+  @media screen and (max-width: 520px) {
+    .wrap { padding: 28px 12px !important; }
+    .card { padding: 30px 24px 26px 24px !important; }
+    .code { font-size: 38px !important; letter-spacing: 9px !important; }
+  }
+</style>
+</head>
+<body style="margin:0; padding:0; background-color:#510000;">
+
+  <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:#510000; font-size:1px; line-height:1px;">
+    Your Quirks &amp; All sign-in code &mdash; expires in 10 minutes.
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#510000;">
+    <tr>
+      <td align="center" class="wrap" style="padding:48px 20px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="max-width:480px; width:100%;">
+
+          <tr>
+            <td class="card" style="background-color:#E5BEC4; border-radius:16px; padding:40px 32px 36px 32px;">
+
+              <!-- Logo -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
+                <tr>
+                  <td align="center">
+                    <img src="https://wlzviqgezwkcyhmofkdt.supabase.co/storage/v1/object/public/brand/email-header-1x.webp" alt="Quirks &amp; All" width="200" style="display:block; border:0; outline:none; text-decoration:none; height:auto;">
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Heading -->
+              <p style="margin:0 0 8px 0; font-family:Helvetica,Arial,sans-serif; font-size:26px; line-height:1.2; color:#510000; font-weight:700; letter-spacing:-0.3px;">Here&rsquo;s your way in.</p>
+              <p style="margin:0 0 30px 0; font-family:Helvetica,Arial,sans-serif; font-size:14px; line-height:1.6; color:#74555D;">Use this code to sign in to Quirks &amp; All.</p>
+
+              <!-- Eyebrow — plum, not rose, for legibility on blush -->
+              <p style="margin:0 0 10px 0; font-family:Helvetica,Arial,sans-serif; font-size:11px; line-height:1; color:#510000; text-transform:uppercase; letter-spacing:0.09em; font-weight:700;">Your sign-in code</p>
+
+              <!-- Code block -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:0;">
+                <tr>
+                  <td style="background-color:#510000; border-radius:10px; padding:24px 16px; text-align:center;">
+                    <span class="code" style="font-family:'SFMono-Regular',Menlo,Consolas,'Courier New',monospace; font-size:42px; line-height:1; font-weight:700; letter-spacing:11px; color:#F8ECEE; display:block;">{{ .Token }}</span>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Divider + expiry — no box, just rule and text -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:20px; margin-bottom:20px;">
+                <tr>
+                  <td style="border-top:1px solid #D4A8B2; padding-top:16px;">
+                    <p style="margin:0 0 5px 0; font-family:Helvetica,Arial,sans-serif; font-size:13px; color:#510000; line-height:1.4; font-weight:600;">Expires in 10 minutes.</p>
+                    <p style="margin:0; font-family:Helvetica,Arial,sans-serif; font-size:13px; line-height:1.6; color:#74555D;">Didn&rsquo;t ask for this? Nothing to do &mdash; just ignore it.</p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Footer -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:8px; border-top:1px solid #D4A8B2;">
+                <tr>
+                  <td align="center" style="padding-top:20px;">
+                    <p style="margin:0 0 3px 0; font-family:Helvetica,Arial,sans-serif; font-size:11px; line-height:1.5; color:#74555D;">quirksandall.itshypothetical.com</p>
+                    <p style="margin:0; font-family:Helvetica,Arial,sans-serif; font-size:11px; line-height:1.5; color:#987080;">Made by Its Hypothetical</p>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

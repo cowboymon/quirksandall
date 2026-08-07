@@ -471,13 +471,14 @@ export default function Dashboard() {
                 card-level actions on the whole set of links, and pairing them
                 keeps the heading and its description as one uninterrupted
                 block of text. Right-aligned, so it holds the same edge as the
-                per-link buttons below it. */}
-            {links.length > 0 && (
-              <TouchableOpacity onPress={preview} style={{ flexDirection: "row", alignItems: "center", gap: 6, height: 32, paddingHorizontal: 12, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)" }}>
-                <Ionicons name="eye-outline" size={14} color="rgba(248,236,238,0.8)" />
-                <Text style={{ color: "rgba(248,236,238,0.8)", fontSize: 12, fontFamily: "Satoshi-Medium" }}>Preview</Text>
-              </TouchableOpacity>
-            )}
+                per-link buttons below it. Always shown — it opens the native
+                in-app preview, which reads the pet directly and doesn't need
+                a share link to exist (the links-only gate was a leftover from
+                when Preview opened the web link). */}
+            <TouchableOpacity onPress={preview} style={{ flexDirection: "row", alignItems: "center", gap: 6, height: 32, paddingHorizontal: 12, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)" }}>
+              <Ionicons name="eye-outline" size={14} color="rgba(248,236,238,0.8)" />
+              <Text style={{ color: "rgba(248,236,238,0.8)", fontSize: 12, fontFamily: "Satoshi-Medium" }}>Preview</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Long lists are capped rather than scrolled. A nested scroll region

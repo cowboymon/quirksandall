@@ -1,5 +1,5 @@
 // Edit pet basics: photo, name, breed/species, DOB, sex, weight, microchip
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { View, Text, Image, TouchableOpacity, Modal, Share, Platform } from "react-native";
 import { AppAlert } from "../../stores/appAlert";
 import * as FileSystem from "expo-file-system/legacy";
@@ -126,8 +126,17 @@ export default function EditPet() {
   const [showDelete, setShowDelete] = useState(false);
   const [exporting, setExporting] = useState(false);
 
+  // Seed the form from the pet ONCE per pet — never re-sync on later object
+  // changes. useActivePet renders from a cached pet and then silently
+  // revalidates, swapping in a fresh object; re-copying every field on each
+  // swap clobbered in-progress edits. Worst case was the photo (#17): pick a
+  // photo → revalidation lands → photoUri resets to the stored URL → Save sees
+  // no local file:// and skips the upload entirely — "photo doesn't save until
+  // you leave and come back", with no error anywhere.
+  const seededForPetId = useRef<string | null>(null);
   useEffect(() => {
-    if (!pet) return;
+    if (!pet || seededForPetId.current === pet.id) return;
+    seededForPetId.current = pet.id;
     setName(pet.name ?? "");
     setBreed(pet.breed ?? "");
     // Show what was actually stored (capitalised to match the Select options),

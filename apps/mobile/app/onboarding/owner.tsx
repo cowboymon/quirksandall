@@ -6,10 +6,11 @@
 // rather than their own step — one less screen in onboarding. They stay a
 // clearly separate, unchecked-by-default toggle pair, never bundled into
 // "Continue" the way the required Privacy/Terms agreement is on auth.tsx.
-import { useEffect, useState } from "react";
-import { View, Text, ScrollView, ActivityIndicator, Switch } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { View, Text, ScrollView, ActivityIndicator, Switch, type TextInput } from "react-native";
 import { router } from "expo-router";
 import { supabase } from "../../lib/supabase";
+import { AppAlert } from "../../stores/appAlert";
 import { Headline, Input, PrimaryButton, Eyebrow } from "../../components/ui";
 import { colors, CONSENT_POLICY_VERSION } from "@quirksandall/shared";
 
@@ -21,6 +22,7 @@ export default function OwnerSetup() {
   const [insurance, setInsurance] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const phoneRef = useRef<TextInput>(null);
 
   useEffect(() => {
     (async () => {
@@ -42,7 +44,11 @@ export default function OwnerSetup() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        await supabase
+        // Surface a failed write instead of sailing on: these details feed the
+        // missing poster and the PIN-gated contact block, and a silent failure
+        // here left "Your details" empty with no clue why (#11, build-21 smoke
+        // test). Stay on this screen so the user can retry.
+        const { error } = await supabase
           .from("owners")
           .update({
             name: name.trim(),
@@ -53,6 +59,10 @@ export default function OwnerSetup() {
             consent_policy_version: CONSENT_POLICY_VERSION,
           })
           .eq("id", user.id);
+        if (error) {
+          AppAlert.alert("Couldn't save your details", "Please try again.");
+          return;
+        }
         await supabase.from("consent_log").insert([
           { owner_id: user.id, consent_type: "marketing", granted: marketing, policy_version: CONSENT_POLICY_VERSION },
           { owner_id: user.id, consent_type: "insurance_offers", granted: insurance, policy_version: CONSENT_POLICY_VERSION },
@@ -85,11 +95,11 @@ export default function OwnerSetup() {
       <View style={{ gap: 16 }}>
         <View>
           <Eyebrow>Your name *</Eyebrow>
-          <Input name className="mt-1" placeholder="e.g. Jamie Nguyen" value={name} onChangeText={setName} autoFocus autoComplete="off" textContentType="none" />
+          <Input name className="mt-1" placeholder="e.g. Jamie Nguyen" value={name} onChangeText={setName} autoFocus autoComplete="off" textContentType="none" returnKeyType="next" submitBehavior="submit" onSubmitEditing={() => phoneRef.current?.focus()} />
         </View>
         <View>
           <Eyebrow>Mobile number *</Eyebrow>
-          <Input className="mt-1" placeholder="e.g. 0412 345 678" phone keyboardType="phone-pad" value={phone} onChangeText={setPhone} />
+          <Input ref={phoneRef} className="mt-1" placeholder="e.g. 0412 345 678" phone keyboardType="phone-pad" value={phone} onChangeText={setPhone} />
         </View>
         <View>
           <Eyebrow>Email address</Eyebrow>

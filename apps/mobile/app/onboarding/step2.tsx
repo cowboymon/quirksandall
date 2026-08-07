@@ -1,8 +1,9 @@
 // Screen 2 — Emergency essentials
 import { useState, useRef } from "react";
-import { View, Text, ScrollView, TouchableOpacity, type TextInput } from "react-native";
+import { View, Text, TouchableOpacity, type TextInput } from "react-native";
 import { router } from "expo-router";
-import { Headline, LabeledInput, InlineNote, PrimaryButton, SkipButton, ProgressDots, Eyebrow, Card, BackButton } from "../../components/ui";
+import { Headline, LabeledInput, InlineNote, PrimaryButton, SkipButton, Eyebrow, Card } from "../../components/ui";
+import OnboardingShell from "../../components/OnboardingShell";
 import { LabeledPlacesInput } from "../../components/PlacesInput";
 import { InsurerInput } from "../../components/InsurerInput";
 import { useOnboardingStore } from "../../stores/onboarding";
@@ -24,11 +25,8 @@ export default function Step2() {
   const backup2RelRef = useRef<TextInput>(null);
 
   return (
-    <ScrollView className="flex-1 bg-background" keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ padding: 24, paddingTop: 60, width: "100%", maxWidth: 600, alignSelf: "center" }}>
-      <BackButton />
-      <ProgressDots total={4} current={2} />
-
-      <View style={{ marginTop: 20, marginBottom: 6 }}><Eyebrow>Step 2 of 4</Eyebrow></View>
+    <OnboardingShell step={2}>
+      <View style={{ marginBottom: 6 }}><Eyebrow>Step 2 of 4</Eyebrow></View>
       <Headline className="mb-1">What {pet.name?.trim() || "your pet"}'s stand-in needs to know most.</Headline>
       <Text style={{ color: colors.textMuted, fontSize: 14, lineHeight: 21, marginBottom: 12, fontFamily: "Satoshi-Light" }}>
         This is the information that matters.
@@ -172,6 +170,6 @@ export default function Step2() {
         <PrimaryButton label="Save and continue" onPress={() => router.push("/onboarding/pin")} />
         <SkipButton label="Skip for now" onPress={() => router.push("/onboarding/pin")} />
       </View>
-    </ScrollView>
+    </OnboardingShell>
   );
 }

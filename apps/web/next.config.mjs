@@ -20,8 +20,8 @@
 const CSP = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline'",
-  "style-src 'self' 'unsafe-inline' https://api.fontshare.com",
-  "font-src 'self' data: https://api.fontshare.com",
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self' data:",
   "img-src 'self' data: https://images.unsplash.com https://*.supabase.co",
   // Supabase (DB/storage) + Mixpanel (apps/web/app/lib/analytics.ts, EU ingestion host).
   "connect-src 'self' https://*.supabase.co https://api-eu.mixpanel.com",
