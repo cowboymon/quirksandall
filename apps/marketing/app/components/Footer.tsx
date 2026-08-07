@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { site } from "../site";
-import TrackedLink from "./TrackedLink";
 
 export default function Footer() {
   return (
@@ -30,14 +29,6 @@ export default function Footer() {
           <Link href="/support" className="text-text-muted transition-colors hover:text-foreground">
             Support
           </Link>
-          <TrackedLink
-            href={`mailto:${site.contactEmail}`}
-            event="Contact Clicked"
-            meta={{ location: "footer" }}
-            className="text-text-muted transition-colors hover:text-foreground"
-          >
-            Contact
-          </TrackedLink>
         </nav>
       </div>
 
