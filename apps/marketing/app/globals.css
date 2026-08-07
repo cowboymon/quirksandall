@@ -96,7 +96,7 @@ body {
 
 .prose-legal strong {
   color: var(--foreground);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* Long-form article prose — blog posts and the About page. */
@@ -108,24 +108,27 @@ body {
   color: var(--foreground);
   margin-bottom: 1.5rem;
 }
-/* Section headers use a bold weight of the body sans — uppercase and tracked
-   — rather than the display face at a smaller size, so the display face stays
-   a once-per-page signal (the H1) and the hierarchy actually reads. */
+/* Section headers use the body sans (Satoshi) rather than the display face at
+   a smaller size, so the display face stays a once-per-page signal (the H1)
+   and the hierarchy actually reads. Weights are pinned to the ones we actually
+   ship (300/400/500/700) — 700 here — so the browser never synthesises a faux
+   weight, which distorts the letterforms. Hierarchy comes from size + case +
+   tracking, not a fake weight step. */
 .prose-post h2 {
   font-family: inherit;
-  font-weight: 800;
-  font-size: 1.25rem;
+  font-weight: 700;
+  font-size: 1.35rem;
   line-height: 1.25;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.045em;
   color: var(--foreground);
   margin-top: 2.75rem;
   margin-bottom: 0.85rem;
 }
 .prose-post h3 {
   font-family: inherit;
-  font-weight: 600;
-  font-size: 1.075rem;
+  font-weight: 700;
+  font-size: 1.05rem;
   line-height: 1.35;
   color: var(--foreground);
   margin-top: 1.85rem;
@@ -165,7 +168,7 @@ body {
 }
 .prose-post strong {
   color: var(--foreground);
-  font-weight: 600;
+  font-weight: 700;
 }
 .prose-post hr {
   border: 0;
