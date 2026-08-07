@@ -33,6 +33,8 @@ const nextConfig = {
     "/llms.txt": ["./content/**/*"],
     "/blog/[slug]": ["./content/blog/**/*"],
     "/sitemap.xml": ["./content/blog/**/*"],
+    "/privacy": ["./content/privacy.md"],
+    "/terms": ["./content/terms.md"],
   },
   // Drop the "X-Powered-By: Next.js" fingerprinting header.
   poweredByHeader: false,

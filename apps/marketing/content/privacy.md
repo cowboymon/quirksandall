@@ -113,7 +113,7 @@ Our providers may store and process information outside Australia, including in 
 
 ## 11. Changes to this policy
 
-We may update this policy. If we make material changes we'll update the date above and, where appropriate, let you know in the app. See our change history for a record of what's changed between versions.
+We may update this policy. If we make material changes we'll update the date above and, where appropriate, let you know in the app. See our [change history](/legal/changelog) for a record of what's changed between versions.
 
 ## 12. Contact
 

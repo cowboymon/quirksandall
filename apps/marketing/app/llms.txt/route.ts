@@ -16,6 +16,7 @@ const STATIC_PAGES: { title: string; path: string }[] = [
   { title: "Support", path: "/support" },
   { title: "Privacy", path: "/privacy" },
   { title: "Terms", path: "/terms" },
+  { title: "Legal change history", path: "/legal/changelog" },
 ];
 
 function pricingSection(): string {
