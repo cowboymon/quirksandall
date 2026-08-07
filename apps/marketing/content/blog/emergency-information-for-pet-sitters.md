@@ -32,6 +32,6 @@ It looks like a sitter calling you four times from a vet's waiting room while a 
 
 Quirks & All keeps emergency contacts, vet details, and a decision contact behind a PIN on your pet's profile — so if something does happen, your sitter isn't hunting through old texts to find a number you sent them three sits ago.
 
-→ [Print the Pet Emergency Information Card](/printables/pet-emergency-information-card) — a one-page card with all five, ready to fill in and pin up. On regular medication? Pair it with the [printable medication schedule](/printables/medication-schedule) — a row per drug, dose, and timing.
+→ [Print the Pet Emergency Information Card](/printables/pet-emergency-information-card?from=emergency-information-for-pet-sitters) — a one-page card with all five, ready to fill in and pin up. On regular medication? Pair it with the [printable medication schedule](/printables/medication-schedule?from=emergency-information-for-pet-sitters) — a row per drug, dose, and timing.
 
 **[Get notified when it launches →]**

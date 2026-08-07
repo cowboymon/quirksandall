@@ -2,7 +2,7 @@
 
 Writing a handover from scratch every time is how things get left out. Here's a template you can copy, fill in once, and hand to anyone looking after your pet — print it, save it as a note, whatever's fastest for you right now.
 
-→ [Open the printable template](/printables/pet-sitter-instructions) — a clean page you can print or save as a PDF.
+→ [Open the printable template](/printables/pet-sitter-instructions?from=free-pet-sitter-instructions-template) — a clean page you can print or save as a PDF.
 
 ## The template
 

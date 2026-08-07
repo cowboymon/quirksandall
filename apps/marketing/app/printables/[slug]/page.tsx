@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PRINTABLES, getPrintable, type Block } from "../data";
 import PrintButton from "../PrintButton";
+import BackLink from "../BackLink";
 import { site } from "../../site";
 
 export function generateStaticParams() {
@@ -104,9 +104,7 @@ export default function PrintablePage({ params }: { params: { slug: string } }) 
     <div className="printable-screen">
       {/* Screen-only toolbar */}
       <div className="print-hide mx-auto flex max-w-3xl items-center justify-between gap-4 px-6 pt-8">
-        <Link href="/blog" className="text-sm font-medium text-primary hover:underline">
-          ← Back to guides
-        </Link>
+        <BackLink className="text-sm font-medium text-primary hover:underline" />
         <PrintButton />
       </div>
 
