@@ -81,7 +81,9 @@ export default function RoadmapBoard() {
     <div className="grid gap-8 md:grid-cols-3">
       {COLUMNS.map((col) => (
         <div key={col.status}>
-          <div className="flex items-center gap-2.5 border-b border-border pb-3">
+          {/* top-16 clears the sticky site header (h-16); bg-background keeps
+             scrolled cards from bleeding through the stuck title. */}
+          <div className="sticky top-16 z-10 flex items-center gap-2.5 border-b border-border bg-background pb-3 pt-3">
             <span
               className="h-2.5 w-2.5 shrink-0 rounded-full"
               style={{ backgroundColor: DOT[col.tone] }}

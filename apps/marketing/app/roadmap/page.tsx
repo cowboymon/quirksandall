@@ -27,16 +27,18 @@ export default function RoadmapPage() {
       <Header />
 
       <main className="flex-1">
-        <section className="mx-auto max-w-5xl px-6 pt-16 pb-8 sm:pt-24">
-          <p className="eyebrow text-primary">Roadmap</p>
-          <h1 className="mt-3 max-w-2xl font-tanker text-4xl leading-[1.05] text-foreground sm:text-6xl">
-            Where we&apos;re headed.
-          </h1>
-          <p className="mt-5 max-w-xl text-lg leading-relaxed text-text-muted">
-            {site.name} is just getting started. Here&apos;s what we&apos;re building now,
-            what&apos;s next, and what we&apos;re still chewing over. Don&apos;t read the absence of
-            something as a no — give the ideas a thumb and the loudest ones jump the queue.
-          </p>
+        <section className="bg-card-dark text-card-dark-text">
+          <div className="mx-auto max-w-5xl px-6 pt-16 pb-12 sm:pt-24">
+            <p className="eyebrow text-card-dark-label">Roadmap</p>
+            <h1 className="mt-3 max-w-2xl font-tanker text-4xl leading-[1.05] sm:text-6xl">
+              Where we&apos;re headed.
+            </h1>
+            <p className="mt-5 max-w-xl text-lg leading-relaxed text-card-dark-text/80">
+              {site.name} is just getting started. Here&apos;s what we&apos;re building now,
+              what&apos;s next, and what we&apos;re still chewing over. Don&apos;t read the absence of
+              something as a no — give the ideas a thumb and the loudest ones jump the queue.
+            </p>
+          </div>
         </section>
 
         <section className="mx-auto max-w-5xl px-6 pt-4 pb-16 sm:pb-20">
@@ -77,12 +79,15 @@ export default function RoadmapPage() {
         </section>
 
         {/* Feedback nudge — thumb the ideas above, or suggest your own. */}
-        <section id="suggest" className="scroll-mt-20 border-t border-border/70 bg-[#E5BEC4]">
+        <section id="suggest" className="scroll-mt-20 bg-card-dark text-card-dark-text">
           <div className="mx-auto max-w-3xl px-6 py-14 sm:py-16">
             <SuggestForm />
-            <p className="mt-6 text-center text-sm text-foreground/80">
+            <p className="mt-6 text-center text-sm text-card-dark-text/80">
               Rather just hear when we launch?{" "}
-              <a href="/#get" className="font-medium text-primary underline underline-offset-2">
+              <a
+                href="/#get"
+                className="font-medium text-card-dark-label underline underline-offset-2 hover:text-card-dark-text"
+              >
                 Join the waitlist
               </a>
               .
