@@ -1,9 +1,9 @@
 // Native in-app preview of the recipient "cheat sheet" — ports the prototype's
 // ScreenRecipient. The owner previews their own pet, so we fetch directly (RLS)
 // and show the full picture (emergency block un-gated for the preview).
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, Linking } from "react-native";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "../lib/supabase";
 import { AppAlert } from "../stores/appAlert";
@@ -60,7 +60,12 @@ export default function Preview() {
   // a sitter gets.
   const [emergencyOpen, setEmergencyOpen] = useState(true);
 
-  useEffect(() => {
+  // Refetch on every focus, not just mount — same stale-data issue as the
+  // poster screen (#17, build-21 smoke test): editing the pet's photo
+  // elsewhere and returning here left this preview showing the old one until
+  // the screen was torn down and rebuilt.
+  useFocusEffect(
+    useCallback(() => {
     (async () => {
       const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) { router.replace("/auth"); return; }
@@ -118,7 +123,9 @@ export default function Preview() {
       });
       setLoading(false);
     })();
-  }, [selectedPetId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedPetId])
+  );
 
   if (loading || !data) {
     return <View style={{ flex: 1, backgroundColor: colors.background, alignItems: "center", justifyContent: "center" }}><ActivityIndicator color={colors.textDark} /></View>;

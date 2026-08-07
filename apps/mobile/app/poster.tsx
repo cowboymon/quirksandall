@@ -3,10 +3,10 @@
 // corrections. Generation happens server-side (Satori + sharp) via the
 // Next.js API route; this screen collects the ephemeral fields and downloads
 // the finished PNGs.
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Image, TextInput, Share, ActivityIndicator } from "react-native";
 import { AppAlert } from "../stores/appAlert";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 // SDK 54 moved the classic download/read/write API to /legacy; the new
 // File/Directory API isn't needed for these one-shot poster downloads.
 import * as FileSystem from "expo-file-system/legacy";
@@ -61,9 +61,18 @@ export default function MissingPoster() {
   const [previews, setPreviews] = useState<Record<string, string>>({});
   const [regenerating, setRegenerating] = useState<string | null>(null);
 
-  useEffect(() => {
-    load();
-  }, [selectedPetId]);
+  // Refetch on every focus, not just mount: this screen stays mounted in the
+  // stack while the user edits the pet's photo/description elsewhere and
+  // comes back, so a plain mount-only effect kept showing/using the stale
+  // photo_url (and description) until the screen was torn down and rebuilt
+  // by leaving the section entirely (#17, build-21 smoke test) — which also
+  // explained poster generation failing on a photo that had, in fact, saved.
+  useFocusEffect(
+    useCallback(() => {
+      load();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedPetId])
+  );
 
   const load = async () => {
     const { data: { user } } = await supabase.auth.getUser();
