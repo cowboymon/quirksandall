@@ -42,8 +42,7 @@ export default function LegalChangelogPage() {
     <div className="flex min-h-screen flex-col">
       <Header />
 
-      <main className="flex-1 bg-card-bg">
-        <div className="mx-auto w-full max-w-3xl px-6 py-14 sm:py-20">
+      <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-14 sm:py-20">
         <p className="eyebrow text-primary">Legal</p>
         <h1 className="mt-3 font-tanker text-4xl leading-none text-foreground sm:text-5xl">
           Change history
@@ -80,7 +79,6 @@ export default function LegalChangelogPage() {
             </li>
           ))}
         </ul>
-        </div>
       </main>
 
       <Footer />

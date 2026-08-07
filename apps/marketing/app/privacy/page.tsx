@@ -21,11 +21,9 @@ export default function PrivacyPage() {
     <div className="flex min-h-screen flex-col">
       <Header />
 
-      <main className="flex-1 bg-card-bg">
-        <div className="mx-auto w-full max-w-3xl px-6 py-14 sm:py-20">
-          <p className="eyebrow text-primary">Legal</p>
-          <Markdown className="prose-legal mt-3">{body}</Markdown>
-        </div>
+      <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-14 sm:py-20">
+        <p className="eyebrow text-primary">Legal</p>
+        <Markdown className="prose-legal mt-3">{body}</Markdown>
       </main>
 
       <Footer />
