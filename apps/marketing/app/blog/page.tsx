@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import PostBadges from "../components/PostBadges";
+import WaitlistForm from "../components/WaitlistForm";
+import StoreBadge from "../components/StoreBadge";
 import { site } from "../site";
 import { publishedPosts } from "../lib/blog";
 
@@ -49,44 +50,47 @@ export default function BlogIndex() {
               <li key={post.slug}>
                 <Link
                   href={`/blog/${post.slug}`}
-                  className="group flex items-start gap-4 rounded-card border border-border bg-card-bg p-6 transition-colors hover:border-primary/50 sm:gap-6 sm:p-7"
+                  className="group block rounded-card border border-border bg-card-bg p-6 transition-colors hover:border-primary/50 sm:p-7"
                 >
-                  <div className="min-w-0 flex-1">
-                    <PostBadges category={post.category} readingMinutes={post.readingMinutes} />
-                    <h2 className="mt-3 text-xl font-bold leading-tight text-foreground group-hover:text-primary">
-                      {post.title}
-                    </h2>
-                    <p className="mt-2 text-base leading-relaxed text-text-muted">
-                      {post.description}
-                    </p>
-                    <span className="mt-3 inline-block text-sm font-medium text-primary">
-                      Read the guide →
-                    </span>
-                  </div>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={post.illustration}
-                    alt=""
-                    aria-hidden
-                    className="hidden h-20 w-20 shrink-0 self-center object-contain sm:block"
-                  />
+                  <h2 className="text-xl font-bold leading-tight text-foreground group-hover:text-primary">
+                    {post.title}
+                  </h2>
+                  <p className="mt-2 text-base leading-relaxed text-text-muted">{post.description}</p>
+                  <span className="mt-3 inline-block text-sm font-medium text-primary">
+                    Read the guide →
+                  </span>
                 </Link>
               </li>
             ))}
           </ul>
-
-          <div className="mt-12 rounded-card border border-border bg-card-bg p-6 text-center sm:p-8">
-            <p className="text-lg text-foreground">
-              Quirks &amp; All puts all of this on one link your sitter just opens.
-            </p>
-            <Link
-              href={site.getNotifiedHref}
-              className="mt-4 inline-block rounded-button bg-button px-5 py-3 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed"
-            >
-              Get notified when it launches →
-            </Link>
-          </div>
         </div>
+
+        {/* Waitlist module — same one as the home page's final CTA. */}
+        <section className="bg-card-dark text-card-dark-text">
+          <div className="relative mx-auto max-w-3xl overflow-hidden px-6 py-20 text-center sm:py-24">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/brand/cta-dog.svg"
+              alt=""
+              aria-hidden
+              className="mx-auto mb-5 h-24 w-24 sm:h-28 sm:w-28"
+            />
+            <h2 className="font-tanker text-4xl leading-tight sm:text-5xl">Away, but known.</h2>
+
+            <div className="mt-6 flex justify-center">
+              <WaitlistForm
+                source="footer"
+                tone="dark"
+                intro="We're putting the finishing touches on it. Leave your email and we'll tell you the moment it's live."
+              />
+            </div>
+
+            <div className="mt-10 flex flex-nowrap items-center justify-center gap-3">
+              <StoreBadge kind="apple" href={site.appStoreUrl} onDark />
+              <StoreBadge kind="google" href={site.playStoreUrl} onDark />
+            </div>
+          </div>
+        </section>
       </main>
 
       <Footer />

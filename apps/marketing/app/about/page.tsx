@@ -25,7 +25,7 @@ export default function AboutPage() {
     <div className="flex min-h-screen flex-col">
       <Header />
 
-      <main className="flex-1">
+      <main className="flex-1 bg-card-bg">
         {/* Dark hero — the story is Olive's, so the dog gets to lead here. */}
         <section className="bg-card-dark text-card-dark-text">
           <div className="mx-auto flex max-w-3xl flex-col items-center px-6 py-14 text-center sm:py-20">

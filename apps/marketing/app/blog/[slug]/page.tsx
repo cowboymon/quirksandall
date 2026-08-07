@@ -37,7 +37,7 @@ export default function BlogPost({ params }: { params: { slug: string } }) {
     <div className="flex min-h-screen flex-col">
       <Header />
 
-      <main className="flex-1">
+      <main className="flex-1 bg-card-bg">
         {/* Dark hero: the display-face title lives here (once per page), with a
             quiet dog motif and the category/reading-time metadata. */}
         <section className="bg-card-dark text-card-dark-text">
