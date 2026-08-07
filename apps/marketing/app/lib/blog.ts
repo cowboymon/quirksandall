@@ -24,7 +24,14 @@ export type PostMeta = {
 // Order here is the order shown on the index (newest first). Drafts/scheduled
 // posts are excluded until live (see isLive / getPost).
 export const POSTS: PostMeta[] = [
-  // Scheduled drops — two per week over the next month, revealed by date.
+  // Scheduled drops — two per week, revealed by date (newest first).
+  { slug: "briefing-a-sitter-on-a-senior-dog", draft: false, category: "Dogs", publishAt: "2026-09-29" },
+  { slug: "briefing-a-sitter-on-noise-phobia", draft: false, category: "Dogs", publishAt: "2026-09-25" },
+  { slug: "multi-cat-household-quirks", draft: false, category: "Cats", publishAt: "2026-09-22" },
+  { slug: "toxic-foods-and-plants-for-dogs", draft: false, category: "Dogs", publishAt: "2026-09-18" },
+  { slug: "briefing-a-sitter-on-a-senior-cat", draft: false, category: "Cats", publishAt: "2026-09-15" },
+  { slug: "hot-weather-safety-for-dogs", draft: false, category: "Dogs", publishAt: "2026-09-11" },
+  { slug: "dangerous-houseplants-for-cats", draft: false, category: "Cats", publishAt: "2026-09-08" },
   { slug: "what-to-do-when-your-pet-goes-missing", draft: false, category: "General", publishAt: "2026-09-04" },
   { slug: "briefing-a-sitter-for-a-multi-pet-household", draft: false, category: "General", publishAt: "2026-09-01" },
   { slug: "what-to-put-in-writing-before-a-friend-house-sits", draft: false, category: "General", publishAt: "2026-08-28" },
