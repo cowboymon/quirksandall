@@ -59,4 +59,4 @@ This is the exact problem Quirks & All is built around: one link with all of thi
 
 ---
 
-*Have a printable version of this checklist? Coming soon — we'll link it here once it's live.*
+*Want a printable version of this checklist? Coming soon — we'll link it here once it's live.*
