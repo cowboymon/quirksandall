@@ -4,16 +4,16 @@
 const PHOTOS = [
   {
     src: "/about/olive-1.webp",
-    alt: "Olive, a chocolate cocker spaniel, refusing to leave the bed",
-    caption: "The 2am negotiator",
+    alt: "One of Olive's owners lying with her on a beanbag",
+    caption: "Owner #1",
     tilt: "-rotate-6",
     lift: "sm:mt-2",
     tape: "rotate-3",
   },
   {
     src: "/about/olive-2.webp",
-    alt: "One of Olive's owners hugging her on the grass at sunset",
-    caption: "Owner #1, allegedly",
+    alt: "Olive, a chocolate cocker spaniel, tucked into the couch under a blanket",
+    caption: "The 2am negotiator",
     tilt: "rotate-3",
     lift: "sm:mt-10",
     tape: "-rotate-6",
@@ -21,7 +21,7 @@ const PHOTOS = [
   {
     src: "/about/olive-3.webp",
     alt: "Another of Olive's owners holding her at a beer garden",
-    caption: "Owner #2, allegedly",
+    caption: "Owner #3",
     tilt: "-rotate-2",
     lift: "sm:mt-4",
     tape: "rotate-6",
