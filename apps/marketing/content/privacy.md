@@ -101,7 +101,7 @@ You can access, correct or delete most of your information directly in the app. 
 
 Email us at quirksandall@itshypothetical.com and we'll respond within a reasonable time and in line with the law that applies to you.
 
-If you're in Australia and you're not satisfied with our response, you can complain to the Office of the Australian Information Commissioner at oaic.gov.au. If you're in the EEA or UK, you can complain to your local data protection authority.
+If you're in Australia and our response hasn't resolved things for you, the Office of the Australian Information Commissioner (oaic.gov.au) is available to help. If you're in the EEA or UK, your local data protection authority can assist in the same way.
 
 ## 9. Children
 
