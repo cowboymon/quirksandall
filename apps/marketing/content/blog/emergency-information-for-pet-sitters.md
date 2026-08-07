@@ -16,7 +16,7 @@ Regular clinics close. If yours does, your sitter needs a second number for afte
 
 ## 3. Permission to act
 
-This is the one people skip. "Take them to the vet if needed" isn't permission — it's a suggestion. A sitter who isn't the owner often can't authorise treatment without something in writing, and vets will ask. A short note — *"[Sitter's name] is authorised to seek emergency veterinary treatment for [pet's name] on my behalf while I'm away"* — solves this in one line.
+This is the one people skip. "Take them to the vet if needed" isn't permission — it's a suggestion. A sitter who isn't the owner often can't authorise treatment without something in writing, and vets will ask. A short note — *"[Sitter's name] is authorised to seek emergency veterinary treatment for [pet's name] on my behalf while I'm away."* That note isn't a binding legal document — a clinic can still insist on reaching you directly, especially for anything major. But it signals intent clearly and clears the bar for most day-to-day situations.
 
 ## 4. A spending limit
 
