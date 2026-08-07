@@ -36,12 +36,20 @@ export function InsurerInput({
   // waits for a pause in typing instead of popping open mid-word.
   const [debounced, setDebounced] = useState(value);
   const fieldRef = useRef<View>(null);
+  const listRef = useRef<ScrollView>(null);
   const fade = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(value), 350);
     return () => clearTimeout(t);
   }, [value]);
+
+  // The list re-sorts (prefix matches first) every time `debounced` changes —
+  // without this, a reorder could land completely different rows underneath
+  // wherever the user had scrolled to, reading as a flash/jump.
+  useEffect(() => {
+    listRef.current?.scrollTo({ y: 0, animated: false });
+  }, [debounced]);
 
   // Device region, not store region — reflects where the user actually is and
   // needs no permission. Read once; it can't change mid-session.
@@ -150,7 +158,7 @@ export function InsurerInput({
                 elevation: 8,
               }}
             >
-              <ScrollView style={{ maxHeight: 316 }} keyboardShouldPersistTaps="handled" bounces={false} overScrollMode="never">
+              <ScrollView ref={listRef} style={{ maxHeight: 316 }} keyboardShouldPersistTaps="handled" bounces={false} overScrollMode="never">
                 {matches.map((name, i) => (
                   <TouchableOpacity
                     key={name}
