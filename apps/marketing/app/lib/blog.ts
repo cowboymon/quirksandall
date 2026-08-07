@@ -32,6 +32,21 @@ export const POSTS: PostMeta[] = [
 // Publish date for the current content set (matches the privacy v1.0 date).
 export const BLOG_DATE = "2026-08-04";
 
+// The hand-drawn Olive, in different poses — rotated per post (by position in
+// POSTS) so each guide gets its own dog instead of the same one everywhere.
+// cta-dog stays the homepage signature and is left out of the rotation.
+const ILLUSTRATIONS = [
+  "/brand/balloon-pink.png",
+  "/brand/hat-pink.svg",
+  "/brand/skate-pink.svg",
+  "/brand/flower-pink.svg",
+  "/brand/laptop-pink.png",
+  "/brand/bed-pink.svg",
+];
+function illustrationFor(index: number): string {
+  return ILLUSTRATIONS[index % ILLUSTRATIONS.length];
+}
+
 export type Post = {
   slug: string;
   title: string;
@@ -39,6 +54,7 @@ export type Post = {
   body: string;
   category: Category;
   readingMinutes: number;
+  illustration: string;
   draft: boolean;
   date: string;
 };
@@ -88,6 +104,7 @@ function readPost(meta: PostMeta): Post {
     body,
     category: meta.category,
     readingMinutes: readingMinutes(afterTitle),
+    illustration: illustrationFor(POSTS.indexOf(meta)),
     draft: meta.draft,
     date: BLOG_DATE,
   };

@@ -59,10 +59,10 @@ export default function BlogPost({ params }: { params: { slug: string } }) {
               </div>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/brand/cta-dog.svg"
+                src={post.illustration}
                 alt=""
                 aria-hidden
-                className="hidden h-16 w-16 shrink-0 sm:block"
+                className="hidden h-20 w-20 shrink-0 object-contain sm:block"
               />
             </div>
           </div>

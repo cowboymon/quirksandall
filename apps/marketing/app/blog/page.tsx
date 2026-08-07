@@ -27,10 +27,10 @@ export default function BlogIndex() {
           <div className="mx-auto flex max-w-3xl flex-col items-center px-6 py-14 text-center sm:py-20">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/brand/cta-dog.svg"
+              src="/brand/laptop-pink.png"
               alt=""
               aria-hidden
-              className="mb-5 h-16 w-16 sm:h-20 sm:w-20"
+              className="mb-5 h-20 w-20 object-contain sm:h-24 sm:w-24"
             />
             <p className="eyebrow text-card-dark-label">Guides</p>
             <h1 className="mt-2 font-tanker text-4xl leading-none sm:text-5xl">
@@ -49,16 +49,27 @@ export default function BlogIndex() {
               <li key={post.slug}>
                 <Link
                   href={`/blog/${post.slug}`}
-                  className="group block rounded-card border border-border bg-card-bg p-6 transition-colors hover:border-primary/50 sm:p-7"
+                  className="group flex items-start gap-4 rounded-card border border-border bg-card-bg p-6 transition-colors hover:border-primary/50 sm:gap-6 sm:p-7"
                 >
-                  <PostBadges category={post.category} readingMinutes={post.readingMinutes} />
-                  <h2 className="mt-3 text-xl font-bold leading-tight text-foreground group-hover:text-primary">
-                    {post.title}
-                  </h2>
-                  <p className="mt-2 text-base leading-relaxed text-text-muted">{post.description}</p>
-                  <span className="mt-3 inline-block text-sm font-medium text-primary">
-                    Read the guide →
-                  </span>
+                  <div className="min-w-0 flex-1">
+                    <PostBadges category={post.category} readingMinutes={post.readingMinutes} />
+                    <h2 className="mt-3 text-xl font-bold leading-tight text-foreground group-hover:text-primary">
+                      {post.title}
+                    </h2>
+                    <p className="mt-2 text-base leading-relaxed text-text-muted">
+                      {post.description}
+                    </p>
+                    <span className="mt-3 inline-block text-sm font-medium text-primary">
+                      Read the guide →
+                    </span>
+                  </div>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={post.illustration}
+                    alt=""
+                    aria-hidden
+                    className="hidden h-20 w-20 shrink-0 self-center object-contain sm:block"
+                  />
                 </Link>
               </li>
             ))}

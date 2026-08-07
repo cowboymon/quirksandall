@@ -31,10 +31,10 @@ export default function AboutPage() {
           <div className="mx-auto flex max-w-3xl flex-col items-center px-6 py-14 text-center sm:py-20">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/brand/cta-dog.svg"
+              src="/brand/bed-pink.svg"
               alt=""
               aria-hidden
-              className="mb-5 h-20 w-20 sm:h-24 sm:w-24"
+              className="mb-5 h-20 w-20 object-contain sm:h-24 sm:w-24"
             />
             <p className="eyebrow text-card-dark-label">Our story</p>
             <h1 className="mt-2 font-tanker text-4xl leading-none sm:text-5xl">{title}</h1>
