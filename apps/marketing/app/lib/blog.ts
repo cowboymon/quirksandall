@@ -10,12 +10,30 @@ import path from "node:path";
 // <slug>.md in content/blog and add a row here.
 export type Category = "Dogs" | "Cats" | "General";
 // `freebie` marks posts that offer a printable download — surfaced as a
-// secondary tag (the label is the tag text).
-export type PostMeta = { slug: string; draft: boolean; category: Category; freebie?: string };
+// secondary tag (the label is the tag text). `publishAt` (ISO date) schedules
+// a post: it stays hidden — off the index, sitemap, llms.txt, and 404 — until
+// that date, then appears automatically (the blog pages revalidate hourly).
+export type PostMeta = {
+  slug: string;
+  draft: boolean;
+  category: Category;
+  freebie?: string;
+  publishAt?: string;
+};
 
-// Order here is the order shown on the index. Drafts are staged but excluded
-// from the index, sitemap, llms.txt, and 404 in production (see getPost).
+// Order here is the order shown on the index (newest first). Drafts/scheduled
+// posts are excluded until live (see isLive / getPost).
 export const POSTS: PostMeta[] = [
+  // Scheduled drops — two per week over the next month, revealed by date.
+  { slug: "what-to-do-when-your-pet-goes-missing", draft: false, category: "General", publishAt: "2026-09-04" },
+  { slug: "briefing-a-sitter-for-a-multi-pet-household", draft: false, category: "General", publishAt: "2026-09-01" },
+  { slug: "what-to-put-in-writing-before-a-friend-house-sits", draft: false, category: "General", publishAt: "2026-08-28" },
+  { slug: "setting-up-a-medication-schedule-for-your-sitter", draft: false, category: "General", publishAt: "2026-08-25" },
+  { slug: "post-trip-sitter-debrief", draft: false, category: "General", publishAt: "2026-08-21" },
+  { slug: "getting-a-cat-to-eat-for-a-stranger", draft: false, category: "Cats", publishAt: "2026-08-18" },
+  { slug: "choosing-boarding-marketplace-or-friend", draft: false, category: "General", publishAt: "2026-08-14" },
+  { slug: "dog-escape-prevention", draft: false, category: "Dogs", publishAt: "2026-08-11" },
+
   { slug: "pet-sitter-handover-checklist", draft: false, category: "General", freebie: "Free template" },
   { slug: "free-pet-sitter-instructions-template", draft: false, category: "General", freebie: "Free template" },
   { slug: "emergency-information-for-pet-sitters", draft: false, category: "General", freebie: "Free template" },
@@ -109,27 +127,36 @@ function readPost(meta: PostMeta): Post {
     readingMinutes: readingMinutes(afterTitle),
     illustration: illustrationFor(POSTS.indexOf(meta)),
     draft: meta.draft,
-    date: BLOG_DATE,
+    date: meta.publishAt ?? BLOG_DATE,
   };
 }
 
-/** All posts including drafts (build/tools only). */
+// A post is live once it's not a draft and its scheduled date (if any) has
+// passed. Evaluated at render time, so ISR reveals scheduled posts on the day.
+function isLive(meta: PostMeta): boolean {
+  if (meta.draft) return false;
+  if (meta.publishAt && new Date(meta.publishAt) > new Date()) return false;
+  return true;
+}
+
+/** All posts including drafts/scheduled (build/tools only). */
 export function allPosts(): Post[] {
   return POSTS.map(readPost);
 }
 
-/** Posts safe to list/index — drafts removed. */
+/** Posts safe to list/index — drafts and not-yet-published removed. */
 export function publishedPosts(): Post[] {
-  return POSTS.filter((p) => !p.draft).map(readPost);
+  return POSTS.filter(isLive).map(readPost);
 }
 
 /**
- * A single post by slug, or null. Drafts resolve to null in production so they
- * 404 while staying viewable in local dev.
+ * A single post by slug, or null. In production a draft or not-yet-published
+ * post resolves to null (404); in local dev any post is viewable by URL so a
+ * scheduled post can be previewed before its date.
  */
 export function getPost(slug: string): Post | null {
   const meta = POSTS.find((p) => p.slug === slug);
   if (!meta) return null;
-  if (meta.draft && process.env.NODE_ENV === "production") return null;
+  if (process.env.NODE_ENV === "production" && !isLive(meta)) return null;
   return readPost(meta);
 }
