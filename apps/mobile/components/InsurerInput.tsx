@@ -1,22 +1,23 @@
 // Insurance provider field: a free-text input with suggestions underneath.
 //
-// Deliberately not a dropdown. The published insurer list is a snapshot that
-// goes stale, and an owner whose insurer isn't on it must never be stuck — so
-// anything typed is valid and the suggestions are just a shortcut. Where we
+// Deliberately not a dropdown-select. The published insurer list is a snapshot
+// that goes stale, and an owner whose insurer isn't on it must never be stuck —
+// so anything typed is valid and the suggestions are just a shortcut. Where we
 // have no verified list for the user's region, this degrades to exactly the
 // plain field it replaces.
 //
-// Presentation matches LabeledPlacesInput (dimming modal, measured anchor) so
-// the two suggestion fields in this screen behave identically.
+// The suggestion list renders INLINE (absolutely positioned under the field),
+// not in a Modal. The previous Modal presentation dimmed the screen, and its
+// open/close transitions raced the keyboard's own show/hide animation — the
+// backdrop visibly flashed when dismissing. An inline list has no separate
+// window, no scrim, and nothing to race.
 import { useEffect, useRef, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Modal, Pressable, Keyboard, Dimensions, ScrollView } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import * as Localization from "expo-localization";
 import { colors } from "@quirksandall/shared";
 import { FieldLabel } from "./ui";
 import { insurersForRegion, filterInsurers } from "../lib/insurers";
-
-type Anchor = { x: number; y: number; width: number };
 
 export function InsurerInput({
   label,
@@ -30,17 +31,13 @@ export function InsurerInput({
   placeholder?: string;
 }) {
   const [focused, setFocused] = useState(false);
-  const [anchor, setAnchor] = useState<Anchor | null>(null);
   const [list, setList] = useState<string[]>([]);
   // Debounced copy of the typed value — the dropdown filters on this, so it
   // waits for a pause in typing instead of popping open mid-word.
   const [debounced, setDebounced] = useState(value);
-  const fieldRef = useRef<View>(null);
   const listRef = useRef<ScrollView>(null);
-  // The field's onBlur schedules a delayed close (so tapping a suggestion row
-  // doesn't get pre-empted by the blur that same tap causes); an immediate
-  // close cancels it so it can't redundantly re-fire on an already-closed
-  // dropdown.
+  // onBlur delays its close so a tap on a suggestion row lands before the
+  // blur that same tap causes; picking/clearing cancels the pending close.
   const blurTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -52,9 +49,8 @@ export function InsurerInput({
     return () => { if (blurTimeout.current) clearTimeout(blurTimeout.current); };
   }, []);
 
-  // The list re-sorts (prefix matches first) every time `debounced` changes —
-  // without this, a reorder could land completely different rows underneath
-  // wherever the user had scrolled to, reading as a flash/jump.
+  // The list re-sorts (prefix matches first) when `debounced` changes — snap
+  // back to the top so a reorder never lands under a stale scroll offset.
   useEffect(() => {
     listRef.current?.scrollTo({ y: 0, animated: false });
   }, [debounced]);
@@ -66,15 +62,8 @@ export function InsurerInput({
     setList(insurersForRegion(region));
   }, []);
 
-  const measure = () => {
-    fieldRef.current?.measureInWindow((x, y, width, height) => setAnchor({ x, y: y + height + 4, width }));
-  };
-
-  const closeDropdown = () => { setFocused(false); };
-  const close = () => {
+  const cancelPendingClose = () => {
     if (blurTimeout.current) { clearTimeout(blurTimeout.current); blurTimeout.current = null; }
-    closeDropdown();
-    Keyboard.dismiss();
   };
 
   // All matches, names starting with the query first — "b" lists every
@@ -85,28 +74,32 @@ export function InsurerInput({
     (a, b) => Number(b.toLowerCase().startsWith(q)) - Number(a.toLowerCase().startsWith(q))
   );
   // Hide once the typed value is already an exact pick — no point offering a
-  // suggestion identical to what's in the field.
+  // suggestion identical to what's in the field. Nothing until they type: an
+  // empty field matches the whole list, and the whole list appearing on first
+  // tap reads as "pick from these" — the opposite of what this field promises.
   const exact = matches.length === 1 && matches[0].toLowerCase() === value.trim().toLowerCase();
-  // Nothing until they type: an empty field matches the whole list, and the
-  // whole list appearing on first tap reads as "pick from these" — the
-  // opposite of what this field promises (type anything; suggestions are a
-  // shortcut).
-  const showDropdown = focused && q.length > 0 && value.trim().length > 0 && matches.length > 0 && !exact && !!anchor;
+  const showDropdown = focused && q.length > 0 && value.trim().length > 0 && matches.length > 0 && !exact;
 
-  const pick = (name: string) => { onChangeText(name); close(); };
+  const pick = (name: string) => {
+    cancelPendingClose();
+    onChangeText(name);
+    setFocused(false);
+  };
   const clear = () => {
-    if (blurTimeout.current) { clearTimeout(blurTimeout.current); blurTimeout.current = null; }
+    cancelPendingClose();
     onChangeText("");
     setDebounced("");
-    closeDropdown();
+    setFocused(false);
   };
 
   return (
-    <View>
+    // zIndex lifts the whole field (and its absolute dropdown) above the
+    // sibling fields that follow it in the card.
+    <View style={{ zIndex: 10 }}>
       <FieldLabel>{label}</FieldLabel>
-      <View ref={fieldRef} collapsable={false} style={{ justifyContent: "center" }}>
+      <View collapsable={false} style={{ justifyContent: "center" }}>
         <TouchableOpacity
-          onPress={() => { setDebounced(value); setFocused(true); measure(); }}
+          onPress={() => { setDebounced(value); setFocused(true); }}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           style={{ position: "absolute", left: 10, zIndex: 1 }}
         >
@@ -114,13 +107,9 @@ export function InsurerInput({
         </TouchableOpacity>
         <TextInput
           value={value}
-          // Deliberately no measure() here: it's a native round-trip, and on
-          // every keystroke it was what made this field feel slower than the
-          // clinic search. The anchor can't move while typing, so measuring
-          // on focus covers it.
           onChangeText={onChangeText}
-          onFocus={() => { setFocused(true); measure(); }}
-          onBlur={() => { blurTimeout.current = setTimeout(closeDropdown, 150); }}
+          onFocus={() => setFocused(true)}
+          onBlur={() => { blurTimeout.current = setTimeout(() => setFocused(false), 150); }}
           placeholder={placeholder}
           placeholderTextColor={colors.textMuted}
           autoCapitalize="words"
@@ -133,7 +122,6 @@ export function InsurerInput({
             if (matches.length === 1) { pick(matches[0]); return; }
             setDebounced(value);
             setFocused(true);
-            measure();
           }}
           style={{
             minHeight: 40, borderRadius: 8, borderWidth: 1,
@@ -152,46 +140,34 @@ export function InsurerInput({
         )}
       </View>
 
-      <Modal
-        visible={showDropdown}
-        transparent
-        // Native fade for both open AND close — a manually-driven Animated.Value
-        // paired with animationType="none" made the backdrop vanish in the same
-        // instant Keyboard.dismiss() started its own ~250ms slide-down, so the
-        // two mismatched timings read as a flash. Letting the OS coordinate one
-        // transition removes that mismatch instead of chasing the race.
-        animationType="fade"
-        onRequestClose={close}
-      >
-        <Pressable style={{ flex: 1, backgroundColor: "rgba(30,10,14,0.35)" }} onPress={close}>
-          {anchor && (
-            <View
-              style={{
-                position: "absolute",
-                top: anchor.y,
-                left: anchor.x,
-                width: Math.min(anchor.width, Dimensions.get("window").width - anchor.x - 16),
-                backgroundColor: "#FFFFFF",
-                borderWidth: 1, borderColor: colors.border, borderRadius: 8, overflow: "hidden",
-                shadowColor: "#000", shadowOpacity: 0.18, shadowRadius: 10, shadowOffset: { width: 0, height: 6 },
-                elevation: 8,
-              }}
-            >
-              <ScrollView ref={listRef} style={{ maxHeight: 316 }} keyboardShouldPersistTaps="handled" bounces={false} overScrollMode="never">
-                {matches.map((name, i) => (
-                  <TouchableOpacity
-                    key={name}
-                    onPress={() => pick(name)}
-                    style={{ paddingHorizontal: 12, paddingVertical: 12, borderTopWidth: i === 0 ? 0 : 1, borderTopColor: colors.border }}
-                  >
-                    <Text style={{ color: colors.textDark, fontSize: 13, fontFamily: "Satoshi" }} numberOfLines={1}>{name}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-        </Pressable>
-      </Modal>
+      {showDropdown && (
+        <View
+          style={{
+            position: "absolute",
+            top: "100%",
+            left: 0,
+            right: 0,
+            marginTop: 4,
+            backgroundColor: "#FFFFFF",
+            borderWidth: 1, borderColor: colors.border, borderRadius: 8, overflow: "hidden",
+            shadowColor: "#000", shadowOpacity: 0.18, shadowRadius: 10, shadowOffset: { width: 0, height: 6 },
+            elevation: 8,
+            zIndex: 20,
+          }}
+        >
+          <ScrollView ref={listRef} style={{ maxHeight: 240 }} keyboardShouldPersistTaps="handled" bounces={false} overScrollMode="never" nestedScrollEnabled>
+            {matches.map((name, i) => (
+              <TouchableOpacity
+                key={name}
+                onPress={() => pick(name)}
+                style={{ paddingHorizontal: 12, paddingVertical: 12, borderTopWidth: i === 0 ? 0 : 1, borderTopColor: colors.border, backgroundColor: "#FFFFFF" }}
+              >
+                <Text style={{ color: colors.textDark, fontSize: 13, fontFamily: "Satoshi" }} numberOfLines={1}>{name}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
     </View>
   );
 }

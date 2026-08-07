@@ -19,6 +19,7 @@ import { colors, computeAge, formatWeight, isoToDisplayDate, displayDateToISO, c
 import { useRequireAuth } from "../hooks/useRequireAuth";
 import { ensurePhotoPermission } from "../lib/photoPermission";
 import { Skeleton } from "../components/Skeleton";
+import { SmoothImage } from "../components/SmoothImage";
 
 import { WEB_URL } from "../lib/config";
 
@@ -362,7 +363,7 @@ export default function MissingPoster() {
       <View style={{ backgroundColor: colors.cardBg, borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden", marginBottom: 16 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.border }}>
           {profile.photoUrl ? (
-            <Image source={{ uri: profile.photoUrl }} style={{ width: 40, height: 40, borderRadius: 20, borderWidth: 1, borderColor: colors.border }} />
+            <SmoothImage uri={profile.photoUrl} style={{ width: 40, height: 40, borderRadius: 20, borderWidth: 1, borderColor: colors.border }} />
           ) : (
             <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.secondary, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}>
               <Ionicons name="camera-outline" size={18} color={colors.textMuted} />
