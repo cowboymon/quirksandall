@@ -12,6 +12,8 @@ export function generateStaticParams() {
   return publishedPosts().map((p) => ({ slug: p.slug }));
 }
 export const dynamicParams = true;
+// Regenerate hourly so a scheduled post starts resolving on its publishAt date.
+export const revalidate = 3600;
 
 export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
   const post = getPost(params.slug);

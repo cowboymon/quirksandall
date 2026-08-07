@@ -15,6 +15,9 @@ export const metadata: Metadata = {
   alternates: { canonical: "/blog" },
 };
 
+// Regenerate hourly so scheduled posts (publishAt) appear on their date.
+export const revalidate = 3600;
+
 export default function BlogIndex() {
   const posts = publishedPosts();
 
