@@ -145,9 +145,14 @@ export function NumericDoneAccessory() {
   if (Platform.OS !== "ios") return null;
   return (
     <InputAccessoryView nativeID={NUMERIC_DONE_ACCESSORY_ID}>
-      <View style={{ flexDirection: "row", justifyContent: "flex-end", backgroundColor: "#F1F1F3", borderTopWidth: 1, borderTopColor: "#D8D8DC" }}>
-        <TouchableOpacity onPress={() => Keyboard.dismiss()} hitSlop={{ top: 8, bottom: 8, left: 16, right: 16 }} style={{ paddingHorizontal: 18, paddingVertical: 11 }}>
-          <Text style={{ color: colors.primary, fontSize: 16, fontFamily: "Satoshi-Bold" }}>Done</Text>
+      <View style={{ flexDirection: "row", justifyContent: "flex-end", alignItems: "center", backgroundColor: colors.background, borderTopWidth: 1, borderTopColor: colors.border, paddingHorizontal: 12, paddingVertical: 7 }}>
+        <TouchableOpacity
+          onPress={() => Keyboard.dismiss()}
+          activeOpacity={0.85}
+          hitSlop={{ top: 8, bottom: 8, left: 16, right: 16 }}
+          style={{ backgroundColor: colors.cardDark, borderRadius: 8, paddingHorizontal: 18, paddingVertical: 7 }}
+        >
+          <Text style={{ color: colors.cardDarkText, fontSize: 13, fontFamily: "Satoshi-Bold" }}>Done</Text>
         </TouchableOpacity>
       </View>
     </InputAccessoryView>
