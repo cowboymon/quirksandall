@@ -1,7 +1,7 @@
 // Shared primitive UI components for the mobile app.
 // Mirrors the prototype's primitives.tsx (fonts, buttons, dots, inputs).
 import { useMemo, useState, useRef } from "react";
-import { Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
+import { Keyboard, Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, useNavigation } from "expo-router";
 import { colors, radius, capitalizeFirst, capitalizeWords, formatPhone, displayDateToISO } from "@quirksandall/shared";
@@ -208,7 +208,14 @@ export function DateInput({
         {...props}
       />
       <TouchableOpacity
-        onPress={() => setShowPicker(true)}
+        onPress={() => {
+          // The text field can still be focused (mid-typed digits) when this
+          // is tapped — without dismissing first, the picker's own Modal
+          // opens on top of an already-active keyboard instead of replacing
+          // it, and nothing in that state can close the keyboard again.
+          Keyboard.dismiss();
+          setShowPicker(true);
+        }}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         style={{ position: "absolute", right: 12 }}
       >
