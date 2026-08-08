@@ -25,3 +25,16 @@ Parked upgrade: **send those emails automatically.**
 - Status-change history / who-changed-what (currently last-write-wins).
 - Bulk actions (e.g. mark a whole theme resolved).
 - Merge duplicate suggestions.
+
+## Infrastructure (parked)
+
+### Image/CDN optimization for pet photos + posters (P3, deferred)
+Flagged in the build-20 smoke test as the next infrastructure lever once user
+volume grows — not urgent pre-launch.
+- Serve pet photos and generated posters through a CDN with resized/compressed
+  variants instead of full-resolution originals from Supabase Storage.
+- Supabase's own Image Transformations (`/render/image` with width/quality
+  params) is the lowest-friction first step — no new vendor, works on the
+  existing buckets.
+- Payoff: faster recipient-page loads on mobile data, lower egress/storage
+  cost at scale. Revisit when there's real traffic to measure.

@@ -128,8 +128,13 @@ async function generate(params: Params): Promise<Response> {
   // Satori-rendered template. null here just means "use empty", not reject.
   const lastSeenArea = sanitizeFreeText(params.lastSeenArea, MAX_AREA_LEN) ?? "";
   const lastSeenDate = sanitizeFreeText(params.lastSeenDate, MAX_DATE_LEN) ?? "";
-  const lookForInput = params.lookFor == null ? null : sanitizeFreeText(params.lookFor, MAX_LOOKFOR_LEN);
-  if (params.lookFor != null && lookForInput === null) {
+  // An empty/blank lookFor means "no override — fall back to the pet's stored
+  // description", same as null. sanitizeFreeText returns null for BOTH empty
+  // and over-length input, so blank must be normalised to null before the
+  // sanitize call or an untouched field trips the too-long rejection.
+  const lookForRaw = typeof params.lookFor === "string" && params.lookFor.trim() ? params.lookFor : null;
+  const lookForInput = lookForRaw == null ? null : sanitizeFreeText(lookForRaw, MAX_LOOKFOR_LEN);
+  if (lookForRaw != null && lookForInput === null) {
     return Response.json({ error: "lookFor is too long" }, { status: 400 });
   }
 

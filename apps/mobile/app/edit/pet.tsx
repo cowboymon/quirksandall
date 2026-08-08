@@ -1,5 +1,5 @@
 // Edit pet basics: photo, name, breed/species, DOB, sex, weight, microchip
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { View, Text, Image, TouchableOpacity, Modal, Share, Platform } from "react-native";
 import { AppAlert } from "../../stores/appAlert";
 import * as FileSystem from "expo-file-system/legacy";
@@ -15,6 +15,7 @@ import { computeAge, colors, isoToDisplayDate, displayDateToISO, capitalizeFirst
 
 const SPECIES_OPTIONS = ["Dog", "Cat", "Bird", "Rabbit", "Other"];
 import { uploadPetPhoto } from "../../lib/uploadPhoto";
+import { ensurePhotoPermission } from "../../lib/photoPermission";
 
 // Turn the pet's stored records into a readable plain-text profile the owner can
 // keep after deleting. Every field is optional — empty ones are skipped.
@@ -125,8 +126,17 @@ export default function EditPet() {
   const [showDelete, setShowDelete] = useState(false);
   const [exporting, setExporting] = useState(false);
 
+  // Seed the form from the pet ONCE per pet — never re-sync on later object
+  // changes. useActivePet renders from a cached pet and then silently
+  // revalidates, swapping in a fresh object; re-copying every field on each
+  // swap clobbered in-progress edits. Worst case was the photo (#17): pick a
+  // photo → revalidation lands → photoUri resets to the stored URL → Save sees
+  // no local file:// and skips the upload entirely — "photo doesn't save until
+  // you leave and come back", with no error anywhere.
+  const seededForPetId = useRef<string | null>(null);
   useEffect(() => {
-    if (!pet) return;
+    if (!pet || seededForPetId.current === pet.id) return;
+    seededForPetId.current = pet.id;
     setName(pet.name ?? "");
     setBreed(pet.breed ?? "");
     // Show what was actually stored (capitalised to match the Select options),
@@ -143,11 +153,10 @@ export default function EditPet() {
   }, [pet]);
 
   const pickPhoto = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      AppAlert.alert("Permission needed", "Allow photo access to change the pet photo.");
-      return;
-    }
+    const ok = await ensurePhotoPermission(
+      "Pick a photo of your pet for their profile. We only ever see the photos you choose."
+    );
+    if (!ok) return;
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,

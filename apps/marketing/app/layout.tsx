@@ -4,21 +4,23 @@ import "./globals.css";
 import Script from "next/script";
 import { site } from "./site";
 
-// Self-hosted brand fonts — the same licensed files the app ships with.
-// Satoshi for body/UI, Tanker for display. No CDN dependency.
+// Self-hosted brand fonts — the same licensed files the app ships with,
+// subset to Latin + punctuation/arrows and served as WOFF2 (362KB of TTF →
+// 90KB) so the display-face headline (the LCP element on most pages) paints
+// fast on mobile. Satoshi for body/UI, Tanker for display. No CDN dependency.
 const satoshi = localFont({
   src: [
-    { path: "./fonts/Satoshi-Light.ttf", weight: "300", style: "normal" },
-    { path: "./fonts/Satoshi-Regular.ttf", weight: "400", style: "normal" },
-    { path: "./fonts/Satoshi-Medium.ttf", weight: "500", style: "normal" },
-    { path: "./fonts/Satoshi-Bold.ttf", weight: "700", style: "normal" },
+    { path: "./fonts/Satoshi-Light.woff2", weight: "300", style: "normal" },
+    { path: "./fonts/Satoshi-Regular.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/Satoshi-Medium.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/Satoshi-Bold.woff2", weight: "700", style: "normal" },
   ],
   variable: "--font-satoshi",
   display: "swap",
 });
 
 const tanker = localFont({
-  src: "./fonts/Tanker-Regular.ttf",
+  src: "./fonts/Tanker-Regular.woff2",
   weight: "400",
   variable: "--font-tanker",
   display: "swap",

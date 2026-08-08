@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import WaitlistForm from "./components/WaitlistForm";
-import { Underline, CircleMark, MarginArrow } from "./components/Annotations";
+import StoreBadge from "./components/StoreBadge";
+import { Underline, MarginArrow } from "./components/Annotations";
 import { site } from "./site";
 import { LIFETIME_AVAILABLE } from "@quirksandall/shared";
 import TrackedLink from "./components/TrackedLink";
@@ -104,17 +105,17 @@ const FAQS = [
 // names; an empty src renders a labelled placeholder frame until they exist.
 const SHOTS = [
   {
-    src: "/shots/onboarding.png",
+    src: "/shots/onboarding.webp",
     caption: "Set it up in minutes",
     alt: "Quirks & All onboarding screen for introducing your dog's profile",
   },
   {
-    src: "/shots/share.png",
+    src: "/shots/share.webp",
     caption: "What a stand-in opens",
     alt: "The shared pet care cheat-sheet a stand-in opens in their browser, no app needed",
   },
   {
-    src: "/shots/poster.png",
+    src: "/shots/poster.webp",
     caption: "If they ever go missing",
     alt: "A printable missing-pet poster generated from the pet's profile",
   },
@@ -322,11 +323,7 @@ export default function Home() {
         {/* 5 — Pricing (#F8ECEE) */}
         <section id="pricing" className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
           <h2 className="max-w-2xl font-tanker text-3xl leading-tight text-foreground sm:text-4xl">
-            Start free. Go Pro{" "}
-            <span className="relative inline-block">
-              <span className="relative z-10">{LIFETIME_AVAILABLE ? "your way." : "when you're ready."}</span>
-              <CircleMark className="absolute left-1/2 top-1/2 h-[1.6em] w-[118%] -translate-x-1/2 -translate-y-1/2 text-primary" />
-            </span>
+            Start free. Go Pro {LIFETIME_AVAILABLE ? "your way." : "when you're ready."}
           </h2>
 
           <PricingCards />
@@ -428,7 +425,14 @@ function PhoneShot({ src, caption, alt }: { src?: string; caption: string; alt?:
         <div className="relative aspect-[9/19] overflow-hidden rounded-[1.8rem] bg-card-bg">
           {src ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={src} alt={alt ?? caption} className="h-full w-full object-cover" />
+            <img
+              src={src}
+              alt={alt ?? caption}
+              width={560}
+              height={1218}
+              loading="lazy"
+              className="h-full w-full object-cover"
+            />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-secondary">
               <span className="eyebrow text-text-muted">Screenshot</span>
@@ -441,66 +445,3 @@ function PhoneShot({ src, caption, alt }: { src?: string; caption: string; alt?:
   );
 }
 
-/* App store badges. Pre-launch, these show a non-clickable "Coming soon"
-   state (site.comingSoon); flip the flag and set the URLs to go live.
-   `onDark` recolours the pill for the maroon sections so it stays legible. */
-function StoreBadge({
-  kind,
-  href,
-  onDark,
-}: {
-  kind: "apple" | "google";
-  href: string;
-  onDark?: boolean;
-}) {
-  const isApple = kind === "apple";
-  const soon = site.comingSoon;
-  const icon = (
-    <span aria-hidden className="shrink-0">
-      {isApple ? (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M17.05 12.53c-.02-2.02 1.65-2.99 1.72-3.04-.94-1.37-2.4-1.56-2.92-1.58-1.24-.13-2.42.73-3.05.73-.63 0-1.6-.71-2.63-.69-1.35.02-2.6.78-3.29 1.99-1.4 2.44-.36 6.04 1 8.02.67.97 1.47 2.06 2.51 2.02 1.01-.04 1.39-.65 2.61-.65 1.22 0 1.56.65 2.63.63 1.09-.02 1.78-.99 2.44-1.96.77-1.12 1.09-2.21 1.11-2.27-.02-.01-2.13-.82-2.15-3.23zM15.03 6.5c.56-.68.94-1.62.83-2.56-.81.03-1.79.54-2.37 1.21-.52.6-.97 1.56-.85 2.48.9.07 1.83-.46 2.39-1.13z" />
-        </svg>
-      ) : (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M3.6 2.4c-.24.25-.38.63-.38 1.13v16.94c0 .5.14.88.39 1.12l.06.06L13.1 12v-.22L3.66 2.34l-.06.06zM16.24 15.14L13.1 12v-.22l3.14-3.14.07.04 3.72 2.11c1.06.6 1.06 1.59 0 2.2l-3.72 2.11-.07.04zM15.9 15.5L12.68 12.3 3.6 21.4c.35.37.93.42 1.58.05l10.72-6.09M15.9 8.5L5.18 2.4C4.53 2.06 3.95 2.1 3.6 2.48l9.08 9.08L15.9 8.5z" />
-        </svg>
-      )}
-    </span>
-  );
-  const inner = (
-    <>
-      {icon}
-      <span className="flex flex-col leading-tight text-left">
-        <span className="text-[10px] uppercase tracking-wide text-card-dark-label">
-          {soon ? "Coming soon to" : isApple ? "Download on the" : "Get it on"}
-        </span>
-        <span className="text-sm font-semibold">{isApple ? "App Store" : "Google Play"}</span>
-      </span>
-    </>
-  );
-
-  if (soon) {
-    return (
-      <span
-        aria-label={`${isApple ? "App Store" : "Google Play"} — coming soon`}
-        className={`flex cursor-default items-center gap-2.5 rounded-button px-4 py-2.5 text-card-dark-text ${
-          onDark ? "border border-card-dark-label/60 bg-card-dark-deep" : "bg-button/70"
-        }`}
-      >
-        {inner}
-      </span>
-    );
-  }
-  return (
-    <TrackedLink
-      href={href}
-      aria-label={isApple ? "Download on the App Store" : "Get it on Google Play"}
-      event="App Download Clicked"
-      meta={{ platform: isApple ? "iOS" : "Android" }}
-      className="flex items-center gap-2.5 rounded-button bg-button px-4 py-2.5 text-card-dark-text transition-colors hover:bg-button-pressed"
-    >
-      {inner}
-    </TrackedLink>
-  );
-}

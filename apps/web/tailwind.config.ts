@@ -29,8 +29,8 @@ export default {
         button: `${radius.button}px`,
       },
       fontFamily: {
-        tanker: ["Tanker", "serif"],
-        satoshi: ["Satoshi", "system-ui", "sans-serif"],
+        tanker: ["var(--font-tanker)", "Georgia", "serif"],
+        satoshi: ["var(--font-satoshi)", "system-ui", "sans-serif"],
       },
     },
   },

@@ -60,9 +60,12 @@ you go. Newest work is at the top of each section.
 
 ## ✉️ Auth (dashboard, not SQL)
 
-- [ ] **OTP sign-in email** — Authentication → Email Templates → **Magic Link**.
-  Paste the branded template; set subject to `{{ .Token }} — that's the one`;
-  send yourself a test. *(Confirm the hosted logo renders.)*
+- [x] **OTP sign-in email** — Authentication → Email Templates → **Magic Link**.
+  Paste `supabase/email-templates/magic-link.html` (now version-controlled);
+  set subject to `{{ .Token }} — that's the one`; send yourself a test.
+  *(Confirm the hosted logo renders — the image lives in the project's public
+  `brand` storage bucket, so a new project needs `email-header-1x.webp`
+  re-uploaded there.)* *(Applied to the Sydney project 6 Aug 2026.)*
 
 ---
 

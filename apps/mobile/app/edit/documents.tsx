@@ -13,6 +13,7 @@ import ConfirmModal from "../../components/ConfirmModal";
 import { colors } from "@quirksandall/shared";
 import { useActivePetStore } from "../../stores/activePet";
 import { listDocuments, uploadDocument, removeDocument, documentSignedUrl, shareDocument, type NewDocument } from "../../lib/documents";
+import { ensureCameraPermission } from "../../lib/photoPermission";
 
 const KINDS = [
   { key: "vaccination", label: "Vaccination" },
@@ -73,8 +74,8 @@ export default function Documents() {
   };
 
   const takePhoto = async () => {
-    const perm = await ImagePicker.requestCameraPermissionsAsync();
-    if (!perm.granted) { AppAlert.alert("Camera access needed", "Allow camera access to photograph a document."); return; }
+    const ok = await ensureCameraPermission("Photograph a document — a vaccination card, a vet letter — straight into the vault.");
+    if (!ok) return;
     const res = await ImagePicker.launchCameraAsync({ quality: 0.8 });
     if (res.canceled || !res.assets?.[0]) return;
     const a = res.assets[0];

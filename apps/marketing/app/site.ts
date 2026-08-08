@@ -42,4 +42,8 @@ export const site = {
   // Single source of truth for prices lives in @quirksandall/shared —
   // PRICING.lifetime (one-time) and PRICING.annual (auto-renewing yearly).
   pricing: PRICING,
+  // Where every "Get notified" CTA points — the homepage waitlist section.
+  // Swap this to the App Store / Play link once the app is live, and every
+  // CTA across the blog, About page and homepage follows.
+  getNotifiedHref: "/#get",
 } as const;

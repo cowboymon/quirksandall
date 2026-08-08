@@ -3,10 +3,10 @@
 // corrections. Generation happens server-side (Satori + sharp) via the
 // Next.js API route; this screen collects the ephemeral fields and downloads
 // the finished PNGs.
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Image, TextInput, Share, ActivityIndicator } from "react-native";
 import { AppAlert } from "../stores/appAlert";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 // SDK 54 moved the classic download/read/write API to /legacy; the new
 // File/Directory API isn't needed for these one-shot poster downloads.
 import * as FileSystem from "expo-file-system/legacy";
@@ -17,6 +17,9 @@ import { Eyebrow, Input, DateInput } from "../components/ui";
 import { useActivePetStore } from "../stores/activePet";
 import { colors, computeAge, formatWeight, isoToDisplayDate, displayDateToISO, capitalizeFirst } from "@quirksandall/shared";
 import { useRequireAuth } from "../hooks/useRequireAuth";
+import { ensurePhotoPermission } from "../lib/photoPermission";
+import { Skeleton } from "../components/Skeleton";
+import { SmoothImage } from "../components/SmoothImage";
 
 import { WEB_URL } from "../lib/config";
 
@@ -59,9 +62,18 @@ export default function MissingPoster() {
   const [previews, setPreviews] = useState<Record<string, string>>({});
   const [regenerating, setRegenerating] = useState<string | null>(null);
 
-  useEffect(() => {
-    load();
-  }, [selectedPetId]);
+  // Refetch on every focus, not just mount: this screen stays mounted in the
+  // stack while the user edits the pet's photo/description elsewhere and
+  // comes back, so a plain mount-only effect kept showing/using the stale
+  // photo_url (and description) until the screen was torn down and rebuilt
+  // by leaving the section entirely (#17, build-21 smoke test) — which also
+  // explained poster generation failing on a photo that had, in fact, saved.
+  useFocusEffect(
+    useCallback(() => {
+      load();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedPetId])
+  );
 
   const load = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -114,12 +126,23 @@ export default function MissingPoster() {
         format: key,
         lastSeenArea,
         lastSeenDate,
-        lookFor: whatToLookFor,
+        // Blank means "no override" — send null, not "": the API's sanitizer
+        // rejects an empty string as invalid rather than treating it as unset.
+        lookFor: whatToLookFor.trim() || null,
         preview,
         ...(photoDataUri ? { photoDataUri } : {}),
       }),
     });
-    if (!res.ok) throw new Error("Generation failed");
+    if (!res.ok) {
+      // The API's JSON errors are written to be user-readable (e.g. "Millie
+      // needs a photo for the poster.") — surface them instead of a generic
+      // "check your connection" that hides the actual fix from the user.
+      const message = await res
+        .json()
+        .then((b) => (typeof b?.error === "string" ? b.error : null))
+        .catch(() => null);
+      throw new Error(message ?? "Generation failed");
+    }
     const blob = await res.blob();
     const base64 = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
@@ -133,11 +156,10 @@ export default function MissingPoster() {
   };
 
   const pickPhotoFor = async (key: string) => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      AppAlert.alert("Permission needed", "Allow photo access to change the photo.");
-      return;
-    }
+    const ok = await ensurePhotoPermission(
+      "Pick a clear, recent photo for the poster. We only ever see the photos you choose."
+    );
+    if (!ok) return;
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
@@ -150,8 +172,8 @@ export default function MissingPoster() {
       const fileUri = await generate(key, dataUri, true);
       setOverrides((o) => ({ ...o, [key]: dataUri }));
       setPreviews((p) => ({ ...p, [key]: fileUri }));
-    } catch {
-      AppAlert.alert("Couldn't generate", "Check your connection and try again.");
+    } catch (e: any) {
+      AppAlert.alert("Couldn't generate", e?.message && e.message !== "Generation failed" ? e.message : "Check your connection and try again.");
     } finally {
       setRegenerating(null);
     }
@@ -197,8 +219,8 @@ export default function MissingPoster() {
       // Generate the full-res (2×) export via POST — the on-screen preview is 1×.
       const uri = await generate(key, overrides[key], false);
       await Share.share({ url: uri, message: `${profile.name} is missing.` });
-    } catch {
-      AppAlert.alert("Couldn't save", "Check your connection and try again.");
+    } catch (e: any) {
+      AppAlert.alert("Couldn't save", e?.message && e.message !== "Generation failed" ? e.message : "Check your connection and try again.");
     } finally {
       setSaving(null);
     }
@@ -228,9 +250,10 @@ export default function MissingPoster() {
       format === "poster" ? [{ key: "poster", label: "Poster", aspect: 1240 / 1754 }] : SOCIAL_FORMATS;
 
     return (
-      <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={{ paddingTop: 56, paddingBottom: 40 }}>
-        <View style={{ paddingHorizontal: 24, flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-          <TouchableOpacity onPress={() => setView("form")}>
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        {/* Sticky header — matches EditShell's fixed bar; content scrolls under it. */}
+        <View style={{ paddingHorizontal: 24, paddingTop: 58, paddingBottom: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: colors.background, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+          <TouchableOpacity onPress={() => setView("form")} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
             <Text style={{ color: colors.textMuted, fontSize: 14 }}>‹ Back</Text>
           </TouchableOpacity>
           <View style={{ flexDirection: "row", backgroundColor: colors.secondary, borderRadius: 999, padding: 2 }}>
@@ -252,6 +275,7 @@ export default function MissingPoster() {
           <View style={{ width: 48 }} />
         </View>
 
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingTop: 16, paddingBottom: 40 }}>
         <Text style={{ color: colors.textMuted, fontSize: 12, textAlign: "center", marginBottom: 16 }}>
           Done. Walls, feeds, group chats — wherever.
         </Text>
@@ -272,7 +296,7 @@ export default function MissingPoster() {
                     resizeMode="contain"
                   />
                 ) : (
-                  <View style={{ width: "100%", aspectRatio: f.aspect, borderRadius: 8, backgroundColor: colors.secondary }} />
+                  <Skeleton style={{ width: "100%", aspectRatio: f.aspect }} />
                 )}
                 {regenerating === f.key && (
                   <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(248,236,238,0.6)", borderRadius: 8 }}>
@@ -313,16 +337,20 @@ export default function MissingPoster() {
           {format === "poster" ? "Print at A4 for best results." : "Each format downloads as a high-res PNG."}
         </Text>
       </ScrollView>
+      </View>
     );
   }
 
   // ── Form view ───────────────────────────────────────────────────────────────
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.background }} keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingTop: 56, paddingBottom: 40, paddingHorizontal: 24 }}>
-      <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 28 }}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+    {/* Sticky header — matches EditShell's fixed bar; content scrolls under it. */}
+    <View style={{ paddingHorizontal: 24, paddingTop: 58, paddingBottom: 12, backgroundColor: colors.background, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+      <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} style={{ alignSelf: "flex-start" }}>
         <Text style={{ color: colors.textMuted, fontSize: 14 }}>‹ Dashboard</Text>
       </TouchableOpacity>
-
+    </View>
+    <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingTop: 20, paddingBottom: 40, paddingHorizontal: 24 }}>
       <Eyebrow>Just in case</Eyebrow>
       <Text style={{ fontFamily: "Tanker", fontSize: 34, lineHeight: 40, color: colors.textDark, marginTop: 6 }}>
         If {profile.name} goes missing.
@@ -335,7 +363,7 @@ export default function MissingPoster() {
       <View style={{ backgroundColor: colors.cardBg, borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden", marginBottom: 16 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.border }}>
           {profile.photoUrl ? (
-            <Image source={{ uri: profile.photoUrl }} style={{ width: 40, height: 40, borderRadius: 20, borderWidth: 1, borderColor: colors.border }} />
+            <SmoothImage uri={profile.photoUrl} style={{ width: 40, height: 40, borderRadius: 20, borderWidth: 1, borderColor: colors.border }} />
           ) : (
             <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.secondary, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}>
               <Ionicons name="camera-outline" size={18} color={colors.textMuted} />
@@ -369,6 +397,7 @@ export default function MissingPoster() {
           placeholderTextColor={colors.textMuted}
           multiline
           numberOfLines={3}
+          maxLength={400}
           style={{
             marginTop: 6, backgroundColor: colors.cardBg, borderWidth: 1, borderColor: colors.border,
             borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15,
@@ -400,9 +429,12 @@ export default function MissingPoster() {
         <Text style={{ color: colors.buttonText, fontSize: 15, fontFamily: "Satoshi-Medium" }}>Generate</Text>
       </TouchableOpacity>
       {!hasPhoto && (
-        <Text style={{ color: colors.textMuted, fontSize: 12, textAlign: "center", marginTop: 8 }}>
-          Add a photo to {profile.name}'s profile first.
-        </Text>
+        <TouchableOpacity onPress={() => router.push("/edit/pet")} hitSlop={{ top: 8, bottom: 8 }} style={{ marginTop: 8 }}>
+          <Text style={{ color: colors.textMuted, fontSize: 12, textAlign: "center" }}>
+            Add a photo to {profile.name}'s profile first —{" "}
+            <Text style={{ color: colors.primary, fontFamily: "Satoshi-Medium", textDecorationLine: "underline" }}>add one now</Text>
+          </Text>
+        </TouchableOpacity>
       )}
 
       {/* First steps if the worst happens */}
@@ -425,5 +457,6 @@ export default function MissingPoster() {
         </View>
       </View>
     </ScrollView>
+    </View>
   );
 }
