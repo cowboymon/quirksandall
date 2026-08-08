@@ -11,7 +11,7 @@ import { useActivePet } from "../../hooks/useActivePet";
 import { useActivePetStore } from "../../stores/activePet";
 import EditShell from "../../components/EditShell";
 import { Input, Eyebrow, Card, Select, DateInput, WeightInput } from "../../components/ui";
-import { computeAge, colors, isoToDisplayDate, displayDateToISO, capitalizeFirst, formatWeight, formatPhone, formatVetName } from "@quirksandall/shared";
+import { computeAge, colors, isoToDisplayDate, displayDateToISO, capitalizeFirst, formatWeight, formatPhone, formatVetName, treatEntries } from "@quirksandall/shared";
 
 const SPECIES_OPTIONS = ["Dog", "Cat", "Bird", "Rabbit", "Other"];
 import { uploadPetPhoto } from "../../lib/uploadPhoto";
@@ -77,11 +77,14 @@ function buildProfileSummary(d: { pet: any; behavior: any; routine: any; medical
   const f = r.feeding ?? {};
   if (f.breakfast || f.lunch || f.dinner || f.treats || f.notes || r.walks || r.sleep || r.bathroom_habits) {
     H("Routine");
-    const meal = (label: string, s: any) => { if (s && (s.time || s.amount)) L(label, [s.time, s.amount].filter(Boolean).join(" — ")); };
+    const meal = (label: string, s: any) => {
+      if (s?.skip) { L(label, "Doesn't have this meal"); return; }
+      if (s && (s.time || s.amount)) L(label, [s.time, s.amount].filter(Boolean).join(" — "));
+    };
     meal("Breakfast", f.breakfast);
     meal("Lunch", f.lunch);
     meal("Dinner", f.dinner);
-    if (f.treats && (f.treats.type || f.treats.limit)) L("Treats", [f.treats.type, f.treats.limit].filter(Boolean).join(" — "));
+    for (const t of treatEntries(f.treats)) L("Treats", [t.type, t.limit].filter(Boolean).join(" — "));
     L("Feeding notes", f.notes);
     L("Walks", r.walks);
     L("Sleep", r.sleep);

@@ -42,7 +42,7 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
   // Resolve the share link
   const { data: link } = await supabase
     .from("share_links")
-    .select("id, pet_id, mode, revoked, expires_at, pin_hash, last_viewed_at, last_viewed_by, duration_preset, ends_at")
+    .select("id, pet_id, mode, revoked, expires_at, pin_hash, last_viewed_at, last_viewed_by, duration_preset, starts_at, ends_at")
     .eq("token", token)
     .single();
 
@@ -106,7 +106,7 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
   const age = computeAge(pet.dob, pet.dob_is_estimated);
   // Stay-duration orientation (§5.1) — only the owner-set phrase, no raw dates
   // beyond the friendly "until …" form. Owner previews don't show it.
-  const stayNote = preview ? null : stayPhrase((link as any).duration_preset, (link as any).ends_at);
+  const stayNote = preview ? null : stayPhrase((link as any).duration_preset, (link as any).ends_at, (link as any).starts_at);
 
   // PRODUCT DECISION (v1, do not reopen without a product call): the document
   // vault is owner-side only. Vaccination/flea-worm documents are deliberately

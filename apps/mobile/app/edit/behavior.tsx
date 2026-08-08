@@ -8,7 +8,7 @@ import EditShell from "../../components/EditShell";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Input, Eyebrow, Card, FieldTier } from "../../components/ui";
 import ConfirmModal from "../../components/ConfirmModal";
-import { colors, orderedCommands, isUnlocked } from "@quirksandall/shared";
+import { colors, orderedCommands, isUnlocked, SUGGESTED_COMMANDS } from "@quirksandall/shared";
 import type { Command, CommandStrength } from "@quirksandall/shared";
 
 const STRENGTHS: { key: CommandStrength; label: string }[] = [
@@ -32,6 +32,10 @@ export default function EditBehavior() {
   const [isPaid, setIsPaid] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  // #19 — with more than COLLAPSE_AFTER commands, entries render as condensed
+  // one-line rows unless explicitly expanded. Newly added commands start
+  // expanded so they can be filled in.
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   // Paid-gated fields carry the "Unlock to share" pill for free owners.
   const softLocked = !isPaid;
 
@@ -62,8 +66,26 @@ export default function EditBehavior() {
     })();
   }, [petId]);
 
-  const addCommand = () =>
-    setCommands((prev) => [...prev, { id: Date.now().toString(), word: "", meaning: "", reward: "", howToCue: "" }]);
+  const addCommand = () => {
+    const id = Date.now().toString();
+    setExpandedIds((prev) => new Set(prev).add(id));
+    setCommands((prev) => [...prev, { id, word: "", meaning: "", reward: "", howToCue: "" }]);
+  };
+
+  // #18 — quick-add a common command with word + meaning pre-filled. Reward is
+  // deliberately left blank (pet-specific); everything stays editable.
+  const quickAdd = (word: string, meaning: string) => {
+    const id = Date.now().toString();
+    setExpandedIds((prev) => new Set(prev).add(id));
+    setCommands((prev) => [...prev, { id, word, meaning, reward: "", howToCue: "" }]);
+  };
+
+  const toggleExpanded = (id: string) =>
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
 
   const updateCmd = (id: string, field: keyof Command, val: string) =>
     setCommands((prev) => prev.map((c) => (c.id === id ? { ...c, [field]: val } : c)));
@@ -149,6 +171,8 @@ export default function EditBehavior() {
             // where that section starts so it's obvious where a hidden command
             // "goes" (rather than looking like it vanished).
             const firstHidden = cmd.hidden && i === visible.length;
+            // #19 — condensed one-line row once the list is long, expanded on tap.
+            const collapsed = ordered.length > 4 && !expandedIds.has(cmd.id);
             return (
             <View key={cmd.id} style={{ gap: 10 }}>
               {firstHidden && (
@@ -159,6 +183,19 @@ export default function EditBehavior() {
                   </Text>
                 </View>
               )}
+              {collapsed ? (
+                <TouchableOpacity onPress={() => toggleExpanded(cmd.id)} activeOpacity={0.8}>
+                  <Card style={[{ paddingVertical: 12 }, cmd.hidden ? { opacity: 0.6 } : null]}>
+                    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                      <Text numberOfLines={1} style={{ flex: 1, fontSize: 14, color: colors.textDark, fontFamily: "Satoshi" }}>
+                        <Text style={{ fontFamily: "Satoshi-Bold" }}>{cmd.word || "Unnamed"}</Text>
+                        {cmd.meaning ? ` → ${cmd.meaning}` : ""}
+                      </Text>
+                      <Ionicons name="chevron-down" size={16} color={colors.textMuted} />
+                    </View>
+                  </Card>
+                </TouchableOpacity>
+              ) : (
               <Card style={cmd.hidden ? { opacity: 0.6 } : undefined}>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                   <Eyebrow>{cmd.hidden ? "Hidden from sitters" : `Command ${vi + 1}`}</Eyebrow>
@@ -226,11 +263,40 @@ export default function EditBehavior() {
                   })}
                 </View>
               </Card>
+              )}
             </View>
             );
           });
         })()}
       </View>
+
+      {/* #18 — quick-add chips for the obvious commands. A suggestion
+          disappears once a command with that word exists, so nothing is
+          offered twice. */}
+      {(() => {
+        const have = new Set(commands.map((c) => c.word.trim().toLowerCase()).filter(Boolean));
+        const remaining = SUGGESTED_COMMANDS.filter((sug) => !have.has(sug.word.toLowerCase()));
+        if (!remaining.length) return null;
+        return (
+          <View style={{ marginTop: 14 }}>
+            <Text style={{ color: colors.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium", marginBottom: 8 }}>
+              Quick add
+            </Text>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+              {remaining.map((sug) => (
+                <TouchableOpacity
+                  key={sug.word}
+                  onPress={() => quickAdd(sug.word, sug.meaning)}
+                  activeOpacity={0.85}
+                  style={{ paddingHorizontal: 12, height: 34, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: colors.secondary, borderWidth: 1, borderColor: colors.border }}
+                >
+                  <Text style={{ color: colors.textDark, fontSize: 12, fontFamily: "Satoshi-Medium" }}>+ {sug.word}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        );
+      })()}
 
       <TouchableOpacity
         onPress={addCommand}

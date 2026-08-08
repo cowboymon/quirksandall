@@ -16,6 +16,7 @@ export type OwnerLink = {
   created_at: string;
   pin_hash: string | null;
   duration_preset: string | null;
+  starts_at: string | null;
   ends_at: string | null;
   first_shared_at: string | null;
 };
@@ -31,7 +32,7 @@ export function randomToken(): string {
 export async function listLinks(petId: string): Promise<OwnerLink[]> {
   const { data } = await supabase
     .from("share_links")
-    .select("id, token, label, revoked, last_viewed_at, created_at, pin_hash, duration_preset, ends_at, first_shared_at")
+    .select("id, token, label, revoked, last_viewed_at, created_at, pin_hash, duration_preset, starts_at, ends_at, first_shared_at")
     .eq("pet_id", petId)
     .eq("revoked", false)
     .order("created_at", { ascending: true });
@@ -53,9 +54,9 @@ export async function listLinks(petId: string): Promise<OwnerLink[]> {
   });
   if (expired.length) {
     const ids = expired.map((l) => l.id);
-    supabase.from("share_links").update({ duration_preset: null, ends_at: null }).in("id", ids).then(() => {});
+    supabase.from("share_links").update({ duration_preset: null, starts_at: null, ends_at: null }).in("id", ids).then(() => {});
     for (const l of links) {
-      if (ids.includes(l.id)) { l.duration_preset = null; l.ends_at = null; }
+      if (ids.includes(l.id)) { l.duration_preset = null; l.starts_at = null; l.ends_at = null; }
     }
   }
   return links;
@@ -76,7 +77,7 @@ export async function createLink(petId: string, label: string): Promise<OwnerLin
     const { data, error } = await supabase
       .from("share_links")
       .insert({ pet_id: petId, token: randomToken(), label, pin_hash: existing?.pin_hash ?? null })
-      .select("id, token, label, revoked, last_viewed_at, created_at, pin_hash, duration_preset, ends_at, first_shared_at")
+      .select("id, token, label, revoked, last_viewed_at, created_at, pin_hash, duration_preset, starts_at, ends_at, first_shared_at")
       .single();
     if (!error && data) {
       // Value Moment — a shareable link now exists for this pet.
@@ -102,13 +103,15 @@ export async function renameLink(id: string, label: string): Promise<void> {
 
 // Set (or clear) a link's stay duration (§5.1). A preset and an exact end date
 // are mutually exclusive: choosing a preset clears ends_at and vice-versa.
-// Pass both null to clear.
+// starts_at (#20) is independent — it composes with either. Pass all null to
+// clear.
 export async function setLinkDuration(
   id: string,
   duration_preset: string | null,
-  ends_at: string | null
+  ends_at: string | null,
+  starts_at: string | null = null
 ): Promise<void> {
-  await supabase.from("share_links").update({ duration_preset, ends_at }).eq("id", id);
+  await supabase.from("share_links").update({ duration_preset, ends_at, starts_at }).eq("id", id);
 }
 
 export async function revokeLink(id: string): Promise<{ error: string | null }> {

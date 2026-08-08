@@ -10,7 +10,7 @@ import { AppAlert } from "../stores/appAlert";
 import { useActivePetStore } from "../stores/activePet";
 import { useRequireAuth } from "../hooks/useRequireAuth";
 import { FieldTier } from "../components/ui";
-import { colors, computeAge, formatWeight, formatPhone, formatVetName, possessive, orderedCommands, commandStrengthLabel, mealSlotLabel, shortAddress, isUnlocked } from "@quirksandall/shared";
+import { colors, computeAge, formatWeight, formatPhone, formatVetName, possessive, orderedCommands, commandStrengthLabel, mealSlotLabel, shortAddress, isUnlocked, treatEntries } from "@quirksandall/shared";
 
 type Data = {
   name: string; breed: string; age: string; photoUrl: string | null;
@@ -139,13 +139,13 @@ export default function Preview() {
   // sitter would unlock. Feeding, flight risk, allergies and commands are free.
   const locked = !isPaid;
   // A meal needs both time and amount to render (#93). Bare times aren't useful.
-  const mealComplete = (slot: any) => !!(slot?.time && slot?.amount);
+  const mealComplete = (slot: any) => !!(!slot?.skip && slot?.time && slot?.amount);
   // A meal renders if it has its own time+amount, OR if a medication is tied
   // to it — otherwise a med tied to an unfilled-in meal (e.g. "with lunch"
   // when lunch itself was never filled in) would have nowhere to point from.
   const allMealSlots = [["Breakfast", "breakfast", f.breakfast], ["Lunch", "lunch", f.lunch], ["Dinner", "dinner", f.dinner]] as const;
-  const meals = allMealSlots.filter(([, key, slot]) => mealComplete(slot) || d.meds.some((m) => m.withMeal === key));
-  const hasFeeding = !!(meals.length || f.treats?.type || f.notes);
+  const meals = allMealSlots.filter(([, key, slot]) => mealComplete(slot) || (slot as any)?.skip || d.meds.some((m) => m.withMeal === key));
+  const hasFeeding = !!(meals.length || treatEntries(f.treats).length || f.notes);
   // Meds tied to a shown meal ALSO render inline in the routine as a
   // convenience, but every medication always shows in the standalone
   // Medication section too — that's the safety-critical section a sitter is
@@ -306,7 +306,7 @@ export default function Preview() {
                       const tied = d.meds.filter((m) => m.withMeal === key);
                       return (
                         <View key={label} style={{ borderBottomWidth: i < meals.length - 1 ? 1 : 0, borderBottomColor: colors.border }}>
-                          <MealRow label={label} time={slot?.time} amount={slot?.amount} divider={false} medOnly={tied.length > 0 && !mealComplete(slot)} />
+                          <MealRow label={label} time={slot?.skip ? undefined : slot?.time} amount={slot?.skip ? undefined : slot?.amount} skipped={!!slot?.skip} divider={false} medOnly={tied.length > 0 && !mealComplete(slot)} />
                           {tied.map((m, mi) => (
                             <Text key={mi} style={{ color: colors.primary, fontSize: 12, fontFamily: "Satoshi-Medium", paddingLeft: 80, paddingRight: 16, paddingBottom: 8 }}>
                               + {[m.name, m.dose].filter(Boolean).join(" — ")}
@@ -320,12 +320,16 @@ export default function Preview() {
                         </View>
                       );
                     })}
-                    {(f.treats?.type || f.treats?.limit) ? (
+                    {treatEntries(f.treats).length ? (
                       <View style={{ flexDirection: "row", paddingHorizontal: 16, paddingVertical: 8, borderTopWidth: 1, borderTopColor: colors.border, alignItems: "flex-start" }}>
                         <Text style={{ width: 64, fontSize: 13, fontFamily: "Satoshi-Medium", color: colors.textMuted }}>Treats</Text>
-                        <View style={{ flex: 1 }}>
-                          {f.treats?.type ? <Text style={{ fontSize: 13, color: BODY }}>{f.treats.type}</Text> : null}
-                          {f.treats?.limit ? <Text style={{ fontSize: 11, color: colors.textMuted, fontFamily: "Satoshi-Light", marginTop: 2 }}>{f.treats.limit}</Text> : null}
+                        <View style={{ flex: 1, gap: 4 }}>
+                          {treatEntries(f.treats).map((t, ti) => (
+                            <View key={ti}>
+                              {t.type ? <Text style={{ fontSize: 13, color: BODY }}>{t.type}</Text> : null}
+                              {t.limit ? <Text style={{ fontSize: 11, color: colors.textMuted, fontFamily: "Satoshi-Light", marginTop: 2 }}>{t.limit}</Text> : null}
+                            </View>
+                          ))}
                         </View>
                       </View>
                     ) : null}
@@ -433,11 +437,13 @@ export default function Preview() {
   );
 }
 
-function MealRow({ label, time, amount, divider, medOnly }: { label: string; time?: string; amount?: string; divider: boolean; medOnly?: boolean }) {
+function MealRow({ label, time, amount, divider, medOnly, skipped }: { label: string; time?: string; amount?: string; divider: boolean; medOnly?: boolean; skipped?: boolean }) {
   return (
     <View style={{ flexDirection: "row", paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: divider ? 1 : 0, borderBottomColor: colors.border, alignItems: "baseline" }}>
       <Text style={{ width: 64, fontSize: 13, fontFamily: "Satoshi-Medium", color: colors.textMuted }}>{label}</Text>
-      {time || amount ? (
+      {skipped ? (
+        <Text style={{ flex: 1, fontSize: 13, color: colors.textMuted, fontStyle: "italic" }}>Doesn't have {label.toLowerCase()}</Text>
+      ) : time || amount ? (
         <Text style={{ flex: 1, fontSize: 13, color: BODY }}>
           {time ? <Text style={{ fontFamily: "Satoshi-Medium" }}>{time}</Text> : null}{time && amount ? " · " : ""}{amount}
         </Text>

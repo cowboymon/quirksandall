@@ -246,7 +246,7 @@ export default function Dashboard() {
   // nobody — and still only when a decision contact exists to tell them about.
   const NUDGE_INTERVAL_MS = 30 * 24 * 60 * 60 * 1000;
   const loadTripNudge = async (links: OwnerLink[]) => {
-    const onATrip = links.some((l) => l.duration_preset || l.ends_at);
+    const onATrip = links.some((l) => l.duration_preset || l.ends_at || l.starts_at);
     if (!onATrip) { setShowTripNudge(false); return; }
     const { data: { session } } = await supabase.auth.getSession();
     const user = session?.user ?? null;
@@ -317,7 +317,7 @@ export default function Dashboard() {
     const tempId = `temp-${Date.now()}`;
     const optimisticLink: OwnerLink = {
       id: tempId, token: "", label: name, revoked: false, last_viewed_at: null,
-      created_at: new Date().toISOString(), pin_hash: null, duration_preset: null, ends_at: null, first_shared_at: null,
+      created_at: new Date().toISOString(), pin_hash: null, duration_preset: null, starts_at: null, ends_at: null, first_shared_at: null,
     };
     setData((d) => (d ? { ...d, links: [...d.links, optimisticLink] } : d));
     try {
@@ -518,9 +518,9 @@ export default function Dashboard() {
                 {/* Stay duration (§5.1) — tap to set/change how long the pet's
                     staying. Shows on the recipient page. */}
                 <TouchableOpacity onPress={() => setDurationTarget(link)} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }} style={{ marginTop: 3 }}>
-                  {stayPhrase(link.duration_preset, link.ends_at) ? (
+                  {stayPhrase(link.duration_preset, link.ends_at, link.starts_at) ? (
                     <Text style={{ color: colors.cardDarkLabel, fontSize: 11, fontFamily: "Satoshi-Medium" }} numberOfLines={1}>
-                      Staying {stayPhrase(link.duration_preset, link.ends_at)}
+                      Staying {stayPhrase(link.duration_preset, link.ends_at, link.starts_at)}
                     </Text>
                   ) : (
                     <Text style={{ color: "rgba(248,236,238,0.4)", fontSize: 11, fontFamily: "Satoshi-Medium" }}>+ Add stay length</Text>
@@ -750,11 +750,12 @@ export default function Dashboard() {
         visible={!!durationTarget}
         petName={data?.pet.name ?? ""}
         initialPreset={durationTarget.duration_preset}
+        initialStartsAt={durationTarget.starts_at}
         initialEndsAt={durationTarget.ends_at}
-        onSave={async (preset, endsAt) => {
+        onSave={async (preset, endsAt, startsAt) => {
           const id = durationTarget.id;
           setDurationTarget(null);
-          await setLinkDuration(id, preset, endsAt);
+          await setLinkDuration(id, preset, endsAt, startsAt);
           loadDashboard();
         }}
         onClose={() => setDurationTarget(null)}

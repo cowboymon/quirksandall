@@ -216,7 +216,34 @@ export function canSeeMedical(purchaseStatus: "free" | "paid"): boolean {
  * The recipient page composes e.g. "Biscuit is with you {phrase}." */
 export type StayPreset = "hours" | "overnight" | "days" | "longer";
 
-export function stayPhrase(preset?: string | null, endsAt?: string | null): string | null {
+export function stayPhrase(preset?: string | null, endsAt?: string | null, startsAt?: string | null): string | null {
+  const fmt = (d: Date) => d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+
+  // Start date (#20): only meaningful while it's still ahead — "from Sat 12
+  // Aug" read on the 14th is noise, so once the start day arrives the phrase
+  // collapses to the plain end-date/preset form below. A null start means
+  // "already with you" (the common set-it-as-they-leave case), so nothing
+  // needs to store an explicit "today".
+  if (startsAt) {
+    const s = new Date(startsAt);
+    if (!isNaN(s.getTime())) {
+      const startOfDay = new Date(s);
+      startOfDay.setHours(0, 0, 0, 0);
+      if (startOfDay.getTime() > Date.now()) {
+        if (endsAt) {
+          const e = new Date(endsAt);
+          if (!isNaN(e.getTime())) {
+            const endOfDay = new Date(e);
+            endOfDay.setHours(23, 59, 59, 999);
+            if (endOfDay.getTime() >= Date.now()) return `from ${fmt(s)} until ${fmt(e)}`;
+            return null; // whole range already stale — same rule as below
+          }
+        }
+        const tail = stayPresetPhrase(preset);
+        return tail ? `${tail} from ${fmt(s)}` : `from ${fmt(s)}`;
+      }
+    }
+  }
   if (endsAt) {
     const d = new Date(endsAt);
     // A stay that has already ended tells a sitter something false — "until
@@ -238,6 +265,10 @@ export function stayPhrase(preset?: string | null, endsAt?: string | null): stri
       return null;
     }
   }
+  return stayPresetPhrase(preset);
+}
+
+function stayPresetPhrase(preset?: string | null): string | null {
   switch (preset) {
     case "hours": return "for a few hours";
     case "overnight": return "overnight";
@@ -246,6 +277,31 @@ export function stayPhrase(preset?: string | null, endsAt?: string | null): stri
     default: return null;
   }
 }
+
+/** Normalise `feeding.treats` (#24) — historically a single {type, limit}
+ * object, now optionally an array. Returns only entries with content. */
+export function treatEntries(treats: unknown): { type: string; limit: string }[] {
+  const list = Array.isArray(treats) ? treats : treats ? [treats] : [];
+  return list
+    .map((t: any) => ({ type: (t?.type ?? "").trim(), limit: (t?.limit ?? "").trim() }))
+    .filter((t) => t.type || t.limit);
+}
+
+/** Starter commands for quick-add chips (#18). Reward is deliberately absent —
+ * genuinely pet-specific, never pre-guessed. Recall's meaning intentionally
+ * flags reliability as a safety consideration, not just a definition (#22). */
+export const SUGGESTED_COMMANDS: { word: string; meaning: string }[] = [
+  { word: "Sit", meaning: "Bottom on the ground, stays until released" },
+  { word: "Stay", meaning: "Holds position until released" },
+  { word: "Down", meaning: "Lies down, stays until released" },
+  { word: "Come", meaning: "Comes back when called — if not 100% reliable, keep on lead around other dogs/roads" },
+  { word: "Wait", meaning: "Pauses briefly (doors, curbs) before continuing" },
+  { word: "Leave it", meaning: "Disengages from/ignores something on command" },
+  { word: "Drop it", meaning: "Releases whatever's in their mouth" },
+  { word: "Off", meaning: "Gets down/away from furniture, people, or counters" },
+  { word: "Heel", meaning: "Walks close beside without pulling" },
+  { word: "Settle", meaning: "Calms down and relaxes in place" },
+];
 
 /** Google's formatted_address carries a postcode and a country that cost a line
  * wrap on a phone without telling a sitter anything they'd act on. Street and
