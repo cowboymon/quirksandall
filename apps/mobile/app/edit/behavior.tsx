@@ -191,7 +191,24 @@ export default function EditBehavior() {
                         <Text style={{ fontFamily: "Satoshi-Bold" }}>{cmd.word || "Unnamed"}</Text>
                         {cmd.meaning ? ` → ${cmd.meaning}` : ""}
                       </Text>
-                      <Ionicons name="chevron-down" size={16} color={colors.textMuted} />
+                      {/* Reorder/hide stay reachable without expanding — a long
+                          list is exactly when reordering is wanted (#19). */}
+                      {isPaid && !cmd.hidden && (
+                        <>
+                          <TouchableOpacity onPress={() => move(cmd.id, -1)} disabled={!canUp} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                            <Ionicons name="chevron-up" size={18} color={canUp ? colors.textMuted : colors.border} />
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={() => move(cmd.id, 1)} disabled={!canDown} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                            <Ionicons name="chevron-down" size={18} color={canDown ? colors.textMuted : colors.border} />
+                          </TouchableOpacity>
+                        </>
+                      )}
+                      {isPaid && (
+                        <TouchableOpacity onPress={() => toggleHide(cmd.id)} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                          <Ionicons name={cmd.hidden ? "eye-off-outline" : "eye-outline"} size={17} color={colors.textMuted} />
+                        </TouchableOpacity>
+                      )}
+                      <Ionicons name="chevron-forward" size={14} color={colors.textMuted} />
                     </View>
                   </Card>
                 </TouchableOpacity>
