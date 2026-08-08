@@ -1,7 +1,7 @@
 // Shared primitive UI components for the mobile app.
 // Mirrors the prototype's primitives.tsx (fonts, buttons, dots, inputs).
 import { useMemo, useState, useRef } from "react";
-import { Keyboard, Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
+import { InputAccessoryView, Keyboard, Platform, Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, useNavigation } from "expo-router";
 import { colors, radius, capitalizeFirst, capitalizeWords, formatPhone, displayDateToISO } from "@quirksandall/shared";
@@ -133,6 +133,27 @@ export function LabeledInput({
   );
 }
 
+// iOS's number pad has NO return/done key, so a numeric field's keyboard can
+// only be closed by tapping something that dismisses it — and inside a
+// full-screen overlay (DurationModal) there may be nothing tappable that
+// does. This accessory bar pins an explicit Done button above the keyboard
+// so numeric entry always has a guaranteed way out. iOS-only by nature
+// (Android's back button already dismisses).
+const NUMERIC_DONE_ACCESSORY_ID = "numeric-done-accessory";
+
+export function NumericDoneAccessory() {
+  if (Platform.OS !== "ios") return null;
+  return (
+    <InputAccessoryView nativeID={NUMERIC_DONE_ACCESSORY_ID}>
+      <View style={{ flexDirection: "row", justifyContent: "flex-end", backgroundColor: "#F1F1F3", borderTopWidth: 1, borderTopColor: "#D8D8DC" }}>
+        <TouchableOpacity onPress={() => Keyboard.dismiss()} hitSlop={{ top: 8, bottom: 8, left: 16, right: 16 }} style={{ paddingHorizontal: 18, paddingVertical: 11 }}>
+          <Text style={{ color: colors.primary, fontSize: 16, fontFamily: "Satoshi-Bold" }}>Done</Text>
+        </TouchableOpacity>
+      </View>
+    </InputAccessoryView>
+  );
+}
+
 // Masked DD/MM/YYYY (AU) text field. Operates on the display string; callers
 // convert to/from ISO with displayDateToISO / isoToDisplayDate.
 //
@@ -204,6 +225,7 @@ export function DateInput({
         placeholder="DD/MM/YYYY"
         keyboardType="number-pad"
         maxLength={10}
+        inputAccessoryViewID={Platform.OS === "ios" ? NUMERIC_DONE_ACCESSORY_ID : undefined}
         style={[{ paddingRight: 40 }, dateError ? { borderColor: colors.danger } : null, style]}
         {...props}
       />
@@ -222,6 +244,8 @@ export function DateInput({
         <Ionicons name="calendar-outline" size={17} color={colors.textMuted} />
       </TouchableOpacity>
       </View>
+
+      <NumericDoneAccessory />
 
       <DatePickerSheet
         visible={showPicker}

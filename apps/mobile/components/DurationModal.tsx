@@ -10,7 +10,7 @@
 // sibling of the dashboard's ScrollView, so it pins to the viewport), the
 // date sheet is the only real modal on screen.
 import { useEffect, useState } from "react";
-import { BackHandler, Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, View, Text, TouchableOpacity } from "react-native";
+import { BackHandler, Dimensions, Keyboard, Platform, TouchableWithoutFeedback, View, Text, TouchableOpacity } from "react-native";
 import { colors, displayDateToISO, isoToDisplayDate } from "@quirksandall/shared";
 import { DateInput } from "./ui";
 
@@ -50,25 +50,42 @@ export default function DurationModal({ visible, petName, initialPreset, initial
     return () => sub.remove();
   }, [visible, onClose]);
 
+  // Keyboard height, tracked by hand. KeyboardAvoidingView measures itself
+  // relative to the window on layout, and inside an absolute-fill overlay it
+  // reliably mismeasured here (verified on device: the card never moved and
+  // the exact-date field's keyboard sat over Save/Cancel). Listening to the
+  // keyboard frame directly and padding the overlay is unambiguous.
+  // willChangeFrame on iOS also covers height changes (emoji/QuickType);
+  // Android's adjustResize handles it at the window level, hence 0 there.
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  useEffect(() => {
+    if (Platform.OS !== "ios") return;
+    const onFrame = (e: { endCoordinates: { screenY: number } }) =>
+      setKeyboardHeight(Math.max(0, Dimensions.get("window").height - e.endCoordinates.screenY));
+    const subs = [
+      Keyboard.addListener("keyboardWillChangeFrame", onFrame),
+      Keyboard.addListener("keyboardWillHide", () => setKeyboardHeight(0)),
+    ];
+    return () => subs.forEach((s) => s.remove());
+  }, []);
+
   if (!visible) return null;
 
   return (
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, elevation: 100 }}
-      >
+      <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, elevation: 100 }}>
       {/* Not an RN Modal (see file header), so nothing auto-shifts for the
           keyboard or lets the card be dismissed by tapping outside it — both
-          handled explicitly here. The dismiss-on-tap backdrop is a SEPARATE
-          layer behind the card, not a TouchableWithoutFeedback wrapping it —
-          nesting the exact-date TextInput inside a TouchableWithoutFeedback
-          fights with the native text field's own tap-to-focus handling on
-          iOS and was the actual cause of the frozen/stuck keyboard, not a
-          layout issue. */}
+          handled explicitly here: the backdrop is its own dismiss-on-tap
+          layer behind the card (never wrapping the TextInput), and the
+          overlay pads itself by the tracked keyboard height so the card and
+          its Save/Cancel row stay above the keyboard. The number-pad's
+          guaranteed close button lives on the keyboard itself — see
+          NumericDoneAccessory in ui.tsx (iOS number pads have no return
+          key, so without it this overlay had no reliable way out). */}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(31,26,23,0.45)" }} />
       </TouchableWithoutFeedback>
-      <View pointerEvents="box-none" style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 28 }}>
+      <View pointerEvents="box-none" style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 28, paddingBottom: keyboardHeight }}>
         <View style={{ width: "100%", maxWidth: 380, backgroundColor: "#FFFFFF", borderRadius: 16, padding: 22 }}>
           <Text style={{ fontFamily: "Tanker", fontSize: 22, lineHeight: 26, color: colors.textDark }}>
             How long is {petName || "your pet"} staying?
@@ -130,6 +147,6 @@ export default function DurationModal({ visible, petName, initialPreset, initial
           </View>
         </View>
       </View>
-      </KeyboardAvoidingView>
+      </View>
   );
 }
