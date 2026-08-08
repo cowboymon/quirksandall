@@ -10,7 +10,7 @@
 // sibling of the dashboard's ScrollView, so it pins to the viewport), the
 // date sheet is the only real modal on screen.
 import { useEffect, useState } from "react";
-import { BackHandler, Platform, View, Text, TouchableOpacity } from "react-native";
+import { BackHandler, Keyboard, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, View, Text, TouchableOpacity } from "react-native";
 import { colors, displayDateToISO, isoToDisplayDate } from "@quirksandall/shared";
 import { DateInput } from "./ui";
 
@@ -53,7 +53,17 @@ export default function DurationModal({ visible, petName, initialPreset, initial
   if (!visible) return null;
 
   return (
-      <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, elevation: 100, backgroundColor: "rgba(31,26,23,0.45)", alignItems: "center", justifyContent: "center", paddingHorizontal: 28 }}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, elevation: 100 }}
+      >
+      {/* Not an RN Modal (see file header), so nothing auto-shifts for the
+          keyboard or lets the card be dismissed by tapping outside it — both
+          handled explicitly here. Without Keyboard.dismiss() on backdrop tap,
+          the exact-date field's numeric keyboard could cover Save/Cancel with
+          no way to reach them or back out, appearing frozen. */}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={{ flex: 1, backgroundColor: "rgba(31,26,23,0.45)", alignItems: "center", justifyContent: "center", paddingHorizontal: 28 }}>
         <View style={{ width: "100%", maxWidth: 380, backgroundColor: "#FFFFFF", borderRadius: 16, padding: 22 }}>
           <Text style={{ fontFamily: "Tanker", fontSize: 22, lineHeight: 26, color: colors.textDark }}>
             How long is {petName || "your pet"} staying?
@@ -115,5 +125,7 @@ export default function DurationModal({ visible, petName, initialPreset, initial
           </View>
         </View>
       </View>
+      </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
   );
 }
