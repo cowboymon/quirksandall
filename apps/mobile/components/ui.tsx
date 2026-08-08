@@ -145,14 +145,11 @@ export function NumericDoneAccessory() {
   if (Platform.OS !== "ios") return null;
   return (
     <InputAccessoryView nativeID={NUMERIC_DONE_ACCESSORY_ID}>
-      <View style={{ flexDirection: "row", justifyContent: "flex-end", alignItems: "center", backgroundColor: colors.background, borderTopWidth: 1, borderTopColor: colors.border, paddingHorizontal: 12, paddingVertical: 7 }}>
-        <TouchableOpacity
-          onPress={() => Keyboard.dismiss()}
-          activeOpacity={0.85}
-          hitSlop={{ top: 8, bottom: 8, left: 16, right: 16 }}
-          style={{ backgroundColor: colors.cardDark, borderRadius: 8, paddingHorizontal: 18, paddingVertical: 7 }}
-        >
-          <Text style={{ color: colors.cardDarkText, fontSize: 13, fontFamily: "Satoshi-Bold" }}>Done</Text>
+      {/* Mirrors DatePickerSheet's iOS header row (white bar, plain crimson
+          bold Done) so the two date-entry surfaces read as one component. */}
+      <View style={{ flexDirection: "row", justifyContent: "flex-end", alignItems: "center", backgroundColor: "#FFFFFF", borderTopWidth: 1, borderTopColor: colors.border }}>
+        <TouchableOpacity onPress={() => Keyboard.dismiss()} hitSlop={{ top: 10, bottom: 10, left: 16, right: 16 }} style={{ paddingHorizontal: 18, paddingVertical: 12 }}>
+          <Text style={{ color: colors.primary, fontSize: 14, fontFamily: "Satoshi-Bold" }}>Done</Text>
         </TouchableOpacity>
       </View>
     </InputAccessoryView>
