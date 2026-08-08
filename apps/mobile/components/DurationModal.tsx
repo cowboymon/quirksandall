@@ -10,7 +10,7 @@
 // sibling of the dashboard's ScrollView, so it pins to the viewport), the
 // date sheet is the only real modal on screen.
 import { useEffect, useState } from "react";
-import { BackHandler, Dimensions, Keyboard, Platform, TouchableWithoutFeedback, View, Text, TouchableOpacity } from "react-native";
+import { BackHandler, Platform, View, Text, TouchableOpacity } from "react-native";
 import { colors, displayDateToISO, isoToDisplayDate } from "@quirksandall/shared";
 import { DateInput } from "./ui";
 
@@ -50,42 +50,10 @@ export default function DurationModal({ visible, petName, initialPreset, initial
     return () => sub.remove();
   }, [visible, onClose]);
 
-  // Keyboard height, tracked by hand. KeyboardAvoidingView measures itself
-  // relative to the window on layout, and inside an absolute-fill overlay it
-  // reliably mismeasured here (verified on device: the card never moved and
-  // the exact-date field's keyboard sat over Save/Cancel). Listening to the
-  // keyboard frame directly and padding the overlay is unambiguous.
-  // willChangeFrame on iOS also covers height changes (emoji/QuickType);
-  // Android's adjustResize handles it at the window level, hence 0 there.
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-  useEffect(() => {
-    if (Platform.OS !== "ios") return;
-    const onFrame = (e: { endCoordinates: { screenY: number } }) =>
-      setKeyboardHeight(Math.max(0, Dimensions.get("window").height - e.endCoordinates.screenY));
-    const subs = [
-      Keyboard.addListener("keyboardWillChangeFrame", onFrame),
-      Keyboard.addListener("keyboardWillHide", () => setKeyboardHeight(0)),
-    ];
-    return () => subs.forEach((s) => s.remove());
-  }, []);
-
   if (!visible) return null;
 
   return (
-      <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, elevation: 100 }}>
-      {/* Not an RN Modal (see file header), so nothing auto-shifts for the
-          keyboard or lets the card be dismissed by tapping outside it — both
-          handled explicitly here: the backdrop is its own dismiss-on-tap
-          layer behind the card (never wrapping the TextInput), and the
-          overlay pads itself by the tracked keyboard height so the card and
-          its Save/Cancel row stay above the keyboard. The number-pad's
-          guaranteed close button lives on the keyboard itself — see
-          NumericDoneAccessory in ui.tsx (iOS number pads have no return
-          key, so without it this overlay had no reliable way out). */}
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(31,26,23,0.45)" }} />
-      </TouchableWithoutFeedback>
-      <View pointerEvents="box-none" style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 28, paddingBottom: keyboardHeight }}>
+      <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, elevation: 100, backgroundColor: "rgba(31,26,23,0.45)", alignItems: "center", justifyContent: "center", paddingHorizontal: 28 }}>
         <View style={{ width: "100%", maxWidth: 380, backgroundColor: "#FFFFFF", borderRadius: 16, padding: 22 }}>
           <Text style={{ fontFamily: "Tanker", fontSize: 22, lineHeight: 26, color: colors.textDark }}>
             How long is {petName || "your pet"} staying?
@@ -119,7 +87,11 @@ export default function DurationModal({ visible, petName, initialPreset, initial
           <Text style={{ color: colors.textMuted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium", marginTop: 20, marginBottom: 6 }}>
             Or an exact end date
           </Text>
-          <DateInput value={date} onChangeText={onDate} range="future" placeholder="dd/mm/yyyy" />
+          {/* pickerOnly: inside this overlay a text keyboard is a trap — the
+              iOS number pad has no return key and the card swallows most
+              taps, so typed entry here shipped as a stuck-keyboard bug (#25).
+              Tap-through to the picker sheet is the whole interaction. */}
+          <DateInput value={date} onChangeText={onDate} range="future" placeholder="dd/mm/yyyy" pickerOnly />
 
           {/* Actions */}
           <View style={{ flexDirection: "row", gap: 10, marginTop: 22 }}>
@@ -146,7 +118,6 @@ export default function DurationModal({ visible, petName, initialPreset, initial
             </TouchableOpacity>
           </View>
         </View>
-      </View>
       </View>
   );
 }

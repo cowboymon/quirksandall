@@ -169,13 +169,18 @@ export function NumericDoneAccessory() {
 //   "past"     — calendar, no future. For recent dates ("last seen"), where
 //                the week laid out is what you want.
 //   "future"   — calendar, no past. Stay end dates.
+// `pickerOnly` drops typed entry entirely: the field is a button that opens
+// the picker sheet, so no keyboard is ever involved. Use it where the field
+// lives somewhere keyboard handling can't be made pleasant (DurationModal's
+// absolute-fill overlay) or where a date is picked rather than recalled.
 export function DateInput({
   value,
   onChangeText,
   style,
   range = "past",
+  pickerOnly,
   ...props
-}: TextInputProps & { onChangeText: (v: string) => void; range?: "birthday" | "past" | "future" }) {
+}: TextInputProps & { onChangeText: (v: string) => void; range?: "birthday" | "past" | "future"; pickerOnly?: boolean }) {
   const [showPicker, setShowPicker] = useState(false);
 
   const handle = (raw: string) => {
@@ -217,6 +222,37 @@ export function DateInput({
       `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`
     );
   };
+
+  if (pickerOnly) {
+    return (
+      <View>
+        <TouchableOpacity
+          onPress={() => setShowPicker(true)}
+          activeOpacity={0.7}
+          style={[
+            {
+              minHeight: 46, borderRadius: radius.input, borderWidth: 1, borderColor: colors.border,
+              backgroundColor: "#FFFFFF", paddingHorizontal: 16,
+              flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+            },
+            style as any,
+          ]}
+        >
+          <Text style={{ fontSize: 15, letterSpacing: 0, fontFamily: "Satoshi", color: value ? colors.textDark : colors.textMuted }}>
+            {(value as string) || (props.placeholder ?? "DD/MM/YYYY")}
+          </Text>
+          <Ionicons name="calendar-outline" size={17} color={colors.textMuted} />
+        </TouchableOpacity>
+        <DatePickerSheet
+          visible={showPicker}
+          value={seed}
+          range={range}
+          onCancel={() => setShowPicker(false)}
+          onConfirm={(d) => { commit(d); setShowPicker(false); }}
+        />
+      </View>
+    );
+  }
 
   return (
     <View>
