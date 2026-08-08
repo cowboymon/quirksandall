@@ -12,6 +12,19 @@ Guidance for AI agents working in this repo.
   `apps/web/app/p/[token]/page.tsx` (documents are not added to the recipient
   profile).
 
+- **Policy acceptance is recorded as two independent rows, not one.**
+  `policy_acceptances` (`privacy_policy` / `terms_of_service`, each its own
+  row) records signup-time consent so each policy type can version
+  independently later — separate from `owners.terms_accepted_at` +
+  `consent_log`, which gate the accept-terms screen itself. Written together
+  in `apps/mobile/app/accept-terms.tsx`'s `accept()`. `PRIVACY_POLICY_VERSION`
+  / `TERMS_VERSION` (`packages/shared/src/tokens.ts`) are hardcoded, deliberate
+  strings — never derive from a date or file hash, only bump on a human
+  decision that an update is material. A failed insert throws inside the same
+  try block as the `router.replace("/dashboard")` call, so a write failure
+  blocks navigation and surfaces an error rather than silently proceeding as
+  if consent were recorded.
+
 ## Manual QA — smoke test before shipping recipient-page changes
 
 - **Medication anchored to an empty meal slot must still render.** Configure a
@@ -226,6 +239,26 @@ None of this is enforced by CI/lint yet — it relies on being followed, not
 caught. If a new sensitive route or feature is added, treat this list as the
 checklist before considering it done, not just something to fix later in an
 audit.
+
+### Database-level: function grants and storage listing
+
+- **`SECURITY DEFINER` trigger functions must not be directly executable by
+  `anon`/`authenticated`.** Postgres grants `EXECUTE` on new functions to
+  `PUBLIC` by default; a trigger-only function (e.g. `handle_new_user()`,
+  called by the `auth.users` insert trigger) never needs a client to call it
+  directly, so leaving that default in place is excess privilege with no
+  legitimate caller. Revoke it explicitly (see
+  `20260806000001_lock_down_trigger_function_grants.sql`) — triggers still
+  fire because they execute as the function owner, independent of grants.
+- **`storage.pet-photos` is intentionally public-read** (recipient share
+  pages fetch photos by CDN URL with no auth) and Supabase's advisor flags
+  that as "allows listing" — RLS can't cleanly separate a `GET` of a known
+  key from a bucket `LIST`, both go through the same `select` policy. Known
+  and accepted: paths are `{owner_id}/{pet_id}.jpg` (UUIDs, not sequential),
+  so listing exposes only UUID filenames, not photo content or PII. If this
+  bucket ever needs to be genuinely private, that's a bigger change (signed
+  URLs, no direct CDN links) — not something to patch around with policy
+  tricks.
 
 ## Analytics — Mixpanel
 

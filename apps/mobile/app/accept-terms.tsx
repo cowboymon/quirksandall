@@ -10,7 +10,7 @@ import { AppAlert } from "../stores/appAlert";
 import { router } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { PRIVACY_URL, TERMS_URL } from "../lib/config";
-import { CONSENT_POLICY_VERSION } from "@quirksandall/shared";
+import { CONSENT_POLICY_VERSION, PRIVACY_POLICY_VERSION, TERMS_VERSION } from "@quirksandall/shared";
 import CheckboxRow from "../components/CheckboxRow";
 
 export default function AcceptTerms() {
@@ -55,6 +55,17 @@ export default function AcceptTerms() {
         granted: true,
         policy_version: CONSENT_POLICY_VERSION,
       });
+      // Build 23 (#96 follow-up): per-policy-type acceptance record, separate
+      // from the terms_accepted_at/consent_log write above so Privacy and
+      // Terms can version independently later. A failed insert here must not
+      // let signup proceed as if consent were recorded — throwing keeps this
+      // inside the try block, so the catch below blocks navigation and
+      // surfaces the error instead of silently continuing to /dashboard.
+      const { error: policyError } = await supabase.from("policy_acceptances").insert([
+        { user_id: user.id, policy_type: "privacy_policy", version: PRIVACY_POLICY_VERSION, method: "signup" },
+        { user_id: user.id, policy_type: "terms_of_service", version: TERMS_VERSION, method: "signup" },
+      ]);
+      if (policyError) throw policyError;
       router.replace("/dashboard");
     } catch (e: any) {
       AppAlert.alert("Couldn't save that", e.message);

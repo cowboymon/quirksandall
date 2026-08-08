@@ -1,7 +1,7 @@
 // Shared primitive UI components for the mobile app.
 // Mirrors the prototype's primitives.tsx (fonts, buttons, dots, inputs).
 import { useMemo, useState, useRef, forwardRef } from "react";
-import { Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
+import { InputAccessoryView, Keyboard, Platform, Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, useNavigation } from "expo-router";
 import { colors, radius, capitalizeFirst, capitalizeWords, formatPhone, displayDateToISO } from "@quirksandall/shared";
@@ -134,6 +134,29 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
   );
 });
 
+// iOS's number pad has NO return/done key, so a numeric field's keyboard can
+// only be closed by tapping something that dismisses it — and inside a
+// full-screen overlay (DurationModal) there may be nothing tappable that
+// does. This accessory bar pins an explicit Done button above the keyboard
+// so numeric entry always has a guaranteed way out. iOS-only by nature
+// (Android's back button already dismisses).
+const NUMERIC_DONE_ACCESSORY_ID = "numeric-done-accessory";
+
+export function NumericDoneAccessory() {
+  if (Platform.OS !== "ios") return null;
+  return (
+    <InputAccessoryView nativeID={NUMERIC_DONE_ACCESSORY_ID}>
+      {/* Mirrors DatePickerSheet's iOS header row (white bar, plain crimson
+          bold Done) so the two date-entry surfaces read as one component. */}
+      <View style={{ flexDirection: "row", justifyContent: "flex-end", alignItems: "center", backgroundColor: "#FFFFFF", borderTopWidth: 1, borderTopColor: colors.border }}>
+        <TouchableOpacity onPress={() => Keyboard.dismiss()} hitSlop={{ top: 10, bottom: 10, left: 16, right: 16 }} style={{ paddingHorizontal: 18, paddingVertical: 12 }}>
+          <Text style={{ color: colors.primary, fontSize: 14, fontFamily: "Satoshi-Bold" }}>Done</Text>
+        </TouchableOpacity>
+      </View>
+    </InputAccessoryView>
+  );
+}
+
 // Masked DD/MM/YYYY (AU) text field. Operates on the display string; callers
 // convert to/from ISO with displayDateToISO / isoToDisplayDate.
 //
@@ -147,13 +170,18 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
 //   "past"     — calendar, no future. For recent dates ("last seen"), where
 //                the week laid out is what you want.
 //   "future"   — calendar, no past. Stay end dates.
+// `pickerOnly` drops typed entry entirely: the field is a button that opens
+// the picker sheet, so no keyboard is ever involved. Use it where the field
+// lives somewhere keyboard handling can't be made pleasant (DurationModal's
+// absolute-fill overlay) or where a date is picked rather than recalled.
 export function DateInput({
   value,
   onChangeText,
   style,
   range = "past",
+  pickerOnly,
   ...props
-}: TextInputProps & { onChangeText: (v: string) => void; range?: "birthday" | "past" | "future" }) {
+}: TextInputProps & { onChangeText: (v: string) => void; range?: "birthday" | "past" | "future"; pickerOnly?: boolean }) {
   const [showPicker, setShowPicker] = useState(false);
 
   const handle = (raw: string) => {
@@ -196,6 +224,37 @@ export function DateInput({
     );
   };
 
+  if (pickerOnly) {
+    return (
+      <View>
+        <TouchableOpacity
+          onPress={() => setShowPicker(true)}
+          activeOpacity={0.7}
+          style={[
+            {
+              minHeight: 46, borderRadius: radius.input, borderWidth: 1, borderColor: colors.border,
+              backgroundColor: "#FFFFFF", paddingHorizontal: 16,
+              flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+            },
+            style as any,
+          ]}
+        >
+          <Text style={{ fontSize: 15, letterSpacing: 0, fontFamily: "Satoshi", color: value ? colors.textDark : colors.textMuted }}>
+            {(value as string) || (props.placeholder ?? "DD/MM/YYYY")}
+          </Text>
+          <Ionicons name="calendar-outline" size={17} color={colors.textMuted} />
+        </TouchableOpacity>
+        <DatePickerSheet
+          visible={showPicker}
+          value={seed}
+          range={range}
+          onCancel={() => setShowPicker(false)}
+          onConfirm={(d) => { commit(d); setShowPicker(false); }}
+        />
+      </View>
+    );
+  }
+
   return (
     <View>
       <View style={{ position: "relative", justifyContent: "center" }}>
@@ -205,17 +264,27 @@ export function DateInput({
         placeholder="DD/MM/YYYY"
         keyboardType="number-pad"
         maxLength={10}
+        inputAccessoryViewID={Platform.OS === "ios" ? NUMERIC_DONE_ACCESSORY_ID : undefined}
         style={[{ paddingRight: 40 }, dateError ? { borderColor: colors.danger } : null, style]}
         {...props}
       />
       <TouchableOpacity
-        onPress={() => setShowPicker(true)}
+        onPress={() => {
+          // The text field can still be focused (mid-typed digits) when this
+          // is tapped — without dismissing first, the picker's own Modal
+          // opens on top of an already-active keyboard instead of replacing
+          // it, and nothing in that state can close the keyboard again.
+          Keyboard.dismiss();
+          setShowPicker(true);
+        }}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         style={{ position: "absolute", right: 12 }}
       >
         <Ionicons name="calendar-outline" size={17} color={colors.textMuted} />
       </TouchableOpacity>
       </View>
+
+      <NumericDoneAccessory />
 
       <DatePickerSheet
         visible={showPicker}

@@ -87,7 +87,11 @@ export default function DurationModal({ visible, petName, initialPreset, initial
           <Text style={{ color: colors.textMuted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium", marginTop: 20, marginBottom: 6 }}>
             Or an exact end date
           </Text>
-          <DateInput value={date} onChangeText={onDate} range="future" placeholder="dd/mm/yyyy" />
+          {/* pickerOnly: inside this overlay a text keyboard is a trap — the
+              iOS number pad has no return key and the card swallows most
+              taps, so typed entry here shipped as a stuck-keyboard bug (#25).
+              Tap-through to the picker sheet is the whole interaction. */}
+          <DateInput value={date} onChangeText={onDate} range="future" placeholder="dd/mm/yyyy" pickerOnly />
 
           {/* Actions */}
           <View style={{ flexDirection: "row", gap: 10, marginTop: 22 }}>
