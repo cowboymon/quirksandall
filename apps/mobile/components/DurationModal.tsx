@@ -59,11 +59,16 @@ export default function DurationModal({ visible, petName, initialPreset, initial
       >
       {/* Not an RN Modal (see file header), so nothing auto-shifts for the
           keyboard or lets the card be dismissed by tapping outside it — both
-          handled explicitly here. Without Keyboard.dismiss() on backdrop tap,
-          the exact-date field's numeric keyboard could cover Save/Cancel with
-          no way to reach them or back out, appearing frozen. */}
+          handled explicitly here. The dismiss-on-tap backdrop is a SEPARATE
+          layer behind the card, not a TouchableWithoutFeedback wrapping it —
+          nesting the exact-date TextInput inside a TouchableWithoutFeedback
+          fights with the native text field's own tap-to-focus handling on
+          iOS and was the actual cause of the frozen/stuck keyboard, not a
+          layout issue. */}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={{ flex: 1, backgroundColor: "rgba(31,26,23,0.45)", alignItems: "center", justifyContent: "center", paddingHorizontal: 28 }}>
+        <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(31,26,23,0.45)" }} />
+      </TouchableWithoutFeedback>
+      <View pointerEvents="box-none" style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 28 }}>
         <View style={{ width: "100%", maxWidth: 380, backgroundColor: "#FFFFFF", borderRadius: 16, padding: 22 }}>
           <Text style={{ fontFamily: "Tanker", fontSize: 22, lineHeight: 26, color: colors.textDark }}>
             How long is {petName || "your pet"} staying?
@@ -125,7 +130,6 @@ export default function DurationModal({ visible, petName, initialPreset, initial
           </View>
         </View>
       </View>
-      </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
   );
 }
