@@ -73,11 +73,20 @@ export default function EditBehavior() {
   };
 
   // #18 — quick-add a common command with word + meaning pre-filled. Reward is
-  // deliberately left blank (pet-specific); everything stays editable.
+  // deliberately left blank (pet-specific); everything stays editable. Fills a
+  // blank card if one is open (e.g. "+ Add another word" was tapped first)
+  // rather than leaving it stranded above the chip's result.
   const quickAdd = (word: string, meaning: string) => {
-    const id = Date.now().toString();
-    setExpandedIds((prev) => new Set(prev).add(id));
-    setCommands((prev) => [...prev, { id, word, meaning, reward: "", howToCue: "" }]);
+    setCommands((prev) => {
+      const blank = prev.find((c) => !c.word.trim() && !c.meaning.trim());
+      if (blank) {
+        setExpandedIds((ids) => new Set(ids).add(blank.id));
+        return prev.map((c) => (c.id === blank.id ? { ...c, word, meaning } : c));
+      }
+      const id = Date.now().toString();
+      setExpandedIds((ids) => new Set(ids).add(id));
+      return [...prev, { id, word, meaning, reward: "", howToCue: "" }];
+    });
   };
 
   const toggleExpanded = (id: string) =>

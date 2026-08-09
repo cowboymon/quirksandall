@@ -6,7 +6,7 @@ import { Headline, Textarea, Input, Card, PrimaryButton, SkipButton, Eyebrow } f
 import OnboardingShell from "../../components/OnboardingShell";
 import { Underlined } from "../../components/Underlined";
 import { useOnboardingStore } from "../../stores/onboarding";
-import { colors } from "@quirksandall/shared";
+import { colors, SUGGESTED_COMMANDS } from "@quirksandall/shared";
 import type { Command, CommandStrength } from "@quirksandall/shared";
 
 const STRENGTHS: { key: CommandStrength; label: string }[] = [
@@ -38,6 +38,18 @@ export default function Step3() {
   };
   const removeCommand = (id: string) => {
     const updated = commands.filter((c) => c.id !== id);
+    setCommands(updated);
+    setPet({ commands: updated });
+  };
+  // #18 — quick-add a common command with word + meaning pre-filled. Reward is
+  // left blank (pet-specific) and everything stays editable. Fills the first
+  // blank card if there is one, so the empty card this screen starts with
+  // isn't left stranded above the chip's result.
+  const quickAdd = (word: string, meaning: string) => {
+    const blank = commands.find((c) => !c.word.trim() && !c.meaning.trim());
+    const updated = blank
+      ? commands.map((c) => (c.id === blank.id ? { ...c, word, meaning } : c))
+      : [...commands, { id: Date.now().toString(), word, meaning, reward: "", howToCue: "" }];
     setCommands(updated);
     setPet({ commands: updated });
   };
@@ -103,6 +115,33 @@ export default function Step3() {
           </Card>
         ))}
       </View>
+      {/* #18 — quick-add chips. A suggestion disappears once a command with
+          that word exists, so nothing is offered twice. */}
+      {(() => {
+        const have = new Set(commands.map((c) => c.word.trim().toLowerCase()).filter(Boolean));
+        const remaining = SUGGESTED_COMMANDS.filter((sug) => !have.has(sug.word.toLowerCase()));
+        if (!remaining.length) return null;
+        return (
+          <View style={{ marginTop: 14 }}>
+            <Text style={{ color: colors.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium", marginBottom: 8 }}>
+              Quick add
+            </Text>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+              {remaining.map((sug) => (
+                <TouchableOpacity
+                  key={sug.word}
+                  onPress={() => quickAdd(sug.word, sug.meaning)}
+                  activeOpacity={0.85}
+                  style={{ paddingHorizontal: 12, height: 34, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: colors.secondary, borderWidth: 1, borderColor: colors.border }}
+                >
+                  <Text style={{ color: colors.textDark, fontSize: 12, fontFamily: "Satoshi-Medium" }}>+ {sug.word}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        );
+      })()}
+
       <TouchableOpacity
         onPress={addCommand}
         style={{ height: 44, borderRadius: 10, borderWidth: 1.5, borderColor: colors.dashedBorder, borderStyle: "dashed", alignItems: "center", justifyContent: "center", marginTop: 10 }}
