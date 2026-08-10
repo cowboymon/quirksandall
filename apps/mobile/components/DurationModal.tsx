@@ -91,12 +91,12 @@ export default function DurationModal({ visible, petName, initialPreset, initial
 
           {/* Dates (tap-through, no keyboard) */}
           <Text style={{ color: colors.textMuted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium", marginTop: 20, marginBottom: 6 }}>
-            From (leave blank if the stay's already begun)
+            From
           </Text>
           <DateInput value={startDate} onChangeText={setStartDate} range="future" placeholder="dd/mm/yyyy" pickerOnly />
 
           <Text style={{ color: colors.textMuted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium", marginTop: 14, marginBottom: 6 }}>
-            Until (an exact date — replaces the preset above)
+            Until
           </Text>
           {/* pickerOnly: inside this overlay a text keyboard is a trap — the
               iOS number pad has no return key and the card swallows most

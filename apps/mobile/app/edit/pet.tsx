@@ -1,10 +1,10 @@
 // Edit pet basics: photo, name, breed/species, DOB, sex, weight, microchip
 import { useState, useEffect, useRef } from "react";
 import { View, Text, Image, TouchableOpacity, Modal, Share, Platform } from "react-native";
+import { Trash } from "../../components/icons";
 import { AppAlert } from "../../stores/appAlert";
 import * as FileSystem from "expo-file-system/legacy";
 import * as ImagePicker from "expo-image-picker";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
@@ -307,7 +307,7 @@ export default function EditPet() {
             borderWidth: 2, borderColor: "#F8ECEE",
           }}
         >
-          <Ionicons name="trash-outline" size={14} color="#F8ECEE" />
+          <Trash size={14} color="#F8ECEE" />
         </TouchableOpacity>
         <Text style={{ color: colors.accent, fontSize: 12, textAlign: "center", marginTop: 6 }}>
           {photoUri ? "Change photo" : "Add photo"}

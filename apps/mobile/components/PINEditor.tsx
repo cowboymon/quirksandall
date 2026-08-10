@@ -1,8 +1,8 @@
 // Inline PIN change component — used in the emergency contacts edit screen
 import { useEffect, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
+import { Key, LockSimple } from "./icons";
 import { AppAlert } from "../stores/appAlert";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "../lib/supabase";
 import { rememberPin } from "../lib/pinVault";
 import { colors } from "@quirksandall/shared";
@@ -122,7 +122,7 @@ export default function PINEditor({ petId, petName, autoStart }: Props) {
   return (
     <Card style={{ borderColor: "rgba(184,58,82,0.35)" }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-        <Ionicons name="key-outline" size={16} color={colors.primary} />
+        <Key size={16} color={colors.primary} />
         <Eyebrow bold>For if you're ever not there</Eyebrow>
       </View>
 
@@ -138,7 +138,7 @@ export default function PINEditor({ petId, petName, autoStart }: Props) {
             activeOpacity={0.85}
             style={{ height: 46, borderRadius: 12, backgroundColor: colors.button, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }}
           >
-            <Ionicons name="lock-closed" size={15} color={colors.buttonText} />
+            <LockSimple size={15} color={colors.buttonText} weight="fill" />
             <Text style={{ color: colors.buttonText, fontSize: 15, fontFamily: "Satoshi-Medium", letterSpacing: 0.3 }}>{hasPin ? "Change PIN" : "Set a PIN"}</Text>
           </TouchableOpacity>
         </>

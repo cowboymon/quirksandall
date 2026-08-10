@@ -4,8 +4,6 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { markSplashHidden } from "../lib/splash";
 import { useFonts } from "expo-font";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import Entypo from "@expo/vector-icons/Entypo";
 import { initRevenueCat } from "../lib/purchases";
 import { configureNotifications } from "../lib/notifications";
 import { initAnalytics } from "../lib/analytics";
@@ -28,11 +26,10 @@ export default function RootLayout() {
     "Satoshi-Light": require("../assets/fonts/Satoshi-Light.ttf"),
     "Satoshi-Medium": require("../assets/fonts/Satoshi-Medium.ttf"),
     "Satoshi-Bold": require("../assets/fonts/Satoshi-Bold.ttf"),
-    // Preload the icon-set fonts too — the app gates all rendering on
-    // fontsLoaded, and lazily-loaded vector-icon fonts (esp. a newly added set
-    // like Entypo) can otherwise render blank on first paint.
-    ...Ionicons.font,
-    ...Entypo.font,
+    // Icons no longer need preloading: Phosphor draws SVG paths via
+    // react-native-svg rather than glyphs from an icon font, so there's no
+    // font to race the first paint (which is what the old Ionicons/Entypo
+    // preload here was guarding against).
   });
 
   useEffect(() => {

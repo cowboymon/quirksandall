@@ -3,9 +3,9 @@
 // opens a short-lived signed URL.
 import { useCallback, useState } from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator, Linking } from "react-native";
+import { Camera, File, FileText, FolderOpen, Image, ShareNetwork, Trash, UploadSimple, type Icon } from "../../components/icons";
 import { AppAlert } from "../../stores/appAlert";
 import { useFocusEffect } from "expo-router";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import EditShell from "../../components/EditShell";
@@ -22,11 +22,12 @@ const KINDS = [
 ] as const;
 const kindLabel = (k: string) => KINDS.find((x) => x.key === k)?.label ?? "Document";
 
-function iconFor(mime?: string): keyof typeof Ionicons.glyphMap {
-  if (!mime) return "document-outline";
-  if (mime === "application/pdf") return "document-text-outline";
-  if (mime.startsWith("image/")) return "image-outline";
-  return "document-outline";
+// Returns the icon COMPONENT — Phosphor icons are components, not names.
+function iconFor(mime?: string): Icon {
+  if (!mime) return File;
+  if (mime === "application/pdf") return FileText;
+  if (mime.startsWith("image/")) return Image;
+  return File;
 }
 
 export default function Documents() {
@@ -123,8 +124,8 @@ export default function Documents() {
       loading={loading}
     >
       <View style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>
-        <AddButton icon="document-attach-outline" label="Choose file" onPress={pickFile} disabled={busy} />
-        <AddButton icon="camera-outline" label="Take photo" onPress={takePhoto} disabled={busy} />
+        <AddButton icon={UploadSimple} label="Choose file" onPress={pickFile} disabled={busy} />
+        <AddButton icon={Camera} label="Take photo" onPress={takePhoto} disabled={busy} />
       </View>
 
       {busy && (
@@ -135,7 +136,7 @@ export default function Documents() {
 
       {docs.length === 0 ? (
         <View style={{ alignItems: "center", paddingVertical: 40 }}>
-          <Ionicons name="folder-open-outline" size={40} color={colors.dashedBorder} />
+          <FolderOpen size={40} color={colors.dashedBorder} />
           <Text style={{ color: colors.textMuted, fontSize: 14, marginTop: 12, fontFamily: "Satoshi-Light", textAlign: "center", lineHeight: 20 }}>
             No documents yet. Add vaccination or flea & worm records so they're never lost the night before a stay.
           </Text>
@@ -153,7 +154,7 @@ export default function Documents() {
           {docs.filter((d) => d.kind === k.key).map((doc) => (
             <View key={doc.id} style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14 }}>
               <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: colors.secondary, alignItems: "center", justifyContent: "center" }}>
-                <Ionicons name={iconFor(doc.mime_type)} size={18} color={colors.primary} />
+                {(() => { const DocIcon = iconFor(doc.mime_type); return <DocIcon size={18} color={colors.primary} />; })()}
               </View>
               <TouchableOpacity style={{ flex: 1 }} onPress={() => view(doc.storage_path)} activeOpacity={0.7}>
                 <Text numberOfLines={1} style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>{doc.title || doc.file_name}</Text>
@@ -169,10 +170,10 @@ export default function Documents() {
               >
                 {sharingId === doc.id
                   ? <ActivityIndicator size="small" color={colors.primary} />
-                  : <Ionicons name="share-outline" size={18} color={colors.primary} />}
+                  : <ShareNetwork size={18} color={colors.primary} />}
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setRemoveTarget(doc)} hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}>
-                <Ionicons name="trash-outline" size={18} color={colors.danger} />
+                <Trash size={18} color={colors.danger} />
               </TouchableOpacity>
             </View>
           ))}
@@ -194,7 +195,7 @@ export default function Documents() {
   );
 }
 
-function AddButton({ icon, label, onPress, disabled }: { icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void; disabled?: boolean }) {
+function AddButton({ icon: AddIcon, label, onPress, disabled }: { icon: Icon; label: string; onPress: () => void; disabled?: boolean }) {
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -213,7 +214,7 @@ function AddButton({ icon, label, onPress, disabled }: { icon: keyof typeof Ioni
         opacity: disabled ? 0.5 : 1,
       }}
     >
-      <Ionicons name={icon} size={20} color={colors.primary} />
+      <AddIcon size={20} color={colors.primary} />
       <Text style={{ color: colors.textDark, fontSize: 13, fontFamily: "Satoshi-Medium" }}>{label}</Text>
     </TouchableOpacity>
   );

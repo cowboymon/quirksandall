@@ -1,9 +1,8 @@
 import { useCallback, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Share, TextInput, Platform, ActivityIndicator } from "react-native";
+import { AirplaneTilt, Bell, CaretDown, CaretRight, CaretUp, Check, Eye, Key, LinkSimple, LockSimple, PencilSimple, Plus, ShareNetwork, Trash, WarningCircle, X } from "../components/icons";
 import { AppAlert } from "../stores/appAlert";
 import { router, useFocusEffect } from "expo-router";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import Entypo from "@expo/vector-icons/Entypo";
 import * as Clipboard from "expo-clipboard";
 import { supabase } from "../lib/supabase";
 import { Eyebrow, Card } from "../components/ui";
@@ -386,7 +385,7 @@ export default function Dashboard() {
 
       {deletionScheduled && (
         <View style={{ marginHorizontal: 24, marginBottom: 4, backgroundColor: colors.cardDark, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, flexDirection: "row", alignItems: "center", gap: 12 }}>
-          <Ionicons name="alert-circle-outline" size={18} color={colors.cardDarkLabel} />
+          <WarningCircle size={18} color={colors.cardDarkLabel} />
           <View style={{ flex: 1 }}>
             <Text style={{ color: colors.cardDarkText, fontSize: 13, fontFamily: "Satoshi-Medium" }}>Account scheduled for deletion</Text>
             <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 11, marginTop: 2, fontFamily: "Satoshi-Light" }}>Deleted after 30 days unless you cancel.</Text>
@@ -425,7 +424,7 @@ export default function Dashboard() {
               something attached to whichever link happens to be last. */}
           <View style={{ paddingHorizontal: 20, paddingBottom: 14, flexDirection: "row", alignItems: "center", gap: 12 }}>
             <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-              <Ionicons name="key-outline" size={12} color="rgba(248,236,238,0.5)" />
+              <Key size={12} color="rgba(248,236,238,0.5)" />
               {!links.some((l) => l.pin_hash) ? (
                 // No PIN anywhere on this pet — the emergency block is open to
                 // anyone holding the link, which is worth saying out loud.
@@ -478,7 +477,7 @@ export default function Dashboard() {
                 a share link to exist (the links-only gate was a leftover from
                 when Preview opened the web link). */}
             <TouchableOpacity onPress={preview} style={{ flexDirection: "row", alignItems: "center", gap: 6, height: 32, paddingHorizontal: 12, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)" }}>
-              <Ionicons name="eye-outline" size={14} color="rgba(248,236,238,0.8)" />
+              <Eye size={14} color="rgba(248,236,238,0.8)" />
               <Text style={{ color: "rgba(248,236,238,0.8)", fontSize: 12, fontFamily: "Satoshi-Medium" }}>Preview</Text>
             </TouchableOpacity>
           </View>
@@ -494,7 +493,7 @@ export default function Dashboard() {
               style={{ paddingHorizontal: 20, paddingVertical: 14, flexDirection: "row", alignItems: "center", gap: 12, borderTopWidth: 1, borderTopColor: "rgba(248,236,238,0.1)" }}
             >
               <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}>
-                <Ionicons name="link-outline" size={15} color={colors.cardDarkLabel} />
+                <LinkSimple size={15} color={colors.cardDarkLabel} />
               </View>
               <View style={{ flex: 1 }}>
                 {renamingId === link.id ? (
@@ -540,7 +539,7 @@ export default function Dashboard() {
                 onPress={() => setActionsTarget(link)}
                 style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}
               >
-                <Entypo name="edit" size={13} color={colors.cardDarkText} />
+                <PencilSimple size={13} color={colors.cardDarkText} />
               </TouchableOpacity>
               {/* The first (main) link is always shareable — free tier gets
                   preview + link 1. Only additional links need the paid unlock. */}
@@ -551,16 +550,23 @@ export default function Dashboard() {
                     onPress={() => (linkLocked ? router.push("/upgrade") : shareLinkUrl(link))}
                     style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}
                   >
-                    <Ionicons
-                      name={linkLocked ? "lock-closed" : copiedId === link.id ? "checkmark" : "share-outline"}
-                      size={15}
-                      color={linkLocked ? "rgba(248,236,238,0.4)" : copiedId === link.id ? colors.success : colors.cardDarkText}
-                    />
+                    {(() => {
+                      // Phosphor icons are components, not name strings, so the
+                      // three-way choice picks a component rather than a name.
+                      const ShareIcon = linkLocked ? LockSimple : copiedId === link.id ? Check : ShareNetwork;
+                      return (
+                        <ShareIcon
+                          size={15}
+                          weight={linkLocked ? "fill" : "regular"}
+                          color={linkLocked ? "rgba(248,236,238,0.4)" : copiedId === link.id ? colors.success : colors.cardDarkText}
+                        />
+                      );
+                    })()}
                   </TouchableOpacity>
                 );
               })()}
               <TouchableOpacity onPress={() => setRevokeTarget(link)} style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}>
-                <Ionicons name="trash-outline" size={15} color="rgba(248,236,238,0.5)" />
+                <Trash size={15} color="rgba(248,236,238,0.5)" />
               </TouchableOpacity>
             </View>
           ))}
@@ -570,7 +576,7 @@ export default function Dashboard() {
               onPress={() => setShowAllLinks((v) => !v)}
               style={{ paddingHorizontal: 20, paddingVertical: 12, borderTopWidth: 1, borderTopColor: "rgba(248,236,238,0.1)", flexDirection: "row", alignItems: "center", gap: 6 }}
             >
-              <Ionicons name={showAllLinks ? "chevron-up" : "chevron-down"} size={13} color={colors.cardDarkLabel} />
+              {showAllLinks ? <CaretUp size={13} color={colors.cardDarkLabel} /> : <CaretDown size={13} color={colors.cardDarkLabel} />}
               <Text style={{ color: colors.cardDarkLabel, fontSize: 12, fontFamily: "Satoshi-Medium" }}>
                 {showAllLinks ? "Show fewer" : `Show all ${links.length} links`}
               </Text>
@@ -599,13 +605,13 @@ export default function Dashboard() {
                   )}
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => { setShowNewLink(false); setNewLinkName(""); }} style={{ width: 36, height: 36, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}>
-                  <Ionicons name="close" size={15} color="rgba(248,236,238,0.6)" />
+                  <X size={15} color="rgba(248,236,238,0.6)" />
                 </TouchableOpacity>
               </View>
             ) : (
               <TouchableOpacity onPress={() => setShowNewLink(true)} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                 <View style={{ width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: "rgba(240,160,176,0.5)", borderStyle: "dashed", alignItems: "center", justifyContent: "center" }}>
-                  <Ionicons name="add" size={13} color={colors.cardDarkLabel} />
+                  <Plus size={13} color={colors.cardDarkLabel} />
                 </View>
                 <Text style={{ color: colors.cardDarkLabel, fontSize: 13, fontFamily: "Satoshi-Medium" }}>New link</Text>
               </TouchableOpacity>
@@ -618,7 +624,7 @@ export default function Dashboard() {
           <TouchableOpacity onPress={() => router.push("/upgrade")} activeOpacity={0.85}>
             <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 12, backgroundColor: colors.secondary, borderWidth: 1, borderColor: "rgba(184,58,82,0.25)", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14 }}>
               <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: "rgba(184,58,82,0.15)", alignItems: "center", justifyContent: "center", marginTop: 1 }}>
-                <Ionicons name="lock-closed-outline" size={14} color={colors.primary} />
+                <LockSimple size={14} color={colors.primary} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium", lineHeight: 19 }}>
@@ -637,7 +643,7 @@ export default function Dashboard() {
         {firstCommand && needsReview && !nudgeDismissed && (
           <Card style={{ borderColor: "rgba(184,58,82,0.4)", flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
             <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: "rgba(184,58,82,0.15)", alignItems: "center", justifyContent: "center", marginTop: 1 }}>
-              <Ionicons name="notifications-outline" size={15} color={colors.primary} />
+              <Bell size={15} color={colors.primary} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium", lineHeight: 19 }}>
@@ -649,7 +655,7 @@ export default function Dashboard() {
               </TouchableOpacity>
             </View>
             <TouchableOpacity onPress={() => setNudgeDismissed(true)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Ionicons name="close" size={16} color={colors.textMuted} />
+              <X size={16} color={colors.textMuted} />
             </TouchableOpacity>
           </Card>
         )}
@@ -657,7 +663,7 @@ export default function Dashboard() {
         {showTripNudge && (
           <Card style={{ borderColor: "rgba(184,58,82,0.4)", flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
             <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: "rgba(184,58,82,0.15)", alignItems: "center", justifyContent: "center", marginTop: 1 }}>
-              <Ionicons name="airplane-outline" size={15} color={colors.primary} />
+              <AirplaneTilt size={15} color={colors.primary} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium", lineHeight: 19 }}>
@@ -671,7 +677,7 @@ export default function Dashboard() {
               </TouchableOpacity>
             </View>
             <TouchableOpacity onPress={dismissTripNudge} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Ionicons name="close" size={16} color={colors.textMuted} />
+              <X size={16} color={colors.textMuted} />
             </TouchableOpacity>
           </Card>
         )}
@@ -689,7 +695,7 @@ export default function Dashboard() {
                       <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>{s.label}</Text>
                       <Text style={{ color: statusColor[s.status], fontSize: 11, marginTop: 2 }}>{s.detail}</Text>
                     </View>
-                    <Entypo name="edit" size={16} color={colors.textMuted} />
+                    <PencilSimple size={16} color={colors.textMuted} />
                   </Card>
                 </TouchableOpacity>
                 {/* Quick access to the PIN, directly under the emergency row */}
@@ -698,7 +704,7 @@ export default function Dashboard() {
                     onPress={() => router.push("/edit/emergency?section=pin")}
                     style={{ flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start", marginTop: 6, marginLeft: 20, paddingVertical: 4 }}
                   >
-                    <Ionicons name="key-outline" size={13} color={colors.primary} />
+                    <Key size={13} color={colors.primary} />
                     <Text style={{ color: colors.primary, fontSize: 12, fontFamily: "Satoshi-Medium" }}>{links.some((l) => l.pin_hash) ? "Change PIN →" : "Set a PIN →"}</Text>
                   </TouchableOpacity>
                 )}
@@ -708,7 +714,7 @@ export default function Dashboard() {
                     onPress={() => router.push("/edit/pet")}
                     style={{ flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start", marginTop: 6, marginLeft: 20, paddingVertical: 4 }}
                   >
-                    <Ionicons name="trash-outline" size={13} color={colors.danger} />
+                    <Trash size={13} color={colors.danger} />
                     <Text style={{ color: colors.danger, fontSize: 12, fontFamily: "Satoshi-Medium" }}>Delete {possessive(pet.name)} profile?</Text>
                   </TouchableOpacity>
                 )}
@@ -723,7 +729,7 @@ export default function Dashboard() {
           style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: colors.primary, borderRadius: 12, paddingHorizontal: 20, paddingVertical: 16 }}
         >
           <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: "rgba(248,236,238,0.15)", alignItems: "center", justifyContent: "center" }}>
-            <Ionicons name="alert-circle-outline" size={18} color="rgba(248,236,238,0.85)" />
+            <WarningCircle size={18} color="rgba(248,236,238,0.85)" />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={{ color: colors.cardDarkText, fontSize: 14, fontFamily: "Satoshi-Medium" }}>If {pet.name} ever goes missing</Text>
@@ -731,7 +737,7 @@ export default function Dashboard() {
               One tap. Something to share, something to print. Free, always. Here if you ever need it.
             </Text>
           </View>
-          <Ionicons name="chevron-forward" size={16} color="rgba(248,236,238,0.5)" />
+          <CaretRight size={16} color="rgba(248,236,238,0.5)" />
         </TouchableOpacity>
       </View>
 

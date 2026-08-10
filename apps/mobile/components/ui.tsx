@@ -2,7 +2,7 @@
 // Mirrors the prototype's primitives.tsx (fonts, buttons, dots, inputs).
 import { useMemo, useState, useRef, forwardRef } from "react";
 import { Keyboard, Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { CalendarBlank, LockSimple, XCircle } from "./icons";
 import { router, useNavigation } from "expo-router";
 import { colors, radius, capitalizeFirst, capitalizeWords, formatPhone, displayDateToISO } from "@quirksandall/shared";
 import DatePickerSheet from "./DatePickerSheet";
@@ -81,7 +81,7 @@ export function FieldTier() {
         paddingVertical: 3,
       }}
     >
-      <Ionicons name="lock-closed" size={10} color="#B83A52" />
+      <LockSimple size={10} color="#B83A52" weight="fill" />
       <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", letterSpacing: 0.2, color: "#B83A52" }}>Unlock to share</Text>
     </View>
   );
@@ -234,12 +234,12 @@ export function DateInput({
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 accessibilityLabel="Clear date"
               >
-                <Ionicons name="close-circle" size={17} color={colors.textMuted} />
+                <XCircle size={17} color={colors.textMuted} weight="fill" />
               </TouchableOpacity>
             ) : null}
             {/* Kept even when a value is set, so the "this opens a picker"
                 affordance never disappears. */}
-            <Ionicons name="calendar-outline" size={17} color={colors.textMuted} />
+            <CalendarBlank size={17} color={colors.textMuted} />
           </View>
         </TouchableOpacity>
         <DatePickerSheet
@@ -284,7 +284,7 @@ export function DateInput({
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         style={{ position: "absolute", right: 12 }}
       >
-        <Ionicons name="calendar-outline" size={17} color={colors.textMuted} />
+        <CalendarBlank size={17} color={colors.textMuted} />
       </TouchableOpacity>
       </View>
 

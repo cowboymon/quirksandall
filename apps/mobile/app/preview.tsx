@@ -3,8 +3,8 @@
 // and show the full picture (emergency block un-gated for the preview).
 import { useCallback, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, Linking } from "react-native";
+import { CaretDown, CaretLeft, CaretUp, MapPin, Phone } from "../components/icons";
 import { router, useFocusEffect } from "expo-router";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "../lib/supabase";
 import { AppAlert } from "../stores/appAlert";
 import { useActivePetStore } from "../stores/activePet";
@@ -153,7 +153,7 @@ export default function Preview() {
 
   const CreamLink = ({ icon, text, onPress, bold }: { icon: "location" | "call"; text: string; onPress: () => void; bold?: boolean }) => (
     <TouchableOpacity onPress={onPress} style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 }}>
-      <Ionicons name={icon === "location" ? "location-outline" : "call-outline"} size={13} color="rgba(248,236,238,0.8)" />
+      {icon === "location" ? <MapPin size={13} color="rgba(248,236,238,0.8)" /> : <Phone size={13} color="rgba(248,236,238,0.8)" />}
       <Text style={{ color: "rgba(248,236,238,0.85)", fontSize: 14, fontFamily: bold ? "Satoshi-Bold" : "Satoshi", textDecorationLine: icon === "location" ? "underline" : "none" }}>{text}</Text>
     </TouchableOpacity>
   );
@@ -176,7 +176,7 @@ export default function Preview() {
         }}
       >
         <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} style={{ minWidth: 96, flexDirection: "row", alignItems: "center", gap: 4 }}>
-          <Ionicons name="chevron-back" size={16} color={colors.textMuted} />
+          <CaretLeft size={16} color={colors.textMuted} />
           <Text style={{ color: colors.textMuted, fontSize: 15 }}>Dashboard</Text>
         </TouchableOpacity>
         <Text numberOfLines={1} style={{ flex: 1, textAlign: "center", fontFamily: "Satoshi-Bold", fontSize: 16, color: colors.textDark }}>Preview</Text>
@@ -226,7 +226,7 @@ export default function Preview() {
               style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: emergencyOpen ? 16 : 0 }}
             >
               <Text style={{ color: colors.cardDarkText, fontSize: 11, fontFamily: "Satoshi-Bold", textTransform: "uppercase", letterSpacing: 0.5 }}>In an emergency</Text>
-              <Ionicons name={emergencyOpen ? "chevron-up" : "chevron-down"} size={16} color="rgba(248,236,238,0.6)" />
+              {emergencyOpen ? <CaretUp size={16} color="rgba(248,236,238,0.6)" /> : <CaretDown size={16} color="rgba(248,236,238,0.6)" />}
             </TouchableOpacity>
             <View style={{ gap: 16, display: emergencyOpen ? "flex" : "none" }}>
               {(d.vetContactName || d.vetClinic || d.vetPhone) && (

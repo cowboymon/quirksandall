@@ -1,11 +1,11 @@
 // Edit commands, quirks, escape risk
 import { useState, useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { CaretDown, CaretRight, CaretUp, Eye, EyeSlash } from "../../components/icons";
 import { AppAlert } from "../../stores/appAlert";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { Input, Eyebrow, Card, FieldTier } from "../../components/ui";
 import ConfirmModal from "../../components/ConfirmModal";
 import { colors, orderedCommands, isUnlocked, SUGGESTED_COMMANDS } from "@quirksandall/shared";
@@ -182,7 +182,7 @@ export default function EditBehavior() {
             <View key={cmd.id} style={{ gap: 10 }}>
               {firstHidden && (
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 8 }}>
-                  <Ionicons name="eye-off-outline" size={14} color={colors.textMuted} />
+                  <EyeSlash size={14} color={colors.textMuted} />
                   <Text style={{ color: colors.textMuted, fontSize: 12, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.5 }}>
                     Hidden — only you can see these
                   </Text>
@@ -201,19 +201,19 @@ export default function EditBehavior() {
                       {isPaid && !cmd.hidden && (
                         <>
                           <TouchableOpacity onPress={() => move(cmd.id, -1)} disabled={!canUp} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
-                            <Ionicons name="chevron-up" size={18} color={canUp ? colors.textMuted : colors.border} />
+                            <CaretUp size={18} color={canUp ? colors.textMuted : colors.border} />
                           </TouchableOpacity>
                           <TouchableOpacity onPress={() => move(cmd.id, 1)} disabled={!canDown} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
-                            <Ionicons name="chevron-down" size={18} color={canDown ? colors.textMuted : colors.border} />
+                            <CaretDown size={18} color={canDown ? colors.textMuted : colors.border} />
                           </TouchableOpacity>
                         </>
                       )}
                       {isPaid && (
                         <TouchableOpacity onPress={() => toggleHide(cmd.id)} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
-                          <Ionicons name={cmd.hidden ? "eye-off-outline" : "eye-outline"} size={17} color={colors.textMuted} />
+                          {cmd.hidden ? <EyeSlash size={17} color={colors.textMuted} /> : <Eye size={17} color={colors.textMuted} />}
                         </TouchableOpacity>
                       )}
-                      <Ionicons name="chevron-forward" size={14} color={colors.textMuted} />
+                      <CaretRight size={14} color={colors.textMuted} />
                     </View>
                   </Card>
                 </TouchableOpacity>
@@ -225,16 +225,16 @@ export default function EditBehavior() {
                     {isPaid && !cmd.hidden && (
                       <>
                         <TouchableOpacity onPress={() => move(cmd.id, -1)} disabled={!canUp} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
-                          <Ionicons name="chevron-up" size={18} color={canUp ? colors.textMuted : colors.border} />
+                          <CaretUp size={18} color={canUp ? colors.textMuted : colors.border} />
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => move(cmd.id, 1)} disabled={!canDown} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
-                          <Ionicons name="chevron-down" size={18} color={canDown ? colors.textMuted : colors.border} />
+                          <CaretDown size={18} color={canDown ? colors.textMuted : colors.border} />
                         </TouchableOpacity>
                       </>
                     )}
                     {isPaid && (
                       <TouchableOpacity onPress={() => toggleHide(cmd.id)} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
-                        <Ionicons name={cmd.hidden ? "eye-off-outline" : "eye-outline"} size={17} color={colors.textMuted} />
+                        {cmd.hidden ? <EyeSlash size={17} color={colors.textMuted} /> : <Eye size={17} color={colors.textMuted} />}
                       </TouchableOpacity>
                     )}
                     <TouchableOpacity onPress={() => setDeleteTarget(cmd.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
