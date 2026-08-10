@@ -10,6 +10,26 @@ const MAX_PER_WINDOW = rateLimitEnv("RATE_LIMIT_WAITLIST_MAX", 5);
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Best-effort mirror of a new signup into the Resend marketing Audience.
+// Supabase is the source of truth; this never blocks or fails a signup, and
+// no-ops until RESEND_API_KEY + RESEND_AUDIENCE_ID are configured — so it's
+// safe to ship before the marketing sending stack exists.
+async function syncToResendAudience(email: string): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY;
+  const audienceId = process.env.RESEND_AUDIENCE_ID;
+  if (!apiKey || !audienceId) return;
+  try {
+    const res = await fetch(`https://api.resend.com/audiences/${audienceId}/contacts`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ email, unsubscribed: false }),
+    });
+    if (!res.ok) console.error("waitlist: Resend audience sync failed", res.status);
+  } catch (e) {
+    console.error("waitlist: Resend audience sync error", e);
+  }
+}
+
 export async function POST(req: NextRequest) {
   let body: { email?: string; source?: string; company?: string };
   try {
@@ -56,6 +76,12 @@ export async function POST(req: NextRequest) {
   if (error && error.code !== "23505") {
     logSupabaseError("waitlist insert failed", error);
     return NextResponse.json({ ok: false, error: "server" }, { status: 500 });
+  }
+
+  // Mirror genuinely-new signups into the Resend marketing audience. Skip
+  // duplicates (23505 — already there): re-adding could reset an unsubscribe.
+  if (!error) {
+    await syncToResendAudience(email);
   }
 
   return NextResponse.json({ ok: true });
