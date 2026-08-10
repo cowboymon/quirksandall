@@ -60,7 +60,7 @@ async function load() {
 
   const [waitlistRes, votesRes, suggestionsRes] = await Promise.all([
     supabase
-      .from("waitlist")
+      .from("marketing")
       .select("email, source, created_at")
       .order("created_at", { ascending: false })
       .limit(1000),

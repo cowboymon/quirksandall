@@ -11,6 +11,13 @@ you go. Newest work is at the top of each section.
 
 ## ▶️ Run now
 
+- [ ] **`20260810000001_rename_waitlist_to_marketing.sql`** — renames the
+  pre-launch email table `waitlist` → `marketing` (it's now an ongoing
+  marketing list, not just a launch waitlist). **Coordinated with the code
+  change** from `.from("waitlist")` to `.from("marketing")` — run this right
+  as the deploy goes live so inserts don't briefly miss the table. No column,
+  constraint or RLS change.
+
 - [x] **`20260808000001_share_link_starts_at.sql`** — adds `starts_at` to
   `share_links` for the stay start date (#20). *(Run 10 Aug 2026.)*
 
@@ -73,6 +80,22 @@ you go. Newest work is at the top of each section.
 ---
 
 ## ⏳ Blocked / future (don't run yet)
+
+- [ ] **Marketing send + self-hosted unsubscribe** (ships when we turn the
+  marketing send stack on) — send from the Supabase `marketing` list via
+  Resend's batch send API rather than Broadcasts, so we own suppression and
+  the unsubscribe UX. Build a `/unsubscribe` route on our own domain:
+  - Link carries `?e=<email>&t=<hmac>`; token is an HMAC of the email signed
+    with a server secret, so it verifies without a DB lookup and can't be
+    forged to unsubscribe someone else.
+  - On unsubscribe, flip `unsubscribed` in the Supabase `marketing` table
+    **and** `PATCH` the Resend audience contact to `unsubscribed: true`.
+  - Set `List-Unsubscribe` (pointing at that route) **and**
+    `List-Unsubscribe-Post: List-Unsubscribe=One-Click` headers, and have the
+    route accept an unauthenticated **POST** that unsubscribes immediately —
+    required for Gmail/Yahoo one-click (RFC 8058) and Spam Act compliance.
+  - Supabase stays source of truth; the Resend audience is a mirror. Check
+    `unsubscribed` before each batch send.
 
 - [ ] **Check-ins** (ships with the sitter-check-in feature) — `check_ins`
   table + `purge_expired_check_ins()` + a daily `pg_cron` schedule for

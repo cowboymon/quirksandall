@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
 
   if (type === "waitlist") {
     const { data, error } = await supabase
-      .from("waitlist")
+      .from("marketing")
       .select("email, source, created_at")
       .order("created_at", { ascending: false });
     if (error) {
