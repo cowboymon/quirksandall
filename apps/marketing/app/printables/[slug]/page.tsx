@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PRINTABLES, getPrintable, type Block } from "../data";
 import PrintButton from "../PrintButton";
+import PrintableOpen from "../PrintableOpen";
 import BackLink from "../BackLink";
 import { site } from "../../site";
 
@@ -102,10 +103,11 @@ export default function PrintablePage({ params }: { params: { slug: string } }) 
 
   return (
     <div className="printable-screen">
+      <PrintableOpen slug={doc.slug} />
       {/* Screen-only toolbar */}
       <div className="print-hide mx-auto flex max-w-3xl items-center justify-between gap-4 px-6 pt-8">
         <BackLink className="text-sm font-medium text-primary hover:underline" />
-        <PrintButton />
+        <PrintButton slug={doc.slug} />
       </div>
 
       <div className="mx-auto my-8 w-full max-w-3xl px-4 sm:px-6">

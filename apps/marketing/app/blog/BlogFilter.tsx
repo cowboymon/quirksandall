@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { Category } from "../lib/blog";
+import { track } from "../lib/pirsch";
 
 type Item = {
   slug: string;
@@ -35,7 +36,10 @@ export default function BlogFilter({ posts }: { posts: Item[] }) {
       <button
         key={label}
         type="button"
-        onClick={() => setActive(label)}
+        onClick={() => {
+          setActive(label);
+          track("Blog Filter Used", { category: label });
+        }}
         aria-pressed={on}
         className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${
           on

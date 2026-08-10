@@ -74,7 +74,7 @@ export default function BlogIndex() {
 
             <div className="mt-6 flex justify-center">
               <WaitlistForm
-                source="footer"
+                source="blog"
                 tone="dark"
                 intro="We're putting the finishing touches on it. Leave your email and we'll tell you the moment it's live."
               />

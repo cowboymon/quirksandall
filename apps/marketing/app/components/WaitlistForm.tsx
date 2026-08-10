@@ -11,7 +11,7 @@ export default function WaitlistForm({
   tone = "light",
   intro,
 }: {
-  source: "hero" | "footer";
+  source: "hero" | "footer" | "blog";
   tone?: Tone;
   intro?: string;
 }) {
