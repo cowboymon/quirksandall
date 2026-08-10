@@ -32,10 +32,10 @@ export default function EditBehavior() {
   const [isPaid, setIsPaid] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-  // #19 — with more than COLLAPSE_AFTER commands, entries render as condensed
-  // one-line rows unless explicitly expanded. Newly added commands start
-  // expanded so they can be filled in.
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  // #19 — past COLLAPSE_AFTER commands the list becomes an accordion: every
+  // entry is a condensed one-line row except the single one being worked on.
+  // Adding or quick-adding a command makes it the open one.
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   // Paid-gated fields carry the "Unlock to share" pill for free owners.
   const softLocked = !isPaid;
 
@@ -68,7 +68,7 @@ export default function EditBehavior() {
 
   const addCommand = () => {
     const id = Date.now().toString();
-    setExpandedIds((prev) => new Set(prev).add(id));
+    setExpandedId(id);
     setCommands((prev) => [...prev, { id, word: "", meaning: "", reward: "", howToCue: "" }]);
   };
 
@@ -80,21 +80,17 @@ export default function EditBehavior() {
     setCommands((prev) => {
       const blank = prev.find((c) => !c.word.trim() && !c.meaning.trim());
       if (blank) {
-        setExpandedIds((ids) => new Set(ids).add(blank.id));
+        setExpandedId(blank.id);
         return prev.map((c) => (c.id === blank.id ? { ...c, word, meaning } : c));
       }
       const id = Date.now().toString();
-      setExpandedIds((ids) => new Set(ids).add(id));
+      setExpandedId(id);
       return [...prev, { id, word, meaning, reward: "", howToCue: "" }];
     });
   };
 
-  const toggleExpanded = (id: string) =>
-    setExpandedIds((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
+  // Accordion: opening one closes the rest; tapping the open one closes it.
+  const toggleExpanded = (id: string) => setExpandedId((cur) => (cur === id ? null : id));
 
   const updateCmd = (id: string, field: keyof Command, val: string) =>
     setCommands((prev) => prev.map((c) => (c.id === id ? { ...c, [field]: val } : c)));
@@ -181,7 +177,7 @@ export default function EditBehavior() {
             // "goes" (rather than looking like it vanished).
             const firstHidden = cmd.hidden && i === visible.length;
             // #19 — condensed one-line row once the list is long, expanded on tap.
-            const collapsed = ordered.length > 4 && !expandedIds.has(cmd.id);
+            const collapsed = ordered.length > 3 && expandedId !== cmd.id;
             return (
             <View key={cmd.id} style={{ gap: 10 }}>
               {firstHidden && (

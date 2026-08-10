@@ -45,8 +45,12 @@ type PetDraft = {
   feedingLunchAmount?: string;
   feedingDinnerTime?: string;
   feedingDinnerAmount?: string;
-  feedingTreatsType?: string;
-  feedingTreatsLimit?: string;
+  // Per-meal "doesn't have this meal" markers (#23).
+  feedingBreakfastSkip?: boolean;
+  feedingLunchSkip?: boolean;
+  feedingDinnerSkip?: boolean;
+  // Multiple treats (#24) — replaces the old single type/limit pair.
+  feedingTreats?: { type: string; limit: string }[];
   feedingNotes?: string;
   walks?: string;
   sleep?: string;

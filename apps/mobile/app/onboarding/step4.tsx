@@ -13,7 +13,7 @@ import { supabase } from "../../lib/supabase";
 import { uploadPetPhoto } from "../../lib/uploadPhoto";
 import { randomToken } from "../../lib/links";
 import { rememberPin } from "../../lib/pinVault";
-import { colors, displayDateToISO, capitalizeFirst, isUnlocked } from "@quirksandall/shared";
+import { colors, displayDateToISO, capitalizeFirst, isUnlocked, treatEntries } from "@quirksandall/shared";
 import { usePrices } from "../../hooks/usePrices";
 import { useState, useEffect } from "react";
 
@@ -30,15 +30,38 @@ const mealInput = {
   color: colors.textDark,
 } as const;
 
-function MealBlock({ label, time, amount, onTime, onAmount, divider, defaultPeriod }: {
+// Mirrors RoutineMeal in app/edit/routine.tsx — keep the two in step.
+function MealBlock({ label, time, amount, onTime, onAmount, divider, defaultPeriod, skipped, onToggleSkip, quickFill, onQuickFill }: {
   label: string; time: string; amount: string;
   onTime: (v: string) => void; onAmount: (v: string) => void; divider: boolean; defaultPeriod?: "AM" | "PM";
+  skipped: boolean; onToggleSkip: () => void;
+  quickFill?: string; onQuickFill?: () => void;
 }) {
   return (
     <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8, borderBottomWidth: divider ? 1 : 0, borderBottomColor: colors.border }}>
-      <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.textDark }}>{label}</Text>
-      <TimeInput style={mealInput} placeholder="7:30" value={time} onChangeText={onTime} defaultPeriod={defaultPeriod} />
-      <TextInput style={mealInput} placeholder="Amount & brand" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" value={amount} onChangeText={(v) => onAmount(capitalizeFirst(v))} />
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+        <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.textDark }}>{label}</Text>
+        <TouchableOpacity onPress={onToggleSkip} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }} activeOpacity={0.8}>
+          <Text style={{ fontSize: 11, fontFamily: "Satoshi-Medium", color: skipped ? colors.primary : colors.textMuted }}>
+            {skipped ? `No ${label.toLowerCase()} ✓` : `No ${label.toLowerCase()}?`}
+          </Text>
+        </TouchableOpacity>
+      </View>
+      {skipped ? (
+        <Text style={{ fontSize: 12, color: colors.textMuted, fontFamily: "Satoshi-Light" }}>
+          Marked as not having this meal — shown to sitters as skipped on purpose.
+        </Text>
+      ) : (
+        <>
+          <TimeInput style={mealInput} placeholder="7:30" value={time} onChangeText={onTime} defaultPeriod={defaultPeriod} />
+          <TextInput style={mealInput} placeholder="Amount & brand" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" value={amount} onChangeText={(v) => onAmount(capitalizeFirst(v))} />
+          {quickFill && onQuickFill && !amount ? (
+            <TouchableOpacity onPress={onQuickFill} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}>
+              <Text style={{ fontSize: 12, color: colors.primary, fontFamily: "Satoshi-Medium" }}>{quickFill}</Text>
+            </TouchableOpacity>
+          ) : null}
+        </>
+      )}
     </View>
   );
 }
@@ -119,10 +142,10 @@ export default function Step4() {
         supabase.from("pet_routine").insert({
           pet_id: newPet.id,
           feeding: {
-            breakfast: { time: pet.feedingBreakfastTime, amount: pet.feedingBreakfastAmount },
-            lunch: { time: pet.feedingLunchTime, amount: pet.feedingLunchAmount },
-            dinner: { time: pet.feedingDinnerTime, amount: pet.feedingDinnerAmount },
-            treats: { type: pet.feedingTreatsType, limit: pet.feedingTreatsLimit },
+            breakfast: { time: pet.feedingBreakfastTime, amount: pet.feedingBreakfastAmount, skip: pet.feedingBreakfastSkip || undefined },
+            lunch: { time: pet.feedingLunchTime, amount: pet.feedingLunchAmount, skip: pet.feedingLunchSkip || undefined },
+            dinner: { time: pet.feedingDinnerTime, amount: pet.feedingDinnerAmount, skip: pet.feedingDinnerSkip || undefined },
+            treats: treatEntries(pet.feedingTreats),
             notes: pet.feedingNotes,
           },
           walks: pet.walks, sleep: pet.sleep, bathroom_habits: pet.bathroomHabits,
@@ -200,13 +223,38 @@ export default function Step4() {
             <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: colors.border }}>
               <Eyebrow ochre>Feeding</Eyebrow>
             </View>
-            <MealBlock label="Breakfast" time={pet.feedingBreakfastTime ?? ""} amount={pet.feedingBreakfastAmount ?? ""} onTime={(v) => setPet({ feedingBreakfastTime: v })} onAmount={(v) => setPet({ feedingBreakfastAmount: v })} divider />
-            <MealBlock label="Lunch" time={pet.feedingLunchTime ?? ""} amount={pet.feedingLunchAmount ?? ""} onTime={(v) => setPet({ feedingLunchTime: v })} onAmount={(v) => setPet({ feedingLunchAmount: v })} divider />
-            <MealBlock label="Dinner" time={pet.feedingDinnerTime ?? ""} amount={pet.feedingDinnerAmount ?? ""} onTime={(v) => setPet({ feedingDinnerTime: v })} onAmount={(v) => setPet({ feedingDinnerAmount: v })} divider defaultPeriod="PM" />
+            <MealBlock label="Breakfast" time={pet.feedingBreakfastTime ?? ""} amount={pet.feedingBreakfastAmount ?? ""} onTime={(v) => setPet({ feedingBreakfastTime: v })} onAmount={(v) => setPet({ feedingBreakfastAmount: v })} divider
+              skipped={!!pet.feedingBreakfastSkip} onToggleSkip={() => setPet({ feedingBreakfastSkip: !pet.feedingBreakfastSkip })} />
+            <MealBlock label="Lunch" time={pet.feedingLunchTime ?? ""} amount={pet.feedingLunchAmount ?? ""} onTime={(v) => setPet({ feedingLunchTime: v })} onAmount={(v) => setPet({ feedingLunchAmount: v })} divider
+              skipped={!!pet.feedingLunchSkip} onToggleSkip={() => setPet({ feedingLunchSkip: !pet.feedingLunchSkip })}
+              quickFill={pet.feedingBreakfastAmount && !pet.feedingBreakfastSkip ? "Same as breakfast" : undefined} onQuickFill={() => setPet({ feedingLunchAmount: pet.feedingBreakfastAmount })} />
+            <MealBlock label="Dinner" time={pet.feedingDinnerTime ?? ""} amount={pet.feedingDinnerAmount ?? ""} onTime={(v) => setPet({ feedingDinnerTime: v })} onAmount={(v) => setPet({ feedingDinnerAmount: v })} divider defaultPeriod="PM"
+              skipped={!!pet.feedingDinnerSkip} onToggleSkip={() => setPet({ feedingDinnerSkip: !pet.feedingDinnerSkip })}
+              quickFill={pet.feedingBreakfastAmount && !pet.feedingBreakfastSkip ? "Same as breakfast" : undefined} onQuickFill={() => setPet({ feedingDinnerAmount: pet.feedingBreakfastAmount })} />
             <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8, borderBottomWidth: 1, borderBottomColor: colors.border }}>
               <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.textDark }}>Treats</Text>
-              <TextInput style={mealInput} placeholder="Type / brand" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" value={pet.feedingTreatsType ?? ""} onChangeText={(v) => setPet({ feedingTreatsType: capitalizeFirst(v) })} />
-              <TextInput style={mealInput} placeholder="Daily limit — e.g. max 3 per day" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" value={pet.feedingTreatsLimit ?? ""} onChangeText={(v) => setPet({ feedingTreatsLimit: capitalizeFirst(v) })} />
+              {(pet.feedingTreats ?? [{ type: "", limit: "" }]).map((t, i) => {
+                const list = pet.feedingTreats ?? [{ type: "", limit: "" }];
+                return (
+                  <View key={i} style={{ gap: 8 }}>
+                    {list.length > 1 && (
+                      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: i === 0 ? 0 : 4 }}>
+                        <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.textMuted }}>Treat {i + 1}</Text>
+                        <TouchableOpacity onPress={() => setPet({ feedingTreats: list.filter((_, j) => j !== i) })} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                          <Text style={{ color: colors.danger, fontSize: 16, lineHeight: 16 }}>×</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                    <TextInput style={mealInput} placeholder="Type / brand" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" value={t.type}
+                      onChangeText={(v) => setPet({ feedingTreats: list.map((x, j) => (j === i ? { ...x, type: capitalizeFirst(v) } : x)) })} />
+                    <TextInput style={mealInput} placeholder="Daily limit — e.g. max 3 per day" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" value={t.limit}
+                      onChangeText={(v) => setPet({ feedingTreats: list.map((x, j) => (j === i ? { ...x, limit: capitalizeFirst(v) } : x)) })} />
+                  </View>
+                );
+              })}
+              <TouchableOpacity onPress={() => setPet({ feedingTreats: [...(pet.feedingTreats ?? [{ type: "", limit: "" }]), { type: "", limit: "" }] })} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}>
+                <Text style={{ fontSize: 12, color: colors.primary, fontFamily: "Satoshi-Medium" }}>+ Add another treat</Text>
+              </TouchableOpacity>
             </View>
             <TextInput
               style={{ paddingHorizontal: 16, paddingVertical: 12, fontSize: 13, fontFamily: "Satoshi", color: colors.textMuted }}
