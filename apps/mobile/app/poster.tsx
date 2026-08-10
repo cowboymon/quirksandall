@@ -412,7 +412,7 @@ export default function MissingPoster() {
         <Eyebrow>Last seen</Eyebrow>
         <View style={{ marginTop: 6, gap: 8 }}>
           <Input value={lastSeenArea} onChangeText={setLastSeenArea} placeholder="Newtown IGA @ 4:40pm" />
-          <DateInput value={lastSeenDate} onChangeText={setLastSeenDate} />
+          <DateInput value={lastSeenDate} onChangeText={setLastSeenDate} range="past" pickerOnly />
         </View>
         <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 6 }}>Not saved to your profile.</Text>
       </View>

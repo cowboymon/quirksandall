@@ -137,9 +137,9 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
 // Masked DD/MM/YYYY (AU) text field. Operates on the display string; callers
 // convert to/from ISO with displayDateToISO / isoToDisplayDate.
 //
-// Typed entry is kept here as the fallback path, but every field that opens
-// this component should pass `pickerOnly` (see below) — DOB and the stay
-// dates already do; poster's "last seen" is the one holdout.
+// Typed entry is kept here as the fallback path, but every field in the app
+// now passes `pickerOnly` (see below), so date entry is one consistent
+// interaction everywhere: tap, spin, Done.
 //
 // `range` sets the picker's bounds. It no longer selects a picker style:
 // every range renders the wheel, because the calendar display crashes (see

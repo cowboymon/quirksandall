@@ -39,12 +39,19 @@ export async function listLinks(petId: string): Promise<OwnerLink[]> {
   const links = data ?? [];
 
   // A stay that has already finished shouldn't linger on the dashboard as if
-  // it were still running. stayPhrase() already refuses to render an expired
-  // date to a sitter; this clears it at the source so the owner's own view is
-  // accurate too, and so a link they reuse next month doesn't carry last
+  // it were still running. This clears it at the source so the owner's own
+  // view is accurate, and so a link they reuse next month doesn't carry last
   // month's dates. Silent by design — telling someone their pet's stay ended
-  // is news they already have. Fire-and-forget: a failed cleanup is cosmetic,
-  // and stayPhrase still hides it.
+  // is news they already have. Fire-and-forget: a failed cleanup is cosmetic.
+  //
+  // Deliberate consequence (decided 10 Aug 2026): the recipient page's
+  // "Olive is no longer staying with you." line is therefore TRANSIENT — it
+  // shows to sitters only until the owner next opens their dashboard, which
+  // is when this runs. That's the intended trade: the message is a courtesy
+  // for the day or two after a stay, and keeping the clearing means a reused
+  // link never greets a new sitter with a stale "no longer staying". Don't
+  // "fix" the disappearing message by removing this cleanup without also
+  // handling reuse (clearing on re-share instead of on expiry).
   const expired = links.filter((l) => {
     if (!l.ends_at) return false;
     const d = new Date(l.ends_at);

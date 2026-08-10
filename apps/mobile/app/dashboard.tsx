@@ -661,7 +661,7 @@ export default function Dashboard() {
               <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 3, lineHeight: 17, fontFamily: "Satoshi-Light" }}>
                 Let your backup contacts know they're the ones to call. Worth telling your vet too — most clinics will note it on your file over the phone.
               </Text>
-              <TouchableOpacity onPress={() => { dismissTripNudge(); router.push("/edit/emergency"); }} style={{ marginTop: 6 }}>
+              <TouchableOpacity onPress={() => { dismissTripNudge(); router.push("/edit/emergency?section=backup"); }} style={{ marginTop: 6 }}>
                 <Text style={{ color: colors.primary, fontSize: 12, fontFamily: "Satoshi-Medium" }}>Check who's listed →</Text>
               </TouchableOpacity>
             </View>
