@@ -23,7 +23,8 @@ export async function POST(req: NextRequest) {
   if (body.company) return NextResponse.json({ ok: true });
 
   const email = (body.email ?? "").trim().toLowerCase();
-  const source = body.source === "footer" ? "footer" : "hero";
+  const SOURCES = ["hero", "footer", "blog", "printable"];
+  const source = SOURCES.includes(body.source ?? "") ? (body.source as string) : "hero";
   if (!EMAIL_RE.test(email) || email.length > 254) {
     return NextResponse.json({ ok: false, error: "invalid_email" }, { status: 400 });
   }

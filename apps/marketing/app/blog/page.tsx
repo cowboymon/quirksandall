@@ -76,7 +76,7 @@ export default function BlogIndex() {
               <WaitlistForm
                 source="blog"
                 tone="dark"
-                intro="We're putting the finishing touches on it. Leave your email and we'll tell you the moment it's live."
+                intro="We're putting the finishing touches on it. Leave your email — we'll tell you the moment it launches, plus the occasional handover tip worth having."
               />
             </div>
 

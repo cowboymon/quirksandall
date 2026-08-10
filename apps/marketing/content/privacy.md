@@ -4,9 +4,9 @@
 
 This policy explains what information Quirks & All collects, why, and what you can do about it. Quirks & All is operated by Monica Rattanong trading as Its Hypothetical (ABN 22 525 634 531) ("we", "us").
 
-## Joining the launch waitlist (this website)
+## Signing up for updates (this website)
 
-If you give us your email address on this site to be told when Quirks & All launches, we use it for that one message and nothing else. We don't add you to a newsletter, sell or share it, or use it for anything else. You can ask us to remove you at any time by replying to that email or contacting us at quirksandall@itshypothetical.com. When the launch email goes out it will identify us as the sender and carry a working unsubscribe link, as required under the Australian Spam Act.
+If you give us your email address on this site, we use it to tell you when Quirks & All launches and to send occasional updates — things like new guides, handover tips, and product news. We don't sell or share your address, and we won't send you anything you didn't sign up for. Every email identifies us as the sender and carries a working unsubscribe link; you can opt out at any time by clicking it or by contacting us at quirksandall@itshypothetical.com, as required under the Australian Spam Act.
 
 ## 1. Information we collect
 
