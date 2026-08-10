@@ -11,7 +11,7 @@
 // date sheet is the only real modal on screen.
 import { useEffect, useState } from "react";
 import { BackHandler, Platform, View, Text, TouchableOpacity } from "react-native";
-import { colors, displayDateToISO, isoToDisplayDate } from "@quirksandall/shared";
+import { colors, displayDateToISO, isoToDisplayDate, dateFieldError } from "@quirksandall/shared";
 import { DateInput } from "./ui";
 
 const PRESETS = [
@@ -39,7 +39,14 @@ export default function DurationModal({ visible, petName, initialPreset, initial
   const pickPreset = (key: string) => { setPreset(key); setDate(""); };
   const onDate = (v: string) => { setDate(v); if (v) setPreset(null); };
 
+  // Same rule the fields render in red. Save is blocked while either date is
+  // invalid — a warning the user can save straight past isn't a validation,
+  // it's decoration.
+  const invalid =
+    !!dateFieldError(startDate, "future") || !!dateFieldError(date, "future", startDate);
+
   const save = () => {
+    if (invalid) return;
     // Start date (#20) is independent of the preset/end-date choice — "for a
     // few days from Sat 12 Aug" is a valid combination. Left empty it means
     // "already with you", so no implicit today is stored.
@@ -102,7 +109,7 @@ export default function DurationModal({ visible, petName, initialPreset, initial
               iOS number pad has no return key and the card swallows most
               taps, so typed entry here shipped as a stuck-keyboard bug (#25).
               Tap-through to the picker sheet is the whole interaction. */}
-          <DateInput value={date} onChangeText={onDate} range="future" placeholder="dd/mm/yyyy" pickerOnly />
+          <DateInput value={date} onChangeText={onDate} range="future" placeholder="dd/mm/yyyy" pickerOnly notBefore={startDate} />
 
           {/* Actions */}
           <View style={{ flexDirection: "row", gap: 10, marginTop: 22 }}>
@@ -112,7 +119,7 @@ export default function DurationModal({ visible, petName, initialPreset, initial
             <TouchableOpacity
               onPress={() => { onSave(null, null, null); }}
               activeOpacity={0.85}
-              style={{ height: 46, paddingHorizontal: 16, borderRadius: 11, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}
+              style={{ flex: 1, height: 46, borderRadius: 11, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}
             >
               <Text style={{ color: colors.textMuted, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Clear all</Text>
             </TouchableOpacity>
@@ -125,8 +132,9 @@ export default function DurationModal({ visible, petName, initialPreset, initial
             </TouchableOpacity>
             <TouchableOpacity
               onPress={save}
+              disabled={invalid}
               activeOpacity={0.85}
-              style={{ flex: 1, height: 46, borderRadius: 11, backgroundColor: colors.cardDark, alignItems: "center", justifyContent: "center" }}
+              style={{ flex: 1, height: 46, borderRadius: 11, backgroundColor: colors.cardDark, alignItems: "center", justifyContent: "center", opacity: invalid ? 0.4 : 1 }}
             >
               <Text style={{ color: "#F8ECEE", fontSize: 14, fontFamily: "Satoshi-Bold" }}>Save</Text>
             </TouchableOpacity>

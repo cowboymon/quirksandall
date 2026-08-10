@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { stayPhrase, stayStatus, treatEntries } from "./logic";
+import { dateFieldError, stayPhrase, stayStatus, treatEntries } from "./logic";
 
 const daysFromNow = (n: number) => {
   const d = new Date();
@@ -155,5 +155,46 @@ describe("stayStatus (#20 — sitter-facing phases)", () => {
   it("possessives a name ending in s, and copes with a blank name", () => {
     expect(stayStatus("Gus", "overnight", null, null, NOW)).toBe("Gus' with you overnight.");
     expect(stayStatus("", "overnight", null, null, NOW)).toBe("Your pet's with you overnight.");
+  });
+});
+
+describe("dateFieldError", () => {
+  const dmy = (n: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() + n);
+    return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+  };
+
+  it("stays quiet while the date is still being entered", () => {
+    expect(dateFieldError("", "future")).toBeNull();
+    expect(dateFieldError("12/0", "future")).toBeNull();
+    expect(dateFieldError(null, "future")).toBeNull();
+  });
+
+  it("rejects a date that doesn't exist", () => {
+    expect(dateFieldError("31/02/2027", "future")).toBe("That date doesn't exist — check the day and month");
+  });
+
+  it("enforces the range direction", () => {
+    expect(dateFieldError(dmy(5), "birthday")).toBe("That's in the future");
+    expect(dateFieldError(dmy(5), "past")).toBe("That's in the future");
+    expect(dateFieldError(dmy(-5), "future")).toBe("That date has already passed");
+  });
+
+  it("accepts today for every range", () => {
+    expect(dateFieldError(dmy(0), "future")).toBeNull();
+    expect(dateFieldError(dmy(0), "past")).toBeNull();
+    expect(dateFieldError(dmy(0), "birthday")).toBeNull();
+  });
+
+  it("enforces notBefore — an end date can't precede its start", () => {
+    expect(dateFieldError(dmy(3), "future", dmy(5))).toBe("Can't be before the start date");
+    expect(dateFieldError(dmy(5), "future", dmy(3))).toBeNull();
+    expect(dateFieldError(dmy(3), "future", dmy(3))).toBeNull(); // same day is fine
+  });
+
+  it("ignores an absent or half-typed notBefore", () => {
+    expect(dateFieldError(dmy(3), "future", "")).toBeNull();
+    expect(dateFieldError(dmy(3), "future", "12/0")).toBeNull();
   });
 });

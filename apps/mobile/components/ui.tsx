@@ -4,7 +4,7 @@ import { useMemo, useState, useRef, forwardRef } from "react";
 import { Keyboard, Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
 import { CalendarDots, LockSimple, XCircle } from "./icons";
 import { router, useNavigation } from "expo-router";
-import { colors, radius, capitalizeFirst, capitalizeWords, formatPhone, displayDateToISO } from "@quirksandall/shared";
+import { colors, radius, capitalizeFirst, capitalizeWords, formatPhone, displayDateToISO, dateFieldError } from "@quirksandall/shared";
 import DatePickerSheet from "./DatePickerSheet";
 
 // "‹ Back" for onboarding/stack screens. Uses the NEAREST navigator's goBack
@@ -160,8 +160,19 @@ export function DateInput({
   style,
   range = "past",
   pickerOnly,
+  notBefore,
   ...props
-}: TextInputProps & { onChangeText: (v: string) => void; range?: "birthday" | "past" | "future"; pickerOnly?: boolean }) {
+}: TextInputProps & {
+  onChangeText: (v: string) => void;
+  range?: "birthday" | "past" | "future";
+  pickerOnly?: boolean;
+  // DD/MM/YYYY floor for this field, on top of whatever `range` allows. Used
+  // for an end date that can't precede its start date: an empty field opens
+  // the picker ON this date rather than today, and picking earlier is
+  // flagged. Native bounds can't do this — the calendar aborts when given
+  // them (see DatePickerSheet) — so it's enforced here.
+  notBefore?: string;
+}) {
   const [showPicker, setShowPicker] = useState(false);
 
   const handle = (raw: string) => {
@@ -181,22 +192,18 @@ export function DateInput({
   // seed meant setState on every render — an infinite loop that took the app
   // down whenever the picker was opened on a field with nothing typed in it.
   const parsed = displayDateToISO(value as string);
-  const seed = useMemo(() => (parsed ? new Date(`${parsed}T00:00:00`) : new Date()), [parsed]);
+  const notBeforeISO = displayDateToISO(notBefore);
+  // Open on the field's own value, else on the floor, else today.
+  const seedISO = parsed ?? notBeforeISO;
+  const seed = useMemo(() => (seedISO ? new Date(`${seedISO}T00:00:00`) : new Date()), [seedISO]);
 
-  // The parser already rejects impossible dates (35/08/1936 round-trips to
-  // null) — but silently, so the form just accepted the text and dropped it
-  // on save. Say so instead, once a full date has been typed. Range errors
-  // follow the field's meaning: a birthday can't be in the future, an end
-  // date can't be in the past (today is fine for both).
-  const dateError = useMemo(() => {
-    const s = (value as string) ?? "";
-    if (s.length !== 10) return null;
-    if (!parsed) return "That date doesn't exist — check the day and month";
-    const todayISO = new Date().toISOString().slice(0, 10);
-    if ((range === "birthday" || range === "past") && parsed > todayISO) return "That's in the future";
-    if (range === "future" && parsed < todayISO) return "That date has already passed";
-    return null;
-  }, [value, parsed, range]);
+  // Shared with the form gating Save (see dateFieldError in
+  // @quirksandall/shared) — when only this component knew, an invalid date
+  // could be shown in red here and saved anyway.
+  const dateError = useMemo(
+    () => dateFieldError(value as string, range, notBefore),
+    [value, range, notBefore],
+  );
 
   const commit = (d: Date) => {
     onChangeText(
@@ -234,7 +241,14 @@ export function DateInput({
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 accessibilityLabel="Clear date"
               >
-                <XCircle size={17} color={colors.textMuted} weight="fill" />
+                {/* Styled to match iOS's own clearButtonMode ✕, which the text
+                    fields use — a light filled circle rather than a heavy one.
+                    It can't BE that button: this field is a picker button with
+                    no focus state, so a native clear has nothing to attach to
+                    and this has to persist rather than appear while editing.
+                    Matching the weight keeps the two reading as one
+                    affordance despite that. */}
+                <XCircle size={17} color={colors.dashedBorder} weight="fill" />
               </TouchableOpacity>
             ) : null}
             {/* Kept even when a value is set, so the "this opens a picker"
@@ -361,6 +375,9 @@ export function TimeInput({ value, onChangeText, style, placeholder, defaultPeri
           placeholder={placeholder ?? "7:30"}
           keyboardType="number-pad"
           maxLength={5}
+          // iOS shows a native ✕ while editing — the number pad has no return
+          // key, so without it there's no obvious way to empty a time again.
+          clearButtonMode="while-editing"
           style={style}
         />
       </View>

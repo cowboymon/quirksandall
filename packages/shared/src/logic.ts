@@ -211,6 +211,37 @@ export function canSeeMedical(purchaseStatus: "free" | "paid"): boolean {
   return purchaseStatus === "paid";
 }
 
+/** Validate a DD/MM/YYYY date field. Returns the message to show under the
+ * field, or null when it's fine (including while it's still half-typed).
+ *
+ * Lives here, not in the component, because two callers need the same answer:
+ * DateInput renders the message, and the form gating Save needs to know
+ * whether it may proceed. When only the component knew, an invalid date could
+ * be shown in red and saved anyway.
+ *
+ *   range     "birthday" | "past" — no future dates
+ *             "future"            — no past dates
+ *   notBefore extra floor (DD/MM/YYYY), e.g. an end date that can't precede
+ *             its start date.
+ */
+export function dateFieldError(
+  value?: string | null,
+  range: "birthday" | "past" | "future" = "past",
+  notBefore?: string | null,
+  now: Date = new Date(),
+): string | null {
+  const s = (value ?? "").trim();
+  if (s.length !== 10) return null; // still being entered — don't nag
+  const parsed = displayDateToISO(s);
+  if (!parsed) return "That date doesn't exist — check the day and month";
+  const todayISO = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  if ((range === "birthday" || range === "past") && parsed > todayISO) return "That's in the future";
+  if (range === "future" && parsed < todayISO) return "That date has already passed";
+  const floor = displayDateToISO(notBefore);
+  if (floor && parsed < floor) return "Can't be before the start date";
+  return null;
+}
+
 /** Stay duration, COMPACT — for the owner's dashboard, where each link gets
  * one narrow row and a spelled-out "from Sat 12 Aug until Tue 15 Aug" wraps.
  * Dates are bare DD/MM; the caller supplies the "Staying " prefix:
