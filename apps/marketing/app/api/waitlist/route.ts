@@ -17,14 +17,25 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 async function syncToResendAudience(email: string): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   const audienceId = process.env.RESEND_AUDIENCE_ID;
-  if (!apiKey || !audienceId) return;
+  if (!apiKey || !audienceId) {
+    console.error("waitlist: Resend sync skipped — missing", {
+      hasKey: !!apiKey,
+      hasAudience: !!audienceId,
+    });
+    return;
+  }
   try {
     const res = await fetch(`https://api.resend.com/audiences/${audienceId}/contacts`, {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({ email, unsubscribed: false }),
     });
-    if (!res.ok) console.error("waitlist: Resend audience sync failed", res.status);
+    if (!res.ok) {
+      const detail = await res.text().catch(() => "");
+      console.error("waitlist: Resend audience sync failed", res.status, detail);
+    } else {
+      console.log("waitlist: Resend audience sync ok", email);
+    }
   } catch (e) {
     console.error("waitlist: Resend audience sync error", e);
   }
