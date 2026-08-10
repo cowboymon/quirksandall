@@ -29,6 +29,16 @@ export default function PrintableCapture({ slug }: { slug: string }) {
     return () => window.removeEventListener("afterprint", onAfterPrint);
   }, []);
 
+  // Escape closes the modal while it's open.
+  useEffect(() => {
+    if (!show) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") dismiss();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [show]);
+
   function remember() {
     try {
       localStorage.setItem(KEY, "1");
@@ -64,8 +74,18 @@ export default function PrintableCapture({ slug }: { slug: string }) {
   if (!show) return null;
 
   return (
-    <div className="print-hide fixed inset-x-4 bottom-4 z-50 mx-auto max-w-sm animate-confirm-drop sm:left-auto sm:right-6 sm:mx-0">
-      <div className="relative rounded-2xl border border-border bg-card-bg p-5 pt-6 shadow-[0_16px_44px_rgba(81,0,0,0.22)]">
+    <div
+      className="print-hide fixed inset-0 z-50 flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Join the list"
+    >
+      <div
+        className="absolute inset-0 bg-foreground/25 backdrop-blur-[1px]"
+        aria-hidden
+        onClick={dismiss}
+      />
+      <div className="relative w-full max-w-sm animate-confirm-drop rounded-2xl border border-border bg-card-bg p-5 pt-6 shadow-[0_16px_44px_rgba(81,0,0,0.22)]">
         {/* Olive peeking over the top edge */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
