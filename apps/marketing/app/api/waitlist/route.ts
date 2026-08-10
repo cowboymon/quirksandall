@@ -89,6 +89,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "server" }, { status: 500 });
   }
 
+  // Always log the outcome so it's clear the route ran, from which source, and
+  // whether this was a new signup (which triggers the Resend sync) or a
+  // duplicate (which intentionally doesn't).
+  console.log("waitlist: signup", { source, isNew: !error, duplicate: error?.code === "23505" });
+
   // Mirror genuinely-new signups into the Resend marketing audience. Skip
   // duplicates (23505 — already there): re-adding could reset an unsubscribe.
   if (!error) {
