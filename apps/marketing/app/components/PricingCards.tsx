@@ -84,7 +84,7 @@ export default function PricingCards() {
           meta={{ location: "pricing-free" }}
           className="mt-8 rounded-button border border-border bg-background px-5 py-3.5 text-center text-sm font-medium text-foreground transition-colors hover:border-primary"
         >
-          Get notified
+          Get Notified
         </TrackedLink>
         <p className="mt-4 min-h-[2.5rem] text-center text-xs text-text-muted">
           Free forever. No subscription.
@@ -181,7 +181,7 @@ export default function PricingCards() {
               : "bg-button text-card-dark-text hover:bg-button-pressed"
           }`}
         >
-          Get notified at launch
+          Get Notified at Launch
         </TrackedLink>
         <p className={`mt-4 min-h-[2.5rem] text-center text-xs ${dark ? "text-card-dark-label" : "text-text-muted"}`}>
           {life
