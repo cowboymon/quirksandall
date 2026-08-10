@@ -141,12 +141,14 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
 // now passes `pickerOnly` (see below), so date entry is one consistent
 // interaction everywhere: tap, spin, Done.
 //
-// `range` sets the picker's bounds. It no longer selects a picker style:
-// every range renders the wheel, because the calendar display crashes (see
-// the history in DatePickerSheet.tsx).
-//   "birthday" — no future. Scrolling the year column back is the job here.
-//   "past"     — no future. Recent dates, e.g. "last seen".
-//   "future"   — no past. Stay start/end dates.
+// `range` picks both the allowed window and the picker style:
+//   "birthday" — wheel, no future. Spinning the year column back beats
+//                paging a calendar month by month.
+//   "past"     — calendar grid, no future. Recent dates, e.g. "last seen".
+//   "future"   — calendar grid, no past. Stay start/end dates.
+// The calendar is deliberately given no NATIVE bounds (that combination
+// aborts the app — see DatePickerSheet), so for those two ranges the window
+// is enforced by `dateError` below and nothing else.
 // `pickerOnly` drops typed entry entirely: the field is a button that opens
 // the picker sheet, so no keyboard is ever involved. Preferred everywhere —
 // it sidesteps the whole class of iOS numeric-keyboard problems (the number
@@ -210,7 +212,8 @@ export function DateInput({
           activeOpacity={0.7}
           style={[
             {
-              minHeight: 46, borderRadius: radius.input, borderWidth: 1, borderColor: colors.border,
+              minHeight: 46, borderRadius: radius.input, borderWidth: 1,
+              borderColor: dateError ? colors.danger : colors.border,
               backgroundColor: "#FFFFFF", paddingHorizontal: 16,
               flexDirection: "row", alignItems: "center", justifyContent: "space-between",
             },
@@ -229,6 +232,13 @@ export function DateInput({
           onCancel={() => setShowPicker(false)}
           onConfirm={(d) => { commit(d); setShowPicker(false); }}
         />
+        {/* Load-bearing, not decorative: the calendar picker runs WITHOUT
+            native min/maxDate (passing them aborts the app — see
+            DatePickerSheet), so this is the only thing standing between the
+            owner and an out-of-range date. */}
+        {dateError && (
+          <Text style={{ color: colors.danger, fontSize: 11, marginTop: 4, fontFamily: "Satoshi" }}>{dateError}</Text>
+        )}
       </View>
     );
   }
