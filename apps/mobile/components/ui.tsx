@@ -241,7 +241,14 @@ export function DateInput({
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 accessibilityLabel="Clear date"
               >
-                <XCircle size={17} color={colors.textMuted} weight="fill" />
+                {/* Styled to match iOS's own clearButtonMode ✕, which the text
+                    fields use — a light filled circle rather than a heavy one.
+                    It can't BE that button: this field is a picker button with
+                    no focus state, so a native clear has nothing to attach to
+                    and this has to persist rather than appear while editing.
+                    Matching the weight keeps the two reading as one
+                    affordance despite that. */}
+                <XCircle size={17} color={colors.dashedBorder} weight="fill" />
               </TouchableOpacity>
             ) : null}
             {/* Kept even when a value is set, so the "this opens a picker"
