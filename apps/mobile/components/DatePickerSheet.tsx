@@ -88,16 +88,23 @@ function IOSSheet({
 
           <DateTimePicker
             mode="date"
-            // RETRY (was: spinner for every range). The inline calendar
-            // (UICalendarView) crashed on device through build 20 — it
-            // survived the seed/bounds fixes and the modal de-nesting, so
-            // the wheel was the safe fallback everywhere. Re-rolling the
-            // calendar for past/future ranges now that the SDK and the
-            // presentation path have both changed; birthdays keep the wheel
-            // (scrolling back years beats paging months regardless). If
-            // device crashes return, revert this to display="spinner"
-            // unconditionally — that variant has never crashed.
-            display={range === "birthday" ? "spinner" : "inline"}
+            // Spinner for EVERY range. DO NOT switch this to "inline"/
+            // calendar again — that has now been tried and reverted twice:
+            //
+            //   build 20  — crashed on device; survived seed/bounds fixes
+            //               and the modal de-nesting, so it isn't those.
+            //   2026-08-10 — re-rolled on a newer SDK, crashed again with
+            //               SIGABRT inside -[UIDatePicker setMinimumDate:]
+            //               → UICalendarView _setVisibleMonth: assertion.
+            //
+            // Root cause: UICalendarView asserts (and aborts) when its
+            // selected date is outside min/maxDate, where the wheel simply
+            // clamps. React Native applies props individually, so there is
+            // always an instant where the old date is still set while the
+            // new bounds have landed — unavoidable from JS, and fatal only
+            // for the calendar. The wheel with an explicit height is the one
+            // variant that has never crashed.
+            display="spinner"
             value={draft}
             {...bounds}
             onChange={(_, d) => d && setDraft(d)}
@@ -105,8 +112,8 @@ function IOSSheet({
             accentColor={colors.primary}
             // The wheel needs a concrete height — in a flex container it can
             // end up unresolved and take the view down. 216 is the standard
-            // iOS wheel height. The inline calendar sizes itself.
-            style={range === "birthday" ? { alignSelf: "stretch", height: 216 } : { alignSelf: "stretch" }}
+            // iOS wheel height.
+            style={{ alignSelf: "stretch", height: 216 }}
           />
         </View>
       </View>
