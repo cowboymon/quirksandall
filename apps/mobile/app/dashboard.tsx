@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Share, TextInput, Platform, ActivityIndicator } from "react-native";
-import { AirplaneTilt, Bell, CaretDown, CaretRight, CaretUp, Check, Eye, Key, LinkSimple, LockSimple, PencilLine, Plus, ShareFat, Trash, WarningCircle, X } from "../components/icons";
+import { AirplaneTilt, Bell, CaretDown, CaretRight, CaretUp, Check, Eye, Key, LinkSimple, LockSimple, PencilLine, PencilSimpleLine, Plus, ShareFat, Trash, WarningCircle, X } from "../components/icons";
 import { AppAlert } from "../stores/appAlert";
 import { router, useFocusEffect } from "expo-router";
 import * as Clipboard from "expo-clipboard";
@@ -539,7 +539,7 @@ export default function Dashboard() {
                 onPress={() => setActionsTarget(link)}
                 style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}
               >
-                <PencilLine size={13} color={colors.cardDarkText} />
+                <PencilSimpleLine size={13} color={colors.cardDarkText} />
               </TouchableOpacity>
               {/* The first (main) link is always shareable — free tier gets
                   preview + link 1. Only additional links need the paid unlock. */}

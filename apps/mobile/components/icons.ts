@@ -44,6 +44,7 @@ export { LockSimple } from "phosphor-react-native/src/icons/LockSimple";
 export { MagnifyingGlass } from "phosphor-react-native/src/icons/MagnifyingGlass";
 export { MapPin } from "phosphor-react-native/src/icons/MapPin";
 export { PencilLine } from "phosphor-react-native/src/icons/PencilLine";
+export { PencilSimpleLine } from "phosphor-react-native/src/icons/PencilSimpleLine";
 export { Phone } from "phosphor-react-native/src/icons/Phone";
 export { Plus } from "phosphor-react-native/src/icons/Plus";
 export { ShareFat } from "phosphor-react-native/src/icons/ShareFat";
