@@ -2,7 +2,7 @@
 // Mirrors the prototype's primitives.tsx (fonts, buttons, dots, inputs).
 import { useMemo, useState, useRef, forwardRef } from "react";
 import { Keyboard, Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
-import { CalendarBlank, LockSimple, XCircle } from "./icons";
+import { CalendarDots, LockSimple, XCircle } from "./icons";
 import { router, useNavigation } from "expo-router";
 import { colors, radius, capitalizeFirst, capitalizeWords, formatPhone, displayDateToISO } from "@quirksandall/shared";
 import DatePickerSheet from "./DatePickerSheet";
@@ -239,7 +239,7 @@ export function DateInput({
             ) : null}
             {/* Kept even when a value is set, so the "this opens a picker"
                 affordance never disappears. */}
-            <CalendarBlank size={17} color={colors.textMuted} />
+            <CalendarDots size={17} color={colors.textMuted} />
           </View>
         </TouchableOpacity>
         <DatePickerSheet
@@ -284,7 +284,7 @@ export function DateInput({
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         style={{ position: "absolute", right: 12 }}
       >
-        <CalendarBlank size={17} color={colors.textMuted} />
+        <CalendarDots size={17} color={colors.textMuted} />
       </TouchableOpacity>
       </View>
 

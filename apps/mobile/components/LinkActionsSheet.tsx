@@ -13,7 +13,7 @@
 // modal, so the date sheet stays the only one on screen.
 import { useEffect } from "react";
 import { BackHandler, Platform, View, Text, TouchableOpacity } from "react-native";
-import { CalendarBlank, PencilSimple, type Icon } from "./icons";
+import { CalendarDots, PencilLine, type Icon } from "./icons";
 import { colors } from "@quirksandall/shared";
 
 type Props = {
@@ -55,9 +55,9 @@ export default function LinkActionsSheet({ visible, linkLabel, onRename, onStayD
         <Text numberOfLines={1} style={{ color: colors.textMuted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium", marginBottom: 4 }}>
           {linkLabel || "Untitled link"}
         </Text>
-        <Row icon={PencilSimple} label="Rename link" onPress={onRename} />
+        <Row icon={PencilLine} label="Rename link" onPress={onRename} />
         <View style={{ height: 1, backgroundColor: colors.border }} />
-        <Row icon={CalendarBlank} label="Stay dates" onPress={onStayDates} />
+        <Row icon={CalendarDots} label="Stay dates" onPress={onStayDates} />
         <TouchableOpacity
           onPress={onClose}
           activeOpacity={0.85}

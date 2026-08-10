@@ -3,7 +3,7 @@
 // opens a short-lived signed URL.
 import { useCallback, useState } from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator, Linking } from "react-native";
-import { Camera, File, FileText, FolderOpen, Image, ShareNetwork, Trash, UploadSimple, type Icon } from "../../components/icons";
+import { Camera, File, FileText, FolderOpen, Image, ShareFat, Trash, UploadSimple, type Icon } from "../../components/icons";
 import { AppAlert } from "../../stores/appAlert";
 import { useFocusEffect } from "expo-router";
 import * as DocumentPicker from "expo-document-picker";
@@ -170,7 +170,7 @@ export default function Documents() {
               >
                 {sharingId === doc.id
                   ? <ActivityIndicator size="small" color={colors.primary} />
-                  : <ShareNetwork size={18} color={colors.primary} />}
+                  : <ShareFat size={18} color={colors.primary} />}
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setRemoveTarget(doc)} hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}>
                 <Trash size={18} color={colors.danger} />

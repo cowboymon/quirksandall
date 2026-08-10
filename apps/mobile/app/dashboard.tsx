@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Share, TextInput, Platform, ActivityIndicator } from "react-native";
-import { AirplaneTilt, Bell, CaretDown, CaretRight, CaretUp, Check, Eye, Key, LinkSimple, LockSimple, PencilSimple, Plus, ShareNetwork, Trash, WarningCircle, X } from "../components/icons";
+import { AirplaneTilt, Bell, CaretDown, CaretRight, CaretUp, Check, Eye, Key, LinkSimple, LockSimple, NotePencil, PencilSimple, Plus, ShareFat, Trash, WarningCircle, X } from "../components/icons";
 import { AppAlert } from "../stores/appAlert";
 import { router, useFocusEffect } from "expo-router";
 import * as Clipboard from "expo-clipboard";
@@ -553,7 +553,7 @@ export default function Dashboard() {
                     {(() => {
                       // Phosphor icons are components, not name strings, so the
                       // three-way choice picks a component rather than a name.
-                      const ShareIcon = linkLocked ? LockSimple : copiedId === link.id ? Check : ShareNetwork;
+                      const ShareIcon = linkLocked ? LockSimple : copiedId === link.id ? Check : ShareFat;
                       return (
                         <ShareIcon
                           size={15}
@@ -695,7 +695,7 @@ export default function Dashboard() {
                       <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>{s.label}</Text>
                       <Text style={{ color: statusColor[s.status], fontSize: 11, marginTop: 2 }}>{s.detail}</Text>
                     </View>
-                    <PencilSimple size={16} color={colors.textMuted} />
+                    <NotePencil size={16} color={colors.textMuted} />
                   </Card>
                 </TouchableOpacity>
                 {/* Quick access to the PIN, directly under the emergency row */}
