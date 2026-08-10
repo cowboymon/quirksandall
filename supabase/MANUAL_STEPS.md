@@ -6,17 +6,23 @@ you go. Newest work is at the top of each section.
 
 > When pasting a migration, paste the **contents** of the `.sql` file, not the
 > filename.
+>
+> **Tick it as soon as you run it.** Three entries below sat unticked while
+> being live in the database, which makes the list worse than useless — it
+> implies working features are broken and invites re-running migrations. To
+> check reality rather than trusting this file, query
+> `information_schema.columns` / `to_regclass()` for the objects a migration
+> creates.
 
 ---
 
 ## ▶️ Run now
 
-- [ ] **`20260810000001_rename_waitlist_to_marketing.sql`** — renames the
+- [x] **`20260810000001_rename_waitlist_to_marketing.sql`** — renames the
   pre-launch email table `waitlist` → `marketing` (it's now an ongoing
-  marketing list, not just a launch waitlist). **Coordinated with the code
-  change** from `.from("waitlist")` to `.from("marketing")` — run this right
-  as the deploy goes live so inserts don't briefly miss the table. No column,
-  constraint or RLS change.
+  marketing list, not just a launch waitlist). Coordinated with the code
+  change from `.from("waitlist")` to `.from("marketing")`. No column,
+  constraint or RLS change. *(Run 10 Aug 2026.)*
 
 - [x] **`20260808000001_share_link_starts_at.sql`** — adds `starts_at` to
   `share_links` for the stay start date (#20). *(Run 10 Aug 2026.)*
@@ -46,18 +52,17 @@ you go. Newest work is at the top of each section.
   this table those routes fail open (no limiting) rather than erroring.
   *(Run 3 Aug 2026.)*
 
-- [ ] **`20260725000004_consent_marketing.sql`** — adds `consent_marketing` to
-  `owners` for the "Product news & tips" opt-in. **Required before that toggle
-  works.**
+- [x] **`20260725000004_consent_marketing.sql`** — adds `consent_marketing` to
+  `owners` for the "Product news & tips" opt-in. *(Verified applied 10 Aug
+  2026.)*
 
-- [ ] **`20260725000003_share_link_duration.sql`** — adds `duration_preset` +
-  `ends_at` to `share_links` for stay duration (§5.1). **Required before the
-  "stay length" control + recipient banner work.**
+- [x] **`20260725000003_share_link_duration.sql`** — adds `duration_preset` +
+  `ends_at` to `share_links` for stay duration (§5.1). *(Verified applied
+  10 Aug 2026.)*
 
-- [ ] **`20260725000002_document_vault.sql`** — private `pet-documents` storage
+- [x] **`20260725000002_document_vault.sql`** — private `pet-documents` storage
   bucket + owner-scoped storage RLS + `pet_documents` metadata table + RLS.
-  **Required before the Documents screen works** — uploads/reads hit the new
-  bucket and table.
+  *(Verified applied 10 Aug 2026.)*
 
 - [x] **`20260725000001_consent.sql`** — consent columns on `owners` +
   append-only `consent_log` table + RLS. *(Run 26 Jul 2026.)*
