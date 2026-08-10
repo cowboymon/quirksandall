@@ -6,62 +6,55 @@ const daysFromNow = (n: number) => {
   d.setDate(d.getDate() + n);
   return d.toISOString();
 };
-const fmt = (iso: string) =>
-  new Date(iso).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
 
-describe("stayPhrase", () => {
-  it("renders presets when nothing else is set", () => {
+describe("stayPhrase (compact, owner dashboard)", () => {
+  const dd = (iso: string) => {
+    const d = new Date(iso);
+    return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+  };
+
+  it("renders presets when no dates are set", () => {
     expect(stayPhrase("hours", null)).toBe("for a few hours");
     expect(stayPhrase("overnight", null)).toBe("overnight");
     expect(stayPhrase(null, null)).toBeNull();
   });
 
-  it("renders a future end date and refuses a stale one", () => {
+  it("renders a future end date as bare DD/MM", () => {
     const end = daysFromNow(3);
-    expect(stayPhrase(null, end)).toBe(`until ${fmt(end)}`);
-    expect(stayPhrase(null, daysFromNow(-2))).toBeNull();
-    // Preset must not resurface behind an expired date — equally stale.
-    expect(stayPhrase("days", daysFromNow(-2))).toBeNull();
+    expect(stayPhrase(null, end)).toBe(`until ${dd(end)}`);
+  });
+
+  it("renders a future start and end as a DD/MM range", () => {
+    const start = daysFromNow(2);
+    const end = daysFromNow(5);
+    expect(stayPhrase(null, end, start)).toBe(`${dd(start)} – ${dd(end)}`);
+  });
+
+  it("composes a future start with a preset", () => {
+    const start = daysFromNow(2);
+    expect(stayPhrase("days", null, start)).toBe(`for a few days from ${dd(start)}`);
+  });
+
+  it("renders a bare future start with no preset", () => {
+    const start = daysFromNow(2);
+    expect(stayPhrase(null, null, start)).toBe(`from ${dd(start)}`);
+  });
+
+  it("drops a start that has already arrived", () => {
+    const end = daysFromNow(3);
+    expect(stayPhrase(null, end, daysFromNow(-1))).toBe(`until ${dd(end)}`);
+    expect(stayPhrase("days", null, new Date().toISOString())).toBe("for a few days");
   });
 
   it("end date still applies on its own day", () => {
     const today = new Date().toISOString();
-    expect(stayPhrase(null, today)).toBe(`until ${fmt(today)}`);
+    expect(stayPhrase(null, today)).toBe(`until ${dd(today)}`);
   });
 
-  describe("start date (#20)", () => {
-    it("future start alone renders 'from …'", () => {
-      const start = daysFromNow(2);
-      expect(stayPhrase(null, null, start)).toBe(`from ${fmt(start)}`);
-    });
-
-    it("future start + end renders the full range", () => {
-      const start = daysFromNow(2);
-      const end = daysFromNow(5);
-      expect(stayPhrase(null, end, start)).toBe(`from ${fmt(start)} until ${fmt(end)}`);
-    });
-
-    it("future start composes with a preset", () => {
-      const start = daysFromNow(2);
-      expect(stayPhrase("days", null, start)).toBe(`for a few days from ${fmt(start)}`);
-    });
-
-    it("a start that has arrived collapses to the plain form", () => {
-      const end = daysFromNow(3);
-      // Started yesterday: reads as a normal in-progress stay.
-      expect(stayPhrase(null, end, daysFromNow(-1))).toBe(`until ${fmt(end)}`);
-      // Starts today: the stay has begun today, same collapse.
-      expect(stayPhrase("days", null, new Date().toISOString())).toBe("for a few days");
-    });
-
-    it("null start means already-with-you (no change from before)", () => {
-      const end = daysFromNow(3);
-      expect(stayPhrase(null, end, null)).toBe(`until ${fmt(end)}`);
-    });
-
-    it("fully stale range renders nothing", () => {
-      expect(stayPhrase(null, daysFromNow(-1), daysFromNow(2))).toBeNull();
-    });
+  it("renders nothing once the stay has ended, preset included", () => {
+    expect(stayPhrase(null, daysFromNow(-2))).toBeNull();
+    expect(stayPhrase("days", daysFromNow(-2))).toBeNull();
+    expect(stayPhrase(null, daysFromNow(-1), daysFromNow(2))).toBeNull();
   });
 });
 

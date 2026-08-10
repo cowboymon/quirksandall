@@ -211,66 +211,60 @@ export function canSeeMedical(purchaseStatus: "free" | "paid"): boolean {
   return purchaseStatus === "paid";
 }
 
-/** Stay duration at share time (§5.1) — turns a link's preset/end-date into a
- * short, sitter-facing orientation phrase, or null when nothing is set.
- * The recipient page composes e.g. "Biscuit is with you {phrase}." */
-export type StayPreset = "hours" | "overnight" | "days" | "longer";
-
+/** Stay duration, COMPACT — for the owner's dashboard, where each link gets
+ * one narrow row and a spelled-out "from Sat 12 Aug until Tue 15 Aug" wraps.
+ * Dates are bare DD/MM; the caller supplies the "Staying " prefix:
+ *
+ *   both dates   "Staying 12/08 – 15/08"
+ *   end only     "Staying until 15/08"
+ *   start only   "Staying for a few days from 12/08"
+ *   preset only  "Staying for a few days"
+ *
+ * The sitter-facing recipient page uses stayStatus() instead, which spells
+ * dates out in full and describes the phase in a complete sentence.
+ */
 export function stayPhrase(preset?: string | null, endsAt?: string | null, startsAt?: string | null): string | null {
-  const fmt = (d: Date) => d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+  const dd = (d: Date) => `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+  const parse = (v?: string | null) => {
+    if (!v) return null;
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? null : d;
+  };
 
-  // Start date (#20): only meaningful while it's still ahead — "from Sat 12
-  // Aug" read on the 14th is noise, so once the start day arrives the phrase
-  // collapses to the plain end-date/preset form below. A null start means
-  // "already with you" (the common set-it-as-they-leave case), so nothing
-  // needs to store an explicit "today".
-  if (startsAt) {
-    const s = new Date(startsAt);
-    if (!isNaN(s.getTime())) {
-      const startOfDay = new Date(s);
-      startOfDay.setHours(0, 0, 0, 0);
-      if (startOfDay.getTime() > Date.now()) {
-        if (endsAt) {
-          const e = new Date(endsAt);
-          if (!isNaN(e.getTime())) {
-            const endOfDay = new Date(e);
-            endOfDay.setHours(23, 59, 59, 999);
-            if (endOfDay.getTime() >= Date.now()) return `from ${fmt(s)} until ${fmt(e)}`;
-            return null; // whole range already stale — same rule as below
-          }
-        }
-        const tail = stayPresetPhrase(preset);
-        return tail ? `${tail} from ${fmt(s)}` : `from ${fmt(s)}`;
-      }
-    }
+  const end = parse(endsAt);
+  const start = parse(startsAt);
+
+  // A stay that has already ended tells the owner something false — "until
+  // 15/08" read on the 20th implies it's still running. Once the end date
+  // passes nothing is shown, not even the preset ("for a few days" is equally
+  // stale once the stay it described is over). Enforced here so every surface
+  // inherits it. Valid through the whole of the end day, not up to its
+  // midnight: a stay "until 15/08" still applies at 6pm on the 15th.
+  if (end) {
+    const endOfDay = new Date(end);
+    endOfDay.setHours(23, 59, 59, 999);
+    if (endOfDay.getTime() < Date.now()) return null;
   }
-  if (endsAt) {
-    const d = new Date(endsAt);
-    // A stay that has already ended tells a sitter something false — "until
-    // Sat 3 Aug" read on the 10th implies they're still on duty. Once the end
-    // date passes, the date stops counting and we fall through to the preset
-    // (or to nothing), rather than showing a stale instruction. Enforced here
-    // so every surface — recipient page, in-app preview, dashboard — inherits
-    // it without each having to remember.
-    if (!isNaN(d.getTime())) {
-      // Valid through the whole of the end day, not up to its midnight — a
-      // stay "until Sat 3 Aug" still applies at 6pm on Sat 3 Aug.
-      const endOfDay = new Date(d);
-      endOfDay.setHours(23, 59, 59, 999);
-      if (endOfDay.getTime() >= Date.now()) {
-        return `until ${d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}`;
-      }
-      // Expired: don't fall through to the preset either — "for a few days"
-      // is equally stale once the stay it described is over.
-      return null;
-    }
+
+  // Only a start still in the future is worth the space — one that has
+  // arrived is just "the stay is on", which the end date already conveys.
+  let startAhead: Date | null = null;
+  if (start) {
+    const dayStart = new Date(start);
+    dayStart.setHours(0, 0, 0, 0);
+    if (dayStart.getTime() > Date.now()) startAhead = start;
   }
-  return stayPresetPhrase(preset);
+
+  if (end && startAhead) return `${dd(startAhead)} – ${dd(end)}`;
+  if (end) return `until ${dd(end)}`;
+  const phrase = stayPresetPhrase(preset);
+  if (startAhead) return phrase ? `${phrase} from ${dd(startAhead)}` : `from ${dd(startAhead)}`;
+  return phrase;
 }
 
 /** Sitter-facing stay status (§5.1) — a COMPLETE sentence describing where
  * the stay is up to, or null when the owner set nothing. Distinct from
- * stayPhrase(), which returns a bare fragment for the owner's dashboard.
+ * stayPhrase(), which returns a compact fragment for the owner's dashboard.
  *
  * Four phases:
  *   before   "3 days until Olive is with you — Sat 12 Aug to Tue 15 Aug."
