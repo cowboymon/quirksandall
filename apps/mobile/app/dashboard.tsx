@@ -10,6 +10,7 @@ import { Eyebrow, Card } from "../components/ui";
 import PetSwitcher from "../components/PetSwitcher";
 import ConfirmModal from "../components/ConfirmModal";
 import DurationModal from "../components/DurationModal";
+import LinkActionsSheet from "../components/LinkActionsSheet";
 import { Skeleton } from "../components/Skeleton";
 import { useActivePetStore } from "../stores/activePet";
 import { colors, computeAge, capitalizeFirst, orderedCommands, possessive, stayPhrase, isUnlocked } from "@quirksandall/shared";
@@ -65,6 +66,7 @@ export default function Dashboard() {
   const [creatingLink, setCreatingLink] = useState(false);
   const [revokeTarget, setRevokeTarget] = useState<OwnerLink | null>(null);
   const [durationTarget, setDurationTarget] = useState<OwnerLink | null>(null);
+  const [actionsTarget, setActionsTarget] = useState<OwnerLink | null>(null);
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [deletionScheduled, setDeletionScheduled] = useState(false);
   // The PIN this device remembers for the active pet, shown inline on each
@@ -529,10 +531,13 @@ export default function Dashboard() {
 
               </View>
               {/* Action row, left→right: Edit → Share → Delete (#71). Edit is a
-                  standalone button (renames inline) rather than a pencil hung off
-                  the link name. */}
+                  standalone button rather than a pencil hung off the link name.
+                  It opens a menu rather than renaming directly: a pencil reads
+                  as "edit this link", and the stay dates are an edit of the
+                  link too — hanging them solely off a line of text that looks
+                  like the static "Viewed …" line left them undiscoverable. */}
               <TouchableOpacity
-                onPress={() => { setRenamingId(link.id); setRenameValue(link.label ?? ""); }}
+                onPress={() => setActionsTarget(link)}
                 style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}
               >
                 <Entypo name="edit" size={13} color={colors.cardDarkText} />
@@ -745,6 +750,25 @@ export default function Dashboard() {
     {/* Outside the ScrollView: DurationModal is an absolute-fill overlay, not
         an RN Modal, and an absolute child of scroll content scrolls away with
         it. As a sibling it pins to the viewport. */}
+    {actionsTarget && (
+      <LinkActionsSheet
+        visible={!!actionsTarget}
+        linkLabel={actionsTarget.label ?? ""}
+        onRename={() => {
+          const target = actionsTarget;
+          setActionsTarget(null);
+          setRenamingId(target.id);
+          setRenameValue(target.label ?? "");
+        }}
+        onStayDates={() => {
+          const target = actionsTarget;
+          setActionsTarget(null);
+          setDurationTarget(target);
+        }}
+        onClose={() => setActionsTarget(null)}
+      />
+    )}
+
     {durationTarget && (
       <DurationModal
         visible={!!durationTarget}
