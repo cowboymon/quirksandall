@@ -102,11 +102,11 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
   }
 
   // Compute age
-  const { computeAge, orderedCommands, stayPhrase } = await import("@quirksandall/shared");
+  const { computeAge, orderedCommands, stayStatus } = await import("@quirksandall/shared");
   const age = computeAge(pet.dob, pet.dob_is_estimated);
   // Stay-duration orientation (§5.1) — only the owner-set phrase, no raw dates
   // beyond the friendly "until …" form. Owner previews don't show it.
-  const stayNote = preview ? null : stayPhrase((link as any).duration_preset, (link as any).ends_at, (link as any).starts_at);
+  const stayNote = preview ? null : stayStatus(pet.name ?? "", (link as any).duration_preset, (link as any).ends_at, (link as any).starts_at);
 
   // PRODUCT DECISION (v1, do not reopen without a product call): the document
   // vault is owner-side only. Vaccination/flea-worm documents are deliberately

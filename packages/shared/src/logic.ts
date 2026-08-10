@@ -268,6 +268,79 @@ export function stayPhrase(preset?: string | null, endsAt?: string | null, start
   return stayPresetPhrase(preset);
 }
 
+/** Sitter-facing stay status (§5.1) — a COMPLETE sentence describing where
+ * the stay is up to, or null when the owner set nothing. Distinct from
+ * stayPhrase(), which returns a bare fragment for the owner's dashboard.
+ *
+ * Four phases:
+ *   before   "3 days until Olive is with you — Sat 12 Aug to Tue 15 Aug."
+ *   during   "Olive's with you from Sat 12 Aug to Tue 15 Aug."
+ *   ending   "Olive's with you for another 2 days — until Tue 15 Aug."
+ *   over     "Olive is no longer staying with you."
+ *
+ * All comparisons are day-granular: a stay "until Tue 15 Aug" is still on at
+ * 6pm on the 15th. `now` is injectable so the phases are testable without
+ * mocking the clock. Safe to compute per request — the recipient page is
+ * force-dynamic, so the countdown is never served from a cache.
+ */
+const STAY_ENDING_SOON_DAYS = 3;
+
+export function stayStatus(
+  petName: string,
+  preset?: string | null,
+  endsAt?: string | null,
+  startsAt?: string | null,
+  now: Date = new Date(),
+): string | null {
+  const name = (petName ?? "").trim() || "Your pet";
+  const poss = possessive(name);
+
+  const dayStart = (d: Date) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+  const parse = (v?: string | null) => {
+    if (!v) return null;
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? null : dayStart(d);
+  };
+  // Whole calendar days between two day-starts. Rounded because DST shifts an
+  // interval by an hour, which would otherwise floor a clean 3 days to 2.
+  const daysBetween = (from: Date, to: Date) => Math.round((to.getTime() - from.getTime()) / 86400000);
+  const fmt = (d: Date) => d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+
+  const today = dayStart(now);
+  const start = parse(startsAt);
+  const end = parse(endsAt);
+
+  // Over. Stated plainly rather than silently dropping the banner, so a sitter
+  // who opens an old link learns the stay finished instead of seeing nothing.
+  if (end && daysBetween(today, end) < 0) return `${name} is no longer staying with you.`;
+
+  // Not started. Only a start still in the future counts — one that has arrived
+  // is just "during", below.
+  if (start && daysBetween(today, start) > 0) {
+    const n = daysBetween(today, start);
+    if (n === 1) return `${name} is with you from tomorrow${end ? ` until ${fmt(end)}` : ""}.`;
+    const tail = end ? ` — ${fmt(start)} to ${fmt(end)}` : ` — from ${fmt(start)}`;
+    return `${n} days until ${name} is with you${tail}.`;
+  }
+
+  // Under way, with a known end.
+  if (end) {
+    const left = daysBetween(today, end);
+    if (left === 0) return `${poss} with you until the end of today.`;
+    if (left === 1) return `${poss} with you for one more day — until ${fmt(end)}.`;
+    if (left <= STAY_ENDING_SOON_DAYS) return `${poss} with you for another ${left} days — until ${fmt(end)}.`;
+    return start
+      ? `${poss} with you from ${fmt(start)} to ${fmt(end)}.`
+      : `${poss} with you until ${fmt(end)}.`;
+  }
+
+  // No end date: fall back to the fuzzy preset, then to a bare start date.
+  const phrase = stayPresetPhrase(preset);
+  if (phrase) return `${poss} with you ${phrase}.`;
+  if (start) return `${poss} with you from ${fmt(start)}.`;
+  return null;
+}
+
 function stayPresetPhrase(preset?: string | null): string | null {
   switch (preset) {
     case "hours": return "for a few hours";

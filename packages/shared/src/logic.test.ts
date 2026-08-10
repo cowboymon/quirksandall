@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { stayPhrase, treatEntries } from "./logic";
+import { stayPhrase, stayStatus, treatEntries } from "./logic";
 
 const daysFromNow = (n: number) => {
   const d = new Date();
@@ -90,5 +90,77 @@ describe("treatEntries", () => {
     expect(treatEntries(undefined)).toEqual([]);
     expect(treatEntries({})).toEqual([]);
     expect(treatEntries([{}])).toEqual([]);
+  });
+});
+
+describe("stayStatus (#20 — sitter-facing phases)", () => {
+  const AT = (iso: string) => new Date(`${iso}T09:00:00`);
+  const NOW = AT("2026-08-10");
+  const fmt = (iso: string) =>
+    new Date(`${iso}T00:00:00`).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+
+  it("counts down before the stay starts", () => {
+    expect(stayStatus("Olive", null, "2026-08-16", "2026-08-13", NOW)).toBe(
+      `3 days until Olive is with you — ${fmt("2026-08-13")} to ${fmt("2026-08-16")}.`
+    );
+  });
+
+  it("says tomorrow rather than '1 days'", () => {
+    expect(stayStatus("Olive", null, "2026-08-16", "2026-08-11", NOW)).toBe(
+      `Olive is with you from tomorrow until ${fmt("2026-08-16")}.`
+    );
+  });
+
+  it("counts down with no end date", () => {
+    expect(stayStatus("Olive", null, null, "2026-08-14", NOW)).toBe(
+      `4 days until Olive is with you — from ${fmt("2026-08-14")}.`
+    );
+  });
+
+  it("shows the full range once under way", () => {
+    expect(stayStatus("Olive", null, "2026-08-20", "2026-08-08", NOW)).toBe(
+      `Olive's with you from ${fmt("2026-08-08")} to ${fmt("2026-08-20")}.`
+    );
+  });
+
+  it("switches to a countdown near the end", () => {
+    expect(stayStatus("Olive", null, "2026-08-12", "2026-08-08", NOW)).toBe(
+      `Olive's with you for another 2 days — until ${fmt("2026-08-12")}.`
+    );
+  });
+
+  it("handles the last day and the day before it", () => {
+    expect(stayStatus("Olive", null, "2026-08-11", null, NOW)).toBe(
+      `Olive's with you for one more day — until ${fmt("2026-08-11")}.`
+    );
+    expect(stayStatus("Olive", null, "2026-08-10", null, NOW)).toBe(
+      "Olive's with you until the end of today."
+    );
+  });
+
+  it("states plainly when the stay is over", () => {
+    expect(stayStatus("Olive", "days", "2026-08-09", "2026-08-01", NOW)).toBe(
+      "Olive is no longer staying with you."
+    );
+  });
+
+  it("a start that has arrived reads as under way, not as a countdown", () => {
+    expect(stayStatus("Olive", null, "2026-08-20", "2026-08-10", NOW)).toBe(
+      `Olive's with you from ${fmt("2026-08-10")} to ${fmt("2026-08-20")}.`
+    );
+  });
+
+  it("falls back to the preset when there's no end date", () => {
+    expect(stayStatus("Olive", "days", null, null, NOW)).toBe("Olive's with you for a few days.");
+    expect(stayStatus("Olive", "overnight", null, null, NOW)).toBe("Olive's with you overnight.");
+  });
+
+  it("returns null when the owner set nothing", () => {
+    expect(stayStatus("Olive", null, null, null, NOW)).toBeNull();
+  });
+
+  it("possessives a name ending in s, and copes with a blank name", () => {
+    expect(stayStatus("Gus", "overnight", null, null, NOW)).toBe("Gus' with you overnight.");
+    expect(stayStatus("", "overnight", null, null, NOW)).toBe("Your pet's with you overnight.");
   });
 });

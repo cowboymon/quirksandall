@@ -104,7 +104,10 @@ export default function RecipientView({ profile, token }: Props) {
           className="mt-4 rounded-card px-4 py-2.5 text-sm font-medium"
           style={{ backgroundColor: SECONDARY, color: CRIMSON }}
         >
-          {possessive(pet.name?.trim() ?? "")} with you {stayNote}.
+          {/* Already a complete sentence from stayStatus() — it varies by
+              phase ("3 days until…", "…for another 2 days…", "no longer
+              staying…"), so it can't be composed from a fragment here. */}
+          {stayNote}
         </div>
       )}
 
