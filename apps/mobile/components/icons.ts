@@ -4,15 +4,24 @@
 // Import icons from HERE, never from "phosphor-react-native" directly. The
 // package's barrel re-exports all ~1500 icons, and Metro does not tree-shake,
 // so a single barrel import drags roughly 26MB of icon source into the bundle.
-// The per-icon subpath used below is a published entry point (see the
-// "./src/icons/*" key in the package's exports map), so this is a supported
-// deep import rather than reaching into internals — and only the icons listed
-// here are bundled.
+// Measured on this app (expo export, iOS): barrel = 12.3 MB bundle,
+// per-icon = 5.48 MB. The per-icon modules pull in only an icon-base and
+// that icon's own path data, never the barrel.
+//
+// The "./src/icons/*" subpath below is published in the package's exports
+// map, so both TypeScript and Metro resolve it. (lib/module/icons/* also
+// bundles, but TypeScript refuses it — the exports map doesn't list it.)
+//
+// NOTE: Metro caches its module map, so a newly added icon may fail to
+// resolve until you restart with `npx expo start -c`.
 //
 // Adding an icon: find it at phosphoricons.com, add a line below in
 // alphabetical order. Weights are per-usage — `weight="fill"` where a solid
 // glyph is wanted, otherwise the default regular stroke.
-export { type Icon, type IconProps, type IconWeight } from "phosphor-react-native";
+// `export type` (not `export { type ... }`) so this is guaranteed to be
+// erased at compile time. If it survived as a runtime import it would pull
+// the barrel back in and undo everything above.
+export type { Icon, IconProps, IconWeight } from "phosphor-react-native";
 
 export { AirplaneTilt } from "phosphor-react-native/src/icons/AirplaneTilt";
 export { Bell } from "phosphor-react-native/src/icons/Bell";
