@@ -28,7 +28,7 @@ export default function Header() {
           meta={{ location: "header" }}
           className="rounded-button bg-button px-4 py-2 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed"
         >
-          Get notified
+          Get Notified
         </TrackedLink>
       </div>
     </header>

@@ -134,7 +134,7 @@ export default function PrintableCapture({ slug }: { slug: string }) {
                 disabled={status === "loading"}
                 className="rounded-button bg-button px-4 py-2.5 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed disabled:opacity-70"
               >
-                {status === "loading" ? "Adding…" : "Get notified"}
+                {status === "loading" ? "Adding…" : "Get Notified"}
               </button>
             </form>
             <p className="mt-2 text-xs text-text-muted">

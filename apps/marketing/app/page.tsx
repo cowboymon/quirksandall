@@ -235,7 +235,7 @@ export default function Home() {
               meta={{ location: "mid" }}
               className="inline-block rounded-button bg-button px-5 py-3 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed"
             >
-              Get notified
+              Get Notified
             </TrackedLink>
           </div>
         </section>
