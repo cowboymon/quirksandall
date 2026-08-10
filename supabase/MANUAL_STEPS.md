@@ -11,6 +11,13 @@ you go. Newest work is at the top of each section.
 
 ## ▶️ Run now
 
+- [ ] **`20260810000001_rename_waitlist_to_marketing.sql`** — renames the
+  pre-launch email table `waitlist` → `marketing` (it's now an ongoing
+  marketing list, not just a launch waitlist). **Coordinated with the code
+  change** from `.from("waitlist")` to `.from("marketing")` — run this right
+  as the deploy goes live so inserts don't briefly miss the table. No column,
+  constraint or RLS change.
+
 - [x] **`20260808000001_share_link_starts_at.sql`** — adds `starts_at` to
   `share_links` for the stay start date (#20). *(Run 10 Aug 2026.)*
 

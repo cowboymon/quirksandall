@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "rate_limited" }, { status: 429 });
   }
 
-  const { error } = await supabase.from("waitlist").insert({ email, source });
+  const { error } = await supabase.from("marketing").insert({ email, source });
 
   // Duplicate email → unique violation (23505). Treat as success: a repeat
   // signup should land on the success state, not an error.

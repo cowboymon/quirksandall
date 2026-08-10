@@ -1,0 +1,12 @@
+-- Rename the pre-launch email table `waitlist` → `marketing`.
+--
+-- It's been repurposed from a launch-only waitlist into an ongoing marketing
+-- list (site signups + post-download capture, mirrored into a Resend audience),
+-- so the name now matches what it holds. Columns/constraints/RLS are unchanged;
+-- only the table name moves. RENAME carries indexes, the unique constraint and
+-- the RLS policy set across automatically.
+--
+-- Coordinated with the code change from `.from("waitlist")` to
+-- `.from("marketing")` in the marketing app (waitlist API + admin read/export).
+-- Run this at the same time that deploy goes live.
+alter table if exists public.waitlist rename to marketing;
