@@ -4,7 +4,7 @@ import { useMemo, useState, useRef, forwardRef } from "react";
 import { Keyboard, Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
 import { CalendarDots, LockSimple, XCircle } from "./icons";
 import { router, useNavigation } from "expo-router";
-import { colors, radius, capitalizeFirst, capitalizeWords, formatPhone, displayDateToISO } from "@quirksandall/shared";
+import { colors, radius, capitalizeFirst, capitalizeWords, formatPhone, displayDateToISO, dateFieldError } from "@quirksandall/shared";
 import DatePickerSheet from "./DatePickerSheet";
 
 // "‹ Back" for onboarding/stack screens. Uses the NEAREST navigator's goBack
@@ -197,21 +197,13 @@ export function DateInput({
   const seedISO = parsed ?? notBeforeISO;
   const seed = useMemo(() => (seedISO ? new Date(`${seedISO}T00:00:00`) : new Date()), [seedISO]);
 
-  // The parser already rejects impossible dates (35/08/1936 round-trips to
-  // null) — but silently, so the form just accepted the text and dropped it
-  // on save. Say so instead, once a full date has been typed. Range errors
-  // follow the field's meaning: a birthday can't be in the future, an end
-  // date can't be in the past (today is fine for both).
-  const dateError = useMemo(() => {
-    const s = (value as string) ?? "";
-    if (s.length !== 10) return null;
-    if (!parsed) return "That date doesn't exist — check the day and month";
-    const todayISO = new Date().toISOString().slice(0, 10);
-    if ((range === "birthday" || range === "past") && parsed > todayISO) return "That's in the future";
-    if (range === "future" && parsed < todayISO) return "That date has already passed";
-    if (notBeforeISO && parsed < notBeforeISO) return "Can't be before the start date";
-    return null;
-  }, [value, parsed, range, notBeforeISO]);
+  // Shared with the form gating Save (see dateFieldError in
+  // @quirksandall/shared) — when only this component knew, an invalid date
+  // could be shown in red here and saved anyway.
+  const dateError = useMemo(
+    () => dateFieldError(value as string, range, notBefore),
+    [value, range, notBefore],
+  );
 
   const commit = (d: Date) => {
     onChangeText(
