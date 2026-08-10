@@ -18,12 +18,16 @@ export default function EditEmergency() {
   const { section } = useLocalSearchParams<{ section?: string }>();
   const scrollRef = useRef<ScrollView>(null);
   const pinY = useRef(0);
+  const backupY = useRef(0);
 
-  // Deep-link from the dashboard "Change PIN" quick action → scroll to (and
-  // open) the PIN editor.
+  // Deep-links from the dashboard land on the block they're about rather than
+  // the top of the screen: "Change PIN" → the PIN editor, the going-away nudge
+  // ("Check who's listed") → the backup contacts.
   useEffect(() => {
-    if (loading || section !== "pin") return;
-    const t = setTimeout(() => scrollRef.current?.scrollTo({ y: pinY.current, animated: true }), 400);
+    if (loading) return;
+    const target = section === "pin" ? pinY : section === "backup" ? backupY : null;
+    if (!target) return;
+    const t = setTimeout(() => scrollRef.current?.scrollTo({ y: target.current, animated: true }), 400);
     return () => clearTimeout(t);
   }, [loading, section]);
 
@@ -216,7 +220,7 @@ export default function EditEmergency() {
           </View>
         </Card>
 
-        <Card>
+        <Card onLayout={(e) => { backupY.current = e.nativeEvent.layout.y; }}>
           <Eyebrow bold>Backup contact</Eyebrow>
           <View style={{ gap: 8, marginTop: 12 }}>
             <LabeledInput name label="Name" placeholder="Name" value={backupName} onChangeText={setBackupName} />

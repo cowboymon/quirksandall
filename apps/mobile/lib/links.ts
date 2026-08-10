@@ -16,6 +16,7 @@ export type OwnerLink = {
   created_at: string;
   pin_hash: string | null;
   duration_preset: string | null;
+  starts_at: string | null;
   ends_at: string | null;
   first_shared_at: string | null;
 };
@@ -31,19 +32,26 @@ export function randomToken(): string {
 export async function listLinks(petId: string): Promise<OwnerLink[]> {
   const { data } = await supabase
     .from("share_links")
-    .select("id, token, label, revoked, last_viewed_at, created_at, pin_hash, duration_preset, ends_at, first_shared_at")
+    .select("id, token, label, revoked, last_viewed_at, created_at, pin_hash, duration_preset, starts_at, ends_at, first_shared_at")
     .eq("pet_id", petId)
     .eq("revoked", false)
     .order("created_at", { ascending: true });
   const links = data ?? [];
 
   // A stay that has already finished shouldn't linger on the dashboard as if
-  // it were still running. stayPhrase() already refuses to render an expired
-  // date to a sitter; this clears it at the source so the owner's own view is
-  // accurate too, and so a link they reuse next month doesn't carry last
+  // it were still running. This clears it at the source so the owner's own
+  // view is accurate, and so a link they reuse next month doesn't carry last
   // month's dates. Silent by design — telling someone their pet's stay ended
-  // is news they already have. Fire-and-forget: a failed cleanup is cosmetic,
-  // and stayPhrase still hides it.
+  // is news they already have. Fire-and-forget: a failed cleanup is cosmetic.
+  //
+  // Deliberate consequence (decided 10 Aug 2026): the recipient page's
+  // "Olive is no longer staying with you." line is therefore TRANSIENT — it
+  // shows to sitters only until the owner next opens their dashboard, which
+  // is when this runs. That's the intended trade: the message is a courtesy
+  // for the day or two after a stay, and keeping the clearing means a reused
+  // link never greets a new sitter with a stale "no longer staying". Don't
+  // "fix" the disappearing message by removing this cleanup without also
+  // handling reuse (clearing on re-share instead of on expiry).
   const expired = links.filter((l) => {
     if (!l.ends_at) return false;
     const d = new Date(l.ends_at);
@@ -53,9 +61,9 @@ export async function listLinks(petId: string): Promise<OwnerLink[]> {
   });
   if (expired.length) {
     const ids = expired.map((l) => l.id);
-    supabase.from("share_links").update({ duration_preset: null, ends_at: null }).in("id", ids).then(() => {});
+    supabase.from("share_links").update({ duration_preset: null, starts_at: null, ends_at: null }).in("id", ids).then(() => {});
     for (const l of links) {
-      if (ids.includes(l.id)) { l.duration_preset = null; l.ends_at = null; }
+      if (ids.includes(l.id)) { l.duration_preset = null; l.starts_at = null; l.ends_at = null; }
     }
   }
   return links;
@@ -76,7 +84,7 @@ export async function createLink(petId: string, label: string): Promise<OwnerLin
     const { data, error } = await supabase
       .from("share_links")
       .insert({ pet_id: petId, token: randomToken(), label, pin_hash: existing?.pin_hash ?? null })
-      .select("id, token, label, revoked, last_viewed_at, created_at, pin_hash, duration_preset, ends_at, first_shared_at")
+      .select("id, token, label, revoked, last_viewed_at, created_at, pin_hash, duration_preset, starts_at, ends_at, first_shared_at")
       .single();
     if (!error && data) {
       // Value Moment — a shareable link now exists for this pet.
@@ -102,13 +110,15 @@ export async function renameLink(id: string, label: string): Promise<void> {
 
 // Set (or clear) a link's stay duration (§5.1). A preset and an exact end date
 // are mutually exclusive: choosing a preset clears ends_at and vice-versa.
-// Pass both null to clear.
+// starts_at (#20) is independent — it composes with either. Pass all null to
+// clear.
 export async function setLinkDuration(
   id: string,
   duration_preset: string | null,
-  ends_at: string | null
+  ends_at: string | null,
+  starts_at: string | null = null
 ): Promise<void> {
-  await supabase.from("share_links").update({ duration_preset, ends_at }).eq("id", id);
+  await supabase.from("share_links").update({ duration_preset, ends_at, starts_at }).eq("id", id);
 }
 
 export async function revokeLink(id: string): Promise<{ error: string | null }> {

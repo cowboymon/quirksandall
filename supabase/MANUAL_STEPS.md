@@ -11,12 +11,15 @@ you go. Newest work is at the top of each section.
 
 ## ▶️ Run now
 
-- [ ] **`20260806000001_lock_down_trigger_function_grants.sql`** — revokes
+- [x] **`20260808000001_share_link_starts_at.sql`** — adds `starts_at` to
+  `share_links` for the stay start date (#20). *(Run 10 Aug 2026.)*
+
+- [x] **`20260806000001_lock_down_trigger_function_grants.sql`** — revokes
   the default `PUBLIC` execute grant on `handle_new_user()` (and
   `rls_auto_enable()` if present) so Supabase's security advisor no longer
   flags them as client-callable. Trigger-only functions, no behavior change.
   Also see the note on `storage.pet-photos` "allows listing" in AGENTS.md —
-  intentionally accepted, not fixed by a migration.
+  intentionally accepted, not fixed by a migration. *(Run 8 Aug 2026.)*
 
 - [x] **`20260804000002_storage_bucket_limits.sql`** — sets `file_size_limit` +
   `allowed_mime_types` on the `pet-photos`/`pet-documents` buckets so Supabase

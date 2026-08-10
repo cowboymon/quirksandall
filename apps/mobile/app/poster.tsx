@@ -5,13 +5,13 @@
 // the finished PNGs.
 import { useCallback, useEffect, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Image, TextInput, Share, ActivityIndicator } from "react-native";
+import { Camera } from "../components/icons";
 import { AppAlert } from "../stores/appAlert";
 import { router, useFocusEffect } from "expo-router";
 // SDK 54 moved the classic download/read/write API to /legacy; the new
 // File/Directory API isn't needed for these one-shot poster downloads.
 import * as FileSystem from "expo-file-system/legacy";
 import * as ImagePicker from "expo-image-picker";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { supabase } from "../lib/supabase";
 import { Eyebrow, Input, DateInput } from "../components/ui";
 import { useActivePetStore } from "../stores/activePet";
@@ -306,7 +306,7 @@ export default function MissingPoster() {
               </View>
               <View style={{ marginTop: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                 <TouchableOpacity onPress={() => pickPhotoFor(f.key)} disabled={regenerating !== null} style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-                  <Ionicons name="camera-outline" size={15} color={colors.textMuted} />
+                  <Camera size={15} color={colors.textMuted} />
                   <Text style={{ color: colors.textMuted, fontSize: 12, fontFamily: "Satoshi-Medium" }}>
                     Change photo
                   </Text>
@@ -366,7 +366,7 @@ export default function MissingPoster() {
             <SmoothImage uri={profile.photoUrl} style={{ width: 40, height: 40, borderRadius: 20, borderWidth: 1, borderColor: colors.border }} />
           ) : (
             <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.secondary, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}>
-              <Ionicons name="camera-outline" size={18} color={colors.textMuted} />
+              <Camera size={18} color={colors.textMuted} />
             </View>
           )}
           <View style={{ flex: 1 }}>
@@ -412,7 +412,7 @@ export default function MissingPoster() {
         <Eyebrow>Last seen</Eyebrow>
         <View style={{ marginTop: 6, gap: 8 }}>
           <Input value={lastSeenArea} onChangeText={setLastSeenArea} placeholder="Newtown IGA @ 4:40pm" />
-          <DateInput value={lastSeenDate} onChangeText={setLastSeenDate} />
+          <DateInput value={lastSeenDate} onChangeText={setLastSeenDate} range="past" pickerOnly />
         </View>
         <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 6 }}>Not saved to your profile.</Text>
       </View>

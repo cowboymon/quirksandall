@@ -1,17 +1,17 @@
 // Edit pet basics: photo, name, breed/species, DOB, sex, weight, microchip
 import { useState, useEffect, useRef } from "react";
 import { View, Text, Image, TouchableOpacity, Modal, Share, Platform } from "react-native";
+import { Trash } from "../../components/icons";
 import { AppAlert } from "../../stores/appAlert";
 import * as FileSystem from "expo-file-system/legacy";
 import * as ImagePicker from "expo-image-picker";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import { useActivePetStore } from "../../stores/activePet";
 import EditShell from "../../components/EditShell";
 import { Input, Eyebrow, Card, Select, DateInput, WeightInput } from "../../components/ui";
-import { computeAge, colors, isoToDisplayDate, displayDateToISO, capitalizeFirst, formatWeight, formatPhone, formatVetName } from "@quirksandall/shared";
+import { computeAge, colors, isoToDisplayDate, displayDateToISO, capitalizeFirst, formatWeight, formatPhone, formatVetName, treatEntries } from "@quirksandall/shared";
 
 const SPECIES_OPTIONS = ["Dog", "Cat", "Bird", "Rabbit", "Other"];
 import { uploadPetPhoto } from "../../lib/uploadPhoto";
@@ -77,11 +77,14 @@ function buildProfileSummary(d: { pet: any; behavior: any; routine: any; medical
   const f = r.feeding ?? {};
   if (f.breakfast || f.lunch || f.dinner || f.treats || f.notes || r.walks || r.sleep || r.bathroom_habits) {
     H("Routine");
-    const meal = (label: string, s: any) => { if (s && (s.time || s.amount)) L(label, [s.time, s.amount].filter(Boolean).join(" — ")); };
+    const meal = (label: string, s: any) => {
+      if (s?.skip) { L(label, "Doesn't have this meal"); return; }
+      if (s && (s.time || s.amount)) L(label, [s.time, s.amount].filter(Boolean).join(" — "));
+    };
     meal("Breakfast", f.breakfast);
     meal("Lunch", f.lunch);
     meal("Dinner", f.dinner);
-    if (f.treats && (f.treats.type || f.treats.limit)) L("Treats", [f.treats.type, f.treats.limit].filter(Boolean).join(" — "));
+    for (const t of treatEntries(f.treats)) L("Treats", [t.type, t.limit].filter(Boolean).join(" — "));
     L("Feeding notes", f.notes);
     L("Walks", r.walks);
     L("Sleep", r.sleep);
@@ -304,7 +307,7 @@ export default function EditPet() {
             borderWidth: 2, borderColor: "#F8ECEE",
           }}
         >
-          <Ionicons name="trash-outline" size={14} color="#F8ECEE" />
+          <Trash size={14} color="#F8ECEE" />
         </TouchableOpacity>
         <Text style={{ color: colors.accent, fontSize: 12, textAlign: "center", marginTop: 6 }}>
           {photoUri ? "Change photo" : "Add photo"}
@@ -345,7 +348,7 @@ export default function EditPet() {
             {age && <Text style={{ color: colors.textMuted, fontSize: 12 }}>{age}</Text>}
           </View>
           <View style={{ marginTop: 4 }}>
-            <DateInput value={dob} onChangeText={setDob} range="birthday" />
+            <DateInput value={dob} onChangeText={setDob} range="birthday" pickerOnly />
           </View>
           <TouchableOpacity
             onPress={() => setDobIsEstimated(!dobIsEstimated)}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, ScrollView, Linking } from "react-native";
+import { Check } from "../components/icons";
 import { router } from "expo-router";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { type Plan } from "../lib/purchases";
 import { colors, LIFETIME_AVAILABLE } from "@quirksandall/shared";
 import { usePrices } from "../hooks/usePrices";
@@ -118,7 +118,7 @@ export default function Upgrade() {
                     justifyContent: "center",
                   }}
                 >
-                  <Ionicons name="checkmark" size={13} color="#F8ECEE" />
+                  <Check size={13} color="#F8ECEE" />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: "#510000", fontSize: 15, fontFamily: "Satoshi-Medium" }}>{f.label}</Text>
@@ -169,7 +169,7 @@ export default function Upgrade() {
                         alignItems: "center", justifyContent: "center",
                       }}
                     >
-                      {selected && <Ionicons name="checkmark" size={10} color="#F8ECEE" />}
+                      {selected && <Check size={10} color="#F8ECEE" />}
                     </View>
                   </View>
                   <Text style={{ fontFamily: "Tanker", fontSize: 24, color: "#510000", marginTop: 6 }}>{p.price}</Text>

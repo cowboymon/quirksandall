@@ -82,7 +82,14 @@ export type PetDocument = {
   uploadedAt: string;
 };
 
-export type FeedingSlot = { time: string; amount: string };
+// `skip` marks a meal the pet deliberately doesn't have (#23) — rendered as an
+// intentional "No lunch" rather than looking like missing data.
+export type FeedingSlot = { time: string; amount: string; skip?: boolean };
+
+// One approved treat. Historically `feeding.treats` was a single object; it can
+// now be an array (#24). Read through `treatEntries()` in logic.ts, which
+// normalises either shape — never index `.type`/`.limit` on it directly.
+export type TreatEntry = { type: string; limit: string };
 
 export type PetRoutine = {
   feeding: {
@@ -90,7 +97,7 @@ export type PetRoutine = {
     breakfast: FeedingSlot;
     lunch: FeedingSlot;
     dinner: FeedingSlot;
-    treats: { type: string; limit: string };
+    treats: TreatEntry | TreatEntry[];
     notes: string;
   };
   walks: string;

@@ -15,7 +15,7 @@
 // list filter instead of the Places API.
 import { useRef, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Modal, Pressable, Animated, Keyboard, Dimensions, ScrollView } from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { MagnifyingGlass } from "./icons";
 import * as Localization from "expo-localization";
 import { colors } from "@quirksandall/shared";
 import { FieldLabel } from "./ui";
@@ -95,7 +95,7 @@ export function InsurerInput({
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           style={{ position: "absolute", left: 10, zIndex: 1 }}
         >
-          <Ionicons name="search" size={16} color={colors.textMuted} />
+          <MagnifyingGlass size={16} color={colors.textMuted} />
         </TouchableOpacity>
         <TextInput
           value={value}

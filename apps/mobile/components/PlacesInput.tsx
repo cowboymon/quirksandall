@@ -13,7 +13,7 @@
 // dropdown pushing surrounding form content around as it opens/closes.
 import { useRef, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Modal, Pressable, Animated, Keyboard, Dimensions } from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { MagnifyingGlass } from "./icons";
 import { colors } from "@quirksandall/shared";
 import { FieldLabel } from "./ui";
 
@@ -122,7 +122,7 @@ export function LabeledPlacesInput({
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           style={{ position: "absolute", left: 10, zIndex: 1 }}
         >
-          <Ionicons name="search" size={16} color={colors.textMuted} />
+          <MagnifyingGlass size={16} color={colors.textMuted} />
         </TouchableOpacity>
         <TextInput
           value={value}

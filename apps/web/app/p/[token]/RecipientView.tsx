@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { RecipientProfile } from "@quirksandall/shared";
-import { formatWeight, formatPhone, formatVetName, possessive, commandStrengthLabel, mealSlotLabel, shortAddress, isSafeHttpsUrl, sanitizeTelValue } from "@quirksandall/shared";
+import { formatWeight, formatPhone, formatVetName, possessive, commandStrengthLabel, mealSlotLabel, shortAddress, isSafeHttpsUrl, sanitizeTelValue, treatEntries } from "@quirksandall/shared";
 import PINGate from "./PINGate";
 import { trackWeb, WebAnalyticsEvent } from "../../lib/analytics";
 
@@ -104,7 +104,10 @@ export default function RecipientView({ profile, token }: Props) {
           className="mt-4 rounded-card px-4 py-2.5 text-sm font-medium"
           style={{ backgroundColor: SECONDARY, color: CRIMSON }}
         >
-          {possessive(pet.name?.trim() ?? "")} with you {stayNote}.
+          {/* Already a complete sentence from stayStatus() — it varies by
+              phase ("3 days until…", "…for another 2 days…", "no longer
+              staying…"), so it can't be composed from a fragment here. */}
+          {stayNote}
         </div>
       )}
 
@@ -397,17 +400,19 @@ function hasContactData(c: NonNullable<RecipientProfile["emergencyContacts"]>): 
   );
 }
 
-function mealComplete(slot?: { time?: string; amount?: string }): boolean {
+function mealComplete(slot?: { time?: string; amount?: string; skip?: boolean }): boolean {
   // A meal needs BOTH a time and an amount to be useful to a sitter (#93) —
-  // a bare "7:30am" with no amount says nothing.
-  return !!(slot?.time && slot?.amount);
+  // a bare "7:30am" with no amount says nothing. A skipped meal (#23) is
+  // never "complete"; it renders through its own branch.
+  return !!(!slot?.skip && slot?.time && slot?.amount);
 }
 function hasFeeding(f: NonNullable<RecipientProfile["routine"]>["feeding"], medications: NonNullable<RecipientProfile["medical"]>["medications"] = []): boolean {
   // A meal-tied medication also earns the Feeding card its own row (with a
   // "See Medications" pointer), even if that meal itself was never filled in.
   return !!(
     mealComplete(f.breakfast) || mealComplete(f.lunch) || mealComplete(f.dinner) ||
-    f.treats?.type || f.notes ||
+    f.breakfast?.skip || f.lunch?.skip || f.dinner?.skip ||
+    treatEntries(f.treats).length > 0 || f.notes ||
     medications.some((m) => m.withMeal === "breakfast" || m.withMeal === "lunch" || m.withMeal === "dinner")
   );
 }
@@ -481,7 +486,7 @@ function InfoCard({ label, text, locked }: { label: string; text: string; locked
 }
 
 function FeedingCard({ feeding, medications }: { feeding: NonNullable<RecipientProfile["routine"]>["feeding"]; medications: NonNullable<RecipientProfile["medical"]>["medications"] }) {
-  const meals: [string, "breakfast" | "lunch" | "dinner", { time?: string; amount?: string } | undefined][] = [
+  const meals: [string, "breakfast" | "lunch" | "dinner", { time?: string; amount?: string; skip?: boolean } | undefined][] = [
     ["Breakfast", "breakfast", feeding.breakfast],
     ["Lunch", "lunch", feeding.lunch],
     ["Dinner", "dinner", feeding.dinner],
@@ -489,7 +494,7 @@ function FeedingCard({ feeding, medications }: { feeding: NonNullable<RecipientP
   // A meal renders if it has its own time+amount, OR if a medication is tied
   // to it — otherwise a med tied to an unfilled-in meal (e.g. "with lunch"
   // when lunch itself was never filled in) would have nowhere to point from.
-  const shown = meals.filter(([, key, slot]) => mealComplete(slot) || medications.some((m) => m.withMeal === key));
+  const shown = meals.filter(([, key, slot]) => mealComplete(slot) || slot?.skip || medications.some((m) => m.withMeal === key));
   return (
     <div className="bg-white border rounded-card overflow-hidden" style={{ borderColor: BORDER }}>
       <div className="px-4 pt-3 pb-2">
@@ -511,6 +516,9 @@ function FeedingCard({ feeding, medications }: { feeding: NonNullable<RecipientP
                 {slot?.time && slot?.amount ? " · " : ""}
                 {slot?.amount}
               </span>
+            ) : slot?.skip ? (
+              // #23 — deliberately no such meal, not missing data.
+              <span className="text-sm italic" style={{ color: MUTED }}>Doesn&apos;t have {label.toLowerCase()}</span>
             ) : (
               <span className="text-sm italic" style={{ color: MUTED }}>Medication only</span>
             )}
@@ -526,13 +534,22 @@ function FeedingCard({ feeding, medications }: { feeding: NonNullable<RecipientP
         </div>
         );
       })}
-      {(feeding.treats?.type || feeding.treats?.limit) && (
+      {treatEntries(feeding.treats).length > 0 && (
         <div className="flex px-4 py-2 gap-3" style={{ borderTop: `1px solid ${BORDER}` }}>
           <span className="text-sm font-medium w-20 shrink-0" style={{ color: MUTED }}>Treats</span>
-          <span className="text-sm" style={{ color: BODY }}>
-            {feeding.treats.type}
-            {feeding.treats.limit && <span className="block text-xs font-light" style={{ color: MUTED }}>{feeding.treats.limit}</span>}
-          </span>
+          <div className="flex flex-col gap-1">
+            {/* Limit sits inline, not on its own line: several treats stack up
+                fast otherwise. Never truncated or chipped — a limit is a
+                safety instruction a sitter has to read in full, and it's free
+                text of unbounded length. */}
+            {treatEntries(feeding.treats).map((t, ti) => (
+              <span key={ti} className="text-sm" style={{ color: BODY }}>
+                {t.type}
+                {t.type && t.limit ? <span className="font-light" style={{ color: MUTED }}> — {t.limit}</span> : null}
+                {!t.type && t.limit ? <span className="font-light" style={{ color: MUTED }}>{t.limit}</span> : null}
+              </span>
+            ))}
+          </div>
         </div>
       )}
       {feeding.notes && (

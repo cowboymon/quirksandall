@@ -211,33 +211,131 @@ export function canSeeMedical(purchaseStatus: "free" | "paid"): boolean {
   return purchaseStatus === "paid";
 }
 
-/** Stay duration at share time (§5.1) — turns a link's preset/end-date into a
- * short, sitter-facing orientation phrase, or null when nothing is set.
- * The recipient page composes e.g. "Biscuit is with you {phrase}." */
-export type StayPreset = "hours" | "overnight" | "days" | "longer";
+/** Stay duration, COMPACT — for the owner's dashboard, where each link gets
+ * one narrow row and a spelled-out "from Sat 12 Aug until Tue 15 Aug" wraps.
+ * Dates are bare DD/MM; the caller supplies the "Staying " prefix:
+ *
+ *   both dates   "Staying 12/08 – 15/08"
+ *   end only     "Staying until 15/08"
+ *   start only   "Staying for a few days from 12/08"
+ *   preset only  "Staying for a few days"
+ *
+ * The sitter-facing recipient page uses stayStatus() instead, which spells
+ * dates out in full and describes the phase in a complete sentence.
+ */
+export function stayPhrase(preset?: string | null, endsAt?: string | null, startsAt?: string | null): string | null {
+  const dd = (d: Date) => `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+  const parse = (v?: string | null) => {
+    if (!v) return null;
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? null : d;
+  };
 
-export function stayPhrase(preset?: string | null, endsAt?: string | null): string | null {
-  if (endsAt) {
-    const d = new Date(endsAt);
-    // A stay that has already ended tells a sitter something false — "until
-    // Sat 3 Aug" read on the 10th implies they're still on duty. Once the end
-    // date passes, the date stops counting and we fall through to the preset
-    // (or to nothing), rather than showing a stale instruction. Enforced here
-    // so every surface — recipient page, in-app preview, dashboard — inherits
-    // it without each having to remember.
-    if (!isNaN(d.getTime())) {
-      // Valid through the whole of the end day, not up to its midnight — a
-      // stay "until Sat 3 Aug" still applies at 6pm on Sat 3 Aug.
-      const endOfDay = new Date(d);
-      endOfDay.setHours(23, 59, 59, 999);
-      if (endOfDay.getTime() >= Date.now()) {
-        return `until ${d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}`;
-      }
-      // Expired: don't fall through to the preset either — "for a few days"
-      // is equally stale once the stay it described is over.
-      return null;
-    }
+  const end = parse(endsAt);
+  const start = parse(startsAt);
+
+  // A stay that has already ended tells the owner something false — "until
+  // 15/08" read on the 20th implies it's still running. Once the end date
+  // passes nothing is shown, not even the preset ("for a few days" is equally
+  // stale once the stay it described is over). Enforced here so every surface
+  // inherits it. Valid through the whole of the end day, not up to its
+  // midnight: a stay "until 15/08" still applies at 6pm on the 15th.
+  if (end) {
+    const endOfDay = new Date(end);
+    endOfDay.setHours(23, 59, 59, 999);
+    if (endOfDay.getTime() < Date.now()) return null;
   }
+
+  // Only a start still in the future is worth the space — one that has
+  // arrived is just "the stay is on", which the end date already conveys.
+  let startAhead: Date | null = null;
+  if (start) {
+    const dayStart = new Date(start);
+    dayStart.setHours(0, 0, 0, 0);
+    if (dayStart.getTime() > Date.now()) startAhead = start;
+  }
+
+  if (end && startAhead) return `${dd(startAhead)} – ${dd(end)}`;
+  if (end) return `until ${dd(end)}`;
+  const phrase = stayPresetPhrase(preset);
+  if (startAhead) return phrase ? `${phrase} from ${dd(startAhead)}` : `from ${dd(startAhead)}`;
+  return phrase;
+}
+
+/** Sitter-facing stay status (§5.1) — a COMPLETE sentence describing where
+ * the stay is up to, or null when the owner set nothing. Distinct from
+ * stayPhrase(), which returns a compact fragment for the owner's dashboard.
+ *
+ * Four phases:
+ *   before   "3 days until Olive is with you — Sat 12 Aug to Tue 15 Aug."
+ *   during   "Olive's with you from Sat 12 Aug to Tue 15 Aug."
+ *   ending   "Olive's with you for another 2 days — until Tue 15 Aug."
+ *   over     "Olive is no longer staying with you."
+ *
+ * All comparisons are day-granular: a stay "until Tue 15 Aug" is still on at
+ * 6pm on the 15th. `now` is injectable so the phases are testable without
+ * mocking the clock. Safe to compute per request — the recipient page is
+ * force-dynamic, so the countdown is never served from a cache.
+ */
+const STAY_ENDING_SOON_DAYS = 3;
+
+export function stayStatus(
+  petName: string,
+  preset?: string | null,
+  endsAt?: string | null,
+  startsAt?: string | null,
+  now: Date = new Date(),
+): string | null {
+  const name = (petName ?? "").trim() || "Your pet";
+  const poss = possessive(name);
+
+  const dayStart = (d: Date) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+  const parse = (v?: string | null) => {
+    if (!v) return null;
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? null : dayStart(d);
+  };
+  // Whole calendar days between two day-starts. Rounded because DST shifts an
+  // interval by an hour, which would otherwise floor a clean 3 days to 2.
+  const daysBetween = (from: Date, to: Date) => Math.round((to.getTime() - from.getTime()) / 86400000);
+  const fmt = (d: Date) => d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+
+  const today = dayStart(now);
+  const start = parse(startsAt);
+  const end = parse(endsAt);
+
+  // Over. Stated plainly rather than silently dropping the banner, so a sitter
+  // who opens an old link learns the stay finished instead of seeing nothing.
+  if (end && daysBetween(today, end) < 0) return `${name} is no longer staying with you.`;
+
+  // Not started. Only a start still in the future counts — one that has arrived
+  // is just "during", below.
+  if (start && daysBetween(today, start) > 0) {
+    const n = daysBetween(today, start);
+    if (n === 1) return `${name} is with you from tomorrow${end ? ` until ${fmt(end)}` : ""}.`;
+    const tail = end ? ` — ${fmt(start)} to ${fmt(end)}` : ` — from ${fmt(start)}`;
+    return `${n} days until ${name} is with you${tail}.`;
+  }
+
+  // Under way, with a known end.
+  if (end) {
+    const left = daysBetween(today, end);
+    if (left === 0) return `${poss} with you until the end of today.`;
+    if (left === 1) return `${poss} with you for one more day — until ${fmt(end)}.`;
+    if (left <= STAY_ENDING_SOON_DAYS) return `${poss} with you for another ${left} days — until ${fmt(end)}.`;
+    return start
+      ? `${poss} with you from ${fmt(start)} to ${fmt(end)}.`
+      : `${poss} with you until ${fmt(end)}.`;
+  }
+
+  // No end date: fall back to the fuzzy preset, then to a bare start date.
+  const phrase = stayPresetPhrase(preset);
+  if (phrase) return `${poss} with you ${phrase}.`;
+  if (start) return `${poss} with you from ${fmt(start)}.`;
+  return null;
+}
+
+function stayPresetPhrase(preset?: string | null): string | null {
   switch (preset) {
     case "hours": return "for a few hours";
     case "overnight": return "overnight";
@@ -246,6 +344,31 @@ export function stayPhrase(preset?: string | null, endsAt?: string | null): stri
     default: return null;
   }
 }
+
+/** Normalise `feeding.treats` (#24) — historically a single {type, limit}
+ * object, now optionally an array. Returns only entries with content. */
+export function treatEntries(treats: unknown): { type: string; limit: string }[] {
+  const list = Array.isArray(treats) ? treats : treats ? [treats] : [];
+  return list
+    .map((t: any) => ({ type: (t?.type ?? "").trim(), limit: (t?.limit ?? "").trim() }))
+    .filter((t) => t.type || t.limit);
+}
+
+/** Starter commands for quick-add chips (#18). Reward is deliberately absent —
+ * genuinely pet-specific, never pre-guessed. Recall's meaning intentionally
+ * flags reliability as a safety consideration, not just a definition (#22). */
+export const SUGGESTED_COMMANDS: { word: string; meaning: string }[] = [
+  { word: "Sit", meaning: "Bottom on the ground, stays until released" },
+  { word: "Stay", meaning: "Holds position until released" },
+  { word: "Down", meaning: "Lies down, stays until released" },
+  { word: "Come", meaning: "Comes back when called — if not 100% reliable, keep on lead around other dogs/roads" },
+  { word: "Wait", meaning: "Pauses briefly (doors, curbs) before continuing" },
+  { word: "Leave it", meaning: "Disengages from/ignores something on command" },
+  { word: "Drop it", meaning: "Releases whatever's in their mouth" },
+  { word: "Off", meaning: "Gets down/away from furniture, people, or counters" },
+  { word: "Heel", meaning: "Walks close beside without pulling" },
+  { word: "Settle", meaning: "Calms down and relaxes in place" },
+];
 
 /** Google's formatted_address carries a postcode and a country that cost a line
  * wrap on a phone without telling a sitter anything they'd act on. Street and

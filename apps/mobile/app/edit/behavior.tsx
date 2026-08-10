@@ -1,14 +1,14 @@
 // Edit commands, quirks, escape risk
 import { useState, useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { CaretDown, CaretRight, CaretUp, Eye, EyeSlash } from "../../components/icons";
 import { AppAlert } from "../../stores/appAlert";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { Input, Eyebrow, Card, FieldTier } from "../../components/ui";
 import ConfirmModal from "../../components/ConfirmModal";
-import { colors, orderedCommands, isUnlocked } from "@quirksandall/shared";
+import { colors, orderedCommands, isUnlocked, SUGGESTED_COMMANDS } from "@quirksandall/shared";
 import type { Command, CommandStrength } from "@quirksandall/shared";
 
 const STRENGTHS: { key: CommandStrength; label: string }[] = [
@@ -32,6 +32,10 @@ export default function EditBehavior() {
   const [isPaid, setIsPaid] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  // #19 — past COLLAPSE_AFTER commands the list becomes an accordion: every
+  // entry is a condensed one-line row except the single one being worked on.
+  // Adding or quick-adding a command makes it the open one.
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   // Paid-gated fields carry the "Unlock to share" pill for free owners.
   const softLocked = !isPaid;
 
@@ -62,8 +66,31 @@ export default function EditBehavior() {
     })();
   }, [petId]);
 
-  const addCommand = () =>
-    setCommands((prev) => [...prev, { id: Date.now().toString(), word: "", meaning: "", reward: "", howToCue: "" }]);
+  const addCommand = () => {
+    const id = Date.now().toString();
+    setExpandedId(id);
+    setCommands((prev) => [...prev, { id, word: "", meaning: "", reward: "", howToCue: "" }]);
+  };
+
+  // #18 — quick-add a common command with word + meaning pre-filled. Reward is
+  // deliberately left blank (pet-specific); everything stays editable. Fills a
+  // blank card if one is open (e.g. "+ Add another word" was tapped first)
+  // rather than leaving it stranded above the chip's result.
+  const quickAdd = (word: string, meaning: string) => {
+    setCommands((prev) => {
+      const blank = prev.find((c) => !c.word.trim() && !c.meaning.trim());
+      if (blank) {
+        setExpandedId(blank.id);
+        return prev.map((c) => (c.id === blank.id ? { ...c, word, meaning } : c));
+      }
+      const id = Date.now().toString();
+      setExpandedId(id);
+      return [...prev, { id, word, meaning, reward: "", howToCue: "" }];
+    });
+  };
+
+  // Accordion: opening one closes the rest; tapping the open one closes it.
+  const toggleExpanded = (id: string) => setExpandedId((cur) => (cur === id ? null : id));
 
   const updateCmd = (id: string, field: keyof Command, val: string) =>
     setCommands((prev) => prev.map((c) => (c.id === id ? { ...c, [field]: val } : c)));
@@ -149,16 +176,48 @@ export default function EditBehavior() {
             // where that section starts so it's obvious where a hidden command
             // "goes" (rather than looking like it vanished).
             const firstHidden = cmd.hidden && i === visible.length;
+            // #19 — condensed one-line row once the list is long, expanded on tap.
+            const collapsed = ordered.length > 3 && expandedId !== cmd.id;
             return (
             <View key={cmd.id} style={{ gap: 10 }}>
               {firstHidden && (
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 8 }}>
-                  <Ionicons name="eye-off-outline" size={14} color={colors.textMuted} />
+                  <EyeSlash size={14} color={colors.textMuted} />
                   <Text style={{ color: colors.textMuted, fontSize: 12, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.5 }}>
                     Hidden — only you can see these
                   </Text>
                 </View>
               )}
+              {collapsed ? (
+                <TouchableOpacity onPress={() => toggleExpanded(cmd.id)} activeOpacity={0.8}>
+                  <Card style={[{ paddingVertical: 12 }, cmd.hidden ? { opacity: 0.6 } : null]}>
+                    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                      <Text numberOfLines={1} style={{ flex: 1, fontSize: 14, color: colors.textDark, fontFamily: "Satoshi" }}>
+                        <Text style={{ fontFamily: "Satoshi-Bold" }}>{cmd.word || "Unnamed"}</Text>
+                        {cmd.meaning ? ` → ${cmd.meaning}` : ""}
+                      </Text>
+                      {/* Reorder/hide stay reachable without expanding — a long
+                          list is exactly when reordering is wanted (#19). */}
+                      {isPaid && !cmd.hidden && (
+                        <>
+                          <TouchableOpacity onPress={() => move(cmd.id, -1)} disabled={!canUp} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                            <CaretUp size={18} color={canUp ? colors.textMuted : colors.border} />
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={() => move(cmd.id, 1)} disabled={!canDown} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                            <CaretDown size={18} color={canDown ? colors.textMuted : colors.border} />
+                          </TouchableOpacity>
+                        </>
+                      )}
+                      {isPaid && (
+                        <TouchableOpacity onPress={() => toggleHide(cmd.id)} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                          {cmd.hidden ? <EyeSlash size={17} color={colors.textMuted} /> : <Eye size={17} color={colors.textMuted} />}
+                        </TouchableOpacity>
+                      )}
+                      <CaretRight size={14} color={colors.textMuted} />
+                    </View>
+                  </Card>
+                </TouchableOpacity>
+              ) : (
               <Card style={cmd.hidden ? { opacity: 0.6 } : undefined}>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                   <Eyebrow>{cmd.hidden ? "Hidden from sitters" : `Command ${vi + 1}`}</Eyebrow>
@@ -166,16 +225,16 @@ export default function EditBehavior() {
                     {isPaid && !cmd.hidden && (
                       <>
                         <TouchableOpacity onPress={() => move(cmd.id, -1)} disabled={!canUp} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
-                          <Ionicons name="chevron-up" size={18} color={canUp ? colors.textMuted : colors.border} />
+                          <CaretUp size={18} color={canUp ? colors.textMuted : colors.border} />
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => move(cmd.id, 1)} disabled={!canDown} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
-                          <Ionicons name="chevron-down" size={18} color={canDown ? colors.textMuted : colors.border} />
+                          <CaretDown size={18} color={canDown ? colors.textMuted : colors.border} />
                         </TouchableOpacity>
                       </>
                     )}
                     {isPaid && (
                       <TouchableOpacity onPress={() => toggleHide(cmd.id)} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
-                        <Ionicons name={cmd.hidden ? "eye-off-outline" : "eye-outline"} size={17} color={colors.textMuted} />
+                        {cmd.hidden ? <EyeSlash size={17} color={colors.textMuted} /> : <Eye size={17} color={colors.textMuted} />}
                       </TouchableOpacity>
                     )}
                     <TouchableOpacity onPress={() => setDeleteTarget(cmd.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
@@ -226,11 +285,40 @@ export default function EditBehavior() {
                   })}
                 </View>
               </Card>
+              )}
             </View>
             );
           });
         })()}
       </View>
+
+      {/* #18 — quick-add chips for the obvious commands. A suggestion
+          disappears once a command with that word exists, so nothing is
+          offered twice. */}
+      {(() => {
+        const have = new Set(commands.map((c) => c.word.trim().toLowerCase()).filter(Boolean));
+        const remaining = SUGGESTED_COMMANDS.filter((sug) => !have.has(sug.word.toLowerCase()));
+        if (!remaining.length) return null;
+        return (
+          <View style={{ marginTop: 14 }}>
+            <Text style={{ color: colors.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium", marginBottom: 8 }}>
+              Quick add
+            </Text>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+              {remaining.map((sug) => (
+                <TouchableOpacity
+                  key={sug.word}
+                  onPress={() => quickAdd(sug.word, sug.meaning)}
+                  activeOpacity={0.85}
+                  style={{ paddingHorizontal: 12, height: 34, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: colors.secondary, borderWidth: 1, borderColor: colors.border }}
+                >
+                  <Text style={{ color: colors.textDark, fontSize: 12, fontFamily: "Satoshi-Medium" }}>+ {sug.word}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        );
+      })()}
 
       <TouchableOpacity
         onPress={addCommand}

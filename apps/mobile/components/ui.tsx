@@ -1,8 +1,8 @@
 // Shared primitive UI components for the mobile app.
 // Mirrors the prototype's primitives.tsx (fonts, buttons, dots, inputs).
 import { useMemo, useState, useRef, forwardRef } from "react";
-import { InputAccessoryView, Keyboard, Platform, Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { Keyboard, Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
+import { CalendarDots, LockSimple, XCircle } from "./icons";
 import { router, useNavigation } from "expo-router";
 import { colors, radius, capitalizeFirst, capitalizeWords, formatPhone, displayDateToISO } from "@quirksandall/shared";
 import DatePickerSheet from "./DatePickerSheet";
@@ -81,7 +81,7 @@ export function FieldTier() {
         paddingVertical: 3,
       }}
     >
-      <Ionicons name="lock-closed" size={10} color="#B83A52" />
+      <LockSimple size={10} color="#B83A52" weight="fill" />
       <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", letterSpacing: 0.2, color: "#B83A52" }}>Unlock to share</Text>
     </View>
   );
@@ -134,46 +134,26 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
   );
 });
 
-// iOS's number pad has NO return/done key, so a numeric field's keyboard can
-// only be closed by tapping something that dismisses it — and inside a
-// full-screen overlay (DurationModal) there may be nothing tappable that
-// does. This accessory bar pins an explicit Done button above the keyboard
-// so numeric entry always has a guaranteed way out. iOS-only by nature
-// (Android's back button already dismisses).
-const NUMERIC_DONE_ACCESSORY_ID = "numeric-done-accessory";
-
-export function NumericDoneAccessory() {
-  if (Platform.OS !== "ios") return null;
-  return (
-    <InputAccessoryView nativeID={NUMERIC_DONE_ACCESSORY_ID}>
-      {/* Mirrors DatePickerSheet's iOS header row (white bar, plain crimson
-          bold Done) so the two date-entry surfaces read as one component. */}
-      <View style={{ flexDirection: "row", justifyContent: "flex-end", alignItems: "center", backgroundColor: "#FFFFFF", borderTopWidth: 1, borderTopColor: colors.border }}>
-        <TouchableOpacity onPress={() => Keyboard.dismiss()} hitSlop={{ top: 10, bottom: 10, left: 16, right: 16 }} style={{ paddingHorizontal: 18, paddingVertical: 12 }}>
-          <Text style={{ color: colors.primary, fontSize: 14, fontFamily: "Satoshi-Bold" }}>Done</Text>
-        </TouchableOpacity>
-      </View>
-    </InputAccessoryView>
-  );
-}
-
 // Masked DD/MM/YYYY (AU) text field. Operates on the display string; callers
 // convert to/from ISO with displayDateToISO / isoToDisplayDate.
 //
-// Typing stays the primary path — someone entering a date they already know
-// shouldn't be dragged through a picker — with the calendar button as the
-// alternative for dates people pick rather than recall.
+// Typed entry is kept here as the fallback path, but every field in the app
+// now passes `pickerOnly` (see below), so date entry is one consistent
+// interaction everywhere: tap, spin, Done.
 //
-// `range` names the job, which decides both bounds and picker style:
-//   "birthday" — wheel, no future. Scrolling back years beats paging a
-//                calendar month by month.
-//   "past"     — calendar, no future. For recent dates ("last seen"), where
-//                the week laid out is what you want.
-//   "future"   — calendar, no past. Stay end dates.
+// `range` picks both the allowed window and the picker style:
+//   "birthday" — wheel, no future. Spinning the year column back beats
+//                paging a calendar month by month.
+//   "past"     — calendar grid, no future. Recent dates, e.g. "last seen".
+//   "future"   — calendar grid, no past. Stay start/end dates.
+// The calendar is deliberately given no NATIVE bounds (that combination
+// aborts the app — see DatePickerSheet), so for those two ranges the window
+// is enforced by `dateError` below and nothing else.
 // `pickerOnly` drops typed entry entirely: the field is a button that opens
-// the picker sheet, so no keyboard is ever involved. Use it where the field
-// lives somewhere keyboard handling can't be made pleasant (DurationModal's
-// absolute-fill overlay) or where a date is picked rather than recalled.
+// the picker sheet, so no keyboard is ever involved. Preferred everywhere —
+// it sidesteps the whole class of iOS numeric-keyboard problems (the number
+// pad has no return key, so a numeric field in an overlay could trap the
+// user; see #25) and makes date entry one consistent interaction.
 export function DateInput({
   value,
   onChangeText,
@@ -232,7 +212,8 @@ export function DateInput({
           activeOpacity={0.7}
           style={[
             {
-              minHeight: 46, borderRadius: radius.input, borderWidth: 1, borderColor: colors.border,
+              minHeight: 46, borderRadius: radius.input, borderWidth: 1,
+              borderColor: dateError ? colors.danger : colors.border,
               backgroundColor: "#FFFFFF", paddingHorizontal: 16,
               flexDirection: "row", alignItems: "center", justifyContent: "space-between",
             },
@@ -242,7 +223,24 @@ export function DateInput({
           <Text style={{ fontSize: 15, letterSpacing: 0, fontFamily: "Satoshi", color: value ? colors.textDark : colors.textMuted }}>
             {(value as string) || (props.placeholder ?? "DD/MM/YYYY")}
           </Text>
-          <Ionicons name="calendar-outline" size={17} color={colors.textMuted} />
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            {/* Per-field clear. Without it the only way to unset one date is
+                whatever "clear everything" control the parent offers, which
+                also throws away the other field. Nested Touchable, so the tap
+                doesn't fall through and open the picker. */}
+            {value ? (
+              <TouchableOpacity
+                onPress={() => onChangeText("")}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                accessibilityLabel="Clear date"
+              >
+                <XCircle size={17} color={colors.textMuted} weight="fill" />
+              </TouchableOpacity>
+            ) : null}
+            {/* Kept even when a value is set, so the "this opens a picker"
+                affordance never disappears. */}
+            <CalendarDots size={17} color={colors.textMuted} />
+          </View>
         </TouchableOpacity>
         <DatePickerSheet
           visible={showPicker}
@@ -251,6 +249,13 @@ export function DateInput({
           onCancel={() => setShowPicker(false)}
           onConfirm={(d) => { commit(d); setShowPicker(false); }}
         />
+        {/* Load-bearing, not decorative: the calendar picker runs WITHOUT
+            native min/maxDate (passing them aborts the app — see
+            DatePickerSheet), so this is the only thing standing between the
+            owner and an out-of-range date. */}
+        {dateError && (
+          <Text style={{ color: colors.danger, fontSize: 11, marginTop: 4, fontFamily: "Satoshi" }}>{dateError}</Text>
+        )}
       </View>
     );
   }
@@ -264,7 +269,6 @@ export function DateInput({
         placeholder="DD/MM/YYYY"
         keyboardType="number-pad"
         maxLength={10}
-        inputAccessoryViewID={Platform.OS === "ios" ? NUMERIC_DONE_ACCESSORY_ID : undefined}
         style={[{ paddingRight: 40 }, dateError ? { borderColor: colors.danger } : null, style]}
         {...props}
       />
@@ -280,11 +284,9 @@ export function DateInput({
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         style={{ position: "absolute", right: 12 }}
       >
-        <Ionicons name="calendar-outline" size={17} color={colors.textMuted} />
+        <CalendarDots size={17} color={colors.textMuted} />
       </TouchableOpacity>
       </View>
-
-      <NumericDoneAccessory />
 
       <DatePickerSheet
         visible={showPicker}

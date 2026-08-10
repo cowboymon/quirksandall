@@ -25,22 +25,28 @@ type Props = {
   visible: boolean;
   petName: string;
   initialPreset: string | null;
+  initialStartsAt: string | null;
   initialEndsAt: string | null;
-  onSave: (preset: string | null, endsAt: string | null) => void;
+  onSave: (preset: string | null, endsAt: string | null, startsAt: string | null) => void;
   onClose: () => void;
 };
 
-export default function DurationModal({ visible, petName, initialPreset, initialEndsAt, onSave, onClose }: Props) {
+export default function DurationModal({ visible, petName, initialPreset, initialStartsAt, initialEndsAt, onSave, onClose }: Props) {
   const [preset, setPreset] = useState<string | null>(initialPreset);
+  const [startDate, setStartDate] = useState<string>(isoToDisplayDate(initialStartsAt));
   const [date, setDate] = useState<string>(isoToDisplayDate(initialEndsAt));
 
   const pickPreset = (key: string) => { setPreset(key); setDate(""); };
   const onDate = (v: string) => { setDate(v); if (v) setPreset(null); };
 
   const save = () => {
+    // Start date (#20) is independent of the preset/end-date choice — "for a
+    // few days from Sat 12 Aug" is a valid combination. Left empty it means
+    // "already with you", so no implicit today is stored.
+    const startIso = startDate ? displayDateToISO(startDate) : null;
     const iso = date ? displayDateToISO(date) : null;
-    if (iso) onSave(null, iso);
-    else onSave(preset, null);
+    if (iso) onSave(null, iso, startIso);
+    else onSave(preset, null, startIso);
   };
 
   // What <Modal onRequestClose> used to give us on Android.
@@ -83,9 +89,14 @@ export default function DurationModal({ visible, petName, initialPreset, initial
             })}
           </View>
 
-          {/* Exact date (tap-through) */}
+          {/* Dates (tap-through, no keyboard) */}
           <Text style={{ color: colors.textMuted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium", marginTop: 20, marginBottom: 6 }}>
-            Or an exact end date
+            From
+          </Text>
+          <DateInput value={startDate} onChangeText={setStartDate} range="future" placeholder="dd/mm/yyyy" pickerOnly />
+
+          <Text style={{ color: colors.textMuted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium", marginTop: 14, marginBottom: 6 }}>
+            Until
           </Text>
           {/* pickerOnly: inside this overlay a text keyboard is a trap — the
               iOS number pad has no return key and the card swallows most
@@ -95,12 +106,15 @@ export default function DurationModal({ visible, petName, initialPreset, initial
 
           {/* Actions */}
           <View style={{ flexDirection: "row", gap: 10, marginTop: 22 }}>
+            {/* Wipes preset AND both dates in one go — the individual fields
+                each have their own × now, so this is the deliberate
+                "start again" action rather than the only way out. */}
             <TouchableOpacity
-              onPress={() => { onSave(null, null); }}
+              onPress={() => { onSave(null, null, null); }}
               activeOpacity={0.85}
               style={{ height: 46, paddingHorizontal: 16, borderRadius: 11, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}
             >
-              <Text style={{ color: colors.textMuted, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Clear</Text>
+              <Text style={{ color: colors.textMuted, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Clear all</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={onClose}
