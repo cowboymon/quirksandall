@@ -91,12 +91,12 @@ export default function DurationModal({ visible, petName, initialPreset, initial
 
           {/* Dates (tap-through, no keyboard) */}
           <Text style={{ color: colors.textMuted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium", marginTop: 20, marginBottom: 6 }}>
-            From (optional — leave blank if the stay's begun)
+            From (leave blank if the stay's already begun)
           </Text>
           <DateInput value={startDate} onChangeText={setStartDate} range="future" placeholder="dd/mm/yyyy" pickerOnly />
 
           <Text style={{ color: colors.textMuted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium", marginTop: 14, marginBottom: 6 }}>
-            Or an exact end date
+            Until (an exact date — replaces the preset above)
           </Text>
           {/* pickerOnly: inside this overlay a text keyboard is a trap — the
               iOS number pad has no return key and the card swallows most
@@ -106,12 +106,15 @@ export default function DurationModal({ visible, petName, initialPreset, initial
 
           {/* Actions */}
           <View style={{ flexDirection: "row", gap: 10, marginTop: 22 }}>
+            {/* Wipes preset AND both dates in one go — the individual fields
+                each have their own × now, so this is the deliberate
+                "start again" action rather than the only way out. */}
             <TouchableOpacity
               onPress={() => { onSave(null, null, null); }}
               activeOpacity={0.85}
               style={{ height: 46, paddingHorizontal: 16, borderRadius: 11, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}
             >
-              <Text style={{ color: colors.textMuted, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Clear</Text>
+              <Text style={{ color: colors.textMuted, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Clear all</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={onClose}

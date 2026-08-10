@@ -223,7 +223,24 @@ export function DateInput({
           <Text style={{ fontSize: 15, letterSpacing: 0, fontFamily: "Satoshi", color: value ? colors.textDark : colors.textMuted }}>
             {(value as string) || (props.placeholder ?? "DD/MM/YYYY")}
           </Text>
-          <Ionicons name="calendar-outline" size={17} color={colors.textMuted} />
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            {/* Per-field clear. Without it the only way to unset one date is
+                whatever "clear everything" control the parent offers, which
+                also throws away the other field. Nested Touchable, so the tap
+                doesn't fall through and open the picker. */}
+            {value ? (
+              <TouchableOpacity
+                onPress={() => onChangeText("")}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                accessibilityLabel="Clear date"
+              >
+                <Ionicons name="close-circle" size={17} color={colors.textMuted} />
+              </TouchableOpacity>
+            ) : null}
+            {/* Kept even when a value is set, so the "this opens a picker"
+                affordance never disappears. */}
+            <Ionicons name="calendar-outline" size={17} color={colors.textMuted} />
+          </View>
         </TouchableOpacity>
         <DatePickerSheet
           visible={showPicker}
