@@ -11,9 +11,8 @@ you go. Newest work is at the top of each section.
 
 ## ▶️ Run now
 
-- [ ] **`20260808000001_share_link_starts_at.sql`** — adds `starts_at` to
-  `share_links` for the stay start date (#20). **Required before the new
-  "From" field in the stay-duration sheet saves.**
+- [x] **`20260808000001_share_link_starts_at.sql`** — adds `starts_at` to
+  `share_links` for the stay start date (#20). *(Run 10 Aug 2026.)*
 
 - [x] **`20260806000001_lock_down_trigger_function_grants.sql`** — revokes
   the default `PUBLIC` execute grant on `handle_new_user()` (and
