@@ -85,15 +85,7 @@ export default function PrintableCapture({ slug }: { slug: string }) {
         aria-hidden
         onClick={dismiss}
       />
-      <div className="relative w-full max-w-sm animate-confirm-drop rounded-2xl border border-border bg-card-bg p-5 pt-6 shadow-[0_16px_44px_rgba(81,0,0,0.22)]">
-        {/* Olive peeking over the top edge */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/brand/balloon-pink.png"
-          alt=""
-          aria-hidden
-          className="pointer-events-none absolute -top-[52px] left-4 h-16 w-16 -rotate-6 object-contain drop-shadow-[0_6px_10px_rgba(81,0,0,0.18)]"
-        />
+      <div className="relative w-full max-w-sm animate-confirm-drop rounded-2xl border border-border bg-card-bg p-5 shadow-[0_16px_44px_rgba(81,0,0,0.22)]">
         <button
           type="button"
           onClick={dismiss}
@@ -116,7 +108,14 @@ export default function PrintableCapture({ slug }: { slug: string }) {
               Quirks &amp; All is one always-current link that saves you filling this in by hand every
               time. Leave your email for launch news and the occasional handover tip.
             </p>
-            <form onSubmit={onSubmit} noValidate className="mt-3.5 flex flex-col gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/brand/balloon-pink.png"
+              alt=""
+              aria-hidden
+              className="mx-auto mt-4 h-16 w-16 -rotate-6 object-contain"
+            />
+            <form onSubmit={onSubmit} noValidate className="mt-3 flex flex-col gap-2">
               <input
                 type="email"
                 required
