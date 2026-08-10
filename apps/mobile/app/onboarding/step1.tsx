@@ -145,7 +145,7 @@ export default function Step1() {
         <View>
           <Eyebrow>Date of birth</Eyebrow>
           <View style={{ marginTop: 4 }}>
-            <DateInput value={pet.dob ?? ""} onChangeText={(v) => setPet({ dob: v })} range="birthday" />
+            <DateInput value={pet.dob ?? ""} onChangeText={(v) => setPet({ dob: v })} range="birthday" pickerOnly />
           </View>
           {ageLabel && (
             <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.primary, marginTop: 6 }}>

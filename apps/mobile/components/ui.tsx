@@ -137,20 +137,21 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
 // Masked DD/MM/YYYY (AU) text field. Operates on the display string; callers
 // convert to/from ISO with displayDateToISO / isoToDisplayDate.
 //
-// Typing stays the primary path — someone entering a date they already know
-// shouldn't be dragged through a picker — with the calendar button as the
-// alternative for dates people pick rather than recall.
+// Typed entry is kept here as the fallback path, but every field that opens
+// this component should pass `pickerOnly` (see below) — DOB and the stay
+// dates already do; poster's "last seen" is the one holdout.
 //
-// `range` names the job, which decides both bounds and picker style:
-//   "birthday" — wheel, no future. Scrolling back years beats paging a
-//                calendar month by month.
-//   "past"     — calendar, no future. For recent dates ("last seen"), where
-//                the week laid out is what you want.
-//   "future"   — calendar, no past. Stay end dates.
+// `range` sets the picker's bounds. It no longer selects a picker style:
+// every range renders the wheel, because the calendar display crashes (see
+// the history in DatePickerSheet.tsx).
+//   "birthday" — no future. Scrolling the year column back is the job here.
+//   "past"     — no future. Recent dates, e.g. "last seen".
+//   "future"   — no past. Stay start/end dates.
 // `pickerOnly` drops typed entry entirely: the field is a button that opens
-// the picker sheet, so no keyboard is ever involved. Use it where the field
-// lives somewhere keyboard handling can't be made pleasant (DurationModal's
-// absolute-fill overlay) or where a date is picked rather than recalled.
+// the picker sheet, so no keyboard is ever involved. Preferred everywhere —
+// it sidesteps the whole class of iOS numeric-keyboard problems (the number
+// pad has no return key, so a numeric field in an overlay could trap the
+// user; see #25) and makes date entry one consistent interaction.
 export function DateInput({
   value,
   onChangeText,
