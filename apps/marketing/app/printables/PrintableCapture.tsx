@@ -103,19 +103,19 @@ export default function PrintableCapture({ slug }: { slug: string }) {
           </p>
         ) : (
           <>
-            <p className="pr-6 font-tanker text-xl leading-none text-foreground">Hope that helped.</p>
-            <p className="mt-2.5 text-sm leading-relaxed text-text-muted">
-              Quirks &amp; All is one always-current link that saves you filling this in by hand every
-              time. Leave your email for launch news and the occasional handover tip.
-            </p>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/brand/balloon-pink.png"
               alt=""
               aria-hidden
-              className="mx-auto mt-4 h-16 w-16 -rotate-6 object-contain"
+              className="mb-3 block h-16 w-16 -rotate-6 object-contain"
             />
-            <form onSubmit={onSubmit} noValidate className="mt-3 flex flex-col gap-2">
+            <p className="pr-6 font-tanker text-xl leading-none text-foreground">Hope that helped.</p>
+            <p className="mt-2.5 text-sm leading-relaxed text-text-muted">
+              Quirks &amp; All is one always-current link that saves you filling this in by hand every
+              time. Leave your email for launch news and the occasional handover tip.
+            </p>
+            <form onSubmit={onSubmit} noValidate className="mt-3.5 flex flex-col gap-2">
               <input
                 type="email"
                 required
