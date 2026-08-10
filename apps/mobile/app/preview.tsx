@@ -324,11 +324,14 @@ export default function Preview() {
                       <View style={{ flexDirection: "row", paddingHorizontal: 16, paddingVertical: 8, borderTopWidth: 1, borderTopColor: colors.border, alignItems: "flex-start" }}>
                         <Text style={{ width: 64, fontSize: 13, fontFamily: "Satoshi-Medium", color: colors.textMuted }}>Treats</Text>
                         <View style={{ flex: 1, gap: 4 }}>
+                          {/* Limit inline rather than stacked — see the same
+                              note in the web RecipientView. */}
                           {treatEntries(f.treats).map((t, ti) => (
-                            <View key={ti}>
-                              {t.type ? <Text style={{ fontSize: 13, color: BODY }}>{t.type}</Text> : null}
-                              {t.limit ? <Text style={{ fontSize: 11, color: colors.textMuted, fontFamily: "Satoshi-Light", marginTop: 2 }}>{t.limit}</Text> : null}
-                            </View>
+                            <Text key={ti} style={{ fontSize: 13, color: BODY }}>
+                              {t.type}
+                              {t.type && t.limit ? <Text style={{ color: colors.textMuted, fontFamily: "Satoshi-Light" }}> — {t.limit}</Text> : null}
+                              {!t.type && t.limit ? <Text style={{ color: colors.textMuted, fontFamily: "Satoshi-Light" }}>{t.limit}</Text> : null}
+                            </Text>
                           ))}
                         </View>
                       </View>

@@ -535,10 +535,15 @@ function FeedingCard({ feeding, medications }: { feeding: NonNullable<RecipientP
         <div className="flex px-4 py-2 gap-3" style={{ borderTop: `1px solid ${BORDER}` }}>
           <span className="text-sm font-medium w-20 shrink-0" style={{ color: MUTED }}>Treats</span>
           <div className="flex flex-col gap-1">
+            {/* Limit sits inline, not on its own line: several treats stack up
+                fast otherwise. Never truncated or chipped — a limit is a
+                safety instruction a sitter has to read in full, and it's free
+                text of unbounded length. */}
             {treatEntries(feeding.treats).map((t, ti) => (
               <span key={ti} className="text-sm" style={{ color: BODY }}>
                 {t.type}
-                {t.limit && <span className="block text-xs font-light" style={{ color: MUTED }}>{t.limit}</span>}
+                {t.type && t.limit ? <span className="font-light" style={{ color: MUTED }}> — {t.limit}</span> : null}
+                {!t.type && t.limit ? <span className="font-light" style={{ color: MUTED }}>{t.limit}</span> : null}
               </span>
             ))}
           </div>
