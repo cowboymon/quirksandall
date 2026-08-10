@@ -3,7 +3,28 @@
 import { useEffect, useState } from "react";
 import { track } from "../lib/pirsch";
 
-const KEY = "qa_printable_capture"; // once dismissed or submitted, don't nag again
+// Two separate gates, so the ask behaves per-template rather than once-ever:
+//  - SUB_KEY: they joined the list. They're on it — never ask again, any template.
+//  - DISMISS_KEY: a per-slug list of templates they've closed the card on. Only
+//    suppresses that same template, so the other downloadables still get one ask.
+const SUB_KEY = "qa_printable_subscribed";
+const DISMISS_KEY = "qa_printable_dismissed";
+
+function isSubscribed(): boolean {
+  try {
+    return localStorage.getItem(SUB_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function dismissedSlugs(): string[] {
+  try {
+    return (localStorage.getItem(DISMISS_KEY) ?? "").split(",").filter(Boolean);
+  } catch {
+    return [];
+  }
+}
 
 // Post-download ask: after the print dialog closes (afterprint), slide in a
 // small, dismissible card inviting the reader onto the list. No gate on the
@@ -15,19 +36,12 @@ export default function PrintableCapture({ slug }: { slug: string }) {
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
 
   useEffect(() => {
-    const seen = () => {
-      try {
-        return localStorage.getItem(KEY) === "1";
-      } catch {
-        return false;
-      }
-    };
     const onAfterPrint = () => {
-      if (!seen()) setShow(true);
+      if (!isSubscribed() && !dismissedSlugs().includes(slug)) setShow(true);
     };
     window.addEventListener("afterprint", onAfterPrint);
     return () => window.removeEventListener("afterprint", onAfterPrint);
-  }, []);
+  }, [slug]);
 
   // Escape closes the modal while it's open.
   useEffect(() => {
@@ -39,16 +53,28 @@ export default function PrintableCapture({ slug }: { slug: string }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [show]);
 
-  function remember() {
+  // Joined the list — suppress the ask on every template from here on.
+  function rememberSubscribed() {
     try {
-      localStorage.setItem(KEY, "1");
+      localStorage.setItem(SUB_KEY, "1");
+    } catch {
+      // ignore
+    }
+  }
+
+  // Closed the card on this template — suppress only this one; other
+  // downloadables still get their own ask.
+  function rememberDismissed() {
+    try {
+      const next = Array.from(new Set([...dismissedSlugs(), slug]));
+      localStorage.setItem(DISMISS_KEY, next.join(","));
     } catch {
       // ignore
     }
   }
 
   function dismiss() {
-    remember();
+    rememberDismissed();
     setShow(false);
   }
 
@@ -64,7 +90,7 @@ export default function PrintableCapture({ slug }: { slug: string }) {
       });
       if (!res.ok) throw new Error("failed");
       track("Waitlist Joined", { source: "printable", template: slug });
-      remember();
+      rememberSubscribed();
       setStatus("done");
     } catch {
       setStatus("error");
