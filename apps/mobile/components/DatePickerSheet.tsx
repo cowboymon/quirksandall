@@ -7,8 +7,12 @@
 // a spinner has no way to say "I've finished scrolling".
 import { useEffect, useState } from "react";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Modal, Platform, Text, TouchableOpacity, View } from "react-native";
+import { Modal, Platform, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { colors } from "@quirksandall/shared";
+
+// The sheet's own horizontal padding. Shared with the calendar width
+// calculation below, which has to be given an explicit number.
+const SHEET_H_PADDING = 18;
 
 export default function DatePickerSheet({
   visible,
@@ -77,10 +81,18 @@ function IOSSheet({
   // Re-seed when reopened against a different typed value.
   useEffect(() => { setDraft(value); }, [value.getTime()]);
 
+  // The inline calendar ignores alignSelf: "stretch" — the native picker
+  // falls back to its own intrinsic width and leaves a gap down the right of
+  // the sheet. An explicit numeric width is the only thing it honours, so
+  // compute it from the window less this sheet's own padding.
+  // useWindowDimensions (not Dimensions.get) so it survives rotation.
+  const { width: windowWidth } = useWindowDimensions();
+  const calendarWidth = windowWidth - SHEET_H_PADDING * 2;
+
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onCancel}>
       <View style={{ flex: 1, backgroundColor: "rgba(31,26,23,0.45)", justifyContent: "flex-end" }}>
-        <View style={{ backgroundColor: "#FFFFFF", borderTopLeftRadius: 18, borderTopRightRadius: 18, paddingHorizontal: 18, paddingTop: 10, paddingBottom: 28 }}>
+        <View style={{ backgroundColor: "#FFFFFF", borderTopLeftRadius: 18, borderTopRightRadius: 18, paddingHorizontal: SHEET_H_PADDING, paddingTop: 10, paddingBottom: 28 }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 6 }}>
             <TouchableOpacity onPress={onCancel} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
               <Text style={{ color: colors.textMuted, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Cancel</Text>
@@ -124,7 +136,7 @@ function IOSSheet({
             // The wheel needs a concrete height — in a flex container it can
             // end up unresolved and take the view down. 216 is the standard
             // iOS wheel height. The calendar sizes itself.
-            style={calendar ? { alignSelf: "stretch" } : { alignSelf: "stretch", height: 216 }}
+            style={calendar ? { alignSelf: "stretch", width: calendarWidth } : { alignSelf: "stretch", height: 216 }}
           />
         </View>
       </View>
