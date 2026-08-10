@@ -62,7 +62,7 @@ export default function WaitlistForm({
         </svg>
       </span>
       <p className={`text-base font-medium ${dark ? "text-card-dark-text" : "text-foreground"}`}>
-        You&apos;re on the list. We&apos;ll be in touch when it&apos;s live.
+        You&apos;re in. We&apos;ll be in touch with launch news and the occasional update.
       </p>
     </div>
   );
@@ -129,7 +129,7 @@ export default function WaitlistForm({
         <p className={`mt-2.5 text-left text-sm ${noteColor}`}>
           {status === "error"
             ? "Something went wrong — please try again."
-            : "We'll email you once. Nothing more, nothing less."}
+            : "Launch news and the occasional handover tip. No spam, unsubscribe anytime."}
         </p>
       </form>
 

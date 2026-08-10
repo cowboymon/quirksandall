@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { PRINTABLES, getPrintable, type Block } from "../data";
 import PrintButton from "../PrintButton";
 import PrintableOpen from "../PrintableOpen";
+import PrintableCapture from "../PrintableCapture";
 import BackLink from "../BackLink";
 import { site } from "../../site";
 
@@ -104,6 +105,7 @@ export default function PrintablePage({ params }: { params: { slug: string } }) 
   return (
     <div className="printable-screen">
       <PrintableOpen slug={doc.slug} />
+      <PrintableCapture slug={doc.slug} />
       {/* Screen-only toolbar */}
       <div className="print-hide mx-auto flex max-w-3xl items-center justify-between gap-4 px-6 pt-8">
         <BackLink className="text-sm font-medium text-primary hover:underline" />
