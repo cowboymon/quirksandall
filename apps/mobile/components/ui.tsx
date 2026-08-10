@@ -160,8 +160,19 @@ export function DateInput({
   style,
   range = "past",
   pickerOnly,
+  notBefore,
   ...props
-}: TextInputProps & { onChangeText: (v: string) => void; range?: "birthday" | "past" | "future"; pickerOnly?: boolean }) {
+}: TextInputProps & {
+  onChangeText: (v: string) => void;
+  range?: "birthday" | "past" | "future";
+  pickerOnly?: boolean;
+  // DD/MM/YYYY floor for this field, on top of whatever `range` allows. Used
+  // for an end date that can't precede its start date: an empty field opens
+  // the picker ON this date rather than today, and picking earlier is
+  // flagged. Native bounds can't do this — the calendar aborts when given
+  // them (see DatePickerSheet) — so it's enforced here.
+  notBefore?: string;
+}) {
   const [showPicker, setShowPicker] = useState(false);
 
   const handle = (raw: string) => {
@@ -181,7 +192,10 @@ export function DateInput({
   // seed meant setState on every render — an infinite loop that took the app
   // down whenever the picker was opened on a field with nothing typed in it.
   const parsed = displayDateToISO(value as string);
-  const seed = useMemo(() => (parsed ? new Date(`${parsed}T00:00:00`) : new Date()), [parsed]);
+  const notBeforeISO = displayDateToISO(notBefore);
+  // Open on the field's own value, else on the floor, else today.
+  const seedISO = parsed ?? notBeforeISO;
+  const seed = useMemo(() => (seedISO ? new Date(`${seedISO}T00:00:00`) : new Date()), [seedISO]);
 
   // The parser already rejects impossible dates (35/08/1936 round-trips to
   // null) — but silently, so the form just accepted the text and dropped it
@@ -195,8 +209,9 @@ export function DateInput({
     const todayISO = new Date().toISOString().slice(0, 10);
     if ((range === "birthday" || range === "past") && parsed > todayISO) return "That's in the future";
     if (range === "future" && parsed < todayISO) return "That date has already passed";
+    if (notBeforeISO && parsed < notBeforeISO) return "Can't be before the start date";
     return null;
-  }, [value, parsed, range]);
+  }, [value, parsed, range, notBeforeISO]);
 
   const commit = (d: Date) => {
     onChangeText(
@@ -361,6 +376,9 @@ export function TimeInput({ value, onChangeText, style, placeholder, defaultPeri
           placeholder={placeholder ?? "7:30"}
           keyboardType="number-pad"
           maxLength={5}
+          // iOS shows a native ✕ while editing — the number pad has no return
+          // key, so without it there's no obvious way to empty a time again.
+          clearButtonMode="while-editing"
           style={style}
         />
       </View>

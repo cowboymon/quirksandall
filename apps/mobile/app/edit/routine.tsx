@@ -44,7 +44,7 @@ function RoutineMeal({ label, time, amount, onTime, onAmount, divider, defaultPe
       ) : (
         <>
           <TimeInput style={mealInput} placeholder="7:30" value={time} onChangeText={onTime} defaultPeriod={defaultPeriod} />
-          <TextInput style={mealInput} placeholder="Amount & brand" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" value={amount} onChangeText={(v) => onAmount(capitalizeFirst(v))} />
+          <TextInput style={mealInput} placeholder="Amount & brand" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" clearButtonMode="while-editing" value={amount} onChangeText={(v) => onAmount(capitalizeFirst(v))} />
           {quickFill && onQuickFill && !amount ? (
             <TouchableOpacity onPress={onQuickFill} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}>
               <Text style={{ fontSize: 12, color: colors.primary, fontFamily: "Satoshi-Medium" }}>{quickFill}</Text>
@@ -225,9 +225,9 @@ export default function EditRoutine() {
                   </TouchableOpacity>
                 </View>
               )}
-              <TextInput style={mealInput} placeholder="Type / brand" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" value={t.type}
+              <TextInput style={mealInput} placeholder="Type / brand" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" clearButtonMode="while-editing" value={t.type}
                 onChangeText={(v) => setTreats((prev) => prev.map((x, j) => (j === i ? { ...x, type: capitalizeFirst(v) } : x)))} />
-              <TextInput style={mealInput} placeholder="Daily limit — e.g. max 3 per day" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" value={t.limit}
+              <TextInput style={mealInput} placeholder="Daily limit — e.g. max 3 per day" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" clearButtonMode="while-editing" value={t.limit}
                 onChangeText={(v) => setTreats((prev) => prev.map((x, j) => (j === i ? { ...x, limit: capitalizeFirst(v) } : x)))} />
             </View>
           ))}
