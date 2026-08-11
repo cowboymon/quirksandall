@@ -49,11 +49,24 @@ function initialsOf(name?: string | null) {
 // for ("has the sitter looked at it?"), the date is what makes it meaningful,
 // so they share a line rather than competing for two. Views, not visitors —
 // recipients aren't identified, and a re-read counts again.
+//
+// It has to be SHORT. This sits in a flex:1 column beside an avatar and three
+// action buttons — roughly 180pt at 11px — so the prose form ("Viewed 5 times
+// · last 11/08/2026") wrapped to a second line and pushed the row out of
+// alignment. Hence "5 views · 11/08": the same bare DD/MM the stay label
+// directly below it uses. The year only appears when the view wasn't this
+// year, where dropping it would actively mislead.
 function viewedLabel(iso: string | null, count?: number | null) {
   if (!iso) return "Not yet viewed";
-  const when = new Date(iso).toLocaleDateString();
+  const d = new Date(iso);
+  const dm = `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+  const when = d.getFullYear() === new Date().getFullYear()
+    ? dm
+    : `${dm}/${String(d.getFullYear()).slice(-2)}`;
   const n = count ?? 0;
-  return n > 1 ? `Viewed ${n} times · last ${when}` : `Viewed ${when}`;
+  // A row with a last-viewed date but no counter predates the counter column,
+  // so show the date alone rather than claiming zero views.
+  return n > 0 ? `${n} ${n === 1 ? "view" : "views"} · ${when}` : `Viewed ${when}`;
 }
 
 export default function Dashboard() {
@@ -520,7 +533,7 @@ export default function Dashboard() {
                     {link.label || "Untitled link"}
                   </Text>
                 )}
-                <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 11, marginTop: 2, fontFamily: "Satoshi-Light" }}>
+                <Text numberOfLines={1} style={{ color: "rgba(248,236,238,0.6)", fontSize: 11, marginTop: 2, fontFamily: "Satoshi-Light" }}>
                   {viewedLabel(link.last_viewed_at, link.view_count)}
                 </Text>
                 {/* Stay duration (§5.1) — tap to set/change how long the pet's
