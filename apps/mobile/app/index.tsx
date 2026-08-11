@@ -3,6 +3,7 @@ import { View, Text, ActivityIndicator, Platform } from "react-native";
 import { router } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { policyRoute } from "../lib/policy";
+import { identifyForErrors } from "../lib/errors";
 import { initAnalytics, identify, track, AnalyticsEvent } from "../lib/analytics";
 
 export default function Index() {
@@ -15,6 +16,7 @@ export default function Index() {
         // are counted too (this is what "did we see a login event" was missing).
         initAnalytics().then(() => {
           identify(session.user.id);
+          identifyForErrors(session.user.id);
           track(AnalyticsEvent.SessionStarted, { platform: Platform.OS, source: "resume" });
         });
         // Same required-agreement gate as auth.tsx (#96) — covers accounts that

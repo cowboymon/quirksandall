@@ -133,6 +133,13 @@ you go. Newest work is at the top of each section.
   token; analytics is a no-op until it's set.
 - [ ] **`NEXT_PUBLIC_MIXPANEL_TOKEN`** (Vercel env) = same value — for the web
   recipient page's `recipient_page_viewed` event.
+- [ ] **`EXPO_PUBLIC_SENTRY_DSN`** (mobile env / EAS build) — Sentry DSN for
+  crash + error reporting. **Optional**: with it unset, `lib/errors.ts` never
+  initialises Sentry and every call is a no-op, so dev and CI are unaffected.
+  Set it as an EAS secret before the build that ships crash reporting,
+  otherwise the build has the native module and reports nothing. A DSN is a
+  public client key, not a secret — but the Sentry auth token used for
+  source-map upload is, and is not configured here.
 - [ ] **`PIN_UNLOCK_SECRET`** (Vercel/Supabase env) — dedicated signing secret
   for the persisted-PIN-unlock cookie (#87). **Optional** — it falls back to
   `SUPABASE_SERVICE_KEY` if unset, so nothing breaks without it.

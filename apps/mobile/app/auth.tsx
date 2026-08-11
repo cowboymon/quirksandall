@@ -5,6 +5,7 @@ import { AppAlert } from "../stores/appAlert";
 import { router, useFocusEffect } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { policyRoute } from "../lib/policy";
+import { identifyForErrors } from "../lib/errors";
 import { initAnalytics, identify, setUserProps, track, AnalyticsEvent } from "../lib/analytics";
 
 // Client-side-only cooldown between OTP sends. This is UX, not real
@@ -103,6 +104,7 @@ export default function AuthScreen() {
     if (user) {
       await initAnalytics();
       identify(user.id);
+      identifyForErrors(user.id);
       const isNew = !!user.created_at && Date.now() - new Date(user.created_at).getTime() < 60_000;
       if (isNew) {
         setUserProps({ signup_platform: Platform.OS });

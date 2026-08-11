@@ -260,6 +260,26 @@ audit.
   URLs, no direct CDN links) — not something to patch around with policy
   tricks.
 
+## Crash reporting — Sentry
+
+Crash + handled-error reporting is **Sentry** (`@sentry/react-native`), mobile
+only. The wrapper is `apps/mobile/lib/errors.ts` and is the ONLY file that
+imports Sentry — same rule as the analytics wrapper.
+
+- **Init:** `initErrorReporting()` at the top of `app/_layout.tsx`, before
+  `preventAutoHideAsync`, so a crash during font/SDK startup is still captured.
+- **No DSN → no-op.** With `EXPO_PUBLIC_SENTRY_DSN` unset, Sentry is never
+  initialised. Also disabled in `__DEV__`: dev crashes belong in the red box.
+- **Native module** — needs a rebuild, so it must ship *in* a build, not after.
+- **Identity:** Supabase user id only, via `identifyForErrors`, cleared on
+  sign-out. Never email or name.
+- **Privacy defaults are deliberately turned down:** `sendDefaultPii: false`,
+  `tracesSampleRate: 0`, and console/xhr/fetch breadcrumbs dropped — a share
+  link URL is the credential for a pet's whole profile and must never land in
+  an issue. Check any addition against that list.
+- **Handled errors:** `reportError("where", e)` for anything caught and
+  swallowed, so a silently-failing path isn't invisible.
+
 ## Analytics — Mixpanel
 
 Product analytics is **Mixpanel**, wired per the Mixpanel setup skill.

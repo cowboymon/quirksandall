@@ -10,6 +10,7 @@ import { REDEMPTION_ENABLED, MARKETING_URL } from "../lib/config";
 import { colors, CONSENT_POLICY_VERSION, isUnlocked } from "@quirksandall/shared";
 import { Platform } from "react-native";
 import { track, resetAnalytics, AnalyticsEvent } from "../lib/analytics";
+import { identifyForErrors } from "../lib/errors";
 import { Eyebrow, Input } from "../components/ui";
 import EditShell from "../components/EditShell";
 import ConfirmModal from "../components/ConfirmModal";
@@ -131,6 +132,7 @@ export default function Account() {
 
   const signOut = async () => {
     resetAnalytics(); // clear identity so the next account isn't merged into this one
+    identifyForErrors(null); // same reason, for crash reports
     // scope: "global" (also the library default, made explicit here so it
     // can't silently change) revokes the refresh token server-side, not just
     // locally — signing out actually invalidates the session, not just the
