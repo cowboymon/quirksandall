@@ -18,6 +18,11 @@ let ready = false;
 
 export const WebAnalyticsEvent = {
   RecipientPageViewed: "recipient_page_viewed",
+  // Fired as the viewer leaves, carrying Mixpanel's own $duration (seconds
+  // since startTimingWeb). Answers "how long does a sitter actually spend on
+  // the page" — the read-depth half of the growth signal, where
+  // recipient_page_viewed only counts opens.
+  RecipientPageClosed: "recipient_page_closed",
 } as const;
 export type WebAnalyticsEventName = (typeof WebAnalyticsEvent)[keyof typeof WebAnalyticsEvent];
 
@@ -34,4 +39,12 @@ function ensureInit(): boolean {
 export function trackWeb(event: WebAnalyticsEventName, props?: Record<string, string | number | boolean>) {
   if (!ensureInit()) return;
   mixpanel.track(event, props);
+}
+
+/** Start Mixpanel's timer for `event`. When that event is later tracked,
+ * Mixpanel attaches `$duration` (seconds) itself — no clock handling here, and
+ * nothing extra stored about the viewer. */
+export function startTimingWeb(event: WebAnalyticsEventName) {
+  if (!ensureInit()) return;
+  mixpanel.time_event(event);
 }

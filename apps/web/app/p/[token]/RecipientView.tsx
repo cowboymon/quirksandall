@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import type { RecipientProfile } from "@quirksandall/shared";
 import { formatWeight, formatPhone, formatVetName, possessive, commandStrengthLabel, mealSlotLabel, shortAddress, isSafeHttpsUrl, sanitizeTelValue, treatEntries } from "@quirksandall/shared";
 import PINGate from "./PINGate";
-import { trackWeb, WebAnalyticsEvent } from "../../lib/analytics";
+import { trackWeb, startTimingWeb, WebAnalyticsEvent } from "../../lib/analytics";
 
 type Props = { profile: RecipientProfile; token: string };
 
@@ -63,6 +63,29 @@ export default function RecipientView({ profile, token }: Props) {
   useEffect(() => {
     if (preview) return;
     trackWeb(WebAnalyticsEvent.RecipientPageViewed, { pin_gated: pinSet, tier: isPaid ? "paid" : "free" });
+
+    // Read depth: how long the page was actually open. Mixpanel times it from
+    // here and attaches $duration when the paired event fires.
+    //
+    // pagehide AND visibilitychange, because neither alone is enough: mobile
+    // Safari often kills a backgrounded tab without ever firing pagehide, and
+    // visibilitychange fires on every app switch. `sent` makes this
+    // once-per-page — otherwise a viewer who backgrounds and returns three
+    // times logs three durations and drags the average down.
+    startTimingWeb(WebAnalyticsEvent.RecipientPageClosed);
+    let sent = false;
+    const finish = () => {
+      if (sent) return;
+      sent = true;
+      trackWeb(WebAnalyticsEvent.RecipientPageClosed, { pin_gated: pinSet, tier: isPaid ? "paid" : "free" });
+    };
+    const onVisibility = () => { if (document.visibilityState === "hidden") finish(); };
+    window.addEventListener("pagehide", finish);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("pagehide", finish);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [preview, pinSet, isPaid]);
 
   // Paid-tier fields (soft triggers, routine-rest, medical) are visible in the

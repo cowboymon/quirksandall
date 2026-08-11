@@ -319,6 +319,7 @@ back," never a funnel step:
 |---|---|---|
 | `session_started` | `app/index.tsx` (returning session) + `app/auth.tsx` (fresh login/signup) | `platform`, `source` (`resume`/`login`) |
 | `recipient_page_viewed` | `apps/web/.../RecipientView.tsx` | `pin_gated`, `tier` |
+| `recipient_page_closed` | `apps/web/.../RecipientView.tsx` | `pin_gated`, `tier`, `$duration` |
 
 ### Rules when adding tracking
 - **snake_case** event + property names; **lowercase** string values; numerics
