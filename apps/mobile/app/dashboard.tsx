@@ -45,8 +45,15 @@ function initialsOf(name?: string | null) {
   return name.split(" ").map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "?";
 }
 
-function viewedLabel(iso: string | null) {
-  return iso ? `Viewed ${new Date(iso).toLocaleDateString()}` : "Not yet viewed";
+// The one line under a link's name. The count is what owners actually asked
+// for ("has the sitter looked at it?"), the date is what makes it meaningful,
+// so they share a line rather than competing for two. Views, not visitors —
+// recipients aren't identified, and a re-read counts again.
+function viewedLabel(iso: string | null, count?: number | null) {
+  if (!iso) return "Not yet viewed";
+  const when = new Date(iso).toLocaleDateString();
+  const n = count ?? 0;
+  return n > 1 ? `Viewed ${n} times · last ${when}` : `Viewed ${when}`;
 }
 
 export default function Dashboard() {
@@ -317,7 +324,7 @@ export default function Dashboard() {
     // reconcile with the real row (or roll back on failure).
     const tempId = `temp-${Date.now()}`;
     const optimisticLink: OwnerLink = {
-      id: tempId, token: "", label: name, revoked: false, last_viewed_at: null,
+      id: tempId, token: "", label: name, revoked: false, last_viewed_at: null, view_count: 0,
       created_at: new Date().toISOString(), pin_hash: null, duration_preset: null, starts_at: null, ends_at: null, first_shared_at: null,
     };
     setData((d) => (d ? { ...d, links: [...d.links, optimisticLink] } : d));
@@ -514,7 +521,7 @@ export default function Dashboard() {
                   </Text>
                 )}
                 <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 11, marginTop: 2, fontFamily: "Satoshi-Light" }}>
-                  {viewedLabel(link.last_viewed_at)}
+                  {viewedLabel(link.last_viewed_at, link.view_count)}
                 </Text>
                 {/* Stay duration (§5.1) — tap to set/change how long the pet's
                     staying. Shows on the recipient page. */}

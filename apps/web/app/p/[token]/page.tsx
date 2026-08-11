@@ -92,13 +92,11 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
     unlockedContacts = await fetchEmergencyContacts(supabase, pet.id);
   }
 
-  // Log view (fire and forget) — never count an owner preview as a real view
+  // Log view (fire and forget) — never count an owner preview as a real view.
+  // The RPC stamps last_viewed_at and increments view_count in one statement,
+  // so simultaneous views can't clobber each other's increment.
   if (logView && !preview) {
-    supabase
-      .from("share_links")
-      .update({ last_viewed_at: new Date().toISOString() })
-      .eq("id", link.id)
-      .then(() => {});
+    supabase.rpc("record_share_link_view", { p_link_id: link.id }).then(() => {});
   }
 
   // Compute age
