@@ -385,6 +385,24 @@ export default function RecipientView({ profile, token }: Props) {
           <p className="text-foreground text-[11px] text-center mt-1 font-medium">
             Quirks &amp; All · quirksandall.itshypothetical.com
           </p>
+          {/* Notice at the point of collection (APP 5). Whoever opens this
+              page — a sitter, a vet, a neighbour — is not a Quirks & All user
+              and has agreed to nothing, but trackWeb() still records an
+              anonymous view and Mixpanel writes an id to their localStorage.
+              Saying so plainly, with a route to the full policy, is the least
+              this page owes them. */}
+          <p className="text-center mt-1.5 text-[11px] font-light" style={{ color: MUTED }}>
+            Anonymous page views are counted ·{" "}
+            <a
+              href="https://quirksandall.itshypothetical.com/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+              style={{ color: MUTED }}
+            >
+              Privacy
+            </a>
+          </p>
         </footer>
       </div>
     </div>

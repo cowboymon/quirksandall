@@ -109,6 +109,9 @@ you go. Newest work is at the top of each section.
 
 - [ ] **Mixpanel → privacy policy** — Mixpanel is now wired (mobile + web).
   Before publishing the privacy policy, add Mixpanel to the third-party table.
+  The recipient page now carries a notice + Privacy link in its footer, so
+  the policy needs to actually cover the anonymous view tracking that page
+  does — people who open a share link are not users and agreed to nothing.
 
 - [ ] **Legal → policy version** — when the consent / secondary-use section of
   the privacy policy is finalised, bump `CONSENT_POLICY_VERSION` in
