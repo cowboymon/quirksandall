@@ -1,5 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { dateFieldError, stayPhrase, stayStatus, treatEntries } from "./logic";
+import {
+  acceptanceMethod,
+  dateFieldError,
+  missingPolicyAcceptances,
+  needsPolicyAcceptance,
+  stayPhrase,
+  stayStatus,
+  treatEntries,
+} from "./logic";
 
 const daysFromNow = (n: number) => {
   const d = new Date();
@@ -196,5 +204,58 @@ describe("dateFieldError", () => {
   it("ignores an absent or half-typed notBefore", () => {
     expect(dateFieldError(dmy(3), "future", "")).toBeNull();
     expect(dateFieldError(dmy(3), "future", "12/0")).toBeNull();
+  });
+});
+
+describe("policy acceptance gate", () => {
+  const V = { privacy_policy: "1.0", terms_of_service: "1.0" };
+
+  it("owes both policies when there are no rows at all", () => {
+    expect(missingPolicyAcceptances([], V)).toEqual(["privacy_policy", "terms_of_service"]);
+    expect(missingPolicyAcceptances(null, V)).toEqual(["privacy_policy", "terms_of_service"]);
+    expect(needsPolicyAcceptance(undefined, V)).toBe(true);
+  });
+
+  it("is satisfied when both current versions are present", () => {
+    const rows = [
+      { policy_type: "privacy_policy", version: "1.0" },
+      { policy_type: "terms_of_service", version: "1.0" },
+    ];
+    expect(missingPolicyAcceptances(rows, V)).toEqual([]);
+    expect(needsPolicyAcceptance(rows, V)).toBe(false);
+  });
+
+  it("re-prompts for one policy when only that one is bumped", () => {
+    const rows = [
+      { policy_type: "privacy_policy", version: "1.0" },
+      { policy_type: "terms_of_service", version: "1.0" },
+    ];
+    expect(missingPolicyAcceptances(rows, { privacy_policy: "2.0", terms_of_service: "1.0" }))
+      .toEqual(["privacy_policy"]);
+    expect(missingPolicyAcceptances(rows, { privacy_policy: "1.0", terms_of_service: "2.0" }))
+      .toEqual(["terms_of_service"]);
+  });
+
+  it("counts an older acceptance as still owing", () => {
+    const rows = [{ policy_type: "privacy_policy", version: "0.9" }];
+    expect(needsPolicyAcceptance(rows, V)).toBe(true);
+  });
+
+  it("accepts history in any order and ignores junk rows", () => {
+    const rows = [
+      { policy_type: "terms_of_service", version: "0.9" },
+      { policy_type: "privacy_policy", version: "1.0" },
+      { policy_type: null, version: "1.0" },
+      { policy_type: "terms_of_service", version: null },
+      { policy_type: "terms_of_service", version: "1.0" },
+      { policy_type: "privacy_policy", version: "0.9" },
+    ];
+    expect(missingPolicyAcceptances(rows, V)).toEqual([]);
+  });
+
+  it("labels the first acceptance signup and later ones re_consent", () => {
+    expect(acceptanceMethod([])).toBe("signup");
+    expect(acceptanceMethod(null)).toBe("signup");
+    expect(acceptanceMethod([{ policy_type: "privacy_policy", version: "0.9" }])).toBe("re_consent");
   });
 });

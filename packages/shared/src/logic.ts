@@ -452,3 +452,53 @@ export function isUnlocked(
   const t = new Date(owner.expires_at).getTime();
   return isNaN(t) ? false : t > Date.now();
 }
+
+/** Which required policies this owner has *not* accepted at the current version.
+ *
+ * The gate used to read `owners.terms_policy_version` against a single
+ * `CONSENT_POLICY_VERSION`, which made the two policies move as one: bumping
+ * the Privacy Policy alone couldn't re-prompt anybody, because the column it
+ * compared against never changed. `policy_acceptances` already records one row
+ * per policy per version, so the gate reads that instead and each policy
+ * versions independently.
+ *
+ * Returns the policy types still owed, in a stable order, so the caller can
+ * both decide whether to route to /accept-terms and record *why*. Empty means
+ * fully consented.
+ *
+ * Only the row set matters, not its ordering or how many historical rows there
+ * are — an owner who accepted v1, then v2, then v1 again still counts as
+ * current for v2. */
+export function missingPolicyAcceptances(
+  rows: Array<{ policy_type?: string | null; version?: string | null }> | null | undefined,
+  versions: { privacy_policy: string; terms_of_service: string }
+): string[] {
+  const accepted = new Set(
+    (rows ?? [])
+      .filter((r) => r && r.policy_type && r.version)
+      .map((r) => `${r.policy_type}@${r.version}`)
+  );
+  return (Object.keys(versions) as Array<keyof typeof versions>)
+    .filter((type) => !accepted.has(`${type}@${versions[type]}`))
+    .sort();
+}
+
+/** True when the owner must be routed to /accept-terms. */
+export function needsPolicyAcceptance(
+  rows: Array<{ policy_type?: string | null; version?: string | null }> | null | undefined,
+  versions: { privacy_policy: string; terms_of_service: string }
+): boolean {
+  return missingPolicyAcceptances(rows, versions).length > 0;
+}
+
+/** How an acceptance came about, for the `method` column.
+ *
+ * `signup` is only honest the first time. Anyone who already has acceptance
+ * rows and is back at the gate is there because a version was bumped — that's
+ * a re-consent, and recording it as `signup` would make the audit trail claim
+ * every owner signed up repeatedly. */
+export function acceptanceMethod(
+  rows: Array<{ policy_type?: string | null; version?: string | null }> | null | undefined
+): "signup" | "re_consent" {
+  return (rows ?? []).length > 0 ? "re_consent" : "signup";
+}

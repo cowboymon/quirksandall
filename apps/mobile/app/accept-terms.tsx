@@ -10,29 +10,31 @@ import { AppAlert } from "../stores/appAlert";
 import { router } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { PRIVACY_URL, TERMS_URL } from "../lib/config";
-import { CONSENT_POLICY_VERSION, PRIVACY_POLICY_VERSION, TERMS_VERSION } from "@quirksandall/shared";
+import { CONSENT_POLICY_VERSION, PRIVACY_POLICY_VERSION, TERMS_VERSION, needsPolicyAcceptance } from "@quirksandall/shared";
+import { CURRENT_POLICY_VERSIONS, acceptanceMethod, fetchPolicyAcceptances, type PolicyAcceptanceRow } from "../lib/policy";
 import CheckboxRow from "../components/CheckboxRow";
 
 export default function AcceptTerms() {
   const [agreed, setAgreed] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [priorAcceptances, setPriorAcceptances] = useState<PolicyAcceptanceRow[]>([]);
 
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.replace("/auth"); return; }
       // Safety net for anyone who lands here directly with an already-current
-      // acceptance (e.g. a stale deep link) — skip straight past.
-      const { data: owner } = await supabase
-        .from("owners")
-        .select("terms_accepted_at, terms_policy_version")
-        .eq("id", user.id)
-        .single();
-      if (owner?.terms_accepted_at && owner.terms_policy_version === CONSENT_POLICY_VERSION) {
+      // acceptance (e.g. a stale deep link) — skip straight past. Same source
+      // of truth as the gates in auth.tsx / index.tsx.
+      const rows = await fetchPolicyAcceptances(user.id);
+      if (!needsPolicyAcceptance(rows, CURRENT_POLICY_VERSIONS)) {
         router.replace("/dashboard");
         return;
       }
+      // Remembered so the accept handler can tell a first acceptance from a
+      // re-consent without a second round trip.
+      setPriorAcceptances(rows);
       setLoading(false);
     })();
   }, []);
@@ -57,13 +59,19 @@ export default function AcceptTerms() {
       });
       // Build 23 (#96 follow-up): per-policy-type acceptance record, separate
       // from the terms_accepted_at/consent_log write above so Privacy and
-      // Terms can version independently later. A failed insert here must not
-      // let signup proceed as if consent were recorded — throwing keeps this
-      // inside the try block, so the catch below blocks navigation and
-      // surfaces the error instead of silently continuing to /dashboard.
+      // Terms version independently — and it's this table, not
+      // owners.terms_policy_version, that the gates read. A failed insert here
+      // must not let signup proceed as if consent were recorded — throwing
+      // keeps this inside the try block, so the catch below blocks navigation
+      // and surfaces the error instead of silently continuing to /dashboard.
+      //
+      // Both rows are written every time, even when only one policy was
+      // bumped: the screen presents Privacy and Terms as a single agreement,
+      // so that's what was actually consented to.
+      const method = acceptanceMethod(priorAcceptances);
       const { error: policyError } = await supabase.from("policy_acceptances").insert([
-        { user_id: user.id, policy_type: "privacy_policy", version: PRIVACY_POLICY_VERSION, method: "signup" },
-        { user_id: user.id, policy_type: "terms_of_service", version: TERMS_VERSION, method: "signup" },
+        { user_id: user.id, policy_type: "privacy_policy", version: PRIVACY_POLICY_VERSION, method },
+        { user_id: user.id, policy_type: "terms_of_service", version: TERMS_VERSION, method },
       ]);
       if (policyError) throw policyError;
       router.replace("/dashboard");

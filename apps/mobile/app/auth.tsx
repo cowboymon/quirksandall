@@ -4,8 +4,8 @@ import { splashHidden } from "../lib/splash";
 import { AppAlert } from "../stores/appAlert";
 import { router, useFocusEffect } from "expo-router";
 import { supabase } from "../lib/supabase";
+import { policyRoute } from "../lib/policy";
 import { initAnalytics, identify, setUserProps, track, AnalyticsEvent } from "../lib/analytics";
-import { CONSENT_POLICY_VERSION } from "@quirksandall/shared";
 
 // Client-side-only cooldown between OTP sends. This is UX, not real
 // protection — the actual rate limit is Supabase's own server-side GoTrue
@@ -114,18 +114,12 @@ export default function AuthScreen() {
       track(AnalyticsEvent.SessionStarted, { platform: Platform.OS, source: "login" });
     }
 
-    // Required legal-agreement gate (#96) — recorded once per account, checked
-    // here rather than on this screen, since we can't tell new vs. returning
-    // apart until after verification. A returning user who already accepted the
-    // current policy version skips straight past it; only a brand-new account,
-    // or an acceptance that predates a policy bump, gets routed there.
-    const { data: owner } = await supabase
-      .from("owners")
-      .select("terms_accepted_at, terms_policy_version")
-      .eq("id", user!.id)
-      .single();
-    const upToDate = !!owner?.terms_accepted_at && owner.terms_policy_version === CONSENT_POLICY_VERSION;
-    router.replace(upToDate ? "/dashboard" : "/accept-terms");
+    // Required legal-agreement gate (#96) — checked here rather than on that
+    // screen, since we can't tell new vs. returning apart until after
+    // verification. A returning user whose acceptances are current skips
+    // straight past; a brand-new account, or one whose Privacy Policy *or*
+    // Terms version has since been bumped, gets routed there.
+    router.replace(await policyRoute(user!.id));
   };
 
   return (
