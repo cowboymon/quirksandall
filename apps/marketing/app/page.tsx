@@ -3,6 +3,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import WaitlistForm from "./components/WaitlistForm";
 import StoreBadge from "./components/StoreBadge";
+import Reviews from "./components/Reviews";
 import { Underline, MarginArrow } from "./components/Annotations";
 import { site } from "./site";
 import { LIFETIME_AVAILABLE } from "@quirksandall/shared";
@@ -323,6 +324,9 @@ export default function Home() {
             </p>
           </div>
         </section>
+
+        {/* 4b — Reviews (#F8ECEE) — renders only once REVIEWS_LIVE is true */}
+        <Reviews />
 
         {/* 5 — Pricing (#F8ECEE) */}
         <section id="pricing" className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
