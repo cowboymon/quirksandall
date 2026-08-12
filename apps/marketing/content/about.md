@@ -2,7 +2,9 @@
 
 Technically, Olive's mine. Practically, she's also my sister's, and also my partner's — ask any of the three of us who actually owns her and you'll get three different, very confident answers.
 
-Point is, when my sister and I got her as adults, we figured between the two of us we more or less knew what we were doing — we'd grown up with the same dog. Turns out our parents were doing some serious heavy lifting back then, because boy oh boy — actually being the one responsible for a dog as an adult is not the same skill.
+When my sister and I got Olive as adults, we figured we knew what we were doing. We'd grown up with the same dog. How different could it be?
+
+Turns out our parents were doing considerably more heavy lifting than we noticed. Being the one responsible for a dog is not the same skill as living in a house where someone else is.
 
 Nobody warns you how much there is to know about one dog. Not the big stuff — that's a quick search. It's the specific stuff. That she won't actually settle for the night until every single person in the house has said goodnight to her — skip it, and she's up at 2am summoning you with demonic howls. That she won't eat unless you trick her into it: drop one piece, wait, drop a few more, until she remembers she's hungry and finishes the bowl. That farting anywhere near her is a personal betrayal she will not let you forget for a good ten minutes. None of that fits in a search result. It barely fits in your head at 6am when someone else has to look after her and you're trying to explain months of accumulated Olive-specific knowledge in a doorway.
 

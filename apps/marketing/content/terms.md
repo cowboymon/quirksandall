@@ -1,6 +1,6 @@
 # Terms of Service
 
-**Version 1.0 — Last updated 28 July 2026**
+**Version 1.1 — Last updated 12 August 2026**
 
 These Terms of Service ("Terms") govern your access to and use of the Quirks & All mobile app, website and the shareable links it generates (together, the "Service"), operated by Monica Rattanong trading as Its Hypothetical (ABN 22 525 634 531) ("we", "us"). By downloading, accessing or using the Service, you agree to these Terms. If you don't agree, please don't use the Service.
 
@@ -49,9 +49,11 @@ You agree not to:
 
 ## 8. Purchases
 
-Quirks & All is free to start. Pro features can be unlocked in one of two ways: an auto-renewing yearly subscription, or a one-time payment that unlocks them for the life of the app (the "Lifetime" option). Purchases are processed by the Apple App Store or Google Play under their terms, and are charged to your store account.
+Quirks & All is free to start. Pro features can be unlocked with an auto-renewing yearly subscription, processed by the Apple App Store or Google Play under their terms and charged to your store account.
 
-The yearly subscription renews automatically at the then-current price unless you cancel at least 24 hours before the current period ends. You can manage or cancel it at any time in your Apple App Store or Google Play account settings. The Lifetime option is a single payment, not a subscription. Refunds are handled by the relevant app store according to their policies.
+The subscription renews automatically at the then-current price unless you cancel at least 24 hours before the current period ends. You can manage or cancel it at any time in your Apple App Store or Google Play account settings. Refunds are handled by the relevant app store according to their policies.
+
+If we introduce other purchase options in future, we'll update these Terms and note the change in our change history.
 
 ## 9. Availability & changes
 

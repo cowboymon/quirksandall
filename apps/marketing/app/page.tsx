@@ -86,6 +86,10 @@ const FAQS = [
     a: "ID, commands, allergies, medications and conditions, escape risk, emergency contacts, feeding times, and one shareable link. Permanently. Medical information is never paywalled.",
   },
   {
+    q: "What happens if I stop paying?",
+    a: "Your profile stays live and everything in Free stays visible to whoever has your link — including medications, allergies and emergency contacts. The Pro extras, like your pet's full routine and the softer behavioural notes, go back behind the paywall. Nothing critical disappears because a payment lapsed.",
+  },
+  {
     q: "Can I use this for more than one pet?",
     a: LIFETIME_AVAILABLE
       ? `One pet is free. Unlock unlimited pets for ${site.pricing.annual} a year — or ${site.pricing.lifetime} once, yours forever.`
