@@ -179,7 +179,16 @@ export function LabeledPlacesInput({
               inputRange: [0, 1],
               outputRange: [focused ? colors.primary : colors.border, colors.primary],
             }),
-            backgroundColor: colors.background,
+            // The main event now — a border tweak on a 1px ring is easy to
+            // miss, and iOS shadow rendering on a TextInput is unreliable
+            // enough not to trust as the primary signal. A wash across the
+            // whole field is a large, unmissable area, and backgroundColor
+            // interpolation works identically on iOS and Android — nothing
+            // native-only to fail silently on.
+            backgroundColor: pulse.interpolate({
+              inputRange: [0, 1],
+              outputRange: [colors.background, "rgba(184,58,82,0.16)"],
+            }),
             paddingLeft: manual ? 12 : 34, paddingRight: value ? 34 : 12, paddingVertical: 8,
             fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: colors.textDark,
             // Genuine glow, iOS only (Android's elevation has no colour).

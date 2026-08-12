@@ -106,7 +106,7 @@ const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 // first attempt at this (500ms, linear, no shadow) read as a glitch rather
 // than an effect; slow enough to actually track, eased so it reads as
 // fading rather than snapping off.
-export const UNLOCK_PULSE_MS = 1400;
+export const UNLOCK_PULSE_MS = 2200;
 
 export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: string; phone?: boolean; name?: boolean; pulseOn?: unknown }>(function LabeledInput({
   label,
@@ -149,7 +149,15 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
             borderColor: pulseOn === undefined
               ? (focused ? colors.primary : colors.border)
               : pulse.interpolate({ inputRange: [0, 1], outputRange: [focused ? colors.primary : colors.border, colors.primary] }),
-            backgroundColor: props.editable === false ? colors.secondary : colors.background,
+            // Same reasoning as PlacesInput's search field: a wash across the
+            // whole field reads far more clearly than a border-width tweak,
+            // and unlike shadow it renders identically on iOS and Android.
+            backgroundColor: pulseOn === undefined
+              ? (props.editable === false ? colors.secondary : colors.background)
+              : pulse.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [props.editable === false ? colors.secondary : colors.background, "rgba(184,58,82,0.16)"],
+                }),
             paddingHorizontal: 12, paddingVertical: 8,
             fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: props.editable === false ? colors.textMuted : colors.textDark,
             // Genuine glow, iOS only — Android has no colored-shadow
