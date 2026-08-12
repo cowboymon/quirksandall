@@ -93,6 +93,12 @@ export default function RecipientView({ profile, token }: Props) {
   // a "Paid" badge, so the owner sees exactly what an upgrade would unlock.
   const lockedPreview = preview && !isPaid;
   const paidVisible = view === "full";
+  // Whether the extended routine is actually showing right now — false both
+  // when it's gated (free tier, or Quick view) and when the owner simply
+  // never filled it in. See the neutral note below, which relies on that
+  // ambiguity being the point.
+  const hasExtendedRoutine =
+    paidVisible && !!(routine?.walks || routine?.sleep || routine?.bathroomHabits || routine?.leftAlone || routine?.toileting);
 
   // Medications tied to a meal ALSO render inline in the feeding routine (at
   // that meal) as a convenience, but every medication always shows in the
@@ -304,6 +310,17 @@ export default function RecipientView({ profile, token }: Props) {
               {paidVisible && routine.bathroomHabits && <InfoCard label="Bathroom" text={routine.bathroomHabits} locked={lockedPreview} />}
               {paidVisible && routine.leftAlone && <InfoCard label="Left alone" text={routine.leftAlone} locked={lockedPreview} />}
               {paidVisible && routine.toileting && <InfoCard label="Toileting" text={routine.toileting} locked={lockedPreview} />}
+              {/* Deliberately worded the same whether the extended routine is
+                  gated (owner on the free tier) or simply empty (owner never
+                  filled it in) — a sitter can't tell the difference and
+                  shouldn't need to. The point isn't to explain why; it's so a
+                  sitter comparing this to another pet-sitting app doesn't read
+                  "no walk schedule" as "this app can't do that". Never shown
+                  to the owner's own preview — they already get the explicit
+                  upgrade-aware banner above. */}
+              {!preview && !hasExtendedRoutine && (
+                <p className="text-xs italic" style={{ color: MUTED }}>Full routine not included.</p>
+              )}
             </div>
           </section>
         )}
