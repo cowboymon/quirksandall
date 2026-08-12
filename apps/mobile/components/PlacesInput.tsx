@@ -234,8 +234,20 @@ export function LabeledPlacesInput({
         )}
       </View>
       <TouchableOpacity onPress={toggleManual} style={{ marginTop: 4 }}>
+        {/* Only "Tap here" is underlined — the rest reads as context, that
+            phrase reads as the actual tap target, same convention as a link
+            embedded in a sentence rather than the whole sentence looking
+            equally interactive. */}
         <Text style={{ color: colors.textMuted, fontSize: 11, fontFamily: "Satoshi" }}>
-          {manual ? "Search for it instead?" : "Can't find your clinic? Enter it manually"}
+          {manual ? (
+            <>
+              Found it? <Text style={{ textDecorationLine: "underline" }}>Tap here</Text> to search instead
+            </>
+          ) : (
+            <>
+              Can't find it? <Text style={{ textDecorationLine: "underline" }}>Tap here</Text> to enter manually
+            </>
+          )}
         </Text>
       </TouchableOpacity>
 
