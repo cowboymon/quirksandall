@@ -205,8 +205,8 @@ export function LabeledPlacesInput({
             parent's centering, so it can't drift if that changes later. */}
         {justToggled && !value && (
           <View pointerEvents="none" style={{ position: "absolute", left: manual ? 12 : 34, top: 0, bottom: 0, justifyContent: "center" }}>
-            <Animated.Text style={{ opacity: textFade, color: colors.textMuted, fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi" }}>
-              {manual ? "Add clinic name" : placeholder}
+            <Animated.Text style={{ opacity: textFade, color: colors.primary, fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi-Medium" }}>
+              {manual ? "You can type it in now" : "You can search now"}
             </Animated.Text>
           </View>
         )}
@@ -220,16 +220,6 @@ export function LabeledPlacesInput({
           </TouchableOpacity>
         )}
       </View>
-      {/* Transient hint — the second half of "flash the colour, then fade the
-          text": one line, tied to the same textFade timeline, telling the
-          user in words what the wash just showed them visually. Sits above
-          the permanent toggle link rather than replacing it, and disappears
-          on its own — it's a one-time nudge, not a persistent label. */}
-      {justToggled && (
-        <Animated.Text style={{ opacity: textFade, color: colors.primary, fontSize: 11, fontFamily: "Satoshi-Medium", marginTop: 4 }}>
-          {manual ? "You can type it in now" : "Search away"}
-        </Animated.Text>
-      )}
       <TouchableOpacity onPress={toggleManual} style={{ marginTop: 4 }}>
         <Text style={{ color: colors.textMuted, fontSize: 11, fontFamily: "Satoshi" }}>
           {manual ? "Search for it instead?" : "Can't find your clinic? Enter it manually"}

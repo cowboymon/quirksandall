@@ -107,12 +107,16 @@ const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 // than an effect; slow enough to actually track, eased so it reads as
 // fading rather than snapping off.
 export const UNLOCK_PULSE_MS = 2900;
-// A solid, fully-opaque tint (colors.background blended ~16% toward
-// colors.primary) rather than a translucent rgba. Animating alpha and hue at
-// the same time made the fade look like it passed through an unrelated
-// darker color partway — a real artifact of RGBA lerp, not a rendering bug.
-// Keeping alpha constant at 1 throughout means only the hue moves.
-export const UNLOCK_PULSE_PEAK_COLOR = "#EED0D5";
+// A solid, fully-opaque colour rather than a translucent rgba — animating
+// alpha and hue at once made the fade look like it passed through an
+// unrelated colour partway, a real artifact of RGBA lerp, not a rendering
+// bug. Keeping alpha constant at 1 throughout means only the hue moves.
+//
+// Deliberately LIGHTER than the field's normal colour, not more saturated —
+// a bright flash reads as "notice me" the way a camera flash or a highlight
+// does; the first version went darker/more-saturated instead and read as
+// muddy rather than as an attention cue.
+export const UNLOCK_PULSE_PEAK_COLOR = "#FFFFFF";
 
 export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: string; phone?: boolean; name?: boolean; pulseOn?: unknown }>(function LabeledInput({
   label,
@@ -196,10 +200,13 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
           {...props}
           placeholder={justToggled ? "" : placeholder}
         />
-        {justToggled && !props.value && (
+        {/* Only when becoming editable — "you can type it in now" on a field
+            that just re-locked (going back to search) would be telling the
+            user the opposite of what's true. */}
+        {justToggled && !locked && !props.value && (
           <View pointerEvents="none" style={{ position: "absolute", left: 12, top: 0, bottom: 0, justifyContent: "center" }}>
-            <Animated.Text style={{ opacity: textFade, color: colors.textMuted, fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi" }}>
-              {placeholder}
+            <Animated.Text style={{ opacity: textFade, color: colors.primary, fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi-Medium" }}>
+              You can type it in now
             </Animated.Text>
           </View>
         )}
