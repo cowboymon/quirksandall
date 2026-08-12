@@ -62,23 +62,38 @@ import { XCircle as XCircleBase } from "phosphor-react-native/src/icons/XCircle"
  */
 export const DEFAULT_ICON_WEIGHT: IconWeight = "duotone";
 
+/** Weight for glyphs that duotone can only spoil.
+ *
+ * Duotone renders an icon's ENCLOSED AREA as a low-opacity fill sitting behind
+ * the stroke — that's the whole effect. A glyph with no enclosed area (a caret,
+ * a tick, a cross, a plus) has nothing to fill, so duotone gives it a faint
+ * duplicate stroke and it just reads as washed out and slightly blurry next to
+ * its neighbours. The chevron on the Preview row is where this showed up.
+ *
+ * The test for adding one here: could you pour water into the shape? If not,
+ * it belongs in this list. */
+export const STROKE_ICON_WEIGHT: IconWeight = "regular";
+
 // `{...props}` last, so an explicit weight at the call site still wins —
 // e.g. the solid lock on the paid-feature pill.
-function withDefaultWeight(Base: Icon, name: string): Icon {
-  const Wrapped = (props: IconProps) => <Base weight={DEFAULT_ICON_WEIGHT} {...props} />;
+function withWeight(Base: Icon, name: string, weight: IconWeight): Icon {
+  const Wrapped = (props: IconProps) => <Base weight={weight} {...props} />;
   Wrapped.displayName = name;
   return Wrapped;
 }
+
+const withDefaultWeight = (Base: Icon, name: string) => withWeight(Base, name, DEFAULT_ICON_WEIGHT);
+const asStroke = (Base: Icon, name: string) => withWeight(Base, name, STROKE_ICON_WEIGHT);
 
 export const AirplaneTilt = withDefaultWeight(AirplaneTiltBase, "AirplaneTilt");
 export const Bell = withDefaultWeight(BellBase, "Bell");
 export const CalendarDots = withDefaultWeight(CalendarDotsBase, "CalendarDots");
 export const Camera = withDefaultWeight(CameraBase, "Camera");
-export const CaretDown = withDefaultWeight(CaretDownBase, "CaretDown");
-export const CaretLeft = withDefaultWeight(CaretLeftBase, "CaretLeft");
-export const CaretRight = withDefaultWeight(CaretRightBase, "CaretRight");
-export const CaretUp = withDefaultWeight(CaretUpBase, "CaretUp");
-export const Check = withDefaultWeight(CheckBase, "Check");
+export const CaretDown = asStroke(CaretDownBase, "CaretDown");
+export const CaretLeft = asStroke(CaretLeftBase, "CaretLeft");
+export const CaretRight = asStroke(CaretRightBase, "CaretRight");
+export const CaretUp = asStroke(CaretUpBase, "CaretUp");
+export const Check = asStroke(CheckBase, "Check");
 export const Eye = withDefaultWeight(EyeBase, "Eye");
 export const EyeSlash = withDefaultWeight(EyeSlashBase, "EyeSlash");
 export const File = withDefaultWeight(FileBase, "File");
@@ -94,11 +109,11 @@ export const MapPin = withDefaultWeight(MapPinBase, "MapPin");
 export const PencilLine = withDefaultWeight(PencilLineBase, "PencilLine");
 export const PencilSimpleLine = withDefaultWeight(PencilSimpleLineBase, "PencilSimpleLine");
 export const Phone = withDefaultWeight(PhoneBase, "Phone");
-export const Plus = withDefaultWeight(PlusBase, "Plus");
+export const Plus = asStroke(PlusBase, "Plus");
 export const ShareFat = withDefaultWeight(ShareFatBase, "ShareFat");
 export const Trash = withDefaultWeight(TrashBase, "Trash");
 export const WarningCircle = withDefaultWeight(WarningCircleBase, "WarningCircle");
-export const X = withDefaultWeight(XBase, "X");
+export const X = asStroke(XBase, "X");
 export const XCircle = withDefaultWeight(XCircleBase, "XCircle");
 
 export type { Icon, IconProps, IconWeight };
