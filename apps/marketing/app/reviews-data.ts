@@ -39,7 +39,7 @@ export const REVIEWS: Review[] = [
   },
   {
     quote:
-      "We're going away in Tassie and my mum's coming to look after my cat, Kiki. She hasn't lived with Kiki for two years, since I moved out — so this is exactly what I need to feel confident.",
+      "I'm an anxious person, so leaving Kiki with my mum while we're away had me a bit scared — she hasn't lived with Kiki for two years, since I moved out. But being able to put down exactly what Kiki does and when, and where all her things are, means I can rest a little easier.",
     name: "Javi C.",
     detail: "Beta tester, Sydney",
     stars: 5,
