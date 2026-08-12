@@ -38,6 +38,26 @@ export const metadata: Metadata = {
 // it's a 2.0. If we're just making the page match reality, it's a minor.
 // (Concrete: marketing pixels + cookie banner → 2.0; adding a Sentry-like
 // vendor → minor.)
+//
+// ── The on-page "What changed" TL;DR callout ───────────────────────────────
+// Separate from THIS changelog. The changelog row is added for EVERY version
+// bump — it's the permanent record. The blockquote callout at the TOP of the
+// actual policy (privacy.md / terms.md) is an optional, temporary summary, and
+// it follows its own rule:
+//
+//   ADD it when a returning reader benefits from seeing the change at a glance
+//   — anything that touches what we collect, how we use it, who processes it,
+//   or a user's rights/choices. (Privacy v1.1 got one: new processor + new
+//   tracking disclosure.) Always pair one with a 2.0's active notice.
+//
+//   SKIP it when the change doesn't alter the reader's understanding of the
+//   deal — typo/entity/formatting fixes, or a purely subtractive clarification
+//   that removes something not yet relevant. (Terms v1.1 skipped it: it only
+//   dropped a Lifetime option that isn't purchasable yet — changelog row only.)
+//
+//   It is scoped to the CURRENT version only and REPLACED, not appended, on the
+//   next bump — it answers "what's new since last time", the changelog holds
+//   the history. Remove it once its version is no longer current.
 // ───────────────────────────────────────────────────────────────────────────
 type ChangelogEntry = {
   date: string; // display date, matches the doc's "Last updated"
