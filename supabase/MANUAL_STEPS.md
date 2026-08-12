@@ -18,12 +18,11 @@ you go. Newest work is at the top of each section.
 
 ## ▶️ Run now
 
-- [ ] **`20260811000001_share_link_view_count.sql`** — adds `view_count` to
+- [x] **`20260811000001_share_link_view_count.sql`** — adds `view_count` to
   `share_links` plus the `record_share_link_view(uuid)` RPC the recipient page
-  now calls instead of updating `last_viewed_at` directly.
-  **Run this before loading the app.** `links.ts` selects `view_count`, so
-  until the column exists every link query errors and no links render — the
-  same breakage the `starts_at` column caused on 10 Aug.
+  now calls instead of updating `last_viewed_at` directly. `links.ts` selects
+  `view_count`, so this had to land before the app next loaded — the same
+  breakage the `starts_at` column caused on 10 Aug. *(Run 12 Aug 2026.)*
 
 - [x] **`20260810000001_rename_waitlist_to_marketing.sql`** — renames the
   pre-launch email table `waitlist` → `marketing` (it's now an ongoing
