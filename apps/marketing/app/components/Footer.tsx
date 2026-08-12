@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { site } from "../site";
 
-const linkClass = "text-text-muted transition-colors hover:text-foreground";
+// py-2 gives each link a ~36px tap height (was ~20px) — comfortable on touch,
+// especially for the Privacy/Terms links a reviewer needs to hit on a phone.
+const linkClass = "inline-block py-2 text-text-muted transition-colors hover:text-foreground";
 const Sep = () => (
   <span aria-hidden className="text-border">
     ·
