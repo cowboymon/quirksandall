@@ -167,6 +167,7 @@ export default function EditEmergency() {
               label="Address"
               placeholder={vetManual ? "Add address" : "Fills in from your clinic search"}
               editable={vetManual}
+              pulseOn={vetManual}
               value={vetAddress}
               onChangeText={setVetAddress}
             />
@@ -174,6 +175,7 @@ export default function EditEmergency() {
               label="Phone"
               placeholder={vetManual ? "Add phone number" : "Fills in from your clinic search"}
               editable={vetManual}
+              pulseOn={vetManual}
               phone
               keyboardType="phone-pad"
               value={vetPhone}
@@ -199,6 +201,7 @@ export default function EditEmergency() {
               label="Address"
               placeholder={emergManual ? "Add address" : "Fills in from your clinic search"}
               editable={emergManual}
+              pulseOn={emergManual}
               value={emergAddress}
               onChangeText={setEmergAddress}
             />
@@ -206,6 +209,7 @@ export default function EditEmergency() {
               label="Phone"
               placeholder={emergManual ? "Add phone number" : "Fills in from your clinic search"}
               editable={emergManual}
+              pulseOn={emergManual}
               phone
               keyboardType="phone-pad"
               value={emergPhone}

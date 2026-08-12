@@ -60,6 +60,7 @@ export default function Step2() {
               label="Address"
               placeholder={vetManual ? "Add address" : "Fills in from your clinic search"}
               editable={vetManual}
+              pulseOn={vetManual}
               value={pet.vetAddress ?? ""}
               onChangeText={(v) => setPet({ vetAddress: v })}
             />
@@ -67,6 +68,7 @@ export default function Step2() {
               label="Phone"
               placeholder={vetManual ? "Add phone number" : "Fills in from your clinic search"}
               editable={vetManual}
+              pulseOn={vetManual}
               phone
               keyboardType="phone-pad"
               value={pet.vetPhone ?? ""}
@@ -95,6 +97,7 @@ export default function Step2() {
               label="Address"
               placeholder={emergManual ? "Add address" : "Fills in from your clinic search"}
               editable={emergManual}
+              pulseOn={emergManual}
               value={pet.emergVetAddress ?? ""}
               onChangeText={(v) => setPet({ emergVetAddress: v })}
             />
@@ -102,6 +105,7 @@ export default function Step2() {
               label="Phone"
               placeholder={emergManual ? "Add phone number" : "Fills in from your clinic search"}
               editable={emergManual}
+              pulseOn={emergManual}
               phone
               keyboardType="phone-pad"
               value={pet.emergVetPhone ?? ""}
