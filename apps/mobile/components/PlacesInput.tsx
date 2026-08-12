@@ -166,36 +166,22 @@ export function LabeledPlacesInput({
           placeholderTextColor={colors.textMuted}
           autoCapitalize="words"
           style={{
-            minHeight: 40, borderRadius: 8,
-            // Width is animated too — a thicker ring at the peak of the pulse
-            // reads as "notice me" more than a flat color swap does at this
-            // field's small size, then eases back to the normal 1px.
-            borderWidth: pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 2.5] }),
-            // Toggling manual mode always drops focus (toggleManual calls
-            // close(), which blurs) — so the base color here is reliably
-            // colors.border, and the pulse has a still target to flash
-            // against rather than fighting the focus ring.
-            borderColor: pulse.interpolate({
-              inputRange: [0, 1],
-              outputRange: [focused ? colors.primary : colors.border, colors.primary],
-            }),
-            // The main event now — a border tweak on a 1px ring is easy to
-            // miss, and iOS shadow rendering on a TextInput is unreliable
-            // enough not to trust as the primary signal. A wash across the
-            // whole field is a large, unmissable area, and backgroundColor
-            // interpolation works identically on iOS and Android — nothing
-            // native-only to fail silently on.
+            minHeight: 40, borderRadius: 8, borderWidth: 1,
+            borderColor: focused ? colors.primary : colors.border,
+            // The signal, on its own now — a border tweak was easy to miss,
+            // and iOS shadow rendering on a TextInput is unreliable enough
+            // not to trust. A wash across the whole field is a large,
+            // unmissable area, and backgroundColor interpolation works
+            // identically on iOS and Android — nothing native-only to fail
+            // silently on.
             backgroundColor: pulse.interpolate({
               inputRange: [0, 1],
               outputRange: [colors.background, "rgba(184,58,82,0.16)"],
             }),
             paddingLeft: manual ? 12 : 34, paddingRight: value ? 34 : 12, paddingVertical: 8,
             fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: colors.textDark,
-            // Genuine glow, iOS only (Android's elevation has no colour).
-            shadowColor: colors.primary,
             shadowOffset: { width: 0, height: 0 },
             shadowOpacity: pulse.interpolate({ inputRange: [0, 1], outputRange: [0, 0.55] }),
-            shadowRadius: pulse.interpolate({ inputRange: [0, 1], outputRange: [0, 8] }),
           }}
         />
         {!!value && (

@@ -106,7 +106,7 @@ const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 // first attempt at this (500ms, linear, no shadow) read as a glitch rather
 // than an effect; slow enough to actually track, eased so it reads as
 // fading rather than snapping off.
-export const UNLOCK_PULSE_MS = 2200;
+export const UNLOCK_PULSE_MS = 2900;
 
 export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: string; phone?: boolean; name?: boolean; pulseOn?: unknown }>(function LabeledInput({
   label,
@@ -135,48 +135,51 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
     // visible change happens in the last third either way.
     Animated.timing(pulse, { toValue: 0, duration: UNLOCK_PULSE_MS, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start();
   }, [pulseOn]);
+  // editable={false} on this component only ever means "locked until the
+  // vet search unlocks it" (the two places this is used: Address/Phone under
+  // LabeledPlacesInput) — colors.secondary was too close to colors.background
+  // to read as disabled at a glance, so this state gets a dashed border and a
+  // lock icon on top of the tint, same visual language as the "New link"
+  // dashed circle elsewhere in the app.
+  const locked = props.editable === false;
   return (
     <View>
       <FieldLabel>{label}</FieldLabel>
-      <AnimatedTextInput
-        ref={ref}
-        autoCapitalize={name ? "words" : "sentences"}
-        onChangeText={phone && onChangeText ? (t: string) => onChangeText(formatPhone(t)) : name ? wordCased(onChangeText) : sentenceCased(props.keyboardType, onChangeText)}
-        style={[
-          {
-            minHeight: 40, borderRadius: 8,
-            borderWidth: pulseOn === undefined ? 1 : pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 2.5] }),
-            borderColor: pulseOn === undefined
-              ? (focused ? colors.primary : colors.border)
-              : pulse.interpolate({ inputRange: [0, 1], outputRange: [focused ? colors.primary : colors.border, colors.primary] }),
-            // Same reasoning as PlacesInput's search field: a wash across the
-            // whole field reads far more clearly than a border-width tweak,
-            // and unlike shadow it renders identically on iOS and Android.
-            backgroundColor: pulseOn === undefined
-              ? (props.editable === false ? colors.secondary : colors.background)
-              : pulse.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [props.editable === false ? colors.secondary : colors.background, "rgba(184,58,82,0.16)"],
-                }),
-            paddingHorizontal: 12, paddingVertical: 8,
-            fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: props.editable === false ? colors.textMuted : colors.textDark,
-            // Genuine glow, iOS only — Android has no colored-shadow
-            // equivalent (elevation is greyscale-only), so there the wider,
-            // longer-held border swing above is the whole effect.
-            ...(pulseOn !== undefined ? {
-              shadowColor: colors.primary,
-              shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: pulse.interpolate({ inputRange: [0, 1], outputRange: [0, 0.55] }),
-              shadowRadius: pulse.interpolate({ inputRange: [0, 1], outputRange: [0, 8] }),
-            } : {}),
-          },
-          style,
-        ]}
-        placeholderTextColor={colors.textMuted}
-        onFocus={(e) => { setFocused(true); props.onFocus?.(e); }}
-        onBlur={(e) => { setFocused(false); props.onBlur?.(e); }}
-        {...props}
-      />
+      <View>
+        <AnimatedTextInput
+          ref={ref}
+          autoCapitalize={name ? "words" : "sentences"}
+          onChangeText={phone && onChangeText ? (t: string) => onChangeText(formatPhone(t)) : name ? wordCased(onChangeText) : sentenceCased(props.keyboardType, onChangeText)}
+          style={[
+            {
+              minHeight: 40, borderRadius: 8, borderWidth: 1,
+              borderStyle: locked ? "dashed" : "solid",
+              borderColor: locked ? colors.textMuted : (focused ? colors.primary : colors.border),
+              // Same reasoning as PlacesInput's search field: a wash across the
+              // whole field reads far more clearly than a border-width tweak,
+              // and unlike shadow it renders identically on iOS and Android.
+              backgroundColor: pulseOn === undefined
+                ? (locked ? colors.secondary : colors.background)
+                : pulse.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [locked ? colors.secondary : colors.background, "rgba(184,58,82,0.16)"],
+                  }),
+              paddingHorizontal: 12, paddingRight: locked ? 32 : 12, paddingVertical: 8,
+              fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: locked ? colors.textMuted : colors.textDark,
+            },
+            style,
+          ]}
+          placeholderTextColor={colors.textMuted}
+          onFocus={(e) => { setFocused(true); props.onFocus?.(e); }}
+          onBlur={(e) => { setFocused(false); props.onBlur?.(e); }}
+          {...props}
+        />
+        {locked && (
+          <View style={{ position: "absolute", right: 10, top: 0, bottom: 0, justifyContent: "center" }} pointerEvents="none">
+            <LockSimple size={14} weight="fill" color={colors.textMuted} />
+          </View>
+        )}
+      </View>
     </View>
   );
 });

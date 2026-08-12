@@ -651,17 +651,19 @@ export default function Dashboard() {
                   onPress={() => (newLinkLocked ? router.push("/upgrade") : setShowNewLink(true))}
                   style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
                 >
-                  <View style={{ width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: "rgba(240,160,176,0.5)", borderStyle: "dashed", alignItems: "center", justifyContent: "center" }}>
-                    <Plus size={13} color={newLinkLocked ? "rgba(248,236,238,0.4)" : colors.cardDarkLabel} />
-                  </View>
+                  {/* Locked: no dashed circle — that's "a new one goes here",
+                      which isn't true once creation is capped. Just the lock,
+                      same size class as the circle so the row doesn't jump. */}
+                  {newLinkLocked ? (
+                    <LockSimple size={16} weight="fill" color="rgba(248,236,238,0.4)" />
+                  ) : (
+                    <View style={{ width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: "rgba(240,160,176,0.5)", borderStyle: "dashed", alignItems: "center", justifyContent: "center" }}>
+                      <Plus size={13} color={colors.cardDarkLabel} />
+                    </View>
+                  )}
                   <Text style={{ color: newLinkLocked ? "rgba(248,236,238,0.4)" : colors.cardDarkLabel, fontSize: 13, fontFamily: "Satoshi-Medium" }}>
                     {newLinkLocked ? "Unlock more links" : "New link"}
                   </Text>
-                  {/* Lock stays as the "why", just off the dashed circle —
-                      that circle is doing "a new one goes here", and cramming
-                      a padlock into a 24px ring fought with the plus mark for
-                      the same space. Sitting after the copy instead. */}
-                  {newLinkLocked && <LockSimple size={12} weight="fill" color="rgba(248,236,238,0.4)" />}
                 </TouchableOpacity>
               );
             })()}
