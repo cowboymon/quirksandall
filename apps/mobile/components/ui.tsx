@@ -1,7 +1,7 @@
 // Shared primitive UI components for the mobile app.
 // Mirrors the prototype's primitives.tsx (fonts, buttons, dots, inputs).
 import { useEffect, useMemo, useState, useRef, forwardRef } from "react";
-import { Animated, Keyboard, Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
+import { Animated, Easing, Keyboard, Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
 import { CalendarDots, LockSimple, XCircle } from "./icons";
 import { router, useNavigation } from "expo-router";
 import { colors, radius, capitalizeFirst, capitalizeWords, formatPhone, displayDateToISO, dateFieldError } from "@quirksandall/shared";
@@ -101,6 +101,26 @@ export function FieldLabel({ children }: { children: React.ReactNode }) {
 // cards (Screen 2). 14px value on #F8ECEE, rose focus border.
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
+// Shared with PlacesInput.tsx so the search field and the Address/Phone
+// fields it unlocks stay in lockstep — a felt duration, not a flash. The
+// first attempt at this (500ms, linear, no shadow) read as a glitch rather
+// than an effect; slow enough to actually track, eased so it reads as
+// fading rather than snapping off.
+export const UNLOCK_PULSE_MS = 2900;
+// A solid, fully-opaque colour rather than a translucent rgba — animating
+// alpha and hue at once made the fade look like it passed through an
+// unrelated colour partway, a real artifact of RGBA lerp, not a rendering
+// bug. Keeping alpha constant at 1 throughout means only the hue moves.
+//
+// Deliberately LIGHTER than the field's normal colour, not more saturated —
+// a bright flash reads as "notice me" the way a camera flash or a highlight
+// does; the first version went darker/more-saturated instead and read as
+// muddy rather than as an attention cue. Pure white read as *too* bright —
+// this is a paler version of the same pink family (colors.background lifted
+// toward white, not all the way), so it still reads as "this field" flashing
+// rather than a generic UI flash.
+export const UNLOCK_PULSE_PEAK_COLOR = "#FEF3F5";
+
 export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: string; phone?: boolean; name?: boolean; pulseOn?: unknown }>(function LabeledInput({
   label,
   style,
@@ -108,6 +128,7 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
   phone,
   name,
   pulseOn,
+  placeholder,
   ...props
 }, ref) {
   const [focused, setFocused] = useState(false);
@@ -119,37 +140,86 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
   // pulse, mount does not.
   const pulse = useRef(new Animated.Value(0)).current;
   const mounted = useRef(false);
+  // Same placeholder-fade trick as PlacesInput — the native placeholder
+  // can't animate, so this blanks it briefly and fades a matching
+  // Animated.Text in its place instead. `placeholder` is destructured out
+  // above so it can be overridden here regardless of prop spread order.
+  const [justToggled, setJustToggled] = useState(false);
+  const textFade = useRef(new Animated.Value(0)).current;
+  const TEXT_FADE_IN_MS = 350;
   useEffect(() => {
     if (pulseOn === undefined) return;
     if (!mounted.current) { mounted.current = true; return; }
     pulse.setValue(1);
-    Animated.timing(pulse, { toValue: 0, duration: 500, useNativeDriver: false }).start();
+    // Ease-out cubic: fast to register, slow to fade — a linear fade of the
+    // same length reads as "stuck" for its first half, since most of the
+    // visible change happens in the last third either way.
+    Animated.timing(pulse, { toValue: 0, duration: UNLOCK_PULSE_MS, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start();
+
+    setJustToggled(true);
+    textFade.setValue(0);
+    Animated.sequence([
+      Animated.timing(textFade, { toValue: 1, duration: TEXT_FADE_IN_MS, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+      Animated.timing(textFade, { toValue: 0, duration: UNLOCK_PULSE_MS - TEXT_FADE_IN_MS, easing: Easing.in(Easing.quad), useNativeDriver: true }),
+    ]).start(() => setJustToggled(false));
   }, [pulseOn]);
+  // editable={false} on this component only ever means "locked until the
+  // vet search unlocks it" (the two places this is used: Address/Phone under
+  // LabeledPlacesInput) — colors.secondary was too close to colors.background
+  // to read as disabled at a glance, so this state gets a dashed border and a
+  // lock icon on top of the tint, same visual language as the "New link"
+  // dashed circle elsewhere in the app.
+  const locked = props.editable === false;
   return (
     <View>
       <FieldLabel>{label}</FieldLabel>
-      <AnimatedTextInput
-        ref={ref}
-        autoCapitalize={name ? "words" : "sentences"}
-        onChangeText={phone && onChangeText ? (t: string) => onChangeText(formatPhone(t)) : name ? wordCased(onChangeText) : sentenceCased(props.keyboardType, onChangeText)}
-        style={[
-          {
-            minHeight: 40, borderRadius: 8,
-            borderWidth: pulseOn === undefined ? 1 : pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 2] }),
-            borderColor: pulseOn === undefined
-              ? (focused ? colors.primary : colors.border)
-              : pulse.interpolate({ inputRange: [0, 1], outputRange: [focused ? colors.primary : colors.border, colors.primary] }),
-            backgroundColor: props.editable === false ? colors.secondary : colors.background,
-            paddingHorizontal: 12, paddingVertical: 8,
-            fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: props.editable === false ? colors.textMuted : colors.textDark,
-          },
-          style,
-        ]}
-        placeholderTextColor={colors.textMuted}
-        onFocus={(e) => { setFocused(true); props.onFocus?.(e); }}
-        onBlur={(e) => { setFocused(false); props.onBlur?.(e); }}
-        {...props}
-      />
+      <View>
+        <AnimatedTextInput
+          ref={ref}
+          autoCapitalize={name ? "words" : "sentences"}
+          onChangeText={phone && onChangeText ? (t: string) => onChangeText(formatPhone(t)) : name ? wordCased(onChangeText) : sentenceCased(props.keyboardType, onChangeText)}
+          style={[
+            {
+              minHeight: 40, borderRadius: 8, borderWidth: 1,
+              borderStyle: locked ? "dashed" : "solid",
+              borderColor: locked ? colors.textMuted : (focused ? colors.primary : colors.border),
+              // Same reasoning as PlacesInput's search field: a wash across the
+              // whole field reads far more clearly than a border-width tweak,
+              // and unlike shadow it renders identically on iOS and Android.
+              backgroundColor: pulseOn === undefined
+                ? (locked ? colors.secondary : colors.background)
+                : pulse.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [locked ? colors.secondary : colors.background, UNLOCK_PULSE_PEAK_COLOR],
+                  }),
+              paddingHorizontal: 12, paddingRight: locked ? 32 : 12, paddingVertical: 8,
+              fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: locked ? colors.textMuted : colors.textDark,
+            },
+            style,
+          ]}
+          placeholderTextColor={colors.textMuted}
+          onFocus={(e) => { setFocused(true); props.onFocus?.(e); }}
+          onBlur={(e) => { setFocused(false); props.onBlur?.(e); }}
+          {...props}
+          placeholder={justToggled ? "" : placeholder}
+        />
+        {/* Fades in the real placeholder text, not a hint sentence — "You can
+            type it in now" is deliberately confined to the clinic-name field
+            (PlacesInput) so it doesn't fire three times at once across a
+            stack of fields. */}
+        {justToggled && !props.value && (
+          <View pointerEvents="none" style={{ position: "absolute", left: 12, top: 0, bottom: 0, justifyContent: "center" }}>
+            <Animated.Text style={{ opacity: textFade, color: colors.textMuted, fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi" }}>
+              {placeholder}
+            </Animated.Text>
+          </View>
+        )}
+        {locked && (
+          <View style={{ position: "absolute", right: 10, top: 0, bottom: 0, justifyContent: "center" }} pointerEvents="none">
+            <LockSimple size={14} weight="fill" color={colors.textMuted} />
+          </View>
+        )}
+      </View>
     </View>
   );
 });

@@ -50,7 +50,7 @@ export default function Step2() {
               label="Clinic name"
               placeholder="Search clinic name"
               value={pet.vetClinic ?? ""}
-              onChangeText={(v) => { setPet({ vetClinic: v }); setVetManual(false); }}
+              onChangeText={(v) => setPet({ vetClinic: v })}
               onSelectPlace={(p) => { setPet({ vetClinic: p.name, vetPhone: p.phone, vetAddress: p.address }); setVetManual(false); }}
               manual={vetManual}
               onToggleManual={() => setVetManual((v) => !v)}
@@ -58,7 +58,7 @@ export default function Step2() {
             />
             <LabeledInput
               label="Address"
-              placeholder={vetManual ? "Type your clinic's address" : "Fills in from your clinic search"}
+              placeholder={vetManual ? "Add address" : "Fills in from your clinic search"}
               editable={vetManual}
               pulseOn={vetManual}
               value={pet.vetAddress ?? ""}
@@ -66,7 +66,7 @@ export default function Step2() {
             />
             <LabeledInput
               label="Phone"
-              placeholder={vetManual ? "Type your clinic's phone number" : "Fills in from your clinic search"}
+              placeholder={vetManual ? "Add phone number" : "Fills in from your clinic search"}
               editable={vetManual}
               pulseOn={vetManual}
               phone
@@ -87,7 +87,7 @@ export default function Step2() {
               label="Clinic name"
               placeholder="Search clinic name"
               value={pet.emergVetClinic ?? ""}
-              onChangeText={(v) => { setPet({ emergVetClinic: v }); setEmergManual(false); }}
+              onChangeText={(v) => setPet({ emergVetClinic: v })}
               onSelectPlace={(p) => { setPet({ emergVetClinic: p.name, emergVetPhone: p.phone, emergVetAddress: p.address }); setEmergManual(false); }}
               manual={emergManual}
               onToggleManual={() => setEmergManual((v) => !v)}
@@ -95,7 +95,7 @@ export default function Step2() {
             />
             <LabeledInput
               label="Address"
-              placeholder={emergManual ? "Type your clinic's address" : "Fills in from your clinic search"}
+              placeholder={emergManual ? "Add address" : "Fills in from your clinic search"}
               editable={emergManual}
               pulseOn={emergManual}
               value={pet.emergVetAddress ?? ""}
@@ -103,7 +103,7 @@ export default function Step2() {
             />
             <LabeledInput
               label="Phone"
-              placeholder={emergManual ? "Type your clinic's phone number" : "Fills in from your clinic search"}
+              placeholder={emergManual ? "Add phone number" : "Fills in from your clinic search"}
               editable={emergManual}
               pulseOn={emergManual}
               phone

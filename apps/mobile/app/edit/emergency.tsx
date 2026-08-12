@@ -157,7 +157,7 @@ export default function EditEmergency() {
               label="Clinic name"
               placeholder="Search clinic name"
               value={vetClinic}
-              onChangeText={(v) => { setVetClinic(v); setVetManual(false); }}
+              onChangeText={setVetClinic}
               onSelectPlace={(p) => { setVetClinic(p.name); setVetPhone(p.phone); setVetAddress(p.address); setVetManual(false); }}
               manual={vetManual}
               onToggleManual={() => setVetManual((v) => !v)}
@@ -165,7 +165,7 @@ export default function EditEmergency() {
             />
             <LabeledInput
               label="Address"
-              placeholder={vetManual ? "Type your clinic's address" : "Fills in from your clinic search"}
+              placeholder={vetManual ? "Add address" : "Fills in from your clinic search"}
               editable={vetManual}
               pulseOn={vetManual}
               value={vetAddress}
@@ -173,7 +173,7 @@ export default function EditEmergency() {
             />
             <LabeledInput
               label="Phone"
-              placeholder={vetManual ? "Type your clinic's phone number" : "Fills in from your clinic search"}
+              placeholder={vetManual ? "Add phone number" : "Fills in from your clinic search"}
               editable={vetManual}
               pulseOn={vetManual}
               phone
@@ -191,7 +191,7 @@ export default function EditEmergency() {
               label="Clinic name"
               placeholder="Search clinic name"
               value={emergClinic}
-              onChangeText={(v) => { setEmergClinic(v); setEmergManual(false); }}
+              onChangeText={setEmergClinic}
               onSelectPlace={(p) => { setEmergClinic(p.name); setEmergPhone(p.phone); setEmergAddress(p.address); setEmergManual(false); }}
               manual={emergManual}
               onToggleManual={() => setEmergManual((v) => !v)}
@@ -199,7 +199,7 @@ export default function EditEmergency() {
             />
             <LabeledInput
               label="Address"
-              placeholder={emergManual ? "Type your clinic's address" : "Fills in from your clinic search"}
+              placeholder={emergManual ? "Add address" : "Fills in from your clinic search"}
               editable={emergManual}
               pulseOn={emergManual}
               value={emergAddress}
@@ -207,7 +207,7 @@ export default function EditEmergency() {
             />
             <LabeledInput
               label="Phone"
-              placeholder={emergManual ? "Type your clinic's phone number" : "Fills in from your clinic search"}
+              placeholder={emergManual ? "Add phone number" : "Fills in from your clinic search"}
               editable={emergManual}
               pulseOn={emergManual}
               phone

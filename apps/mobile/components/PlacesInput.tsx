@@ -12,10 +12,10 @@
 // as the focused thing to interact with) and avoids the janky reflow of a
 // dropdown pushing surrounding form content around as it opens/closes.
 import { useEffect, useRef, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Modal, Pressable, Animated, Keyboard, Dimensions } from "react-native";
-import { MagnifyingGlass } from "./icons";
+import { View, Text, TextInput, TouchableOpacity, Modal, Pressable, Animated, Easing, Keyboard, Dimensions } from "react-native";
+import { Keyboard as KeyboardIcon, MagnifyingGlass } from "./icons";
 import { colors } from "@quirksandall/shared";
-import { FieldLabel } from "./ui";
+import { FieldLabel, UNLOCK_PULSE_MS, UNLOCK_PULSE_PEAK_COLOR } from "./ui";
 
 const KEY = process.env.EXPO_PUBLIC_GOOGLE_PLACES_KEY;
 export const PLACES_ENABLED = !!KEY;
@@ -65,10 +65,26 @@ export function LabeledPlacesInput({
   // text swap is the permanent signal; this is only the momentary "look here"
   // for the instant it happens.
   const mounted = useRef(false);
+  // The placeholder text itself can't be faded — it's drawn natively by the
+  // TextInput, not a React node. `justToggled` opens a brief window where we
+  // blank the native placeholder and draw our own Animated.Text in its place
+  // instead, which CAN fade in. textFade drives both that and the "You can
+  // type it in now" hint below the field — one fade-in, hold, fade-out timed
+  // to the same window as the background pulse.
+  const [justToggled, setJustToggled] = useState(false);
+  const textFade = useRef(new Animated.Value(0)).current;
+  const TEXT_FADE_IN_MS = 350;
   useEffect(() => {
     if (!mounted.current) { mounted.current = true; return; }
     pulse.setValue(1);
-    Animated.timing(pulse, { toValue: 0, duration: 500, useNativeDriver: false }).start();
+    Animated.timing(pulse, { toValue: 0, duration: UNLOCK_PULSE_MS, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start();
+
+    setJustToggled(true);
+    textFade.setValue(0);
+    Animated.sequence([
+      Animated.timing(textFade, { toValue: 1, duration: TEXT_FADE_IN_MS, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+      Animated.timing(textFade, { toValue: 0, duration: UNLOCK_PULSE_MS - TEXT_FADE_IN_MS, easing: Easing.in(Easing.quad), useNativeDriver: true }),
+    ]).start(() => setJustToggled(false));
   }, [manual]);
 
   const measure = () => {
@@ -144,8 +160,12 @@ export function LabeledPlacesInput({
         {/* The magnifying glass means "this is a live search" — once manual
             mode is on, it isn't one anymore (typing here doesn't query
             Places), so showing it would be telling the user the opposite of
-            what's true. */}
-        {!manual && (
+            what's true. Swapped for a keyboard icon instead of just removed —
+            leaving nothing there made the field visibly jump (paddingLeft
+            drops from 34 to 12 with no icon to fill it), and a keyboard glyph
+            reads as "type here" the way the magnifying glass read as
+            "search". */}
+        {!manual ? (
           <TouchableOpacity
             onPress={search}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -153,37 +173,56 @@ export function LabeledPlacesInput({
           >
             <MagnifyingGlass size={16} color={colors.textMuted} />
           </TouchableOpacity>
+        ) : (
+          <View style={{ position: "absolute", left: 10, zIndex: 1 }} pointerEvents="none">
+            <KeyboardIcon size={16} color={colors.textMuted} />
+          </View>
         )}
         <AnimatedTextInput
           value={value}
           onChangeText={(t: string) => { onChangeText(t); closeDropdown(); }}
           onFocus={() => setFocused(true)}
           onBlur={() => setTimeout(() => { closeDropdown(); setFocused(false); }, 150)}
-          onSubmitEditing={search}
-          returnKeyType="search"
+          // In manual mode there's nothing to search — hitting return should
+          // just close the keyboard, not fire a live Places query the field
+          // is no longer meant to make. Was previously hardcoded to "search"
+          // in both modes; the keyboard's own return key was lying about
+          // what it would do.
+          onSubmitEditing={manual ? close : search}
+          returnKeyType={manual ? "done" : "search"}
           blurOnSubmit={false}
-          placeholder={manual ? "Type your clinic's name" : placeholder}
+          // Blanked during the fade window so the real (instant, native)
+          // placeholder doesn't sit underneath making the overlay below moot.
+          placeholder={justToggled ? "" : (manual ? "Add clinic name" : placeholder)}
           placeholderTextColor={colors.textMuted}
           autoCapitalize="words"
           style={{
-            minHeight: 40, borderRadius: 8,
-            // Width is animated too — a slightly thicker ring at the peak of
-            // the pulse reads as "notice me" more than a flat color swap does
-            // at this field's small size, then eases back to the normal 1px.
-            borderWidth: pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 2] }),
-            // Toggling manual mode always drops focus (toggleManual calls
-            // close(), which blurs) — so the base color here is reliably
-            // colors.border, and the pulse has a still target to flash
-            // against rather than fighting the focus ring.
-            borderColor: pulse.interpolate({
+            minHeight: 40, borderRadius: 8, borderWidth: 1,
+            borderColor: focused ? colors.primary : colors.border,
+            // The signal, on its own now — a border tweak was easy to miss,
+            // and iOS shadow rendering on a TextInput is unreliable enough
+            // not to trust. A wash across the whole field is a large,
+            // unmissable area, and backgroundColor interpolation works
+            // identically on iOS and Android — nothing native-only to fail
+            // silently on.
+            backgroundColor: pulse.interpolate({
               inputRange: [0, 1],
-              outputRange: [focused ? colors.primary : colors.border, colors.primary],
+              outputRange: [colors.background, UNLOCK_PULSE_PEAK_COLOR],
             }),
-            backgroundColor: colors.background,
-            paddingLeft: manual ? 12 : 34, paddingRight: value ? 34 : 12, paddingVertical: 8,
+            paddingLeft: 34, paddingRight: value ? 34 : 12, paddingVertical: 8,
             fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: colors.textDark,
           }}
         />
+        {/* The placeholder-fade overlay — see justToggled above. Self-
+            contained top/bottom/justifyContent rather than relying on the
+            parent's centering, so it can't drift if that changes later. */}
+        {justToggled && !value && (
+          <View pointerEvents="none" style={{ position: "absolute", left: 34, top: 0, bottom: 0, justifyContent: "center" }}>
+            <Animated.Text style={{ opacity: textFade, color: colors.textDark, fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi" }}>
+              {manual ? "You can type it in now" : "You can search now"}
+            </Animated.Text>
+          </View>
+        )}
         {!!value && (
           <TouchableOpacity
             onPress={clear}
@@ -196,7 +235,7 @@ export function LabeledPlacesInput({
       </View>
       <TouchableOpacity onPress={toggleManual} style={{ marginTop: 4 }}>
         <Text style={{ color: colors.textMuted, fontSize: 11, fontFamily: "Satoshi" }}>
-          {manual ? "Search for it instead" : "Can't find your clinic? Enter it manually"}
+          {manual ? "Search for it instead?" : "Can't find your clinic? Enter it manually"}
         </Text>
       </TouchableOpacity>
 
