@@ -238,7 +238,7 @@ export function LabeledPlacesInput({
             phrase reads as the actual tap target, same convention as a link
             embedded in a sentence rather than the whole sentence looking
             equally interactive. */}
-        <Text style={{ color: colors.textMuted, fontSize: 11, fontFamily: "Satoshi" }}>
+        <Text style={{ color: colors.textMuted, fontSize: 13, fontFamily: "Satoshi" }}>
           {manual ? (
             <>
               Found it? <Text style={{ textDecorationLine: "underline" }}>Tap here</Text> to search instead
