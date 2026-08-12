@@ -12,6 +12,33 @@ export const metadata: Metadata = {
 // One entry per published version of each legal document. Add a new row (newest
 // first) whenever Privacy or Terms materially changes and its version is bumped —
 // keep the summary short and plain-English, this is the record both docs link to.
+//
+// ── How we version a legal doc ─────────────────────────────────────────────
+// The question is materiality: did the change alter the deal we offered the
+// user, or just describe the same deal more accurately?
+//
+// MINOR bump (1.1 → 1.2) — the deal is unchanged, we're keeping the doc honest:
+//   • a new sub-processor doing the same kind of thing we already disclose
+//     (e.g. Sentry — crash tooling, same data promise);
+//   • clarifying wording, or spelling out something we were already doing;
+//   • tightening a protection in the user's favour; entity/contact/typo fixes.
+//   Ship it by updating the doc's "Last updated" date + adding a row here.
+//   A reasonable user wouldn't act differently, so no active notice is needed.
+//
+// MAJOR bump (1.x → 2.0) — we've changed what we actually DO with data:
+//   • a new PURPOSE for data we already hold (profiling, ad measurement);
+//   • a new CATEGORY of data collected (precise location, contacts, biometrics);
+//   • new SHARING with a genuinely new type of recipient (ad networks, brokers,
+//     an acquirer); reduced rights/protections; a change of data controller;
+//     or anything needing fresh consent under the Privacy Act / GDPR.
+//   A 2.0 should ship WITH active notice (in-app banner and/or email), not a
+//   quiet date change. That notification duty is what separates it from a minor.
+//
+// Rule of thumb: if shipping the change means we should TELL users or ASK them,
+// it's a 2.0. If we're just making the page match reality, it's a minor.
+// (Concrete: marketing pixels + cookie banner → 2.0; adding a Sentry-like
+// vendor → minor.)
+// ───────────────────────────────────────────────────────────────────────────
 type ChangelogEntry = {
   date: string; // display date, matches the doc's "Last updated"
   document: "Privacy Policy" | "Terms of Service";

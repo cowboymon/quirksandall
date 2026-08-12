@@ -125,6 +125,13 @@ you go. Newest work is at the top of each section.
   version. Every consent write after that records the new version; existing
   `consent_log` rows keep the version they were made under.
 
+- **Minor vs major on a legal doc** (reference, not a task) — the rule for
+  when a Privacy/Terms change is a 1.x clarification vs a 2.0 that needs active
+  user notice lives as a comment block in
+  `apps/marketing/app/legal/changelog/page.tsx` (above `ChangelogEntry`).
+  Short version: if shipping it means we should *tell* or *ask* users, it's a
+  2.0; if we're just making the page match what we already do, it's a minor.
+
 ## ⚙️ Env
 
 - [ ] **`EXPO_PUBLIC_MIXPANEL_TOKEN`** (mobile env / EAS build) =
