@@ -67,25 +67,49 @@ export default function LegalChangelogPage() {
           between versions.
         </p>
 
-        <ul className="mt-10 flex flex-col gap-6">
-          {ENTRIES.map((entry) => (
-            <li
-              key={`${entry.document}-${entry.version}`}
-              className="border-l-2 border-border pl-5"
-            >
-              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <Link
-                  href={entry.href}
-                  className="font-medium text-foreground underline-offset-2 hover:underline"
-                >
-                  {entry.document}
-                </Link>
-                <span className="text-sm font-medium text-primary">Version {entry.version}</span>
-                <span className="eyebrow text-text-muted">{entry.date}</span>
-              </div>
-              <p className="mt-1.5 text-text-muted">{entry.summary}</p>
-            </li>
-          ))}
+        <ul className="mt-12 flex flex-col">
+          {ENTRIES.map((entry, i) => {
+            // Newest-first order means the first entry seen for a document is
+            // its live version — flag it so readers can tell current from history.
+            const isCurrent = ENTRIES.findIndex((e) => e.document === entry.document) === i;
+            const isLast = i === ENTRIES.length - 1;
+            return (
+              <li
+                key={`${entry.document}-${entry.version}`}
+                className={`relative border-l-2 border-border pl-7 ${isLast ? "pb-0" : "pb-9"}`}
+              >
+                {/* Timeline node — filled for a document's current version,
+                    hollow for superseded ones. */}
+                <span
+                  aria-hidden
+                  className={`absolute -left-[7px] top-1 h-3 w-3 rounded-full border-2 ${
+                    isCurrent ? "border-primary bg-primary" : "border-border bg-background"
+                  }`}
+                />
+
+                <p className="eyebrow text-text-muted">{entry.date}</p>
+
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
+                  <Link
+                    href={entry.href}
+                    className="font-tanker text-2xl leading-none text-foreground transition-colors hover:text-primary"
+                  >
+                    {entry.document}
+                  </Link>
+                  <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                    v{entry.version}
+                  </span>
+                  {isCurrent && (
+                    <span className="rounded-full bg-foreground px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-background">
+                      Current
+                    </span>
+                  )}
+                </div>
+
+                <p className="mt-2.5 max-w-prose text-text-muted">{entry.summary}</p>
+              </li>
+            );
+          })}
         </ul>
       </main>
 
