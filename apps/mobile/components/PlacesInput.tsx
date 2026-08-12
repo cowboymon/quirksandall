@@ -65,10 +65,26 @@ export function LabeledPlacesInput({
   // text swap is the permanent signal; this is only the momentary "look here"
   // for the instant it happens.
   const mounted = useRef(false);
+  // The placeholder text itself can't be faded — it's drawn natively by the
+  // TextInput, not a React node. `justToggled` opens a brief window where we
+  // blank the native placeholder and draw our own Animated.Text in its place
+  // instead, which CAN fade in. textFade drives both that and the "You can
+  // type it in now" hint below the field — one fade-in, hold, fade-out timed
+  // to the same window as the background pulse.
+  const [justToggled, setJustToggled] = useState(false);
+  const textFade = useRef(new Animated.Value(0)).current;
+  const TEXT_FADE_IN_MS = 350;
   useEffect(() => {
     if (!mounted.current) { mounted.current = true; return; }
     pulse.setValue(1);
     Animated.timing(pulse, { toValue: 0, duration: UNLOCK_PULSE_MS, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start();
+
+    setJustToggled(true);
+    textFade.setValue(0);
+    Animated.sequence([
+      Animated.timing(textFade, { toValue: 1, duration: TEXT_FADE_IN_MS, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+      Animated.timing(textFade, { toValue: 0, duration: UNLOCK_PULSE_MS - TEXT_FADE_IN_MS, easing: Easing.in(Easing.quad), useNativeDriver: true }),
+    ]).start(() => setJustToggled(false));
   }, [manual]);
 
   const measure = () => {
@@ -162,7 +178,9 @@ export function LabeledPlacesInput({
           onSubmitEditing={search}
           returnKeyType="search"
           blurOnSubmit={false}
-          placeholder={manual ? "Type your clinic's name" : placeholder}
+          // Blanked during the fade window so the real (instant, native)
+          // placeholder doesn't sit underneath making the overlay below moot.
+          placeholder={justToggled ? "" : (manual ? "Add clinic name" : placeholder)}
           placeholderTextColor={colors.textMuted}
           autoCapitalize="words"
           style={{
@@ -180,10 +198,18 @@ export function LabeledPlacesInput({
             }),
             paddingLeft: manual ? 12 : 34, paddingRight: value ? 34 : 12, paddingVertical: 8,
             fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: colors.textDark,
-            shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: pulse.interpolate({ inputRange: [0, 1], outputRange: [0, 0.55] }),
           }}
         />
+        {/* The placeholder-fade overlay — see justToggled above. Self-
+            contained top/bottom/justifyContent rather than relying on the
+            parent's centering, so it can't drift if that changes later. */}
+        {justToggled && !value && (
+          <View pointerEvents="none" style={{ position: "absolute", left: manual ? 12 : 34, top: 0, bottom: 0, justifyContent: "center" }}>
+            <Animated.Text style={{ opacity: textFade, color: colors.textMuted, fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi" }}>
+              {manual ? "Add clinic name" : placeholder}
+            </Animated.Text>
+          </View>
+        )}
         {!!value && (
           <TouchableOpacity
             onPress={clear}
@@ -194,6 +220,16 @@ export function LabeledPlacesInput({
           </TouchableOpacity>
         )}
       </View>
+      {/* Transient hint — the second half of "flash the colour, then fade the
+          text": one line, tied to the same textFade timeline, telling the
+          user in words what the wash just showed them visually. Sits above
+          the permanent toggle link rather than replacing it, and disappears
+          on its own — it's a one-time nudge, not a persistent label. */}
+      {justToggled && (
+        <Animated.Text style={{ opacity: textFade, color: colors.primary, fontSize: 11, fontFamily: "Satoshi-Medium", marginTop: 4 }}>
+          {manual ? "You can type it in now" : "Search away"}
+        </Animated.Text>
+      )}
       <TouchableOpacity onPress={toggleManual} style={{ marginTop: 4 }}>
         <Text style={{ color: colors.textMuted, fontSize: 11, fontFamily: "Satoshi" }}>
           {manual ? "Search for it instead?" : "Can't find your clinic? Enter it manually"}

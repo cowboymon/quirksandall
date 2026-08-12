@@ -121,6 +121,7 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
   phone,
   name,
   pulseOn,
+  placeholder,
   ...props
 }, ref) {
   const [focused, setFocused] = useState(false);
@@ -132,6 +133,13 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
   // pulse, mount does not.
   const pulse = useRef(new Animated.Value(0)).current;
   const mounted = useRef(false);
+  // Same placeholder-fade trick as PlacesInput — the native placeholder
+  // can't animate, so this blanks it briefly and fades a matching
+  // Animated.Text in its place instead. `placeholder` is destructured out
+  // above so it can be overridden here regardless of prop spread order.
+  const [justToggled, setJustToggled] = useState(false);
+  const textFade = useRef(new Animated.Value(0)).current;
+  const TEXT_FADE_IN_MS = 350;
   useEffect(() => {
     if (pulseOn === undefined) return;
     if (!mounted.current) { mounted.current = true; return; }
@@ -140,6 +148,13 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
     // same length reads as "stuck" for its first half, since most of the
     // visible change happens in the last third either way.
     Animated.timing(pulse, { toValue: 0, duration: UNLOCK_PULSE_MS, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start();
+
+    setJustToggled(true);
+    textFade.setValue(0);
+    Animated.sequence([
+      Animated.timing(textFade, { toValue: 1, duration: TEXT_FADE_IN_MS, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+      Animated.timing(textFade, { toValue: 0, duration: UNLOCK_PULSE_MS - TEXT_FADE_IN_MS, easing: Easing.in(Easing.quad), useNativeDriver: true }),
+    ]).start(() => setJustToggled(false));
   }, [pulseOn]);
   // editable={false} on this component only ever means "locked until the
   // vet search unlocks it" (the two places this is used: Address/Phone under
@@ -179,7 +194,15 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
           onFocus={(e) => { setFocused(true); props.onFocus?.(e); }}
           onBlur={(e) => { setFocused(false); props.onBlur?.(e); }}
           {...props}
+          placeholder={justToggled ? "" : placeholder}
         />
+        {justToggled && !props.value && (
+          <View pointerEvents="none" style={{ position: "absolute", left: 12, top: 0, bottom: 0, justifyContent: "center" }}>
+            <Animated.Text style={{ opacity: textFade, color: colors.textMuted, fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi" }}>
+              {placeholder}
+            </Animated.Text>
+          </View>
+        )}
         {locked && (
           <View style={{ position: "absolute", right: 10, top: 0, bottom: 0, justifyContent: "center" }} pointerEvents="none">
             <LockSimple size={14} weight="fill" color={colors.textMuted} />
