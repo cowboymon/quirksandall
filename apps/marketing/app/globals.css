@@ -99,6 +99,23 @@ body {
   font-weight: 700;
 }
 
+/* "What changed" callout at the top of a legal doc — a quiet card so readers
+   can see the version's changes at a glance without hunting the diff. */
+.prose-legal blockquote {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--primary);
+  border-radius: 0 0.5rem 0.5rem 0;
+  padding: 1rem 1.25rem 0.6rem;
+  margin: 1.25rem 0 1.75rem;
+}
+.prose-legal blockquote > :last-child {
+  margin-bottom: 0.4rem;
+}
+.prose-legal blockquote ul {
+  margin-bottom: 0.5rem;
+}
+
 /* Long-form article prose — blog posts and the About page. */
 .prose-post h1 {
   font-family: var(--font-tanker), serif;

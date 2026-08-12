@@ -22,6 +22,14 @@ type ChangelogEntry = {
 
 const ENTRIES: ChangelogEntry[] = [
   {
+    date: "12 August 2026",
+    document: "Privacy Policy",
+    href: "/privacy",
+    version: "1.1",
+    summary:
+      "Added Sentry (crash and error reporting for the mobile app) to our service providers, and clarified that opening a shared link is counted anonymously through our analytics provider, which stores a small identifier on your device.",
+  },
+  {
     date: "4 August 2026",
     document: "Privacy Policy",
     href: "/privacy",
