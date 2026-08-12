@@ -1,9 +1,9 @@
-import { site } from "../site";
 import TrackedLink from "./TrackedLink";
 
 // App Store / Google Play badge. Renders a non-interactive "coming soon" chip
-// while site.comingSoon is true, otherwise a tracked download link. Shared by
-// the home CTA and the blog CTA module.
+// while this platform's href isn't a real URL ("#"), otherwise a tracked
+// download link — decided per-badge, so one store can go live before the other.
+// Shared by the home CTA and the blog CTA module.
 export default function StoreBadge({
   kind,
   href,
@@ -14,7 +14,7 @@ export default function StoreBadge({
   onDark?: boolean;
 }) {
   const isApple = kind === "apple";
-  const soon = site.comingSoon;
+  const soon = !href || href === "#";
   const icon = (
     <span aria-hidden className="shrink-0">
       {isApple ? (

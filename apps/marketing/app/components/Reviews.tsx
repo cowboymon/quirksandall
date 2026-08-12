@@ -10,10 +10,9 @@ import {
 // Social proof. Renders nothing until REVIEWS_LIVE is true AND there are
 // reviews, so fabricated placeholder content never reaches a live visitor
 // (see reviews-data.ts). Featured-lead layout: the first review runs large in
-// the display face with a left accent bar; the rest sit beside it. Per-review
-// stars use a softer tone so they don't compete with the bold aggregate stars.
-// Once the store listings are live (site.comingSoon false), a "more reviews on
-// the store" link row appears beneath.
+// the display face; the rest sit beside it. Per-review stars use a softer tone
+// so they don't compete with the bold aggregate stars. Once a store listing is
+// live, a "more reviews on the store" link appears for each live platform.
 function Stars({ size = 16, tone = "text-primary" }: { size?: number; tone?: string }) {
   return (
     <div className={`flex gap-0.5 ${tone}`} aria-hidden>
@@ -88,24 +87,28 @@ export default function Reviews() {
         )}
       </div>
 
-      {!site.comingSoon && (
+      {(site.appStoreLive || site.playStoreLive) && (
         <div className="mt-12 flex flex-wrap gap-x-6 gap-y-2 text-sm">
-          <TrackedLink
-            href={site.appStoreUrl}
-            event="Reviews Store Link Clicked"
-            meta={{ platform: "iOS" }}
-            className="font-medium text-primary hover:underline"
-          >
-            More reviews on the App Store →
-          </TrackedLink>
-          <TrackedLink
-            href={site.playStoreUrl}
-            event="Reviews Store Link Clicked"
-            meta={{ platform: "Android" }}
-            className="font-medium text-primary hover:underline"
-          >
-            More reviews on Google Play →
-          </TrackedLink>
+          {site.appStoreLive && (
+            <TrackedLink
+              href={site.appStoreUrl}
+              event="Reviews Store Link Clicked"
+              meta={{ platform: "iOS" }}
+              className="font-medium text-primary hover:underline"
+            >
+              More reviews on the App Store →
+            </TrackedLink>
+          )}
+          {site.playStoreLive && (
+            <TrackedLink
+              href={site.playStoreUrl}
+              event="Reviews Store Link Clicked"
+              meta={{ platform: "Android" }}
+              className="font-medium text-primary hover:underline"
+            >
+              More reviews on Google Play →
+            </TrackedLink>
+          )}
         </div>
       )}
     </section>
