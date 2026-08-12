@@ -115,8 +115,11 @@ export const UNLOCK_PULSE_MS = 2900;
 // Deliberately LIGHTER than the field's normal colour, not more saturated —
 // a bright flash reads as "notice me" the way a camera flash or a highlight
 // does; the first version went darker/more-saturated instead and read as
-// muddy rather than as an attention cue.
-export const UNLOCK_PULSE_PEAK_COLOR = "#FFFFFF";
+// muddy rather than as an attention cue. Pure white read as *too* bright —
+// this is a paler version of the same pink family (colors.background lifted
+// toward white, not all the way), so it still reads as "this field" flashing
+// rather than a generic UI flash.
+export const UNLOCK_PULSE_PEAK_COLOR = "#FEF3F5";
 
 export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: string; phone?: boolean; name?: boolean; pulseOn?: unknown }>(function LabeledInput({
   label,
@@ -200,13 +203,14 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
           {...props}
           placeholder={justToggled ? "" : placeholder}
         />
-        {/* Only when becoming editable — "you can type it in now" on a field
-            that just re-locked (going back to search) would be telling the
-            user the opposite of what's true. */}
-        {justToggled && !locked && !props.value && (
+        {/* Fades in the real placeholder text, not a hint sentence — "You can
+            type it in now" is deliberately confined to the clinic-name field
+            (PlacesInput) so it doesn't fire three times at once across a
+            stack of fields. */}
+        {justToggled && !props.value && (
           <View pointerEvents="none" style={{ position: "absolute", left: 12, top: 0, bottom: 0, justifyContent: "center" }}>
-            <Animated.Text style={{ opacity: textFade, color: colors.primary, fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi-Medium" }}>
-              You can type it in now
+            <Animated.Text style={{ opacity: textFade, color: colors.textMuted, fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi" }}>
+              {placeholder}
             </Animated.Text>
           </View>
         )}
