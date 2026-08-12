@@ -79,7 +79,11 @@ export default function BlogPost({ params }: { params: { slug: string } }) {
           </div>
         </section>
 
-        <div className="mx-auto w-full max-w-3xl px-6 py-12 sm:py-16">
+        {/* Smaller bottom padding than top: the "Keep reading" module below
+            adds its own separation, so a full py here left a big gap above the
+            divider. Kept non-zero so the tail still breathes if the module has
+            nothing to show. */}
+        <div className="mx-auto w-full max-w-3xl px-6 pt-12 pb-6 sm:pt-16 sm:pb-8">
           <article className="prose-post">
             <Markdown>{post.body}</Markdown>
           </article>
