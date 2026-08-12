@@ -12,7 +12,7 @@ export type Review = {
 // conduct under the Australian Consumer Law and breaks Apple's and Google's
 // policies. The section renders nothing while this is false, so no placeholder
 // ever reaches a live visitor. Flip to true only when the content is real.
-export const REVIEWS_LIVE = false;
+export const REVIEWS_LIVE = true;
 
 // Aggregate rating shown above the quotes. Set a figure ONLY when it's real
 // (your beta-tester average, or the live App Store / Play average later) — same
@@ -21,31 +21,27 @@ export const REVIEWS_LIVE = false;
 export const REVIEWS_RATING: string | null = null;
 export const REVIEWS_RATING_LABEL = "from our beta testers";
 
-// SAMPLE placeholder content — for laying out and previewing the design only.
-// REPLACE every entry (quote, name and detail) with real, permissioned words
-// before setting REVIEWS_LIVE = true. The attributions deliberately say
-// "Placeholder" so that, if the gate is ever flipped before the content is
-// swapped, it's obvious rather than deceptive.
+// Real, permissioned beta-tester quotes. Keep every entry a genuine testimonial
+// — never put invented words under a real name (see the gate note above).
 export const REVIEWS: Review[] = [
   {
+    quote: "Honestly it's so good!!",
+    name: "Tayla O.",
+    detail: "Beta tester, Brisbane",
+    stars: 4.5,
+  },
+  {
     quote:
-      "I used to leave a two-page note and still get texts at the airport. Now it's one link and my sitter has everything — feeding, meds, the works.",
-    name: "Sample name",
-    detail: "Placeholder — replace before launch",
+      "The last time we went away, we forgot to tell our sitter where the cat carrier was — so when the fire alarm went off and they had to evacuate, they couldn't grab him. Luckily it turned out to be a false alarm, but my heart was in my mouth.",
+    name: "Breanna T.",
+    detail: "Beta tester, Canberra",
     stars: 5,
   },
   {
     quote:
-      "The emergency-contacts-behind-a-PIN thing sold me. My walker can see the routine but not my vet details unless she needs them.",
-    name: "Sample name",
-    detail: "Placeholder — replace before launch",
-    stars: 5,
-  },
-  {
-    quote:
-      "Set it up once, share it with whoever's minding the cat. They didn't have to download anything, which is the whole reason it actually got used.",
-    name: "Sample name",
-    detail: "Placeholder — replace before launch",
+      "We're going away in Tassie and my mum's coming to look after my cat, Kiki. She hasn't lived with Kiki for two years, since I moved out — so this is exactly what I need to feel confident.",
+    name: "Javi C.",
+    detail: "Beta tester, Sydney",
     stars: 5,
   },
 ];
