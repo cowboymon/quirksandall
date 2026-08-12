@@ -125,7 +125,14 @@ export default function MissingPoster() {
         token: profile!.token,
         format: key,
         lastSeenArea,
-        lastSeenDate,
+        // The field holds AU-style DD/MM/YYYY (what the picker shows), but the
+        // poster template parses this with `new Date(iso)` — handed the
+        // display string as-is, JS reads slash-separated dates as US
+        // MM/DD/YYYY, so it silently rendered the wrong day (or, for any day
+        // above 12, an invalid month that fell back to printing "Today").
+        // Converting to real ISO here is the fix; nothing downstream needs to
+        // know the field was ever DD/MM in the first place.
+        lastSeenDate: displayDateToISO(lastSeenDate) ?? "",
         // Blank means "no override" — send null, not "": the API's sanitizer
         // rejects an empty string as invalid rather than treating it as unset.
         lookFor: whatToLookFor.trim() || null,

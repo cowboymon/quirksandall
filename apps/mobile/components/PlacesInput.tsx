@@ -11,7 +11,7 @@
 // View — dims the rest of the screen while searching (so the dropdown reads
 // as the focused thing to interact with) and avoids the janky reflow of a
 // dropdown pushing surrounding form content around as it opens/closes.
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Modal, Pressable, Animated, Keyboard, Dimensions } from "react-native";
 import { MagnifyingGlass } from "./icons";
 import { colors } from "@quirksandall/shared";
@@ -19,6 +19,10 @@ import { FieldLabel } from "./ui";
 
 const KEY = process.env.EXPO_PUBLIC_GOOGLE_PLACES_KEY;
 export const PLACES_ENABLED = !!KEY;
+
+// Border-color animation needs an Animated-aware TextInput — plain style
+// props on TextInput won't accept an Animated.Value.
+const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
 type Prediction = { description: string; place_id: string };
 type Anchor = { x: number; y: number; width: number };
@@ -55,6 +59,17 @@ export function LabeledPlacesInput({
   const [anchor, setAnchor] = useState<Anchor | null>(null);
   const fieldRef = useRef<View>(null);
   const fade = useRef(new Animated.Value(0)).current;
+  const pulse = useRef(new Animated.Value(0)).current;
+  // Skip the pulse on first mount — it should mark a CHANGE (the toggle link
+  // was tapped), not fire just because the field exists. The placeholder/link
+  // text swap is the permanent signal; this is only the momentary "look here"
+  // for the instant it happens.
+  const mounted = useRef(false);
+  useEffect(() => {
+    if (!mounted.current) { mounted.current = true; return; }
+    pulse.setValue(1);
+    Animated.timing(pulse, { toValue: 0, duration: 500, useNativeDriver: false }).start();
+  }, [manual]);
 
   const measure = () => {
     fieldRef.current?.measureInWindow((x, y, width, height) => setAnchor({ x, y: y + height + 4, width }));
@@ -133,9 +148,9 @@ export function LabeledPlacesInput({
         >
           <MagnifyingGlass size={16} color={colors.textMuted} />
         </TouchableOpacity>
-        <TextInput
+        <AnimatedTextInput
           value={value}
-          onChangeText={(t) => { onChangeText(t); closeDropdown(); }}
+          onChangeText={(t: string) => { onChangeText(t); closeDropdown(); }}
           onFocus={() => setFocused(true)}
           onBlur={() => setTimeout(() => { closeDropdown(); setFocused(false); }, 150)}
           onSubmitEditing={search}
@@ -145,8 +160,20 @@ export function LabeledPlacesInput({
           placeholderTextColor={colors.textMuted}
           autoCapitalize="words"
           style={{
-            minHeight: 40, borderRadius: 8, borderWidth: 1,
-            borderColor: focused ? colors.primary : colors.border, backgroundColor: colors.background,
+            minHeight: 40, borderRadius: 8,
+            // Width is animated too — a slightly thicker ring at the peak of
+            // the pulse reads as "notice me" more than a flat color swap does
+            // at this field's small size, then eases back to the normal 1px.
+            borderWidth: pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 2] }),
+            // Toggling manual mode always drops focus (toggleManual calls
+            // close(), which blurs) — so the base color here is reliably
+            // colors.border, and the pulse has a still target to flash
+            // against rather than fighting the focus ring.
+            borderColor: pulse.interpolate({
+              inputRange: [0, 1],
+              outputRange: [focused ? colors.primary : colors.border, colors.primary],
+            }),
+            backgroundColor: colors.background,
             paddingLeft: 34, paddingRight: value ? 34 : 12, paddingVertical: 8,
             fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: colors.textDark,
           }}
