@@ -640,6 +640,11 @@ export default function Dashboard() {
               // to FREE_LINK_LIMIT links, so the multi-link feature is seen
               // and understood, not just an unlimited creation flow that
               // happens to fail sharing later.
+              //
+              // No lock icon in the dashed circle — the plus mark still fits
+              // "here's where a new one would go," and a padlock crowded into
+              // a 24px circle read as a fiddly decoration rather than a clear
+              // signal. The copy carries the "why", not the glyph.
               const newLinkLocked = !isPaid && links.length >= FREE_LINK_LIMIT;
               return (
                 <TouchableOpacity
@@ -647,14 +652,10 @@ export default function Dashboard() {
                   style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
                 >
                   <View style={{ width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: "rgba(240,160,176,0.5)", borderStyle: "dashed", alignItems: "center", justifyContent: "center" }}>
-                    {newLinkLocked ? (
-                      <LockSimple size={12} weight="fill" color="rgba(248,236,238,0.4)" />
-                    ) : (
-                      <Plus size={13} color={colors.cardDarkLabel} />
-                    )}
+                    <Plus size={13} color={newLinkLocked ? "rgba(248,236,238,0.4)" : colors.cardDarkLabel} />
                   </View>
                   <Text style={{ color: newLinkLocked ? "rgba(248,236,238,0.4)" : colors.cardDarkLabel, fontSize: 13, fontFamily: "Satoshi-Medium" }}>
-                    New link
+                    {newLinkLocked ? "Unlock more links" : "New link"}
                   </Text>
                 </TouchableOpacity>
               );
