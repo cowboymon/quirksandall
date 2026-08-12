@@ -13,14 +13,38 @@ import {
 // the display face; the rest sit beside it. Per-review stars use a softer tone
 // so they don't compete with the bold aggregate stars. Once a store listing is
 // live, a "more reviews on the store" link appears for each live platform.
-function Stars({ size = 16, tone = "text-primary" }: { size?: number; tone?: string }) {
+const STAR_PATH =
+  "M12 2.6l2.9 5.9 6.5.95-4.7 4.58 1.1 6.47L12 17.98l-5.8 3.05 1.1-6.47L2.6 9.45l6.5-.95L12 2.6z";
+
+function StarShape({ size }: { size: number }) {
   return (
-    <div className={`flex gap-0.5 ${tone}`} aria-hidden>
-      {Array.from({ length: 5 }).map((_, i) => (
-        <svg key={i} width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2.6l2.9 5.9 6.5.95-4.7 4.58 1.1 6.47L12 17.98l-5.8 3.05 1.1-6.47L2.6 9.45l6.5-.95L12 2.6z" />
-        </svg>
-      ))}
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className="block" aria-hidden>
+      <path d={STAR_PATH} />
+    </svg>
+  );
+}
+
+// Renders `count` out of 5 with half support (e.g. 4.5). Each position is a
+// faded base star with a filled overlay clipped to its fill fraction — no
+// gradient ids, so it's SSR-safe and inherits whatever `tone` colour is set.
+function Stars({ count = 5, size = 16, tone = "text-primary" }: { count?: number; size?: number; tone?: string }) {
+  return (
+    <div className={`flex gap-0.5 ${tone}`} role="img" aria-label={`${count} out of 5 stars`}>
+      {Array.from({ length: 5 }).map((_, i) => {
+        const fill = Math.max(0, Math.min(1, count - i));
+        return (
+          <span key={i} className="relative inline-block" style={{ width: size, height: size }}>
+            <span className="block opacity-25">
+              <StarShape size={size} />
+            </span>
+            {fill > 0 && (
+              <span className="absolute inset-y-0 left-0 overflow-hidden" style={{ width: `${fill * 100}%` }}>
+                <StarShape size={size} />
+              </span>
+            )}
+          </span>
+        );
+      })}
     </div>
   );
 }
@@ -60,7 +84,7 @@ export default function Reviews() {
       <div className="mt-12 grid gap-x-12 gap-y-10 lg:grid-cols-2">
         {/* Featured lead — large display-face quote */}
         <figure className="flex flex-col">
-          <Stars size={18} tone={REVIEW_STARS} />
+          <Stars count={lead.stars ?? 5} size={18} tone={REVIEW_STARS} />
           <blockquote className="mt-4 font-tanker text-2xl leading-snug text-foreground sm:text-[1.75rem]">
             {lead.quote}
           </blockquote>
@@ -75,7 +99,7 @@ export default function Reviews() {
           <div className="flex flex-col gap-8 self-center">
             {rest.map((r) => (
               <div key={r.name} className="flex flex-col">
-                <Stars tone={REVIEW_STARS} />
+                <Stars count={r.stars ?? 5} tone={REVIEW_STARS} />
                 <p className="mt-2.5 text-[0.95rem] leading-relaxed text-foreground">{r.quote}</p>
                 <p className="mt-3 text-sm font-bold text-foreground">
                   {r.name}
