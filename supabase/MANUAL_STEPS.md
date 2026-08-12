@@ -113,11 +113,11 @@ you go. Newest work is at the top of each section.
   retention. Depends on the §7.1 `share_links` column extension
   (`write_closes_at` etc.) landing first.
 
-- [ ] **Mixpanel → privacy policy** — Mixpanel is now wired (mobile + web).
-  Before publishing the privacy policy, add Mixpanel to the third-party table.
-  The recipient page now carries a notice + Privacy link in its footer, so
-  the policy needs to actually cover the anonymous view tracking that page
-  does — people who open a share link are not users and agreed to nothing.
+- [x] **Mixpanel → privacy policy** — Mixpanel is listed in §5, and Privacy
+  Policy v1.1 (12 Aug 2026) covers the recipient page's anonymous view
+  tracking in §4 (no account, local identifier, EU processing) to match the
+  in-footer notice. Sentry (mobile crash reporting) added to §5 in the same
+  version. *(Done 12 Aug 2026.)*
 
 - [ ] **Legal → policy version** — when the consent / secondary-use section of
   the privacy policy is finalised, bump `CONSENT_POLICY_VERSION` in
