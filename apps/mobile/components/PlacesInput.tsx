@@ -183,8 +183,13 @@ export function LabeledPlacesInput({
           onChangeText={(t: string) => { onChangeText(t); closeDropdown(); }}
           onFocus={() => setFocused(true)}
           onBlur={() => setTimeout(() => { closeDropdown(); setFocused(false); }, 150)}
-          onSubmitEditing={search}
-          returnKeyType="search"
+          // In manual mode there's nothing to search — hitting return should
+          // just close the keyboard, not fire a live Places query the field
+          // is no longer meant to make. Was previously hardcoded to "search"
+          // in both modes; the keyboard's own return key was lying about
+          // what it would do.
+          onSubmitEditing={manual ? close : search}
+          returnKeyType={manual ? "done" : "search"}
           blurOnSubmit={false}
           // Blanked during the fade window so the real (instant, native)
           // placeholder doesn't sit underneath making the overlay below moot.
