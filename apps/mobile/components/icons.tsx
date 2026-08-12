@@ -65,13 +65,15 @@ export const DEFAULT_ICON_WEIGHT: IconWeight = "duotone";
 /** Weight for glyphs that duotone can only spoil.
  *
  * Duotone renders an icon's ENCLOSED AREA as a low-opacity fill sitting behind
- * the stroke — that's the whole effect. A glyph with no enclosed area (a caret,
- * a tick, a cross, a plus) has nothing to fill, so duotone gives it a faint
- * duplicate stroke and it just reads as washed out and slightly blurry next to
- * its neighbours. The chevron on the Preview row is where this showed up.
- *
- * The test for adding one here: could you pour water into the shape? If not,
- * it belongs in this list. */
+ * the stroke — that's the whole effect. Most of the icons here fail the "could
+ * you pour water into the shape" test (a caret, a tick, a cross, a plus have no
+ * enclosed area, so duotone just gives them a faint duplicate stroke). But a
+ * shape CAN have an enclosed area and still read badly filled at small,
+ * high-contrast sizes — MagnifyingGlass's lens next to its handle reads as a
+ * tennis racquet once filled. So the real test is simpler: does duotone make
+ * this icon LESS recognisable at the size it's actually used? If yes, it goes
+ * here regardless of geometry. The Preview row's chevron and small search
+ * fields are where this showed up. */
 export const STROKE_ICON_WEIGHT: IconWeight = "regular";
 
 // `{...props}` last, so an explicit weight at the call site still wins —
@@ -104,7 +106,7 @@ export const Image = withDefaultWeight(ImageBase, "Image");
 export const Key = withDefaultWeight(KeyBase, "Key");
 export const LinkSimple = withDefaultWeight(LinkSimpleBase, "LinkSimple");
 export const LockSimple = withDefaultWeight(LockSimpleBase, "LockSimple");
-export const MagnifyingGlass = withDefaultWeight(MagnifyingGlassBase, "MagnifyingGlass");
+export const MagnifyingGlass = asStroke(MagnifyingGlassBase, "MagnifyingGlass");
 export const MapPin = withDefaultWeight(MapPinBase, "MapPin");
 export const PencilLine = withDefaultWeight(PencilLineBase, "PencilLine");
 export const PencilSimpleLine = withDefaultWeight(PencilSimpleLineBase, "PencilSimpleLine");
