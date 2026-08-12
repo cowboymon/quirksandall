@@ -27,17 +27,17 @@ export const REVIEWS_RATING_LABEL = "from our beta testers";
 // ratings and cities are theirs.
 export const REVIEWS: Review[] = [
   {
+    quote: "Honestly it's so good!!",
+    name: "Meg C.",
+    detail: "Beta tester, Brisbane",
+    stars: 4.5,
+  },
+  {
     quote:
       "The last time we went away, we forgot to tell our sitter where the cat carrier was — so when the fire alarm went off and they had to evacuate, they couldn't grab him. Luckily it turned out to be a false alarm, but my heart was in my mouth.",
     name: "Steph L.",
     detail: "Beta tester, Canberra",
     stars: 5,
-  },
-  {
-    quote: "Honestly it's so good!!",
-    name: "Meg C.",
-    detail: "Beta tester, Brisbane",
-    stars: 4.5,
   },
   {
     quote:
