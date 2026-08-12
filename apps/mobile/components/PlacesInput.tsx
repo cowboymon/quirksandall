@@ -201,7 +201,7 @@ export function LabeledPlacesInput({
       </View>
       <TouchableOpacity onPress={toggleManual} style={{ marginTop: 4 }}>
         <Text style={{ color: colors.textMuted, fontSize: 11, fontFamily: "Satoshi" }}>
-          {manual ? "Search for it instead" : "Can't find your clinic? Enter it manually"}
+          {manual ? "Search for it instead?" : "Can't find your clinic? Enter it manually"}
         </Text>
       </TouchableOpacity>
 

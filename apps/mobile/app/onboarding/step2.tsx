@@ -58,7 +58,7 @@ export default function Step2() {
             />
             <LabeledInput
               label="Address"
-              placeholder={vetManual ? "Type your clinic's address" : "Fills in from your clinic search"}
+              placeholder={vetManual ? "Type to add the address" : "Fills in from your clinic search"}
               editable={vetManual}
               pulseOn={vetManual}
               value={pet.vetAddress ?? ""}
@@ -66,7 +66,7 @@ export default function Step2() {
             />
             <LabeledInput
               label="Phone"
-              placeholder={vetManual ? "Type your clinic's phone number" : "Fills in from your clinic search"}
+              placeholder={vetManual ? "Type to add the phone number" : "Fills in from your clinic search"}
               editable={vetManual}
               pulseOn={vetManual}
               phone
@@ -95,7 +95,7 @@ export default function Step2() {
             />
             <LabeledInput
               label="Address"
-              placeholder={emergManual ? "Type your clinic's address" : "Fills in from your clinic search"}
+              placeholder={emergManual ? "Type to add the address" : "Fills in from your clinic search"}
               editable={emergManual}
               pulseOn={emergManual}
               value={pet.emergVetAddress ?? ""}
@@ -103,7 +103,7 @@ export default function Step2() {
             />
             <LabeledInput
               label="Phone"
-              placeholder={emergManual ? "Type your clinic's phone number" : "Fills in from your clinic search"}
+              placeholder={emergManual ? "Type to add the phone number" : "Fills in from your clinic search"}
               editable={emergManual}
               pulseOn={emergManual}
               phone
