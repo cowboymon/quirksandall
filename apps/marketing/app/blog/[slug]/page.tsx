@@ -5,7 +5,8 @@ import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import Markdown from "../../components/Markdown";
 import PostBadges from "../../components/PostBadges";
-import { getPost, publishedPosts } from "../../lib/blog";
+import RelatedGuides from "../../components/RelatedGuides";
+import { getPost, publishedPosts, relatedPosts } from "../../lib/blog";
 
 // Pre-render the published posts; drafts resolve to null → notFound in prod.
 export function generateStaticParams() {
@@ -34,6 +35,14 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
 export default function BlogPost({ params }: { params: { slug: string } }) {
   const post = getPost(params.slug);
   if (!post) notFound();
+
+  const related = relatedPosts(post.slug).map((p) => ({
+    slug: p.slug,
+    title: p.title,
+    description: p.description,
+    category: p.category,
+    freebie: p.freebie,
+  }));
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -75,6 +84,8 @@ export default function BlogPost({ params }: { params: { slug: string } }) {
             <Markdown>{post.body}</Markdown>
           </article>
         </div>
+
+        <RelatedGuides from={post.slug} items={related} />
       </main>
 
       <Footer />

@@ -168,6 +168,21 @@ export function publishedPosts(): Post[] {
 }
 
 /**
+ * Related guides for a post: same category first (newest-first), then topped
+ * up with other live posts so every guide gets suggestions even in a thin
+ * category. Only ever returns published (live) posts, and never the post
+ * itself. `limit` caps the count (default 3).
+ */
+export function relatedPosts(slug: string, limit = 3): Post[] {
+  const current = POSTS.find((p) => p.slug === slug);
+  if (!current) return [];
+  const live = publishedPosts().filter((p) => p.slug !== slug);
+  const sameCategory = live.filter((p) => p.category === current.category);
+  const others = live.filter((p) => p.category !== current.category);
+  return [...sameCategory, ...others].slice(0, limit);
+}
+
+/**
  * A single post by slug, or null. In production a draft or not-yet-published
  * post resolves to null (404); in local dev any post is viewable by URL so a
  * scheduled post can be previewed before its date.
