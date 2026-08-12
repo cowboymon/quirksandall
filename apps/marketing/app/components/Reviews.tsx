@@ -59,8 +59,8 @@ export default function Reviews() {
       </div>
 
       <div className="mt-12 grid gap-x-12 gap-y-10 lg:grid-cols-2">
-        {/* Featured lead — the only quote with the accent bar */}
-        <figure className="flex flex-col border-l-2 border-primary pl-6">
+        {/* Featured lead — large display-face quote */}
+        <figure className="flex flex-col">
           <Stars size={18} tone={REVIEW_STARS} />
           <blockquote className="mt-4 font-tanker text-2xl leading-snug text-foreground sm:text-[1.75rem]">
             {lead.quote}
