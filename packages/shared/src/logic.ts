@@ -288,8 +288,12 @@ export function stayPhrase(preset?: string | null, endsAt?: string | null, start
 
   if (end && startAhead) return `${dd(startAhead)} – ${dd(end)}`;
   if (end) return `until ${dd(end)}`;
+  // The moment a date enters the picture, the date IS the phrase. Prepending
+  // the preset ("for a few days from 12/08") pushed the link row's one line
+  // past its ~180pt column and truncated; the preset carries no information
+  // a future start date doesn't already imply.
   const phrase = stayPresetPhrase(preset);
-  if (startAhead) return phrase ? `${phrase} from ${dd(startAhead)}` : `from ${dd(startAhead)}`;
+  if (startAhead) return `from ${dd(startAhead)}`;
   return phrase;
 }
 

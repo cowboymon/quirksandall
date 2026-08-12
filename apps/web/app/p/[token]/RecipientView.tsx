@@ -400,7 +400,12 @@ export default function RecipientView({ profile, token }: Props) {
           </section>
         )}
 
-        <footer className="mt-2 pb-8 border-t pt-5" style={{ borderColor: BORDER }}>
+        <footer className="mt-2 pb-8 border-t pt-6" style={{ borderColor: BORDER }}>
+          {/* Two registers, deliberately separated. The top pair is the warm
+              sign-off — the pet's person, the brand. The bottom row is the
+              page's small print, pushed apart by whitespace and set quieter,
+              so it reads as an intentional legal footer rather than a fourth
+              line of sign-off. */}
           <p className="text-text-muted text-xs text-center font-light">
             Made with love by {possessive(name)} person · updated{" "}
             {new Date(lastUpdatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
@@ -411,7 +416,7 @@ export default function RecipientView({ profile, token }: Props) {
               href="https://quirksandall.itshypothetical.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline"
+              className="underline underline-offset-2"
             >
               quirksandall.itshypothetical.com
             </a>
@@ -422,16 +427,16 @@ export default function RecipientView({ profile, token }: Props) {
               anonymous view and Mixpanel writes an id to their localStorage.
               Saying so plainly, with a route to the full policy, is the least
               this page owes them. */}
-          <p className="text-center mt-1.5 text-[11px] font-light" style={{ color: MUTED }}>
-            Anonymous page views are counted ·{" "}
+          <p className="text-center mt-4 text-[11px] font-light" style={{ color: MUTED }}>
+            This page counts anonymous views ·{" "}
             <a
               href="https://quirksandall.itshypothetical.com/privacy"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline"
+              className="font-medium underline underline-offset-2"
               style={{ color: MUTED }}
             >
-              Privacy
+              Privacy Policy
             </a>
           </p>
         </footer>

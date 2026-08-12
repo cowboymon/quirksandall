@@ -443,10 +443,10 @@ export default function Preview() {
               in this native preview — it's the owner looking at their own pet —
               but the whole point of this screen is to show what a sitter sees,
               and a notice the owner never sees is one they can't vouch for. */}
-          <Text style={{ color: colors.textMuted, fontSize: 11, textAlign: "center", marginTop: 6, fontFamily: "Satoshi-Light" }}>
-            Anonymous page views are counted ·{" "}
-            <Text style={{ textDecorationLine: "underline" }} onPress={() => Linking.openURL(PRIVACY_URL)}>
-              Privacy
+          <Text style={{ color: colors.textMuted, fontSize: 11, textAlign: "center", marginTop: 14, fontFamily: "Satoshi-Light" }}>
+            This page counts anonymous views ·{" "}
+            <Text style={{ textDecorationLine: "underline", fontFamily: "Satoshi-Medium" }} onPress={() => Linking.openURL(PRIVACY_URL)}>
+              Privacy Policy
             </Text>
           </Text>
         </View>

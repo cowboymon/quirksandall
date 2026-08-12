@@ -40,7 +40,8 @@ describe("stayPhrase (compact, owner dashboard)", () => {
 
   it("composes a future start with a preset", () => {
     const start = daysFromNow(2);
-    expect(stayPhrase("days", null, start)).toBe(`for a few days from ${dd(start)}`);
+    // The preset drops out once a date exists — the date alone fits the row.
+    expect(stayPhrase("days", null, start)).toBe(`from ${dd(start)}`);
   });
 
   it("renders a bare future start with no preset", () => {
