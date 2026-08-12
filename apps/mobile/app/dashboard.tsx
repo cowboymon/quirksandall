@@ -657,6 +657,11 @@ export default function Dashboard() {
                   <Text style={{ color: newLinkLocked ? "rgba(248,236,238,0.4)" : colors.cardDarkLabel, fontSize: 13, fontFamily: "Satoshi-Medium" }}>
                     {newLinkLocked ? "Unlock more links" : "New link"}
                   </Text>
+                  {/* Lock stays as the "why", just off the dashed circle —
+                      that circle is doing "a new one goes here", and cramming
+                      a padlock into a 24px ring fought with the plus mark for
+                      the same space. Sitting after the copy instead. */}
+                  {newLinkLocked && <LockSimple size={12} weight="fill" color="rgba(248,236,238,0.4)" />}
                 </TouchableOpacity>
               );
             })()}
