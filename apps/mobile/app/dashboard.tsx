@@ -651,16 +651,13 @@ export default function Dashboard() {
                   onPress={() => (newLinkLocked ? router.push("/upgrade") : setShowNewLink(true))}
                   style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
                 >
-                  {/* Locked: no dashed circle — that's "a new one goes here",
-                      which isn't true once creation is capped. Just the lock,
-                      same size class as the circle so the row doesn't jump. */}
-                  {newLinkLocked ? (
-                    <LockSimple size={16} weight="fill" color="rgba(248,236,238,0.4)" />
-                  ) : (
-                    <View style={{ width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: "rgba(240,160,176,0.5)", borderStyle: "dashed", alignItems: "center", justifyContent: "center" }}>
+                  <View style={{ width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: "rgba(240,160,176,0.5)", borderStyle: "dashed", alignItems: "center", justifyContent: "center" }}>
+                    {newLinkLocked ? (
+                      <LockSimple size={12} weight="fill" color="rgba(248,236,238,0.4)" />
+                    ) : (
                       <Plus size={13} color={colors.cardDarkLabel} />
-                    </View>
-                  )}
+                    )}
+                  </View>
                   <Text style={{ color: newLinkLocked ? "rgba(248,236,238,0.4)" : colors.cardDarkLabel, fontSize: 13, fontFamily: "Satoshi-Medium" }}>
                     {newLinkLocked ? "Unlock more links" : "New link"}
                   </Text>

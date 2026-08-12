@@ -15,7 +15,7 @@ import { useEffect, useRef, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Modal, Pressable, Animated, Easing, Keyboard, Dimensions } from "react-native";
 import { MagnifyingGlass } from "./icons";
 import { colors } from "@quirksandall/shared";
-import { FieldLabel, UNLOCK_PULSE_MS } from "./ui";
+import { FieldLabel, UNLOCK_PULSE_MS, UNLOCK_PULSE_PEAK_COLOR } from "./ui";
 
 const KEY = process.env.EXPO_PUBLIC_GOOGLE_PLACES_KEY;
 export const PLACES_ENABLED = !!KEY;
@@ -176,7 +176,7 @@ export function LabeledPlacesInput({
             // silently on.
             backgroundColor: pulse.interpolate({
               inputRange: [0, 1],
-              outputRange: [colors.background, "rgba(184,58,82,0.16)"],
+              outputRange: [colors.background, UNLOCK_PULSE_PEAK_COLOR],
             }),
             paddingLeft: manual ? 12 : 34, paddingRight: value ? 34 : 12, paddingVertical: 8,
             fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: colors.textDark,

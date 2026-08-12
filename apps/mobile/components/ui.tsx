@@ -107,6 +107,12 @@ const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 // than an effect; slow enough to actually track, eased so it reads as
 // fading rather than snapping off.
 export const UNLOCK_PULSE_MS = 2900;
+// A solid, fully-opaque tint (colors.background blended ~16% toward
+// colors.primary) rather than a translucent rgba. Animating alpha and hue at
+// the same time made the fade look like it passed through an unrelated
+// darker color partway — a real artifact of RGBA lerp, not a rendering bug.
+// Keeping alpha constant at 1 throughout means only the hue moves.
+export const UNLOCK_PULSE_PEAK_COLOR = "#EED0D5";
 
 export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: string; phone?: boolean; name?: boolean; pulseOn?: unknown }>(function LabeledInput({
   label,
@@ -162,7 +168,7 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
                 ? (locked ? colors.secondary : colors.background)
                 : pulse.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [locked ? colors.secondary : colors.background, "rgba(184,58,82,0.16)"],
+                    outputRange: [locked ? colors.secondary : colors.background, UNLOCK_PULSE_PEAK_COLOR],
                   }),
               paddingHorizontal: 12, paddingRight: locked ? 32 : 12, paddingVertical: 8,
               fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: locked ? colors.textMuted : colors.textDark,
