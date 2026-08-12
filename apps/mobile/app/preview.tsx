@@ -8,6 +8,7 @@ import { router, useFocusEffect } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { AppAlert } from "../stores/appAlert";
 import { useActivePetStore } from "../stores/activePet";
+import { MARKETING_URL, PRIVACY_URL } from "../lib/config";
 import { useRequireAuth } from "../hooks/useRequireAuth";
 import { FieldTier } from "../components/ui";
 import { colors, computeAge, formatWeight, formatPhone, formatVetName, possessive, orderedCommands, commandStrengthLabel, mealSlotLabel, shortAddress, isUnlocked, treatEntries } from "@quirksandall/shared";
@@ -432,7 +433,22 @@ export default function Preview() {
           <Text style={{ color: colors.textMuted, fontSize: 12, textAlign: "center", fontFamily: "Satoshi-Light" }}>
             Made with love by {possessive(d.name)} person · updated {new Date(d.updatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
           </Text>
-          <Text style={{ color: colors.textDark, fontSize: 11, textAlign: "center", marginTop: 4, fontFamily: "Satoshi-Medium" }}>Quirks & All · quirksandall.itshypothetical.com</Text>
+          <Text style={{ color: colors.textDark, fontSize: 11, textAlign: "center", marginTop: 4, fontFamily: "Satoshi-Medium" }}>
+            Quirks & All ·{" "}
+            <Text style={{ textDecorationLine: "underline" }} onPress={() => Linking.openURL(MARKETING_URL)}>
+              quirksandall.itshypothetical.com
+            </Text>
+          </Text>
+          {/* Mirrors the web recipient page's footer notice. Nothing is tracked
+              in this native preview — it's the owner looking at their own pet —
+              but the whole point of this screen is to show what a sitter sees,
+              and a notice the owner never sees is one they can't vouch for. */}
+          <Text style={{ color: colors.textMuted, fontSize: 11, textAlign: "center", marginTop: 6, fontFamily: "Satoshi-Light" }}>
+            Anonymous page views are counted ·{" "}
+            <Text style={{ textDecorationLine: "underline" }} onPress={() => Linking.openURL(PRIVACY_URL)}>
+              Privacy
+            </Text>
+          </Text>
         </View>
       </View>
       </ScrollView>

@@ -406,7 +406,15 @@ export default function RecipientView({ profile, token }: Props) {
             {new Date(lastUpdatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
           </p>
           <p className="text-foreground text-[11px] text-center mt-1 font-medium">
-            Quirks &amp; All · quirksandall.itshypothetical.com
+            Quirks &amp; All ·{" "}
+            <a
+              href="https://quirksandall.itshypothetical.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+            >
+              quirksandall.itshypothetical.com
+            </a>
           </p>
           {/* Notice at the point of collection (APP 5). Whoever opens this
               page — a sitter, a vet, a neighbour — is not a Quirks & All user
