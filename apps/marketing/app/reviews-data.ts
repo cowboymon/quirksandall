@@ -22,25 +22,27 @@ export const REVIEWS_RATING: string | null = null;
 export const REVIEWS_RATING_LABEL = "from our beta testers";
 
 // Real, permissioned beta-tester quotes. Keep every entry a genuine testimonial
-// — never put invented words under a real name (see the gate note above).
+// — never put invented words under a real name (see the gate note above). The
+// displayed names are pseudonyms to protect the testers' identities; the words,
+// ratings and cities are theirs.
 export const REVIEWS: Review[] = [
   {
     quote: "Honestly it's so good!!",
-    name: "Tayla O.",
+    name: "Meg C.",
     detail: "Beta tester, Brisbane",
     stars: 4.5,
   },
   {
     quote:
       "The last time we went away, we forgot to tell our sitter where the cat carrier was — so when the fire alarm went off and they had to evacuate, they couldn't grab him. Luckily it turned out to be a false alarm, but my heart was in my mouth.",
-    name: "Breanna T.",
+    name: "Steph L.",
     detail: "Beta tester, Canberra",
     stars: 5,
   },
   {
     quote:
       "I'm an anxious person, so leaving Kiki with my mum while we're away had me a bit scared — she hasn't lived with Kiki for two years, since I moved out. But being able to put down exactly what Kiki does and when, and where all her things are, means I can rest a little easier.",
-    name: "Javi C.",
+    name: "Nadia R.",
     detail: "Beta tester, Sydney",
     stars: 5,
   },
