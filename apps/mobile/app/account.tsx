@@ -317,6 +317,14 @@ export default function Account() {
         <Text style={{ color: colors.danger, fontSize: 14 }}>Delete account</Text>
       </TouchableOpacity>
 
+      {/* TEMPORARY (build 28 Sentry verification only — remove once confirmed):
+          tap the version number 7 times to fire a real crash. Same convention
+          as iOS's own hidden developer-options gate, so a stray tap can't set
+          it off. This is the only way to prove Sentry's whole pipeline end to
+          end — a caught, reported error doesn't exercise the native crash
+          handler or prove source maps actually attached. */}
+      <VersionFooter />
+
       <ConfirmModal
         visible={showDeleteAccount}
         title="Delete your account?"
@@ -328,5 +336,38 @@ export default function Account() {
         onCancel={() => setShowDeleteAccount(false)}
       />
     </EditShell>
+  );
+}
+
+// TEMPORARY — delete this whole component and its call site once Sentry is
+// verified. 7 taps rather than 1 so it can't fire from an accidental tap on a
+// row that otherwise does nothing; a real crash test needs an actual native
+// throw, not a caught-and-reported error, since that's the only way to prove
+// the crash handler AND the uploaded source maps both work.
+function VersionFooter() {
+  const [taps, setTaps] = useState(0);
+  const version = Constants.expoConfig?.version ?? "";
+  const build = Constants.expoConfig?.ios?.buildNumber ?? "";
+
+  const onTap = () => {
+    const next = taps + 1;
+    if (next >= 7) {
+      setTaps(0);
+      // @ts-expect-error — deliberately reading past the end of an object to
+      // throw a real, unhandled TypeError. A caught exception proves the SDK
+      // is wired; only an actually-unhandled one proves the crash reaches
+      // Sentry the same way a real bug would.
+      null.crashTest();
+      return;
+    }
+    setTaps(next);
+  };
+
+  return (
+    <TouchableOpacity onPress={onTap} activeOpacity={1} style={{ marginTop: 20, alignItems: "center", paddingVertical: 6 }}>
+      <Text style={{ color: colors.textMuted, fontSize: 11 }}>
+        Quirks &amp; All {version} ({build})
+      </Text>
+    </TouchableOpacity>
   );
 }
