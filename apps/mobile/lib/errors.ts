@@ -34,9 +34,18 @@ export function initErrorReporting() {
     // with errors that were never shipped.
     enabled: !__DEV__,
     beforeBreadcrumb: (crumb) => {
-      // A share-link URL is the credential for a pet's whole profile; an
-      // http/fetch/console breadcrumb would ship one into an issue.
-      if (crumb.category === "console" || crumb.category === "xhr" || crumb.category === "fetch") return null;
+      // A share-link URL is the credential for a pet's whole profile; a
+      // network or console breadcrumb would ship one — plus every Supabase
+      // filter and RevenueCat/Mixpanel payload — into an issue.
+      //
+      // React Native's SDK tags network calls "http", not "xhr"/"fetch" like
+      // the browser SDK does — confirmed against a real captured breadcrumb,
+      // which is how this was caught: the crash-test trace on build 29 showed
+      // full Supabase query strings under Type: http, Category: http, sailing
+      // straight past a filter that only checked for xhr/fetch. Kept those
+      // two as well since a future SDK version or a web build could still use
+      // them.
+      if (["console", "xhr", "fetch", "http"].includes(crumb.category ?? "")) return null;
       return crumb;
     },
   });
