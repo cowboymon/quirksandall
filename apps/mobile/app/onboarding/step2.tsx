@@ -50,7 +50,7 @@ export default function Step2() {
               label="Clinic name"
               placeholder="Search clinic name"
               value={pet.vetClinic ?? ""}
-              onChangeText={(v) => { setPet({ vetClinic: v }); setVetManual(false); }}
+              onChangeText={(v) => setPet({ vetClinic: v })}
               onSelectPlace={(p) => { setPet({ vetClinic: p.name, vetPhone: p.phone, vetAddress: p.address }); setVetManual(false); }}
               manual={vetManual}
               onToggleManual={() => setVetManual((v) => !v)}
@@ -87,7 +87,7 @@ export default function Step2() {
               label="Clinic name"
               placeholder="Search clinic name"
               value={pet.emergVetClinic ?? ""}
-              onChangeText={(v) => { setPet({ emergVetClinic: v }); setEmergManual(false); }}
+              onChangeText={(v) => setPet({ emergVetClinic: v })}
               onSelectPlace={(p) => { setPet({ emergVetClinic: p.name, emergVetPhone: p.phone, emergVetAddress: p.address }); setEmergManual(false); }}
               manual={emergManual}
               onToggleManual={() => setEmergManual((v) => !v)}

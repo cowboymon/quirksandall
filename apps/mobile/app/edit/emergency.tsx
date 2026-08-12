@@ -157,7 +157,7 @@ export default function EditEmergency() {
               label="Clinic name"
               placeholder="Search clinic name"
               value={vetClinic}
-              onChangeText={(v) => { setVetClinic(v); setVetManual(false); }}
+              onChangeText={setVetClinic}
               onSelectPlace={(p) => { setVetClinic(p.name); setVetPhone(p.phone); setVetAddress(p.address); setVetManual(false); }}
               manual={vetManual}
               onToggleManual={() => setVetManual((v) => !v)}
@@ -191,7 +191,7 @@ export default function EditEmergency() {
               label="Clinic name"
               placeholder="Search clinic name"
               value={emergClinic}
-              onChangeText={(v) => { setEmergClinic(v); setEmergManual(false); }}
+              onChangeText={setEmergClinic}
               onSelectPlace={(p) => { setEmergClinic(p.name); setEmergPhone(p.phone); setEmergAddress(p.address); setEmergManual(false); }}
               manual={emergManual}
               onToggleManual={() => setEmergManual((v) => !v)}
