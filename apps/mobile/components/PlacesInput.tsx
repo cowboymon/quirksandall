@@ -12,10 +12,10 @@
 // as the focused thing to interact with) and avoids the janky reflow of a
 // dropdown pushing surrounding form content around as it opens/closes.
 import { useEffect, useRef, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Modal, Pressable, Animated, Keyboard, Dimensions } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, Modal, Pressable, Animated, Easing, Keyboard, Dimensions } from "react-native";
 import { MagnifyingGlass } from "./icons";
 import { colors } from "@quirksandall/shared";
-import { FieldLabel } from "./ui";
+import { FieldLabel, UNLOCK_PULSE_MS } from "./ui";
 
 const KEY = process.env.EXPO_PUBLIC_GOOGLE_PLACES_KEY;
 export const PLACES_ENABLED = !!KEY;
@@ -68,7 +68,7 @@ export function LabeledPlacesInput({
   useEffect(() => {
     if (!mounted.current) { mounted.current = true; return; }
     pulse.setValue(1);
-    Animated.timing(pulse, { toValue: 0, duration: 500, useNativeDriver: false }).start();
+    Animated.timing(pulse, { toValue: 0, duration: UNLOCK_PULSE_MS, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start();
   }, [manual]);
 
   const measure = () => {
@@ -161,10 +161,10 @@ export function LabeledPlacesInput({
           autoCapitalize="words"
           style={{
             minHeight: 40, borderRadius: 8,
-            // Width is animated too — a slightly thicker ring at the peak of
-            // the pulse reads as "notice me" more than a flat color swap does
-            // at this field's small size, then eases back to the normal 1px.
-            borderWidth: pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 2] }),
+            // Width is animated too — a thicker ring at the peak of the pulse
+            // reads as "notice me" more than a flat color swap does at this
+            // field's small size, then eases back to the normal 1px.
+            borderWidth: pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 2.5] }),
             // Toggling manual mode always drops focus (toggleManual calls
             // close(), which blurs) — so the base color here is reliably
             // colors.border, and the pulse has a still target to flash
@@ -176,6 +176,11 @@ export function LabeledPlacesInput({
             backgroundColor: colors.background,
             paddingLeft: 34, paddingRight: value ? 34 : 12, paddingVertical: 8,
             fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: colors.textDark,
+            // Genuine glow, iOS only (Android's elevation has no colour).
+            shadowColor: colors.primary,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: pulse.interpolate({ inputRange: [0, 1], outputRange: [0, 0.55] }),
+            shadowRadius: pulse.interpolate({ inputRange: [0, 1], outputRange: [0, 8] }),
           }}
         />
         {!!value && (

@@ -1,7 +1,7 @@
 // Shared primitive UI components for the mobile app.
 // Mirrors the prototype's primitives.tsx (fonts, buttons, dots, inputs).
 import { useEffect, useMemo, useState, useRef, forwardRef } from "react";
-import { Animated, Keyboard, Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
+import { Animated, Easing, Keyboard, Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
 import { CalendarDots, LockSimple, XCircle } from "./icons";
 import { router, useNavigation } from "expo-router";
 import { colors, radius, capitalizeFirst, capitalizeWords, formatPhone, displayDateToISO, dateFieldError } from "@quirksandall/shared";
@@ -101,6 +101,13 @@ export function FieldLabel({ children }: { children: React.ReactNode }) {
 // cards (Screen 2). 14px value on #F8ECEE, rose focus border.
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
+// Shared with PlacesInput.tsx so the search field and the Address/Phone
+// fields it unlocks stay in lockstep — a felt duration, not a flash. The
+// first attempt at this (500ms, linear, no shadow) read as a glitch rather
+// than an effect; slow enough to actually track, eased so it reads as
+// fading rather than snapping off.
+export const UNLOCK_PULSE_MS = 1400;
+
 export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: string; phone?: boolean; name?: boolean; pulseOn?: unknown }>(function LabeledInput({
   label,
   style,
@@ -123,7 +130,10 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
     if (pulseOn === undefined) return;
     if (!mounted.current) { mounted.current = true; return; }
     pulse.setValue(1);
-    Animated.timing(pulse, { toValue: 0, duration: 500, useNativeDriver: false }).start();
+    // Ease-out cubic: fast to register, slow to fade — a linear fade of the
+    // same length reads as "stuck" for its first half, since most of the
+    // visible change happens in the last third either way.
+    Animated.timing(pulse, { toValue: 0, duration: UNLOCK_PULSE_MS, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start();
   }, [pulseOn]);
   return (
     <View>
@@ -135,13 +145,22 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
         style={[
           {
             minHeight: 40, borderRadius: 8,
-            borderWidth: pulseOn === undefined ? 1 : pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 2] }),
+            borderWidth: pulseOn === undefined ? 1 : pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 2.5] }),
             borderColor: pulseOn === undefined
               ? (focused ? colors.primary : colors.border)
               : pulse.interpolate({ inputRange: [0, 1], outputRange: [focused ? colors.primary : colors.border, colors.primary] }),
             backgroundColor: props.editable === false ? colors.secondary : colors.background,
             paddingHorizontal: 12, paddingVertical: 8,
             fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: props.editable === false ? colors.textMuted : colors.textDark,
+            // Genuine glow, iOS only — Android has no colored-shadow
+            // equivalent (elevation is greyscale-only), so there the wider,
+            // longer-held border swing above is the whole effect.
+            ...(pulseOn !== undefined ? {
+              shadowColor: colors.primary,
+              shadowOffset: { width: 0, height: 0 },
+              shadowOpacity: pulse.interpolate({ inputRange: [0, 1], outputRange: [0, 0.55] }),
+              shadowRadius: pulse.interpolate({ inputRange: [0, 1], outputRange: [0, 8] }),
+            } : {}),
           },
           style,
         ]}
