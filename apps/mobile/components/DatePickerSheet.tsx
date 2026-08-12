@@ -10,6 +10,8 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Modal, Platform, Text, TouchableOpacity, View } from "react-native";
 import { colors } from "@quirksandall/shared";
 
+const SHEET_H_PADDING = 18;
+
 export default function DatePickerSheet({
   visible,
   value,
@@ -77,10 +79,19 @@ function IOSSheet({
   // Re-seed when reopened against a different typed value.
   useEffect(() => { setDraft(value); }, [value.getTime()]);
 
+  // The inline calendar will not stretch. It lays its content out at its own
+  // intrinsic width and left-aligns inside whatever frame it's given, so
+  // widening the frame (alignSelf: "stretch", or an explicit width from the
+  // window) only grows the empty strip on the right — which is what the
+  // first two attempts at this did.
+  //
+  // Centring is the fix that actually works: the leftover space splits
+  // evenly and reads as padding rather than as a layout bug.
+
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onCancel}>
       <View style={{ flex: 1, backgroundColor: "rgba(31,26,23,0.45)", justifyContent: "flex-end" }}>
-        <View style={{ backgroundColor: "#FFFFFF", borderTopLeftRadius: 18, borderTopRightRadius: 18, paddingHorizontal: 18, paddingTop: 10, paddingBottom: 28 }}>
+        <View style={{ backgroundColor: "#FFFFFF", borderTopLeftRadius: 18, borderTopRightRadius: 18, paddingHorizontal: SHEET_H_PADDING, paddingTop: 10, paddingBottom: 28 }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 6 }}>
             <TouchableOpacity onPress={onCancel} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
               <Text style={{ color: colors.textMuted, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Cancel</Text>
@@ -124,7 +135,7 @@ function IOSSheet({
             // The wheel needs a concrete height — in a flex container it can
             // end up unresolved and take the view down. 216 is the standard
             // iOS wheel height. The calendar sizes itself.
-            style={calendar ? { alignSelf: "stretch" } : { alignSelf: "stretch", height: 216 }}
+            style={calendar ? { alignSelf: "center" } : { alignSelf: "stretch", height: 216 }}
           />
         </View>
       </View>

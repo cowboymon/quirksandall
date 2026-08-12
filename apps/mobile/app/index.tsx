@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { View, Text, ActivityIndicator, Platform } from "react-native";
 import { router } from "expo-router";
 import { supabase } from "../lib/supabase";
+import { policyRoute } from "../lib/policy";
+import { identifyForErrors } from "../lib/errors";
 import { initAnalytics, identify, track, AnalyticsEvent } from "../lib/analytics";
-import { CONSENT_POLICY_VERSION } from "@quirksandall/shared";
 
 export default function Index() {
   useEffect(() => {
@@ -15,18 +16,13 @@ export default function Index() {
         // are counted too (this is what "did we see a login event" was missing).
         initAnalytics().then(() => {
           identify(session.user.id);
+          identifyForErrors(session.user.id);
           track(AnalyticsEvent.SessionStarted, { platform: Platform.OS, source: "resume" });
         });
         // Same required-agreement gate as auth.tsx (#96) — covers accounts that
-        // predate this gate, whose terms_accepted_at is still null, and anyone
-        // who resumes an existing session after a policy version bump.
-        const { data: owner } = await supabase
-          .from("owners")
-          .select("terms_accepted_at, terms_policy_version")
-          .eq("id", session.user.id)
-          .single();
-        const upToDate = !!owner?.terms_accepted_at && owner.terms_policy_version === CONSENT_POLICY_VERSION;
-        router.replace(upToDate ? "/dashboard" : "/accept-terms");
+        // predate the gate and have no acceptance rows at all, and anyone who
+        // resumes an existing session after a policy version bump.
+        router.replace(await policyRoute(session.user.id));
       } else {
         router.replace("/auth");
       }

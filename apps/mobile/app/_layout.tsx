@@ -7,7 +7,12 @@ import { useFonts } from "expo-font";
 import { initRevenueCat } from "../lib/purchases";
 import { configureNotifications } from "../lib/notifications";
 import { initAnalytics } from "../lib/analytics";
+import { initErrorReporting } from "../lib/errors";
 import AppAlertHost from "../components/AppAlertHost";
+
+// Before anything else, so a crash during font loading or SDK startup is still
+// captured. No-op without EXPO_PUBLIC_SENTRY_DSN.
+initErrorReporting();
 
 SplashScreen.preventAutoHideAsync();
 

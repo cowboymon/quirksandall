@@ -13,6 +13,7 @@ export type OwnerLink = {
   label: string | null;
   revoked: boolean;
   last_viewed_at: string | null;
+  view_count: number | null;
   created_at: string;
   pin_hash: string | null;
   duration_preset: string | null;
@@ -32,7 +33,7 @@ export function randomToken(): string {
 export async function listLinks(petId: string): Promise<OwnerLink[]> {
   const { data } = await supabase
     .from("share_links")
-    .select("id, token, label, revoked, last_viewed_at, created_at, pin_hash, duration_preset, starts_at, ends_at, first_shared_at")
+    .select("id, token, label, revoked, last_viewed_at, view_count, created_at, pin_hash, duration_preset, starts_at, ends_at, first_shared_at")
     .eq("pet_id", petId)
     .eq("revoked", false)
     .order("created_at", { ascending: true });
@@ -84,7 +85,7 @@ export async function createLink(petId: string, label: string): Promise<OwnerLin
     const { data, error } = await supabase
       .from("share_links")
       .insert({ pet_id: petId, token: randomToken(), label, pin_hash: existing?.pin_hash ?? null })
-      .select("id, token, label, revoked, last_viewed_at, created_at, pin_hash, duration_preset, starts_at, ends_at, first_shared_at")
+      .select("id, token, label, revoked, last_viewed_at, view_count, created_at, pin_hash, duration_preset, starts_at, ends_at, first_shared_at")
       .single();
     if (!error && data) {
       // Value Moment — a shareable link now exists for this pet.

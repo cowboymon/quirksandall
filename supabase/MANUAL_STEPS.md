@@ -6,17 +6,29 @@ you go. Newest work is at the top of each section.
 
 > When pasting a migration, paste the **contents** of the `.sql` file, not the
 > filename.
+>
+> **Tick it as soon as you run it.** Three entries below sat unticked while
+> being live in the database, which makes the list worse than useless — it
+> implies working features are broken and invites re-running migrations. To
+> check reality rather than trusting this file, query
+> `information_schema.columns` / `to_regclass()` for the objects a migration
+> creates.
 
 ---
 
 ## ▶️ Run now
 
-- [ ] **`20260810000001_rename_waitlist_to_marketing.sql`** — renames the
+- [x] **`20260811000001_share_link_view_count.sql`** — adds `view_count` to
+  `share_links` plus the `record_share_link_view(uuid)` RPC the recipient page
+  now calls instead of updating `last_viewed_at` directly. `links.ts` selects
+  `view_count`, so this had to land before the app next loaded — the same
+  breakage the `starts_at` column caused on 10 Aug. *(Run 12 Aug 2026.)*
+
+- [x] **`20260810000001_rename_waitlist_to_marketing.sql`** — renames the
   pre-launch email table `waitlist` → `marketing` (it's now an ongoing
-  marketing list, not just a launch waitlist). **Coordinated with the code
-  change** from `.from("waitlist")` to `.from("marketing")` — run this right
-  as the deploy goes live so inserts don't briefly miss the table. No column,
-  constraint or RLS change.
+  marketing list, not just a launch waitlist). Coordinated with the code
+  change from `.from("waitlist")` to `.from("marketing")`. No column,
+  constraint or RLS change. *(Run 10 Aug 2026.)*
 
 - [x] **`20260808000001_share_link_starts_at.sql`** — adds `starts_at` to
   `share_links` for the stay start date (#20). *(Run 10 Aug 2026.)*
@@ -46,18 +58,17 @@ you go. Newest work is at the top of each section.
   this table those routes fail open (no limiting) rather than erroring.
   *(Run 3 Aug 2026.)*
 
-- [ ] **`20260725000004_consent_marketing.sql`** — adds `consent_marketing` to
-  `owners` for the "Product news & tips" opt-in. **Required before that toggle
-  works.**
+- [x] **`20260725000004_consent_marketing.sql`** — adds `consent_marketing` to
+  `owners` for the "Product news & tips" opt-in. *(Verified applied 10 Aug
+  2026.)*
 
-- [ ] **`20260725000003_share_link_duration.sql`** — adds `duration_preset` +
-  `ends_at` to `share_links` for stay duration (§5.1). **Required before the
-  "stay length" control + recipient banner work.**
+- [x] **`20260725000003_share_link_duration.sql`** — adds `duration_preset` +
+  `ends_at` to `share_links` for stay duration (§5.1). *(Verified applied
+  10 Aug 2026.)*
 
-- [ ] **`20260725000002_document_vault.sql`** — private `pet-documents` storage
+- [x] **`20260725000002_document_vault.sql`** — private `pet-documents` storage
   bucket + owner-scoped storage RLS + `pet_documents` metadata table + RLS.
-  **Required before the Documents screen works** — uploads/reads hit the new
-  bucket and table.
+  *(Verified applied 10 Aug 2026.)*
 
 - [x] **`20260725000001_consent.sql`** — consent columns on `owners` +
   append-only `consent_log` table + RLS. *(Run 26 Jul 2026.)*
@@ -104,6 +115,9 @@ you go. Newest work is at the top of each section.
 
 - [ ] **Mixpanel → privacy policy** — Mixpanel is now wired (mobile + web).
   Before publishing the privacy policy, add Mixpanel to the third-party table.
+  The recipient page now carries a notice + Privacy link in its footer, so
+  the policy needs to actually cover the anonymous view tracking that page
+  does — people who open a share link are not users and agreed to nothing.
 
 - [ ] **Legal → policy version** — when the consent / secondary-use section of
   the privacy policy is finalised, bump `CONSENT_POLICY_VERSION` in
@@ -118,6 +132,18 @@ you go. Newest work is at the top of each section.
   token; analytics is a no-op until it's set.
 - [ ] **`NEXT_PUBLIC_MIXPANEL_TOKEN`** (Vercel env) = same value — for the web
   recipient page's `recipient_page_viewed` event.
+- [ ] **`EXPO_PUBLIC_SENTRY_DSN`** (mobile env / EAS build) — Sentry DSN for
+  crash + error reporting. **Optional**: with it unset, `lib/errors.ts` never
+  initialises Sentry and every call is a no-op, so dev and CI are unaffected.
+  Set it as an EAS secret before the build that ships crash reporting,
+  otherwise the build has the native module and reports nothing. A DSN is a
+  public client key, not a secret. Org `its-hypothetical`, project `quirks`.
+- [ ] **`SENTRY_AUTH_TOKEN`** (EAS secret — **real secret, never commit**) —
+  a Sentry *Organization* Auth Token, used only at build time to upload source
+  maps. Without it the build still succeeds and crashes still report, but every
+  production stack trace stays minified (`index.bundle:1:284729`) instead of
+  naming a file and line, which is most of the value gone. Sentry shows the
+  token once on creation; if it's lost, delete it and issue a new one.
 - [ ] **`PIN_UNLOCK_SECRET`** (Vercel/Supabase env) — dedicated signing secret
   for the persisted-PIN-unlock cookie (#87). **Optional** — it falls back to
   `SUPABASE_SERVICE_KEY` if unset, so nothing breaks without it.

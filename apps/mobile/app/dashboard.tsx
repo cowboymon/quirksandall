@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Share, TextInput, Platform, ActivityIndicator } from "react-native";
-import { AirplaneTilt, Bell, CaretDown, CaretRight, CaretUp, Check, Eye, Key, LinkSimple, LockSimple, NotePencil, PencilSimple, Plus, ShareFat, Trash, WarningCircle, X } from "../components/icons";
+import { AirplaneTilt, Bell, CaretDown, CaretRight, CaretUp, Check, Eye, Key, LinkSimple, LockSimple, PencilSimpleLine, Plus, ShareFat, Trash, WarningCircle, X } from "../components/icons";
 import { AppAlert } from "../stores/appAlert";
 import { router, useFocusEffect } from "expo-router";
 import * as Clipboard from "expo-clipboard";
@@ -45,8 +45,28 @@ function initialsOf(name?: string | null) {
   return name.split(" ").map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "?";
 }
 
-function viewedLabel(iso: string | null) {
-  return iso ? `Viewed ${new Date(iso).toLocaleDateString()}` : "Not yet viewed";
+// The one line under a link's name. The count is what owners actually asked
+// for ("has the sitter looked at it?"), the date is what makes it meaningful,
+// so they share a line rather than competing for two. Views, not visitors —
+// recipients aren't identified, and a re-read counts again.
+//
+// It has to be SHORT. This sits in a flex:1 column beside an avatar and three
+// action buttons — roughly 180pt at 11px — so the prose form ("Viewed 5 times
+// · last 11/08/2026") wrapped to a second line and pushed the row out of
+// alignment. Hence "5 views · 11/08": the same bare DD/MM the stay label
+// directly below it uses. The year only appears when the view wasn't this
+// year, where dropping it would actively mislead.
+function viewedLabel(iso: string | null, count?: number | null) {
+  if (!iso) return "Not yet viewed";
+  const d = new Date(iso);
+  const dm = `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+  const when = d.getFullYear() === new Date().getFullYear()
+    ? dm
+    : `${dm}/${String(d.getFullYear()).slice(-2)}`;
+  const n = count ?? 0;
+  // A row with a last-viewed date but no counter predates the counter column,
+  // so show the date alone rather than claiming zero views.
+  return n > 0 ? `${n} ${n === 1 ? "view" : "views"} · ${when}` : `Viewed ${when}`;
 }
 
 export default function Dashboard() {
@@ -317,7 +337,7 @@ export default function Dashboard() {
     // reconcile with the real row (or roll back on failure).
     const tempId = `temp-${Date.now()}`;
     const optimisticLink: OwnerLink = {
-      id: tempId, token: "", label: name, revoked: false, last_viewed_at: null,
+      id: tempId, token: "", label: name, revoked: false, last_viewed_at: null, view_count: 0,
       created_at: new Date().toISOString(), pin_hash: null, duration_preset: null, starts_at: null, ends_at: null, first_shared_at: null,
     };
     setData((d) => (d ? { ...d, links: [...d.links, optimisticLink] } : d));
@@ -513,8 +533,8 @@ export default function Dashboard() {
                     {link.label || "Untitled link"}
                   </Text>
                 )}
-                <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 11, marginTop: 2, fontFamily: "Satoshi-Light" }}>
-                  {viewedLabel(link.last_viewed_at)}
+                <Text numberOfLines={1} style={{ color: "rgba(248,236,238,0.6)", fontSize: 11, marginTop: 2, fontFamily: "Satoshi-Light" }}>
+                  {viewedLabel(link.last_viewed_at, link.view_count)}
                 </Text>
                 {/* Stay duration (§5.1) — tap to set/change how long the pet's
                     staying. Shows on the recipient page. */}
@@ -539,7 +559,7 @@ export default function Dashboard() {
                 onPress={() => setActionsTarget(link)}
                 style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.1)", alignItems: "center", justifyContent: "center" }}
               >
-                <PencilSimple size={13} color={colors.cardDarkText} />
+                <PencilSimpleLine size={13} color={colors.cardDarkText} />
               </TouchableOpacity>
               {/* The first (main) link is always shareable — free tier gets
                   preview + link 1. Only additional links need the paid unlock. */}
@@ -695,7 +715,7 @@ export default function Dashboard() {
                       <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>{s.label}</Text>
                       <Text style={{ color: statusColor[s.status], fontSize: 11, marginTop: 2 }}>{s.detail}</Text>
                     </View>
-                    <NotePencil size={16} color={colors.textMuted} />
+                    <PencilSimpleLine size={16} color={colors.textMuted} />
                   </Card>
                 </TouchableOpacity>
                 {/* Quick access to the PIN, directly under the emergency row */}

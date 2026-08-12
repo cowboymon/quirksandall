@@ -3,7 +3,7 @@
 // opens a short-lived signed URL.
 import { useCallback, useState } from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator, Linking } from "react-native";
-import { Camera, File, FileText, FolderOpen, Image, ShareFat, Trash, UploadSimple, type Icon } from "../../components/icons";
+import { Camera, File, FileArrowUp, FileText, FolderOpen, Image, ShareFat, Trash, type Icon } from "../../components/icons";
 import { AppAlert } from "../../stores/appAlert";
 import { useFocusEffect } from "expo-router";
 import * as DocumentPicker from "expo-document-picker";
@@ -124,7 +124,7 @@ export default function Documents() {
       loading={loading}
     >
       <View style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>
-        <AddButton icon={UploadSimple} label="Choose file" onPress={pickFile} disabled={busy} />
+        <AddButton icon={FileArrowUp} label="Choose file" onPress={pickFile} disabled={busy} />
         <AddButton icon={Camera} label="Take photo" onPress={takePhoto} disabled={busy} />
       </View>
 

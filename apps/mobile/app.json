@@ -46,7 +46,15 @@
       "expo-font",
       "expo-web-browser",
       "expo-localization",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "organization": "its-hypothetical",
+          "project": "quirks"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

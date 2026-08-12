@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import type { RecipientProfile } from "@quirksandall/shared";
 import { formatWeight, formatPhone, formatVetName, possessive, commandStrengthLabel, mealSlotLabel, shortAddress, isSafeHttpsUrl, sanitizeTelValue, treatEntries } from "@quirksandall/shared";
 import PINGate from "./PINGate";
-import { trackWeb, WebAnalyticsEvent } from "../../lib/analytics";
+import { trackWeb, startTimingWeb, WebAnalyticsEvent } from "../../lib/analytics";
 
 type Props = { profile: RecipientProfile; token: string };
 
@@ -63,6 +63,29 @@ export default function RecipientView({ profile, token }: Props) {
   useEffect(() => {
     if (preview) return;
     trackWeb(WebAnalyticsEvent.RecipientPageViewed, { pin_gated: pinSet, tier: isPaid ? "paid" : "free" });
+
+    // Read depth: how long the page was actually open. Mixpanel times it from
+    // here and attaches $duration when the paired event fires.
+    //
+    // pagehide AND visibilitychange, because neither alone is enough: mobile
+    // Safari often kills a backgrounded tab without ever firing pagehide, and
+    // visibilitychange fires on every app switch. `sent` makes this
+    // once-per-page — otherwise a viewer who backgrounds and returns three
+    // times logs three durations and drags the average down.
+    startTimingWeb(WebAnalyticsEvent.RecipientPageClosed);
+    let sent = false;
+    const finish = () => {
+      if (sent) return;
+      sent = true;
+      trackWeb(WebAnalyticsEvent.RecipientPageClosed, { pin_gated: pinSet, tier: isPaid ? "paid" : "free" });
+    };
+    const onVisibility = () => { if (document.visibilityState === "hidden") finish(); };
+    window.addEventListener("pagehide", finish);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("pagehide", finish);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [preview, pinSet, isPaid]);
 
   // Paid-tier fields (soft triggers, routine-rest, medical) are visible in the
@@ -383,7 +406,33 @@ export default function RecipientView({ profile, token }: Props) {
             {new Date(lastUpdatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
           </p>
           <p className="text-foreground text-[11px] text-center mt-1 font-medium">
-            Quirks &amp; All · quirksandall.itshypothetical.com
+            Quirks &amp; All ·{" "}
+            <a
+              href="https://quirksandall.itshypothetical.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+            >
+              quirksandall.itshypothetical.com
+            </a>
+          </p>
+          {/* Notice at the point of collection (APP 5). Whoever opens this
+              page — a sitter, a vet, a neighbour — is not a Quirks & All user
+              and has agreed to nothing, but trackWeb() still records an
+              anonymous view and Mixpanel writes an id to their localStorage.
+              Saying so plainly, with a route to the full policy, is the least
+              this page owes them. */}
+          <p className="text-center mt-1.5 text-[11px] font-light" style={{ color: MUTED }}>
+            Anonymous page views are counted ·{" "}
+            <a
+              href="https://quirksandall.itshypothetical.com/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+              style={{ color: MUTED }}
+            >
+              Privacy
+            </a>
           </p>
         </footer>
       </div>
