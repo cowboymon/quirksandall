@@ -2,6 +2,19 @@
 // Update these when the real store listings / contact address are live.
 import { PRICING } from "@quirksandall/shared";
 
+// ── Launch switch ───────────────────────────────────────────────────────────
+// Paste a real store URL when that platform's listing goes live; "#" means
+// "coming soon" for that platform. Availability is derived PER-PLATFORM, so we
+// can launch on one store before the other — Apple is expected to go live
+// first, Google later. Flipping these two URLs is the whole go-live change:
+// the store badges, the "Get Notified → Download" CTAs, and the review store
+// links all react to them. No other edit required.
+const APP_STORE_URL: string = "#";
+const PLAY_STORE_URL: string = "#";
+const APP_STORE_LIVE = APP_STORE_URL !== "#" && APP_STORE_URL.length > 1;
+const PLAY_STORE_LIVE = PLAY_STORE_URL !== "#" && PLAY_STORE_URL.length > 1;
+const LAUNCHED = APP_STORE_LIVE || PLAY_STORE_LIVE;
+
 export const site = {
   name: "Quirks & All",
   tagline: "Away, but known.",
@@ -14,12 +27,18 @@ export const site = {
     /\/$/,
     "",
   ),
-  // Pre-launch: the apps aren't in the stores yet, so the download
-  // affordances show "Coming soon" instead of linking out. Flip to false
-  // and fill in the URLs below when the listings go live.
-  comingSoon: true,
-  appStoreUrl: "#",
-  playStoreUrl: "#",
+  appStoreUrl: APP_STORE_URL,
+  playStoreUrl: PLAY_STORE_URL,
+  // Per-platform availability, derived from whether a real URL is set above.
+  appStoreLive: APP_STORE_LIVE,
+  playStoreLive: PLAY_STORE_LIVE,
+  // True once at least one store is live — flips the CTAs from waitlist to store.
+  launched: LAUNCHED,
+  // Where the primary CTA points: the App Store if it's live, else Google Play
+  // if it's live, else the homepage waitlist section (pre-launch).
+  ctaHref: APP_STORE_LIVE ? APP_STORE_URL : PLAY_STORE_LIVE ? PLAY_STORE_URL : "/#get",
+  // CTA label: "Get Notified" pre-launch, "Download" once a store is live.
+  ctaLabel: LAUNCHED ? "Download" : "Get Notified",
   // Contact used in the legal pages and the footer.
   contactEmail: "quirksandall@itshypothetical.com",
   // Company / operator name shown in legal copy.
@@ -42,8 +61,4 @@ export const site = {
   // Single source of truth for prices lives in @quirksandall/shared —
   // PRICING.lifetime (one-time) and PRICING.annual (auto-renewing yearly).
   pricing: PRICING,
-  // Where every "Get notified" CTA points — the homepage waitlist section.
-  // Swap this to the App Store / Play link once the app is live, and every
-  // CTA across the blog, About page and homepage follows.
-  getNotifiedHref: "/#get",
 } as const;

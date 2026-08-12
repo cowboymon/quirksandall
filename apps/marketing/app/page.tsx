@@ -235,12 +235,12 @@ export default function Home() {
           </p>
           <div className="mt-8 flex justify-center">
             <TrackedLink
-              href="/#get"
+              href={site.ctaHref}
               event="Get Notified Clicked"
               meta={{ location: "mid" }}
               className="inline-block rounded-button bg-button px-5 py-3 text-sm font-medium text-card-dark-text transition-colors hover:bg-button-pressed"
             >
-              Get Notified
+              {site.ctaLabel}
             </TrackedLink>
           </div>
         </section>
@@ -391,7 +391,11 @@ export default function Home() {
               <WaitlistForm
                 source="footer"
                 tone="dark"
-                intro="We're putting the finishing touches on it. Leave your email — we'll tell you the moment it launches, plus the occasional handover tip worth having."
+                intro={
+                  site.launched
+                    ? "Grab it below, or leave your email for handover tips and the occasional product update."
+                    : "We're putting the finishing touches on it. Leave your email — we'll tell you the moment it launches, plus the occasional handover tip worth having."
+                }
               />
             </div>
 
