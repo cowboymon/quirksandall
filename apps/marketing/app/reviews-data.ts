@@ -41,7 +41,7 @@ export const REVIEWS: Review[] = [
   },
   {
     quote:
-      "I'm an anxious person, so leaving Kiki with my mum while we're away had me a bit scared — she hasn't lived with Kiki for two years, since I moved out. But being able to put down exactly what Kiki does and when, and where all her things are, means I can rest a little easier.",
+      "So glad I found this app! It made it incredibly easy to document all of my pet's care needs for my pet sitter. My pet has a lot of unique quirks and routines, and I love being able to keep everything organised in one place. The app is easy to use, and it's a great way to ensure nothing gets missed. Highly recommend!",
     name: "Nadia R.",
     detail: "Beta tester, Sydney",
     stars: 5,
