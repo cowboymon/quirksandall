@@ -28,7 +28,8 @@ export function LabeledPlacesInput({
   value,
   onChangeText,
   onSelectPlace,
-  onManualEntry,
+  manual = false,
+  onToggleManual,
   onClear,
   placeholder,
 }: {
@@ -36,9 +37,14 @@ export function LabeledPlacesInput({
   value: string;
   onChangeText: (v: string) => void;
   onSelectPlace: (p: { name: string; phone: string; address: string }) => void;
-  // "Can't find your clinic?" — unlocks manual entry without pretending we
-  // have verified address/phone data, unlike a real onSelectPlace pick.
-  onManualEntry?: () => void;
+  // Whether this field is in "type it yourself" mode — the caller owns this
+  // as state (it also unlocks the Address/Phone fields below), so it's
+  // passed in rather than tracked locally. Drives both the placeholder here
+  // ("Type clinic name" vs "Search clinic name") and which link renders below
+  // — this used to be a one-way door (only a way IN to manual, no way back
+  // to search), which is the "awkward exit" this fixes.
+  manual?: boolean;
+  onToggleManual?: () => void;
   // The X button — clears more than just this field's own text; callers use
   // it to cascade-clear the address/phone that came from the same search.
   onClear?: () => void;
@@ -104,11 +110,14 @@ export function LabeledPlacesInput({
     onClear?.();
   };
 
-  // Escape hatch for a clinic Places doesn't have — unlocks manual entry
-  // rather than pretending we have verified data for it.
-  const enterManually = () => {
+  // Toggles both directions: escape hatch INTO manual entry for a clinic
+  // Places doesn't have, and — the part that was missing — a way back OUT to
+  // search without the only options being "clear the field" or leave the
+  // Address/Phone fields stuck unlocked. Typed text is left as-is either way;
+  // switching back to search just re-enables it as a live query.
+  const toggleManual = () => {
     close();
-    onManualEntry?.();
+    onToggleManual?.();
   };
 
   const showDropdown = focused && predictions.length > 0 && !!anchor;
@@ -132,7 +141,7 @@ export function LabeledPlacesInput({
           onSubmitEditing={search}
           returnKeyType="search"
           blurOnSubmit={false}
-          placeholder={placeholder}
+          placeholder={manual ? "Type clinic name" : placeholder}
           placeholderTextColor={colors.textMuted}
           autoCapitalize="words"
           style={{
@@ -152,9 +161,9 @@ export function LabeledPlacesInput({
           </TouchableOpacity>
         )}
       </View>
-      <TouchableOpacity onPress={enterManually} style={{ marginTop: 4 }}>
+      <TouchableOpacity onPress={toggleManual} style={{ marginTop: 4 }}>
         <Text style={{ color: colors.textMuted, fontSize: 11, fontFamily: "Satoshi" }}>
-          Can't find your clinic? Enter it manually
+          {manual ? "Search for it instead" : "Can't find your clinic? Enter it manually"}
         </Text>
       </TouchableOpacity>
 
