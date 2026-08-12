@@ -14,6 +14,13 @@ export type Review = {
 // ever reaches a live visitor. Flip to true only when the content is real.
 export const REVIEWS_LIVE = false;
 
+// Aggregate rating shown above the quotes. Set a figure ONLY when it's real
+// (your beta-tester average, or the live App Store / Play average later) — same
+// honesty rule as the quotes themselves. Leave null to show the stars +
+// label with no number, which is the safe default.
+export const REVIEWS_RATING: string | null = null;
+export const REVIEWS_RATING_LABEL = "from our beta testers";
+
 // SAMPLE placeholder content — for laying out and previewing the design only.
 // REPLACE every entry (quote, name and detail) with real, permissioned words
 // before setting REVIEWS_LIVE = true. The attributions deliberately say
