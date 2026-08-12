@@ -81,6 +81,15 @@ export default function RoadmapPage() {
         {/* Feedback nudge — thumb the ideas above, or suggest your own. */}
         <section id="suggest" className="scroll-mt-20 bg-card-dark text-card-dark-text">
           <div className="mx-auto max-w-3xl px-6 py-14 sm:py-16">
+            {/* Signature dog tops the dark CTA band, same as the blog's
+                "Away, but known." — the pink (#F0A0B0) reads on the maroon. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/brand/cta-dog.svg"
+              alt=""
+              aria-hidden
+              className="mx-auto mb-6 h-20 w-20 object-contain sm:h-24 sm:w-24"
+            />
             <SuggestForm />
             <p className="mt-6 text-center text-sm text-card-dark-text/80">
               Rather just hear when we launch?{" "}
