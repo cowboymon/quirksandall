@@ -8,8 +8,10 @@ import TrackedLink from "./TrackedLink";
 
 const FREE = [
   "Pet ID, commands & allergies",
+  "Medications, doses & conditions",
   "PIN-gated emergency contacts",
   "Feeding times & one live link",
+  "Vaccination & worming certificates",
   "Missing-pet poster",
 ];
 

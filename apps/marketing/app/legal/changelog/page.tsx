@@ -50,6 +50,14 @@ type ChangelogEntry = {
 const ENTRIES: ChangelogEntry[] = [
   {
     date: "12 August 2026",
+    document: "Terms of Service",
+    href: "/terms",
+    version: "1.1",
+    summary:
+      "Purchases: removed reference to a Lifetime option, which isn't available at launch.",
+  },
+  {
+    date: "12 August 2026",
     document: "Privacy Policy",
     href: "/privacy",
     version: "1.1",
