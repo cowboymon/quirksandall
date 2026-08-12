@@ -165,7 +165,7 @@ export default function EditEmergency() {
             />
             <LabeledInput
               label="Address"
-              placeholder={vetManual ? "Add address" : "Fills in from your clinic search"}
+              placeholder={vetManual ? "Type your clinic's address" : "Fills in from your clinic search"}
               editable={vetManual}
               pulseOn={vetManual}
               value={vetAddress}
@@ -173,7 +173,7 @@ export default function EditEmergency() {
             />
             <LabeledInput
               label="Phone"
-              placeholder={vetManual ? "Add phone number" : "Fills in from your clinic search"}
+              placeholder={vetManual ? "Type your clinic's phone number" : "Fills in from your clinic search"}
               editable={vetManual}
               pulseOn={vetManual}
               phone
@@ -199,7 +199,7 @@ export default function EditEmergency() {
             />
             <LabeledInput
               label="Address"
-              placeholder={emergManual ? "Add address" : "Fills in from your clinic search"}
+              placeholder={emergManual ? "Type your clinic's address" : "Fills in from your clinic search"}
               editable={emergManual}
               pulseOn={emergManual}
               value={emergAddress}
@@ -207,7 +207,7 @@ export default function EditEmergency() {
             />
             <LabeledInput
               label="Phone"
-              placeholder={emergManual ? "Add phone number" : "Fills in from your clinic search"}
+              placeholder={emergManual ? "Type your clinic's phone number" : "Fills in from your clinic search"}
               editable={emergManual}
               pulseOn={emergManual}
               phone
