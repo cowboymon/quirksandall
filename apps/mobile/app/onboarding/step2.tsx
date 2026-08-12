@@ -52,19 +52,20 @@ export default function Step2() {
               value={pet.vetClinic ?? ""}
               onChangeText={(v) => { setPet({ vetClinic: v }); setVetManual(false); }}
               onSelectPlace={(p) => { setPet({ vetClinic: p.name, vetPhone: p.phone, vetAddress: p.address }); setVetManual(false); }}
-              onManualEntry={() => setVetManual(true)}
+              manual={vetManual}
+              onToggleManual={() => setVetManual((v) => !v)}
               onClear={() => { setPet({ vetAddress: "", vetPhone: "" }); setVetManual(false); }}
             />
             <LabeledInput
               label="Address"
-              placeholder={vetManual ? "Address" : "Fills in from your clinic search"}
+              placeholder={vetManual ? "Add address" : "Fills in from your clinic search"}
               editable={vetManual}
               value={pet.vetAddress ?? ""}
               onChangeText={(v) => setPet({ vetAddress: v })}
             />
             <LabeledInput
               label="Phone"
-              placeholder={vetManual ? "Phone" : "Fills in from your clinic search"}
+              placeholder={vetManual ? "Add phone number" : "Fills in from your clinic search"}
               editable={vetManual}
               phone
               keyboardType="phone-pad"
@@ -86,19 +87,20 @@ export default function Step2() {
               value={pet.emergVetClinic ?? ""}
               onChangeText={(v) => { setPet({ emergVetClinic: v }); setEmergManual(false); }}
               onSelectPlace={(p) => { setPet({ emergVetClinic: p.name, emergVetPhone: p.phone, emergVetAddress: p.address }); setEmergManual(false); }}
-              onManualEntry={() => setEmergManual(true)}
+              manual={emergManual}
+              onToggleManual={() => setEmergManual((v) => !v)}
               onClear={() => { setPet({ emergVetAddress: "", emergVetPhone: "" }); setEmergManual(false); }}
             />
             <LabeledInput
               label="Address"
-              placeholder={emergManual ? "Address" : "Fills in from your clinic search"}
+              placeholder={emergManual ? "Add address" : "Fills in from your clinic search"}
               editable={emergManual}
               value={pet.emergVetAddress ?? ""}
               onChangeText={(v) => setPet({ emergVetAddress: v })}
             />
             <LabeledInput
               label="Phone"
-              placeholder={emergManual ? "Phone" : "Fills in from your clinic search"}
+              placeholder={emergManual ? "Add phone number" : "Fills in from your clinic search"}
               editable={emergManual}
               phone
               keyboardType="phone-pad"
