@@ -13,7 +13,7 @@
 // dropdown pushing surrounding form content around as it opens/closes.
 import { useEffect, useRef, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Modal, Pressable, Animated, Easing, Keyboard, Dimensions } from "react-native";
-import { MagnifyingGlass } from "./icons";
+import { Keyboard as KeyboardIcon, MagnifyingGlass } from "./icons";
 import { colors } from "@quirksandall/shared";
 import { FieldLabel, UNLOCK_PULSE_MS, UNLOCK_PULSE_PEAK_COLOR } from "./ui";
 
@@ -160,8 +160,12 @@ export function LabeledPlacesInput({
         {/* The magnifying glass means "this is a live search" — once manual
             mode is on, it isn't one anymore (typing here doesn't query
             Places), so showing it would be telling the user the opposite of
-            what's true. */}
-        {!manual && (
+            what's true. Swapped for a keyboard icon instead of just removed —
+            leaving nothing there made the field visibly jump (paddingLeft
+            drops from 34 to 12 with no icon to fill it), and a keyboard glyph
+            reads as "type here" the way the magnifying glass read as
+            "search". */}
+        {!manual ? (
           <TouchableOpacity
             onPress={search}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -169,6 +173,10 @@ export function LabeledPlacesInput({
           >
             <MagnifyingGlass size={16} color={colors.textMuted} />
           </TouchableOpacity>
+        ) : (
+          <View style={{ position: "absolute", left: 10, zIndex: 1 }} pointerEvents="none">
+            <KeyboardIcon size={16} color={colors.textMuted} />
+          </View>
         )}
         <AnimatedTextInput
           value={value}
@@ -196,7 +204,7 @@ export function LabeledPlacesInput({
               inputRange: [0, 1],
               outputRange: [colors.background, UNLOCK_PULSE_PEAK_COLOR],
             }),
-            paddingLeft: manual ? 12 : 34, paddingRight: value ? 34 : 12, paddingVertical: 8,
+            paddingLeft: 34, paddingRight: value ? 34 : 12, paddingVertical: 8,
             fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: colors.textDark,
           }}
         />
@@ -204,7 +212,7 @@ export function LabeledPlacesInput({
             contained top/bottom/justifyContent rather than relying on the
             parent's centering, so it can't drift if that changes later. */}
         {justToggled && !value && (
-          <View pointerEvents="none" style={{ position: "absolute", left: manual ? 12 : 34, top: 0, bottom: 0, justifyContent: "center" }}>
+          <View pointerEvents="none" style={{ position: "absolute", left: 34, top: 0, bottom: 0, justifyContent: "center" }}>
             <Animated.Text style={{ opacity: textFade, color: colors.textDark, fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi-Medium" }}>
               {manual ? "You can type it in now" : "You can search now"}
             </Animated.Text>

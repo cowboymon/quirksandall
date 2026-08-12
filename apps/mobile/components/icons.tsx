@@ -38,6 +38,7 @@ import { FileText as FileTextBase } from "phosphor-react-native/src/icons/FileTe
 import { FolderOpen as FolderOpenBase } from "phosphor-react-native/src/icons/FolderOpen";
 import { Image as ImageBase } from "phosphor-react-native/src/icons/Image";
 import { Key as KeyBase } from "phosphor-react-native/src/icons/Key";
+import { Keyboard as KeyboardBase } from "phosphor-react-native/src/icons/Keyboard";
 import { LinkSimple as LinkSimpleBase } from "phosphor-react-native/src/icons/LinkSimple";
 import { LockSimple as LockSimpleBase } from "phosphor-react-native/src/icons/LockSimple";
 import { MagnifyingGlass as MagnifyingGlassBase } from "phosphor-react-native/src/icons/MagnifyingGlass";
@@ -104,6 +105,7 @@ export const FileText = withDefaultWeight(FileTextBase, "FileText");
 export const FolderOpen = withDefaultWeight(FolderOpenBase, "FolderOpen");
 export const Image = withDefaultWeight(ImageBase, "Image");
 export const Key = withDefaultWeight(KeyBase, "Key");
+export const Keyboard = withDefaultWeight(KeyboardBase, "Keyboard");
 export const LinkSimple = withDefaultWeight(LinkSimpleBase, "LinkSimple");
 export const LockSimple = withDefaultWeight(LockSimpleBase, "LockSimple");
 export const MagnifyingGlass = asStroke(MagnifyingGlassBase, "MagnifyingGlass");
