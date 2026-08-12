@@ -138,8 +138,13 @@ you go. Newest work is at the top of each section.
   initialises Sentry and every call is a no-op, so dev and CI are unaffected.
   Set it as an EAS secret before the build that ships crash reporting,
   otherwise the build has the native module and reports nothing. A DSN is a
-  public client key, not a secret — but the Sentry auth token used for
-  source-map upload is, and is not configured here.
+  public client key, not a secret. Org `its-hypothetical`, project `quirks`.
+- [ ] **`SENTRY_AUTH_TOKEN`** (EAS secret — **real secret, never commit**) —
+  a Sentry *Organization* Auth Token, used only at build time to upload source
+  maps. Without it the build still succeeds and crashes still report, but every
+  production stack trace stays minified (`index.bundle:1:284729`) instead of
+  naming a file and line, which is most of the value gone. Sentry shows the
+  token once on creation; if it's lost, delete it and issue a new one.
 - [ ] **`PIN_UNLOCK_SECRET`** (Vercel/Supabase env) — dedicated signing secret
   for the persisted-PIN-unlock cookie (#87). **Optional** — it falls back to
   `SUPABASE_SERVICE_KEY` if unset, so nothing breaks without it.

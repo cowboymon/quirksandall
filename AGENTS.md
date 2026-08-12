@@ -271,6 +271,12 @@ imports Sentry — same rule as the analytics wrapper.
 - **No DSN → no-op.** With `EXPO_PUBLIC_SENTRY_DSN` unset, Sentry is never
   initialised. Also disabled in `__DEV__`: dev crashes belong in the red box.
 - **Native module** — needs a rebuild, so it must ship *in* a build, not after.
+- **Source maps:** the `@sentry/react-native/expo` config plugin in `app.json`
+  (org `its-hypothetical`, project `quirks`) plus `getSentryExpoConfig` in
+  `metro.config.js`, which stamps Debug IDs into the bundle and its source map
+  so uploaded maps actually attach. Upload happens during the native build and
+  needs `SENTRY_AUTH_TOKEN` as an EAS secret. Miss any of the three and reports
+  arrive minified.
 - **Identity:** Supabase user id only, via `identifyForErrors`, cleared on
   sign-out. Never email or name.
 - **Privacy defaults are deliberately turned down:** `sendDefaultPii: false`,
