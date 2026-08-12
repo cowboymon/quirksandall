@@ -141,13 +141,19 @@ export function LabeledPlacesInput({
     <View>
       <FieldLabel>{label}</FieldLabel>
       <View ref={fieldRef} collapsable={false} style={{ justifyContent: "center" }}>
-        <TouchableOpacity
-          onPress={search}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          style={{ position: "absolute", left: 10, zIndex: 1 }}
-        >
-          <MagnifyingGlass size={16} color={colors.textMuted} />
-        </TouchableOpacity>
+        {/* The magnifying glass means "this is a live search" — once manual
+            mode is on, it isn't one anymore (typing here doesn't query
+            Places), so showing it would be telling the user the opposite of
+            what's true. */}
+        {!manual && (
+          <TouchableOpacity
+            onPress={search}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            style={{ position: "absolute", left: 10, zIndex: 1 }}
+          >
+            <MagnifyingGlass size={16} color={colors.textMuted} />
+          </TouchableOpacity>
+        )}
         <AnimatedTextInput
           value={value}
           onChangeText={(t: string) => { onChangeText(t); closeDropdown(); }}
@@ -156,7 +162,7 @@ export function LabeledPlacesInput({
           onSubmitEditing={search}
           returnKeyType="search"
           blurOnSubmit={false}
-          placeholder={manual ? "Type clinic name" : placeholder}
+          placeholder={manual ? "Type your clinic's name" : placeholder}
           placeholderTextColor={colors.textMuted}
           autoCapitalize="words"
           style={{
@@ -174,7 +180,7 @@ export function LabeledPlacesInput({
               outputRange: [focused ? colors.primary : colors.border, colors.primary],
             }),
             backgroundColor: colors.background,
-            paddingLeft: 34, paddingRight: value ? 34 : 12, paddingVertical: 8,
+            paddingLeft: manual ? 12 : 34, paddingRight: value ? 34 : 12, paddingVertical: 8,
             fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: colors.textDark,
             // Genuine glow, iOS only (Android's elevation has no colour).
             shadowColor: colors.primary,
