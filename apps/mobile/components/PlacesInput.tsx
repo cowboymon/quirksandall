@@ -205,7 +205,7 @@ export function LabeledPlacesInput({
             parent's centering, so it can't drift if that changes later. */}
         {justToggled && !value && (
           <View pointerEvents="none" style={{ position: "absolute", left: manual ? 12 : 34, top: 0, bottom: 0, justifyContent: "center" }}>
-            <Animated.Text style={{ opacity: textFade, color: colors.primary, fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi-Medium" }}>
+            <Animated.Text style={{ opacity: textFade, color: colors.textDark, fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi-Medium" }}>
               {manual ? "You can type it in now" : "You can search now"}
             </Animated.Text>
           </View>
