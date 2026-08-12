@@ -1,7 +1,7 @@
 // Shared primitive UI components for the mobile app.
 // Mirrors the prototype's primitives.tsx (fonts, buttons, dots, inputs).
-import { useMemo, useState, useRef, forwardRef } from "react";
-import { Keyboard, Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
+import { useEffect, useMemo, useState, useRef, forwardRef } from "react";
+import { Animated, Keyboard, Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
 import { CalendarDots, LockSimple, XCircle } from "./icons";
 import { router, useNavigation } from "expo-router";
 import { colors, radius, capitalizeFirst, capitalizeWords, formatPhone, displayDateToISO, dateFieldError } from "@quirksandall/shared";
@@ -99,26 +99,46 @@ export function FieldLabel({ children }: { children: React.ReactNode }) {
 
 // A micro-labelled blush input — the standard field inside emergency-contact
 // cards (Screen 2). 14px value on #F8ECEE, rose focus border.
-export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: string; phone?: boolean; name?: boolean }>(function LabeledInput({
+const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
+
+export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: string; phone?: boolean; name?: boolean; pulseOn?: unknown }>(function LabeledInput({
   label,
   style,
   onChangeText,
   phone,
   name,
+  pulseOn,
   ...props
 }, ref) {
   const [focused, setFocused] = useState(false);
+  // Same momentary border pulse as the vet-search field's manual-mode toggle
+  // — used here for the Address/Phone fields it unlocks, so the whole
+  // unlock reads as one event instead of the search field announcing itself
+  // while these two silently change underneath. `pulseOn` is any value the
+  // caller wants watched (e.g. the `manual` boolean); a change fires the
+  // pulse, mount does not.
+  const pulse = useRef(new Animated.Value(0)).current;
+  const mounted = useRef(false);
+  useEffect(() => {
+    if (pulseOn === undefined) return;
+    if (!mounted.current) { mounted.current = true; return; }
+    pulse.setValue(1);
+    Animated.timing(pulse, { toValue: 0, duration: 500, useNativeDriver: false }).start();
+  }, [pulseOn]);
   return (
     <View>
       <FieldLabel>{label}</FieldLabel>
-      <TextInput
+      <AnimatedTextInput
         ref={ref}
         autoCapitalize={name ? "words" : "sentences"}
-        onChangeText={phone && onChangeText ? (t) => onChangeText(formatPhone(t)) : name ? wordCased(onChangeText) : sentenceCased(props.keyboardType, onChangeText)}
+        onChangeText={phone && onChangeText ? (t: string) => onChangeText(formatPhone(t)) : name ? wordCased(onChangeText) : sentenceCased(props.keyboardType, onChangeText)}
         style={[
           {
-            minHeight: 40, borderRadius: 8, borderWidth: 1,
-            borderColor: focused ? colors.primary : colors.border,
+            minHeight: 40, borderRadius: 8,
+            borderWidth: pulseOn === undefined ? 1 : pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 2] }),
+            borderColor: pulseOn === undefined
+              ? (focused ? colors.primary : colors.border)
+              : pulse.interpolate({ inputRange: [0, 1], outputRange: [focused ? colors.primary : colors.border, colors.primary] }),
             backgroundColor: props.editable === false ? colors.secondary : colors.background,
             paddingHorizontal: 12, paddingVertical: 8,
             fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: props.editable === false ? colors.textMuted : colors.textDark,

@@ -36,6 +36,12 @@ type DashboardData = {
 const REVIEW_INTERVAL_MS = 21 * 24 * 60 * 60 * 1000; // 21 days
 // Past this many links the panel starts dominating the dashboard.
 const LINKS_COLLAPSED_COUNT = 4;
+// Free tier: one shareable link, plus one more you can create so the "share
+// several links" feature is visibly there rather than hidden until payment —
+// same reasoning as leaving the "+ New link" affordance itself always
+// visible. A third creation attempt is where the free tier actually stops;
+// paid has no cap.
+const FREE_LINK_LIMIT = 2;
 
 const statusColor = { done: colors.success, saved: colors.caution, empty: colors.textMuted } as const;
 const statusDot = { done: colors.success, saved: colors.caution, empty: colors.border } as const;
@@ -628,14 +634,31 @@ export default function Dashboard() {
                   <X size={15} color="rgba(248,236,238,0.6)" />
                 </TouchableOpacity>
               </View>
-            ) : (
-              <TouchableOpacity onPress={() => setShowNewLink(true)} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                <View style={{ width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: "rgba(240,160,176,0.5)", borderStyle: "dashed", alignItems: "center", justifyContent: "center" }}>
-                  <Plus size={13} color={colors.cardDarkLabel} />
-                </View>
-                <Text style={{ color: colors.cardDarkLabel, fontSize: 13, fontFamily: "Satoshi-Medium" }}>New link</Text>
-              </TouchableOpacity>
-            )}
+            ) : (() => {
+              // Same "visible but locked" treatment as the Share button on a
+              // link past the first (#298-adjacent): free tier can create up
+              // to FREE_LINK_LIMIT links, so the multi-link feature is seen
+              // and understood, not just an unlimited creation flow that
+              // happens to fail sharing later.
+              const newLinkLocked = !isPaid && links.length >= FREE_LINK_LIMIT;
+              return (
+                <TouchableOpacity
+                  onPress={() => (newLinkLocked ? router.push("/upgrade") : setShowNewLink(true))}
+                  style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+                >
+                  <View style={{ width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: "rgba(240,160,176,0.5)", borderStyle: "dashed", alignItems: "center", justifyContent: "center" }}>
+                    {newLinkLocked ? (
+                      <LockSimple size={12} weight="fill" color="rgba(248,236,238,0.4)" />
+                    ) : (
+                      <Plus size={13} color={colors.cardDarkLabel} />
+                    )}
+                  </View>
+                  <Text style={{ color: newLinkLocked ? "rgba(248,236,238,0.4)" : colors.cardDarkLabel, fontSize: 13, fontFamily: "Satoshi-Medium" }}>
+                    New link
+                  </Text>
+                </TouchableOpacity>
+              );
+            })()}
           </View>
         </View>
 
