@@ -67,6 +67,11 @@ const ILLUSTRATIONS = [
   "/brand/flower-pink.svg",
   "/brand/laptop-pink.png",
   "/brand/bed-pink.svg",
+  // Cats join the rotation too — dogs and cats both live here. cat-question is
+  // reserved as the roadmap "Missing something?" signature, so it's left out.
+  "/brand/cat-blankie-pink.webp",
+  "/brand/cat-butterfly-pink.webp",
+  "/brand/cat-box-pink.webp",
 ];
 function illustrationFor(index: number): string {
   return ILLUSTRATIONS[index % ILLUSTRATIONS.length];

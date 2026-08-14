@@ -22,27 +22,25 @@ export const REVIEWS_RATING: string | null = null;
 export const REVIEWS_RATING_LABEL = "from our beta testers";
 
 // Real, permissioned beta-tester quotes. Keep every entry a genuine testimonial
-// — never put invented words under a real name (see the gate note above). The
-// displayed names are pseudonyms to protect the testers' identities; the words,
-// ratings and cities are theirs.
+// — never put invented words under a real name (see the gate note above).
 export const REVIEWS: Review[] = [
   {
     quote: "Honestly it's so good!!",
-    name: "Meg C.",
+    name: "Tayla O.",
     detail: "Beta tester, Brisbane",
     stars: 4.5,
   },
   {
     quote:
       "The last time we went away, we forgot to tell our sitter where the cat carrier was — so when the fire alarm went off and they had to evacuate, they couldn't grab him. Luckily it turned out to be a false alarm, but my heart was in my mouth.",
-    name: "Steph L.",
+    name: "Breanna T.",
     detail: "Beta tester, Canberra",
     stars: 5,
   },
   {
     quote:
       "So glad I found this app! It made it incredibly easy to document all of my pet's care needs for my pet sitter. My pet has a lot of unique quirks and routines, and I love being able to keep everything organised in one place. The app is easy to use, and it's a great way to ensure nothing gets missed. Highly recommend!",
-    name: "Nadia R.",
+    name: "Javi C.",
     detail: "Beta tester, Sydney",
     stars: 5,
   },
