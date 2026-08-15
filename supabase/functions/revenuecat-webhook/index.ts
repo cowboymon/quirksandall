@@ -97,7 +97,7 @@ serve(async (req) => {
       // EXPIRATION for the old subscription must not touch them.
       const { error } = await supabase
         .from("owners")
-        .update({ purchase_status: "expired" })
+        .update({ purchase_status: "lapsed" })
         .eq("id", userId)
         .eq("unlock_source", "iap_annual");
       if (error) {

@@ -19,7 +19,7 @@ you go. Newest work is at the top of each section.
 ## ▶️ Run now
 
 - [ ] **`20260812000001_owners_purchase_status_expired.sql`** — widens the
-  `owners_purchase_status_check` constraint to allow `'expired'`, matching
+  `owners_purchase_status_check` constraint to allow `'lapsed'`, matching
   what `revenuecat-webhook/index.ts` already writes on a subscription
   EXPIRATION event. Every real expiration has been failing this write since
   the webhook was built — visible as repeating `owners_purchase_status_check`
