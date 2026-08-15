@@ -72,7 +72,16 @@ export default function AuthScreen() {
       // requests). The one exception worth surfacing is the rate limit itself,
       // since "try again in a bit" is actionable and reveals nothing about
       // whether the email is registered.
-      const isRateLimited = /rate limit/i.test(error.message);
+      //
+      // GoTrue actually has two distinct rate limits, with different wording:
+      //   - project-wide SMTP quota: contains "rate limit" literally
+      //   - per-request resend cooldown (hit by tapping Send twice within
+      //     ~60s — easy to trigger by accident while testing): "For security
+      //     purposes, you can only request this after N seconds" — no "rate
+      //     limit" in it at all. Missing this sent an App Review tester a
+      //     bare "Something went wrong" for what was actually a 60-second
+      //     cooldown, with no clue to just wait and retry.
+      const isRateLimited = /rate limit|security purposes|only request this/i.test(error.message);
       if (isRateLimited) startCooldown();
       AppAlert.alert(
         "Couldn't send code",
