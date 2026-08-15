@@ -18,6 +18,16 @@ you go. Newest work is at the top of each section.
 
 ## ▶️ Run now
 
+- [ ] **`20260812000001_owners_purchase_status_expired.sql`** — widens the
+  `owners_purchase_status_check` constraint to allow `'expired'`, matching
+  what `revenuecat-webhook/index.ts` already writes on a subscription
+  EXPIRATION event. Every real expiration has been failing this write since
+  the webhook was built — visible as repeating `owners_purchase_status_check`
+  violations in Postgres logs, RevenueCat retrying a webhook call that can
+  never succeed. No paywall bypass (`isUnlocked()` checks `expires_at`
+  independently), but `purchase_status` has been silently wrong for anyone
+  whose subscription actually lapsed.
+
 - [x] **`20260811000001_share_link_view_count.sql`** — adds `view_count` to
   `share_links` plus the `record_share_link_view(uuid)` RPC the recipient page
   now calls instead of updating `last_viewed_at` directly. `links.ts` selects
