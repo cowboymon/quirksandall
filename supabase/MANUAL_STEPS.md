@@ -18,15 +18,16 @@ you go. Newest work is at the top of each section.
 
 ## ▶️ Run now
 
-- [ ] **`20260812000002_owners_cancelled_at.sql`** — adds `cancelled_at` to
+- [x] **`20260812000002_owners_cancelled_at.sql`** — adds `cancelled_at` to
   `owners`, stamped by `revenuecat-webhook/index.ts` on RevenueCat's
   CANCELLATION event (auto-renew turned off — access continues until
   `expires_at`, purchase_status untouched). Previously ignored entirely. For
   an annual plan, `expires_at` can be up to a year after the actual
   cancellation — this is for timing a win-back/discount offer against the
   day they actually decided to leave, not the day access happens to run out.
+  *(Run 15 Aug 2026.)*
 
-- [ ] **`20260812000001_owners_purchase_status_expired.sql`** — widens the
+- [x] **`20260812000001_owners_purchase_status_expired.sql`** — widens the
   `owners_purchase_status_check` constraint to allow `'lapsed'`, matching
   what `revenuecat-webhook/index.ts` already writes on a subscription
   EXPIRATION event. Every real expiration has been failing this write since
@@ -34,7 +35,7 @@ you go. Newest work is at the top of each section.
   violations in Postgres logs, RevenueCat retrying a webhook call that can
   never succeed. No paywall bypass (`isUnlocked()` checks `expires_at`
   independently), but `purchase_status` has been silently wrong for anyone
-  whose subscription actually lapsed.
+  whose subscription actually lapsed. *(Run 15 Aug 2026.)*
 
 - [x] **`20260811000001_share_link_view_count.sql`** — adds `view_count` to
   `share_links` plus the `record_share_link_view(uuid)` RPC the recipient page
