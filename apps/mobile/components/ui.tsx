@@ -106,7 +106,12 @@ const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 // first attempt at this (500ms, linear, no shadow) read as a glitch rather
 // than an effect; slow enough to actually track, eased so it reads as
 // fading rather than snapping off.
-export const UNLOCK_PULSE_MS = 2900;
+//
+// The fade-IN (TEXT_FADE_IN_MS, 350ms — see below) is separate and stays
+// quick on purpose; only the fade-OUT this drives (background wash settling,
+// text disappearing, and the locked-field chrome dissolving) needed slowing
+// down — 2900 read as still a bit snappy for something meant to be noticed.
+export const UNLOCK_PULSE_MS = 4200;
 // A solid, fully-opaque colour rather than a translucent rgba — animating
 // alpha and hue at once made the fade look like it passed through an
 // unrelated colour partway, a real artifact of RGBA lerp, not a rendering
@@ -140,6 +145,13 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
   // pulse, mount does not.
   const pulse = useRef(new Animated.Value(0)).current;
   const mounted = useRef(false);
+  // editable={false} on this component only ever means "locked until the
+  // vet search unlocks it" (the two places this is used: Address/Phone under
+  // LabeledPlacesInput) — colors.secondary was too close to colors.background
+  // to read as disabled at a glance, so this state gets a dashed border and a
+  // lock icon on top of the tint, same visual language as the "New link"
+  // dashed circle elsewhere in the app.
+  const locked = props.editable === false;
   // Same placeholder-fade trick as PlacesInput — the native placeholder
   // can't animate, so this blanks it briefly and fades a matching
   // Animated.Text in its place instead. `placeholder` is destructured out
@@ -147,6 +159,14 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
   const [justToggled, setJustToggled] = useState(false);
   const textFade = useRef(new Animated.Value(0)).current;
   const TEXT_FADE_IN_MS = 350;
+  // The dashed border + padlock used to hard-cut in and out with `locked`
+  // (an instant unmount, no transition at all) while everything else about
+  // the unlock faded smoothly — this crossfades them instead. borderStyle
+  // itself can't animate in RN (dashed vs solid isn't a numeric/color value),
+  // so the dashed look lives on a separate absolutely-positioned overlay
+  // whose opacity CAN animate, layered on top of the input's own (always
+  // solid) border.
+  const chromeOpacity = useRef(new Animated.Value(locked ? 1 : 0)).current;
   useEffect(() => {
     if (pulseOn === undefined) return;
     if (!mounted.current) { mounted.current = true; return; }
@@ -155,6 +175,7 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
     // same length reads as "stuck" for its first half, since most of the
     // visible change happens in the last third either way.
     Animated.timing(pulse, { toValue: 0, duration: UNLOCK_PULSE_MS, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start();
+    Animated.timing(chromeOpacity, { toValue: locked ? 1 : 0, duration: UNLOCK_PULSE_MS, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start();
 
     setJustToggled(true);
     textFade.setValue(0);
@@ -163,13 +184,6 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
       Animated.timing(textFade, { toValue: 0, duration: UNLOCK_PULSE_MS - TEXT_FADE_IN_MS, easing: Easing.in(Easing.quad), useNativeDriver: true }),
     ]).start(() => setJustToggled(false));
   }, [pulseOn]);
-  // editable={false} on this component only ever means "locked until the
-  // vet search unlocks it" (the two places this is used: Address/Phone under
-  // LabeledPlacesInput) — colors.secondary was too close to colors.background
-  // to read as disabled at a glance, so this state gets a dashed border and a
-  // lock icon on top of the tint, same visual language as the "New link"
-  // dashed circle elsewhere in the app.
-  const locked = props.editable === false;
   return (
     <View>
       <FieldLabel>{label}</FieldLabel>
@@ -181,8 +195,13 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
           style={[
             {
               minHeight: 40, borderRadius: 8, borderWidth: 1,
-              borderStyle: locked ? "dashed" : "solid",
-              borderColor: locked ? colors.textMuted : (focused ? colors.primary : colors.border),
+              // Always solid — the dashed look is the overlay below. Colour
+              // still crossfades between the locked tone and the normal
+              // focus/border colour via chromeOpacity.
+              borderColor: chromeOpacity.interpolate({
+                inputRange: [0, 1],
+                outputRange: [focused ? colors.primary : colors.border, colors.textMuted],
+              }),
               // Same reasoning as PlacesInput's search field: a wash across the
               // whole field reads far more clearly than a border-width tweak,
               // and unlike shadow it renders identically on iOS and Android.
@@ -192,7 +211,9 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
                     inputRange: [0, 1],
                     outputRange: [locked ? colors.secondary : colors.background, UNLOCK_PULSE_PEAK_COLOR],
                   }),
-              paddingHorizontal: 12, paddingRight: locked ? 32 : 12, paddingVertical: 8,
+              paddingHorizontal: 12,
+              paddingRight: chromeOpacity.interpolate({ inputRange: [0, 1], outputRange: [12, 32] }),
+              paddingVertical: 8,
               fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: locked ? colors.textMuted : colors.textDark,
             },
             style,
@@ -214,11 +235,13 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
             </Animated.Text>
           </View>
         )}
-        {locked && (
-          <View style={{ position: "absolute", right: 10, top: 0, bottom: 0, justifyContent: "center" }} pointerEvents="none">
-            <LockSimple size={14} weight="fill" color={colors.textMuted} />
-          </View>
-        )}
+        <Animated.View
+          pointerEvents="none"
+          style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, borderRadius: 8, borderWidth: 1, borderStyle: "dashed", borderColor: colors.textMuted, opacity: chromeOpacity }}
+        />
+        <Animated.View style={{ position: "absolute", right: 10, top: 0, bottom: 0, justifyContent: "center", opacity: chromeOpacity }} pointerEvents="none">
+          <LockSimple size={14} weight="fill" color={colors.textMuted} />
+        </Animated.View>
       </View>
     </View>
   );
