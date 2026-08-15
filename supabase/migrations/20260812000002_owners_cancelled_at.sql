@@ -1,0 +1,14 @@
+-- Tracks when an owner turned off auto-renew (RevenueCat's CANCELLATION
+-- event), separate from expires_at (when their paid access actually ends).
+-- The webhook previously ignored CANCELLATION entirely — access correctly
+-- continued until expires_at either way, but the moment someone decided to
+-- leave was never recorded anywhere.
+--
+-- The gap this closes: for an annual plan, expires_at can be up to a year
+-- after the actual cancellation. A win-back offer timed against expires_at
+-- fires up to a year late; timed against cancelled_at, it can fire the same
+-- day they cancel, while they still have access to feel the loss of.
+--
+-- Cleared back to null by any GRANT event (UNCANCELLATION, a fresh RENEWAL,
+-- etc.) — see revenuecat-webhook/index.ts.
+alter table public.owners add column if not exists cancelled_at timestamptz;
