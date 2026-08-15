@@ -45,7 +45,7 @@ export function parseTimestampMs(value: unknown): number | null {
 
 // Minimal shape check on the whole event before any field is read — rejects
 // anything that isn't a plain object with a string `type`.
-export function isValidEventShape(event: unknown): event is { type: string; app_user_id?: unknown; expiration_at_ms?: unknown; purchased_at_ms?: unknown } {
+export function isValidEventShape(event: unknown): event is { type: string; app_user_id?: unknown; expiration_at_ms?: unknown; purchased_at_ms?: unknown; event_timestamp_ms?: unknown } {
   return (
     typeof event === "object" &&
     event !== null &&

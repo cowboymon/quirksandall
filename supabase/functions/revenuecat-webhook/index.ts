@@ -26,7 +26,9 @@ import { safeEqual, isAnonymousAppUserId, isValidAppUserId, parseTimestampMs, is
 // Event types that (re)grant access vs. the ones that end it. CANCELLATION is
 // deliberately neither: it means auto-renew was switched off, but the user
 // keeps what they paid for until the period ends — EXPIRATION is the event
-// that actually closes the door.
+// that actually closes the door. It's tracked separately below (cancelled_at)
+// because it's the moment worth acting on for a win-back offer — by the time
+// EXPIRATION fires, access is already gone.
 const GRANTS = new Set([
   "INITIAL_PURCHASE",
   "RENEWAL",
@@ -36,6 +38,7 @@ const GRANTS = new Set([
   "SUBSCRIPTION_EXTENDED",
 ]);
 const REVOKES = new Set(["EXPIRATION"]);
+const CANCELLATIONS = new Set(["CANCELLATION"]);
 
 serve(async (req) => {
   try {
@@ -82,6 +85,11 @@ serve(async (req) => {
           unlock_source: expiresAt ? "iap_annual" : "iap_lifetime",
           unlocked_at: new Date(purchasedMs).toISOString(),
           expires_at: expiresAt,
+          // Clears whatever a prior CANCELLATION set — covers UNCANCELLATION
+          // (the obvious case) but also a plain RENEWAL/PRODUCT_CHANGE: any
+          // of these means they're actively paying again, so a stale
+          // cancelled_at from a previous cycle shouldn't linger.
+          cancelled_at: null,
         })
         .eq("id", userId);
       if (error) {
@@ -97,7 +105,7 @@ serve(async (req) => {
       // EXPIRATION for the old subscription must not touch them.
       const { error } = await supabase
         .from("owners")
-        .update({ purchase_status: "expired" })
+        .update({ purchase_status: "lapsed" })
         .eq("id", userId)
         .eq("unlock_source", "iap_annual");
       if (error) {
@@ -107,8 +115,27 @@ serve(async (req) => {
       return new Response(JSON.stringify({ ok: true }), { status: 200 });
     }
 
-    // TRANSFER, BILLING_ISSUE, CANCELLATION, TEST … — nothing to write, but
-    // acknowledge so RevenueCat doesn't retry.
+    if (CANCELLATIONS.has(event.type)) {
+      // Auto-renew switched off — access continues until expires_at, so
+      // purchase_status stays "paid" untouched. This is purely for timing a
+      // win-back offer against the day they actually decided to leave,
+      // rather than the day their access happens to run out (which could be
+      // up to a year later for an annual plan).
+      const eventMs = parseTimestampMs(event.event_timestamp_ms) ?? Date.now();
+      const { error } = await supabase
+        .from("owners")
+        .update({ cancelled_at: new Date(eventMs).toISOString() })
+        .eq("id", userId)
+        .eq("unlock_source", "iap_annual");
+      if (error) {
+        console.error("revenuecat-webhook: owners update failed", error);
+        return new Response(JSON.stringify({ error: "server_error" }), { status: 500 });
+      }
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    }
+
+    // TRANSFER, BILLING_ISSUE, TEST … — nothing to write, but acknowledge so
+    // RevenueCat doesn't retry.
     return new Response(JSON.stringify({ ignored: event.type }), { status: 200 });
   } catch (err) {
     // Never let an uncaught exception surface a Deno stack trace to the caller.
