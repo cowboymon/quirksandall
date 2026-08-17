@@ -146,7 +146,7 @@ export default function Step4() {
         }),
         supabase.from("pet_medical").insert({
           pet_id: newPet.id,
-          allergies: pet.allergies ? [pet.allergies] : [],
+          allergies: (pet.allergies ?? []).map((s) => s.trim()).filter(Boolean),
           conditions: pet.conditions ? [pet.conditions] : [],
           medications: medsToRows(pet.medications ?? []),
         }),
@@ -321,7 +321,32 @@ export default function Step4() {
         <View style={{ marginTop: 12, gap: 12 }}>
           <View>
             <Eyebrow>Allergies</Eyebrow>
-            <Textarea style={{ marginTop: 4 }} placeholder="Food, environmental, medication…" value={pet.allergies ?? ""} onChangeText={(v) => setPet({ allergies: v })} />
+            {/* One line per allergy, tall enough (2 lines) to read back what
+                was written — not a single field with everything run
+                together. */}
+            <View style={{ gap: 8, marginTop: 4 }}>
+              {(pet.allergies ?? [""]).map((a, i) => {
+                const list = pet.allergies ?? [""];
+                return (
+                  <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
+                    <Textarea
+                      style={{ flex: 1, minHeight: 52 }}
+                      placeholder="Food, environmental, medication…"
+                      value={a}
+                      onChangeText={(v) => setPet({ allergies: list.map((x, j) => (j === i ? v : x)) })}
+                    />
+                    {list.length > 1 && (
+                      <TouchableOpacity onPress={() => setPet({ allergies: list.filter((_, j) => j !== i) })} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingTop: 14 }}>
+                        <Text style={{ color: colors.danger, fontSize: 18, lineHeight: 18 }}>×</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                );
+              })}
+              <TouchableOpacity onPress={() => setPet({ allergies: [...(pet.allergies ?? [""]), ""] })} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}>
+                <Text style={{ fontSize: 12, color: colors.primary, fontFamily: "Satoshi-Medium" }}>+ Add another allergy</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </View>

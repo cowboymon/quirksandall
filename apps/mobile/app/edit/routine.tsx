@@ -101,9 +101,12 @@ export default function EditRoutine() {
   const [leftAloneDetail, setLeftAloneDetail] = useState("");
   const [toileting, setToileting] = useState("");
 
-  // Medical
-  const [allergies, setAllergies] = useState("");
-  const [conditions, setConditions] = useState("");
+  // Medical — one line per item (#94 follow-up) rather than a single
+  // comma-blob field, so multiple conditions/allergies don't run together
+  // in one paragraph. pet_medical.allergies/conditions are already stored
+  // as string arrays; the old UI just faked a single field on top of them.
+  const [allergies, setAllergies] = useState<string[]>([""]);
+  const [conditions, setConditions] = useState<string[]>([""]);
   const [meds, setMeds] = useState<EditableMedication[]>([]);
 
   const [isPaid, setIsPaid] = useState(false);
@@ -145,8 +148,8 @@ export default function EditRoutine() {
       }
 
       if (medical) {
-        setAllergies((medical.allergies ?? []).join(", "));
-        setConditions((medical.conditions ?? []).join(", "));
+        setAllergies((medical.allergies ?? []).length ? medical.allergies : [""]);
+        setConditions((medical.conditions ?? []).length ? medical.conditions : [""]);
         setMeds(rowsToMeds(medical.medications ?? []));
       }
     })();
@@ -179,8 +182,8 @@ export default function EditRoutine() {
         }, { onConflict: "pet_id" }),
         supabase.from("pet_medical").upsert({
           pet_id: petId,
-          allergies: allergies ? allergies.split(",").map((s) => s.trim()).filter(Boolean) : [],
-          conditions: conditions ? conditions.split(",").map((s) => s.trim()).filter(Boolean) : [],
+          allergies: allergies.map((s) => s.trim()).filter(Boolean),
+          conditions: conditions.map((s) => s.trim()).filter(Boolean),
           medications: medsToRows(meds),
         }, { onConflict: "pet_id" }),
       ]);
@@ -359,32 +362,60 @@ export default function EditRoutine() {
         Medical
       </Text>
 
-      {/* Allergies — always visible, free */}
+      {/* Allergies — always visible, free. One line per allergy, tall
+          enough (2 lines) to actually read back what was written, not a
+          single-line field or one comma-run-together paragraph. */}
       <Card style={{ marginBottom: 12 }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <Eyebrow>Allergies</Eyebrow>
         </View>
-        <Input
-          className="mt-2"
-          placeholder="Chicken-based kibble causes skin itching"
-          value={allergies}
-          onChangeText={setAllergies}
-          multiline
-          style={{ height: 60, paddingTop: 10, textAlignVertical: "top" }}
-        />
+        <View style={{ gap: 8, marginTop: 8 }}>
+          {allergies.map((a, i) => (
+            <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
+              <Input
+                style={{ flex: 1, minHeight: 52, paddingTop: 10, textAlignVertical: "top" }}
+                placeholder="Chicken-based kibble causes skin itching"
+                value={a}
+                onChangeText={(v) => setAllergies((prev) => prev.map((x, j) => (j === i ? v : x)))}
+                multiline
+              />
+              {allergies.length > 1 && (
+                <TouchableOpacity onPress={() => setAllergies((prev) => prev.filter((_, j) => j !== i))} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingTop: 14 }}>
+                  <Text style={{ color: colors.danger, fontSize: 18, lineHeight: 18 }}>×</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          ))}
+          <TouchableOpacity onPress={() => setAllergies((prev) => [...prev, ""])} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}>
+            <Text style={{ fontSize: 12, color: colors.primary, fontFamily: "Satoshi-Medium" }}>+ Add another allergy</Text>
+          </TouchableOpacity>
+        </View>
       </Card>
 
-      {/* Conditions */}
+      {/* Conditions — same pattern as Allergies above. */}
       <Card style={{ marginBottom: 12 }}>
         <Eyebrow>Medical conditions</Eyebrow>
-        <Input
-          className="mt-2"
-          placeholder="Atopic dermatitis, managed with Apoquel"
-          value={conditions}
-          onChangeText={setConditions}
-          multiline
-          style={{ height: 60, paddingTop: 10, textAlignVertical: "top" }}
-        />
+        <View style={{ gap: 8, marginTop: 8 }}>
+          {conditions.map((c, i) => (
+            <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
+              <Input
+                style={{ flex: 1, minHeight: 52, paddingTop: 10, textAlignVertical: "top" }}
+                placeholder="Atopic dermatitis, managed with Apoquel"
+                value={c}
+                onChangeText={(v) => setConditions((prev) => prev.map((x, j) => (j === i ? v : x)))}
+                multiline
+              />
+              {conditions.length > 1 && (
+                <TouchableOpacity onPress={() => setConditions((prev) => prev.filter((_, j) => j !== i))} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingTop: 14 }}>
+                  <Text style={{ color: colors.danger, fontSize: 18, lineHeight: 18 }}>×</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          ))}
+          <TouchableOpacity onPress={() => setConditions((prev) => [...prev, ""])} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}>
+            <Text style={{ fontSize: 12, color: colors.primary, fontFamily: "Satoshi-Medium" }}>+ Add another condition</Text>
+          </TouchableOpacity>
+        </View>
       </Card>
     </EditShell>
   );

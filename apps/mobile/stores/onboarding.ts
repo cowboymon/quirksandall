@@ -58,7 +58,7 @@ type PetDraft = {
   leftAloneOk?: string;
   leftAloneDetail?: string;
   toileting?: string;
-  allergies?: string;
+  allergies?: string[];
   medications?: EditableMedication[];
   conditions?: string;
 };
