@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { possessive, isSafeHttpsUrl } from "@quirksandall/shared";
-import { MapPin, CalendarDots } from "@phosphor-icons/react";
+import { MapPin, CalendarDots, ListChecks } from "@phosphor-icons/react";
 
 type Props = { token: string; petName: string; ownerName: string; photoUrl: string | null };
 
@@ -68,10 +68,23 @@ export default function MissingPetForm({ token, petName, ownerName, photoUrl }: 
     return (
       <main className="min-h-screen bg-background px-6 pt-8 pb-8">
         <div className="mx-auto w-full max-w-sm">
-          <h1 className="font-tanker text-2xl font-normal leading-tight text-foreground">
-            Alert sent.
-          </h1>
-          <p className="mt-1.5 font-satoshi text-sm leading-snug text-text-muted">
+          {/* Same identity-block pattern as the form screen and the
+              recipient page — photo beside the heading, so this reads as
+              part of the same flow rather than a generic "success" page. */}
+          <div className="flex items-center gap-3">
+            {photoUrl && isSafeHttpsUrl(photoUrl) && (
+              <img
+                src={photoUrl}
+                alt={petName}
+                className="h-12 w-12 shrink-0 rounded-full border-2 object-cover"
+                style={{ borderColor: "#E5BEC4" }}
+              />
+            )}
+            <h1 className="font-tanker text-2xl font-normal leading-tight text-foreground">
+              Alert sent.
+            </h1>
+          </div>
+          <p className="mt-2.5 font-satoshi text-sm leading-snug text-text-muted">
             {ownerName} has been sent what you entered, and knows to check their phone.
           </p>
 
@@ -79,7 +92,7 @@ export default function MissingPetForm({ token, petName, ownerName, photoUrl }: 
             <a
               href={posterUrl}
               download={`${(petName || "pet").toLowerCase()}-missing-poster.png`}
-              className="mt-5 flex h-11 items-center justify-center rounded-button font-satoshi text-sm font-bold"
+              className="mt-5 block rounded-button py-3 px-4 text-center font-satoshi text-sm font-bold"
               style={{ backgroundColor: "#510000", color: "#F8ECEE" }}
             >
               Download poster
@@ -96,7 +109,10 @@ export default function MissingPetForm({ token, petName, ownerName, photoUrl }: 
               down. Standard lost-pet-recovery advice, not anything specific
               to this app or pet. */}
           <div className="mt-5 rounded-card border p-4" style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF" }}>
-            <p className="eyebrow text-foreground mb-2.5">What to do right now</p>
+            <div className="mb-2.5 flex items-center gap-2">
+              <ListChecks size={16} weight="duotone" color="#74555D" />
+              <p className="eyebrow text-text-muted">What to do right now</p>
+            </div>
             <ol className="flex flex-col gap-2 font-satoshi text-sm text-text-muted list-decimal pl-4">
               <li>Don't chase — call their name calmly and crouch down. Chasing usually makes a scared animal run further.</li>
               <li>Check nearby hiding spots first: under decks, parked cars, bushes, before searching further out.</li>
