@@ -141,7 +141,7 @@ export default function RecipientView({ profile, token }: Props) {
       )}
 
       {/* Pet identity */}
-      <div className="pt-10 pb-5">
+      <div className="pt-10">
         <div className="flex items-center gap-4 mb-4">
           {pet.photoUrl && isSafeHttpsUrl(pet.photoUrl) && (
             <img
@@ -174,7 +174,7 @@ export default function RecipientView({ profile, token }: Props) {
 
         {/* Quick / Full toggle — only where there's paid content to toggle */}
         {showToggle && (
-          <div className="flex gap-1 rounded-card p-1" style={{ backgroundColor: SECONDARY }}>
+          <div className="flex gap-1 rounded-card p-1 mb-5" style={{ backgroundColor: SECONDARY }}>
             {(["quick", "full"] as const).map((v) => (
               <button
                 key={v}
