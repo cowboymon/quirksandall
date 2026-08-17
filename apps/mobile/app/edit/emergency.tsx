@@ -238,6 +238,16 @@ export default function EditEmergency() {
             checked={backupConsent}
             onToggle={setBackupConsent}
           />
+          {/* Without this ticked, the contact is silently omitted from what
+              a sitter sees — easy to not notice, since nothing else on this
+              screen signals it. A named dead-end contact with no way to
+              reach them would be worse than omitting them, so this nudges
+              toward ticking the box rather than changing what renders. */}
+          {(backupName.trim() || backupPhone.trim()) && !backupConsent && (
+            <Text style={{ color: colors.caution, fontSize: 12, marginTop: 8, fontFamily: "Satoshi-Medium", lineHeight: 17 }}>
+              Sitters won't see {backupName.trim() || "this contact"} at all until this is ticked.
+            </Text>
+          )}
           <CheckboxRow
             label="Can make care decisions if I'm unreachable."
             checked={backupIsDecisionContact}
@@ -267,6 +277,11 @@ export default function EditEmergency() {
               checked={backup2Consent}
               onToggle={setBackup2Consent}
             />
+            {(backup2Name.trim() || backup2Phone.trim()) && !backup2Consent && (
+              <Text style={{ color: colors.caution, fontSize: 12, marginTop: 8, fontFamily: "Satoshi-Medium", lineHeight: 17 }}>
+                Sitters won't see {backup2Name.trim() || "this contact"} at all until this is ticked.
+              </Text>
+            )}
             <CheckboxRow
               label="Can make care decisions if I'm unreachable."
               checked={backup2IsDecisionContact}

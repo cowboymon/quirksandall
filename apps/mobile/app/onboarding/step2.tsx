@@ -134,6 +134,14 @@ export default function Step2() {
             checked={pet.backupConsent ?? false}
             onToggle={(v) => setPet({ backupConsent: v })}
           />
+          {/* Without this ticked, the contact is silently omitted from what
+              a sitter sees — easy to not notice, since nothing else on this
+              screen signals it. */}
+          {((pet.backupName ?? "").trim() || (pet.backupPhone ?? "").trim()) && !pet.backupConsent && (
+            <Text style={{ color: colors.caution, fontSize: 12, marginTop: 8, fontFamily: "Satoshi-Medium", lineHeight: 17 }}>
+              Sitters won't see {(pet.backupName ?? "").trim() || "this contact"} at all until this is ticked.
+            </Text>
+          )}
           <CheckboxRow
             label="Can make care decisions if I'm unreachable."
             checked={pet.backupIsDecisionContact ?? false}
@@ -163,6 +171,11 @@ export default function Step2() {
               checked={pet.backup2Consent ?? false}
               onToggle={(v) => setPet({ backup2Consent: v })}
             />
+            {((pet.backup2Name ?? "").trim() || (pet.backup2Phone ?? "").trim()) && !pet.backup2Consent && (
+              <Text style={{ color: colors.caution, fontSize: 12, marginTop: 8, fontFamily: "Satoshi-Medium", lineHeight: 17 }}>
+                Sitters won't see {(pet.backup2Name ?? "").trim() || "this contact"} at all until this is ticked.
+              </Text>
+            )}
             <CheckboxRow
               label="Can make care decisions if I'm unreachable."
               checked={pet.backup2IsDecisionContact ?? false}
