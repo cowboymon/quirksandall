@@ -15,7 +15,7 @@ import { randomToken } from "../../lib/links";
 import { rememberPin } from "../../lib/pinVault";
 import { colors, displayDateToISO, capitalizeFirst, isUnlocked, treatEntries } from "@quirksandall/shared";
 import { usePrices } from "../../hooks/usePrices";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const mealInput = {
   minHeight: 38,
@@ -70,6 +70,17 @@ export default function Step4() {
   const prices = usePrices();
   const { pet, setPet, reset } = useOnboardingStore();
   const [saving, setSaving] = useState(false);
+  // #24 — "+ Add another treat" should hand the keyboard straight to the new
+  // row instead of leaving focus sitting on whatever was tapped last, so the
+  // new line the user just created is the one they land in, not the one
+  // above it.
+  const treatTypeRefs = useRef<Array<TextInput | null>>([]);
+  const focusNextTreatIndex = useRef<number | null>(null);
+  useEffect(() => {
+    if (focusNextTreatIndex.current == null) return;
+    treatTypeRefs.current[focusNextTreatIndex.current]?.focus();
+    focusNextTreatIndex.current = null;
+  }, [pet.feedingTreats?.length]);
   // The unlock is account-wide, so a paid owner adding another pet should never
   // see the paywall again (#86). Check their entitlement up front.
   const [isPaid, setIsPaid] = useState(false);
@@ -245,14 +256,18 @@ export default function Step4() {
                         </TouchableOpacity>
                       </View>
                     )}
-                    <TextInput style={mealInput} placeholder="Type / brand" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" clearButtonMode="while-editing" value={t.type}
+                    <TextInput ref={(r) => { treatTypeRefs.current[i] = r; }} style={mealInput} placeholder="Type / brand" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" clearButtonMode="while-editing" value={t.type}
                       onChangeText={(v) => setPet({ feedingTreats: list.map((x, j) => (j === i ? { ...x, type: capitalizeFirst(v) } : x)) })} />
                     <TextInput style={mealInput} placeholder="Daily limit — e.g. max 3 per day" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" clearButtonMode="while-editing" value={t.limit}
                       onChangeText={(v) => setPet({ feedingTreats: list.map((x, j) => (j === i ? { ...x, limit: capitalizeFirst(v) } : x)) })} />
                   </View>
                 );
               })}
-              <TouchableOpacity onPress={() => setPet({ feedingTreats: [...(pet.feedingTreats ?? [{ type: "", limit: "" }]), { type: "", limit: "" }] })} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}>
+              <TouchableOpacity onPress={() => {
+                const list = pet.feedingTreats ?? [{ type: "", limit: "" }];
+                focusNextTreatIndex.current = list.length;
+                setPet({ feedingTreats: [...list, { type: "", limit: "" }] });
+              }} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}>
                 <Text style={{ fontSize: 12, color: colors.primary, fontFamily: "Satoshi-Medium" }}>+ Add another treat</Text>
               </TouchableOpacity>
             </View>

@@ -82,6 +82,17 @@ export default function EditRoutine() {
   const [lunchSkip, setLunchSkip] = useState(false);
   const [dinnerSkip, setDinnerSkip] = useState(false);
   const [treats, setTreats] = useState<TreatEntry[]>([{ type: "", limit: "" }]);
+  // #24 — "+ Add another treat" should hand the keyboard straight to the new
+  // row instead of leaving focus sitting on whatever was tapped last, so the
+  // new line the user just created is the one they land in, not the one
+  // above it.
+  const treatTypeRefs = useRef<Array<TextInput | null>>([]);
+  const focusNextTreatIndex = useRef<number | null>(null);
+  useEffect(() => {
+    if (focusNextTreatIndex.current == null) return;
+    treatTypeRefs.current[focusNextTreatIndex.current]?.focus();
+    focusNextTreatIndex.current = null;
+  }, [treats.length]);
   const [feedingNotes, setFeedingNotes] = useState("");
   const [walks, setWalks] = useState("");
   const [sleep, setSleep] = useState("");
@@ -225,13 +236,16 @@ export default function EditRoutine() {
                   </TouchableOpacity>
                 </View>
               )}
-              <TextInput style={mealInput} placeholder="Type / brand" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" clearButtonMode="while-editing" value={t.type}
+              <TextInput ref={(r) => { treatTypeRefs.current[i] = r; }} style={mealInput} placeholder="Type / brand" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" clearButtonMode="while-editing" value={t.type}
                 onChangeText={(v) => setTreats((prev) => prev.map((x, j) => (j === i ? { ...x, type: capitalizeFirst(v) } : x)))} />
               <TextInput style={mealInput} placeholder="Daily limit — e.g. max 3 per day" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" clearButtonMode="while-editing" value={t.limit}
                 onChangeText={(v) => setTreats((prev) => prev.map((x, j) => (j === i ? { ...x, limit: capitalizeFirst(v) } : x)))} />
             </View>
           ))}
-          <TouchableOpacity onPress={() => setTreats((prev) => [...prev, { type: "", limit: "" }])} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}>
+          <TouchableOpacity onPress={() => {
+            focusNextTreatIndex.current = treats.length;
+            setTreats((prev) => [...prev, { type: "", limit: "" }]);
+          }} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}>
             <Text style={{ fontSize: 12, color: colors.primary, fontFamily: "Satoshi-Medium" }}>+ Add another treat</Text>
           </TouchableOpacity>
         </View>
