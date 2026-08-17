@@ -32,7 +32,11 @@ async function sendOwnerEmail(params: {
   lastSeenArea: string; lastSeenDate: string; lookFor: string;
 }): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM_EMAIL ?? "Quirks & All <quirksandall@itshypothetical.com>";
+  // Reuses the already-verified auth.itshypothetical.com domain (same one
+  // OTP emails send from via Supabase's SMTP relay) rather than needing a
+  // fresh domain verified in Resend just for this. Revisit once volume/reply
+  // expectations justify a dedicated notification domain — see MANUAL_STEPS.md.
+  const from = process.env.RESEND_FROM_EMAIL ?? "Quirks & All <alerts@auth.itshypothetical.com>";
   if (!apiKey) {
     console.error("report-missing: RESEND_API_KEY not configured — alert not sent");
     return false;
