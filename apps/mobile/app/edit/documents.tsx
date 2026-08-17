@@ -15,12 +15,16 @@ import { useActivePetStore } from "../../stores/activePet";
 import { listDocuments, uploadDocument, removeDocument, documentSignedUrl, shareDocument, type NewDocument } from "../../lib/documents";
 import { ensureCameraPermission } from "../../lib/photoPermission";
 
+// Tinted per kind — a scannable colour cue rather than every document
+// looking identical regardless of what it actually is. Reuses tokens
+// already in the palette (success/caution) rather than inventing new ones.
 const KINDS = [
-  { key: "vaccination", label: "Vaccination" },
-  { key: "flea_worm", label: "Flea & worm" },
-  { key: "other", label: "Other" },
+  { key: "vaccination", label: "Vaccination", tint: colors.success, tintBg: "rgba(70,112,73,0.12)" },
+  { key: "flea_worm", label: "Flea & worm", tint: colors.caution, tintBg: "rgba(127,90,48,0.12)" },
+  { key: "other", label: "Other", tint: colors.primary, tintBg: colors.secondary },
 ] as const;
 const kindLabel = (k: string) => KINDS.find((x) => x.key === k)?.label ?? "Document";
+const kindMeta = (k: string) => KINDS.find((x) => x.key === k) ?? KINDS[2];
 
 // Returns the icon COMPONENT — Phosphor icons are components, not names.
 function iconFor(mime?: string): Icon {
@@ -135,10 +139,15 @@ export default function Documents() {
       )}
 
       {docs.length === 0 ? (
-        <View style={{ alignItems: "center", paddingVertical: 40 }}>
-          <FolderOpen size={40} color={colors.dashedBorder} />
-          <Text style={{ color: colors.textMuted, fontSize: 14, marginTop: 12, fontFamily: "Satoshi-Light", textAlign: "center", lineHeight: 20 }}>
-            No documents yet. Add vaccination or flea & worm records so they're never lost the night before a stay.
+        <View style={{ alignItems: "center", paddingVertical: 36, paddingHorizontal: 24, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 14 }}>
+          <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: colors.secondary, alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
+            <FolderOpen size={30} weight="duotone" color={colors.primary} />
+          </View>
+          <Text style={{ color: colors.textDark, fontSize: 15, fontFamily: "Satoshi-Bold", textAlign: "center" }}>
+            Nothing in the vault yet
+          </Text>
+          <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 6, fontFamily: "Satoshi-Light", textAlign: "center", lineHeight: 19 }}>
+            Vaccination or flea & worm records — add them now so they're not a scramble the night before a stay.
           </Text>
         </View>
       ) : (
@@ -153,8 +162,8 @@ export default function Documents() {
           </Text>
           {docs.filter((d) => d.kind === k.key).map((doc) => (
             <View key={doc.id} style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14 }}>
-              <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: colors.secondary, alignItems: "center", justifyContent: "center" }}>
-                {(() => { const DocIcon = iconFor(doc.mime_type); return <DocIcon size={18} color={colors.primary} />; })()}
+              <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: k.tintBg, alignItems: "center", justifyContent: "center" }}>
+                {(() => { const DocIcon = iconFor(doc.mime_type); return <DocIcon size={18} weight="duotone" color={k.tint} />; })()}
               </View>
               <TouchableOpacity style={{ flex: 1 }} onPress={() => view(doc.storage_path)} activeOpacity={0.7}>
                 <Text numberOfLines={1} style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>{doc.title || doc.file_name}</Text>
@@ -203,18 +212,22 @@ function AddButton({ icon: AddIcon, label, onPress, disabled }: { icon: Icon; la
       activeOpacity={0.85}
       style={{
         flex: 1,
-        height: 74,
-        borderRadius: 12,
+        height: 88,
+        borderRadius: 14,
         borderWidth: 1,
-        borderColor: colors.dashedBorder,
-        borderStyle: "dashed",
+        borderColor: colors.border,
+        backgroundColor: "#FFFFFF",
         alignItems: "center",
         justifyContent: "center",
-        gap: 6,
+        gap: 8,
         opacity: disabled ? 0.5 : 1,
       }}
     >
-      <AddIcon size={20} color={colors.primary} />
+      {/* Dashed-circle icon badge — same "something goes here" motif as the
+          dashboard's add-a-link row, instead of a bare dashed rectangle. */}
+      <View style={{ width: 36, height: 36, borderRadius: 18, borderWidth: 1.5, borderColor: colors.dashedBorder, borderStyle: "dashed", alignItems: "center", justifyContent: "center" }}>
+        <AddIcon size={16} weight="duotone" color={colors.primary} />
+      </View>
       <Text style={{ color: colors.textDark, fontSize: 13, fontFamily: "Satoshi-Medium" }}>{label}</Text>
     </TouchableOpacity>
   );
