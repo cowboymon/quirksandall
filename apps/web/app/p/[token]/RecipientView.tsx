@@ -346,8 +346,15 @@ export default function RecipientView({ profile, token }: Props) {
                   sitter comparing this to another pet-sitting app doesn't read
                   "no walk schedule" as "this app can't do that". Never shown
                   to the owner's own preview — they already get the explicit
-                  upgrade-aware banner above. */}
-              {!preview && !hasExtendedRoutine && (
+                  upgrade-aware banner above.
+
+                  Must NOT show for a paid owner sitting in Quick view —
+                  hasExtendedRoutine is also false there even though the
+                  content exists and just needs the Full view toggle, which
+                  isn't "not included" at all. Only genuinely-gated (free
+                  tier) or genuinely-empty (paid + full view, nothing filled
+                  in) should trip this. */}
+              {!preview && !hasExtendedRoutine && !(isPaid && !paidVisible) && (
                 <p className="text-xs italic" style={{ color: MUTED }}>Full routine not included.</p>
               )}
             </div>
