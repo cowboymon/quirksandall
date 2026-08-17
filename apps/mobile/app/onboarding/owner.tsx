@@ -56,7 +56,6 @@ export default function OwnerSetup() {
             consent_marketing: marketing,
             consent_insurance_offers: insurance,
             consent_updated_at: new Date().toISOString(),
-            consent_policy_version: CONSENT_POLICY_VERSION,
           })
           .eq("id", user.id);
         if (error) {

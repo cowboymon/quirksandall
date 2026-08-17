@@ -48,7 +48,7 @@ export default function AcceptTerms() {
       const now = new Date().toISOString();
       const { error } = await supabase
         .from("owners")
-        .update({ terms_accepted_at: now, terms_policy_version: CONSENT_POLICY_VERSION })
+        .update({ terms_accepted_at: now })
         .eq("id", user.id);
       if (error) throw error;
       await supabase.from("consent_log").insert({

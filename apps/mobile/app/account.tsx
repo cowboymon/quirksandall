@@ -71,7 +71,7 @@ export default function Account() {
     if (!user) return;
     const { error } = await supabase
       .from("owners")
-      .update({ [column]: next, consent_updated_at: new Date().toISOString(), consent_policy_version: CONSENT_POLICY_VERSION })
+      .update({ [column]: next, consent_updated_at: new Date().toISOString() })
       .eq("id", user.id);
     if (error) {
       revert();
