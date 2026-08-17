@@ -93,7 +93,7 @@ export default function Step3() {
       <View style={{ gap: 10, marginTop: 8 }}>
         {commands.map((cmd, i) => {
           // #19 — condensed one-line row once the list is long, expanded on tap.
-          const collapsed = commands.length > 3 && expandedId !== cmd.id;
+          const collapsed = commands.length > 2 && expandedId !== cmd.id;
           return collapsed ? (
             <TouchableOpacity key={cmd.id} onPress={() => toggleExpanded(cmd.id)} activeOpacity={0.8}>
               <Card style={{ paddingVertical: 12 }}>

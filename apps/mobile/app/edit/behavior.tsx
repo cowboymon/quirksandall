@@ -177,7 +177,7 @@ export default function EditBehavior() {
             // "goes" (rather than looking like it vanished).
             const firstHidden = cmd.hidden && i === visible.length;
             // #19 — condensed one-line row once the list is long, expanded on tap.
-            const collapsed = ordered.length > 3 && expandedId !== cmd.id;
+            const collapsed = ordered.length > 2 && expandedId !== cmd.id;
             return (
             <View key={cmd.id} style={{ gap: 10 }}>
               {firstHidden && (
