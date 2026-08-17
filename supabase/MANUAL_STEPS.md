@@ -18,17 +18,15 @@ you go. Newest work is at the top of each section.
 
 ## ▶️ Run now
 
-- [ ] **`20260723000002_add_deletion_scheduled.sql`** — adds
+- [x] **`20260723000002_add_deletion_scheduled.sql`** — adds
   `owners.deletion_scheduled_at` and a daily (03:00) `pg_cron` job
   (`purge-scheduled-deletions`) that hard-deletes `auth.users` rows 30+ days
-  past their scheduled deletion, cascading to `owners`/`pets`/etc. The mobile
-  "Delete account" flow (`account.tsx`) already sets `deletion_scheduled_at`
-  and shows a "purged in 30 days" message — but this migration was never
-  tracked here, so it's unconfirmed whether the cron job actually exists.
-  **If it's missing, deleted accounts' data never actually purges** despite
-  the UI promising it does. Verify with `select * from cron.job;` in SQL
-  Editor before assuming it's already live — only run this migration if that
-  query doesn't show `purge-scheduled-deletions`.
+  past their scheduled deletion, cascading to `owners`/`pets`/etc. Paired with
+  the mobile "Delete account" flow (`account.tsx`), which sets
+  `deletion_scheduled_at` and shows a "purged in 30 days" message. This
+  migration had no tracking entry here despite being live — confirmed via
+  `select * from cron.job;` showing `purge-scheduled-deletions` active,
+  `0 3 * * *`, matching command. *(Confirmed live 17 Aug 2026.)*
 
 - [x] **`20260812000002_owners_cancelled_at.sql`** — adds `cancelled_at` to
   `owners`, stamped by `revenuecat-webhook/index.ts` on RevenueCat's
