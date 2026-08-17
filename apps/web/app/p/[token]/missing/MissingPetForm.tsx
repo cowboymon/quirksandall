@@ -65,12 +65,12 @@ export default function MissingPetForm({ token, petName, ownerName }: Props) {
 
   if (sent) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-background px-6 py-16">
-        <div className="w-full max-w-sm">
-          <h1 className="font-tanker text-3xl font-normal leading-tight text-foreground">
+      <main className="min-h-screen bg-background px-6 pt-5 pb-8">
+        <div className="mx-auto w-full max-w-sm">
+          <h1 className="font-tanker text-2xl font-normal leading-tight text-foreground">
             {ownerName} has been alerted.
           </h1>
-          <p className="mt-3 font-satoshi text-sm leading-relaxed text-text-muted">
+          <p className="mt-1.5 font-satoshi text-sm leading-snug text-text-muted">
             They've been sent what you entered, and know to check their phone.
           </p>
 
@@ -78,13 +78,13 @@ export default function MissingPetForm({ token, petName, ownerName }: Props) {
             <a
               href={posterUrl}
               download={`${(petName || "pet").toLowerCase()}-missing-poster.png`}
-              className="mt-8 flex h-12 items-center justify-center rounded-button font-satoshi text-sm font-bold"
+              className="mt-5 flex h-11 items-center justify-center rounded-button font-satoshi text-sm font-bold"
               style={{ backgroundColor: "#510000", color: "#F8ECEE" }}
             >
               Download poster
             </a>
           ) : (
-            <p className="mt-8 font-satoshi text-sm text-text-muted">
+            <p className="mt-5 font-satoshi text-sm text-text-muted">
               The poster couldn't be generated, but {ownerName} has already been alerted.
             </p>
           )}
@@ -94,9 +94,9 @@ export default function MissingPetForm({ token, petName, ownerName }: Props) {
               Shown after the alert's already sent so it never slows that
               down. Standard lost-pet-recovery advice, not anything specific
               to this app or pet. */}
-          <div className="mt-8 rounded-card border p-4" style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF" }}>
-            <p className="eyebrow text-foreground mb-3">What to do right now</p>
-            <ol className="flex flex-col gap-2.5 font-satoshi text-sm text-text-muted list-decimal pl-4">
+          <div className="mt-5 rounded-card border p-4" style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF" }}>
+            <p className="eyebrow text-foreground mb-2.5">What to do right now</p>
+            <ol className="flex flex-col gap-2 font-satoshi text-sm text-text-muted list-decimal pl-4">
               <li>Don't chase — call their name calmly and crouch down. Chasing usually makes a scared animal run further.</li>
               <li>Check nearby hiding spots first: under decks, parked cars, bushes, before searching further out.</li>
               <li>Leave a door or gate open with their bed or food nearby — many pets find their own way back.</li>
@@ -106,7 +106,7 @@ export default function MissingPetForm({ token, petName, ownerName }: Props) {
             </ol>
           </div>
 
-          <a href={`/p/${token}`} className="mt-4 block text-center font-satoshi text-sm text-text-muted underline">
+          <a href={`/p/${token}`} className="mt-3 block text-center font-satoshi text-sm text-text-muted underline">
             Back to {petName}'s info
           </a>
         </div>
@@ -115,45 +115,50 @@ export default function MissingPetForm({ token, petName, ownerName }: Props) {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-6 py-16">
-      <div className="w-full max-w-sm">
-        <a href={`/p/${token}`} className="font-satoshi text-base text-text-muted">
+    // Top-aligned, not vertically centered — centering pushed Back down to
+    // wherever the block happened to start, and on a short/keyboard-open
+    // viewport that could sit off-screen. Compact spacing throughout so the
+    // whole form (including the submit button) fits without scrolling on a
+    // typical phone screen.
+    <main className="min-h-screen bg-background px-6 pt-5 pb-8">
+      <div className="mx-auto w-full max-w-sm">
+        <a href={`/p/${token}`} className="font-satoshi text-sm text-text-muted">
           ‹ Back
         </a>
 
-        <h1 className="mt-3 font-tanker text-3xl font-normal leading-tight text-foreground">
+        <h1 className="mt-2 font-tanker text-2xl font-normal leading-tight text-foreground">
           {petName} is missing
         </h1>
-        <p className="mt-3 font-satoshi text-sm leading-relaxed text-text-muted">
+        <p className="mt-1.5 font-satoshi text-sm leading-snug text-text-muted">
           Fill in what you know. {ownerName} will be alerted the moment you send this, and you'll get a
           printable poster with {petName}'s photo.
         </p>
 
-        <div className="mt-8 flex flex-col gap-5">
+        <div className="mt-5 flex flex-col gap-3.5">
           {/* Field text stays at text-base (16px) even though everything else
-              on this page dropped to text-sm to match the recipient page's
-              scale — iOS Safari auto-zooms the viewport on focusing any input
-              under 16px, which is worse than a slightly larger field. */}
+              on this page runs text-sm — iOS Safari auto-zooms the viewport
+              on focusing any input under 16px, which is worse than a
+              slightly larger field. */}
           <div>
-            <label className="eyebrow mb-1.5 block text-foreground">Last seen where</label>
+            <label className="eyebrow mb-1 block text-foreground">Last seen where</label>
             <input
               type="text"
               value={lastSeenArea}
               onChange={(e) => setLastSeenArea(e.target.value)}
               placeholder="Newtown IGA @ 4:40pm"
-              className="h-12 w-full rounded-button border px-4 font-satoshi text-base text-foreground"
+              className="h-11 w-full rounded-button border px-4 font-satoshi text-base text-foreground"
               style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF", boxSizing: "border-box" }}
             />
           </div>
 
           <div>
-            <label className="eyebrow mb-1.5 block text-foreground">Last seen when</label>
+            <label className="eyebrow mb-1 block text-foreground">Last seen when</label>
             <input
               type="date"
               value={lastSeenDate}
               max={todayIso()}
               onChange={(e) => setLastSeenDate(e.target.value)}
-              className="h-12 w-full rounded-button border px-4 font-satoshi text-base text-foreground"
+              className="h-11 w-full rounded-button border px-4 font-satoshi text-base text-foreground"
               // Native date inputs (esp. iOS Safari) bring their own chrome
               // that can override height/width even with identical classes
               // to the text input beside it — appearance:none plus an
@@ -163,13 +168,13 @@ export default function MissingPetForm({ token, petName, ownerName }: Props) {
           </div>
 
           <div>
-            <label className="eyebrow mb-1.5 block text-foreground">What they look like right now</label>
+            <label className="eyebrow mb-1 block text-foreground">What they look like right now</label>
             <textarea
               value={lookFor}
               onChange={(e) => setLookFor(e.target.value)}
               placeholder="Grey knit jumper, pink bedazzled leash, red collar underneath."
-              rows={3}
-              className="w-full rounded-button border px-4 py-3 font-satoshi text-base text-foreground"
+              rows={2}
+              className="w-full rounded-button border px-4 py-2.5 font-satoshi text-base text-foreground"
               style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF", boxSizing: "border-box" }}
             />
           </div>
@@ -183,7 +188,7 @@ export default function MissingPetForm({ token, petName, ownerName }: Props) {
           <button
             onClick={submit}
             disabled={!canSubmit}
-            className="h-12 rounded-button font-satoshi text-sm font-bold disabled:opacity-50"
+            className="rounded-button py-3 px-4 font-satoshi text-sm font-bold leading-snug disabled:opacity-50"
             style={{ backgroundColor: "#510000", color: "#F8ECEE" }}
           >
             {submitting ? "Sending…" : `Alert ${possessive(petName)} human & create the poster`}
