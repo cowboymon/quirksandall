@@ -208,7 +208,8 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
               timeOfDay: m.time_of_day ?? "",
               locationStored: m.location_stored ?? "",
               notes: m.notes ?? "",
-              withMeal: m.with_meal ?? undefined,
+              // Legacy rows (pre-#94 follow-up) stored a bare string.
+              withMeal: m.with_meal == null ? undefined : Array.isArray(m.with_meal) ? m.with_meal : [m.with_meal],
             })),
           },
         }

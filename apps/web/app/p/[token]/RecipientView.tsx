@@ -484,7 +484,7 @@ function hasFeeding(f: NonNullable<RecipientProfile["routine"]>["feeding"], medi
     mealComplete(f.breakfast) || mealComplete(f.lunch) || mealComplete(f.dinner) ||
     f.breakfast?.skip || f.lunch?.skip || f.dinner?.skip ||
     treatEntries(f.treats).length > 0 || f.notes ||
-    medications.some((m) => m.withMeal === "breakfast" || m.withMeal === "lunch" || m.withMeal === "dinner")
+    medications.some((m) => m.withMeal?.some((s) => s === "breakfast" || s === "lunch" || s === "dinner"))
   );
 }
 
@@ -565,14 +565,14 @@ function FeedingCard({ feeding, medications }: { feeding: NonNullable<RecipientP
   // A meal renders if it has its own time+amount, OR if a medication is tied
   // to it — otherwise a med tied to an unfilled-in meal (e.g. "with lunch"
   // when lunch itself was never filled in) would have nowhere to point from.
-  const shown = meals.filter(([, key, slot]) => mealComplete(slot) || slot?.skip || medications.some((m) => m.withMeal === key));
+  const shown = meals.filter(([, key, slot]) => mealComplete(slot) || slot?.skip || medications.some((m) => m.withMeal?.includes(key)));
   return (
     <div className="bg-white border rounded-card overflow-hidden" style={{ borderColor: BORDER }}>
       <div className="px-4 pt-3 pb-2">
         <p className="eyebrow" style={{ color: "#B83A52" }}>Feeding</p>
       </div>
       {shown.map(([label, key, slot], i) => {
-        const meds = medications.filter((m) => m.withMeal === key);
+        const meds = medications.filter((m) => m.withMeal?.includes(key));
         return (
         <div
           key={label}

@@ -119,15 +119,20 @@ export function orderedCommands<T extends { hidden?: boolean }>(
   return shown;
 }
 
-/** Medication meal-slot label (#94) — e.g. "with breakfast", or null when unset. */
-export function mealSlotLabel(slot?: string | null): string | null {
-  switch (slot) {
-    case "breakfast": return "with breakfast";
-    case "lunch": return "with lunch";
-    case "dinner": return "with dinner";
-    case "anytime": return "anytime";
-    default: return null;
-  }
+/** Medication meal-slot label (#94) — e.g. "with breakfast", or "with breakfast
+ * & dinner" for a medication given at more than one slot. Accepts a single
+ * slot too (legacy rows written before withMeal became an array) so old data
+ * keeps rendering without a migration. Null when unset. */
+export function mealSlotLabel(slot?: string[] | string | null): string | null {
+  const slots = (Array.isArray(slot) ? slot : slot ? [slot] : []).filter(Boolean);
+  if (!slots.length) return null;
+  if (slots.includes("anytime")) return "anytime";
+  const names = slots
+    .map((s) => (s === "breakfast" ? "breakfast" : s === "lunch" ? "lunch" : s === "dinner" ? "dinner" : null))
+    .filter((s): s is "breakfast" | "lunch" | "dinner" => s !== null);
+  if (!names.length) return null;
+  if (names.length === 1) return `with ${names[0]}`;
+  return `with ${names.slice(0, -1).join(", ")} & ${names[names.length - 1]}`;
 }
 
 /** Command "strength" (§#92) — how reliable the command is, shown to sitters as

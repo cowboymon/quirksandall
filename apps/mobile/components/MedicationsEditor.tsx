@@ -8,7 +8,7 @@ import { Input, Eyebrow, Card } from "./ui";
 import { colors } from "@quirksandall/shared";
 import type { MealSlot } from "@quirksandall/shared";
 
-export type EditableMedication = { id: string; name: string; dose: string; withMeal?: MealSlot; notes: string };
+export type EditableMedication = { id: string; name: string; dose: string; withMeal?: MealSlot[]; notes: string };
 
 const MEAL_SLOTS: { key: MealSlot; label: string }[] = [
   { key: "breakfast", label: "Breakfast" },
@@ -25,8 +25,19 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
   const addMed = () => onChange([...meds, newMedication()]);
   const updateMed = (id: string, field: "name" | "dose" | "notes", val: string) =>
     onChange(meds.map((m) => (m.id === id ? { ...m, [field]: val } : m)));
+  // Multi-select (#94 follow-up) — a medication given at both breakfast and
+  // dinner is one row with both slots on, not two rows with the same dose
+  // that can drift apart. "Anytime" is exclusive of the others: it means
+  // there's no fixed slot, which is a different fact than "every slot".
   const setMedMeal = (id: string, slot: MealSlot) =>
-    onChange(meds.map((m) => (m.id === id ? { ...m, withMeal: m.withMeal === slot ? undefined : slot } : m)));
+    onChange(meds.map((m) => {
+      if (m.id !== id) return m;
+      const current = m.withMeal ?? [];
+      if (slot === "anytime") return { ...m, withMeal: current.includes("anytime") ? undefined : ["anytime"] };
+      const withoutAnytime = current.filter((s) => s !== "anytime");
+      const withMeal = withoutAnytime.includes(slot) ? withoutAnytime.filter((s) => s !== slot) : [...withoutAnytime, slot];
+      return { ...m, withMeal: withMeal.length ? withMeal : undefined };
+    }));
   const removeMed = (id: string) => onChange(meds.filter((m) => m.id !== id));
 
   return (
@@ -40,7 +51,7 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
           <View key={m.id} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 12, gap: 8 }}>
             <View style={{ flexDirection: "row", gap: 8 }}>
               <Input style={{ flex: 2 }} placeholder="Name (e.g. Apoquel)" value={m.name} onChangeText={(v) => updateMed(m.id, "name", v)} />
-              <Input style={{ flex: 1 }} placeholder="Dose" value={m.dose} onChangeText={(v) => updateMed(m.id, "dose", v)} />
+              <Input style={{ flex: 1 }} placeholder="Dose per time — e.g. 1 tablet" value={m.dose} onChangeText={(v) => updateMed(m.id, "dose", v)} />
               <TouchableOpacity onPress={() => removeMed(m.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ justifyContent: "center" }}>
                 <Text style={{ color: colors.danger, fontSize: 20, lineHeight: 20 }}>×</Text>
               </TouchableOpacity>
@@ -52,10 +63,12 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
               multiline
               style={{ minHeight: 44, paddingTop: 10, textAlignVertical: "top" }}
             />
-            <Text style={{ color: colors.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium" }}>Given</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium" }}>
+              Given — tap all that apply
+            </Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
               {MEAL_SLOTS.map((s) => {
-                const active = m.withMeal === s.key;
+                const active = (m.withMeal ?? []).includes(s.key);
                 return (
                   <TouchableOpacity
                     key={s.key}
@@ -97,7 +110,9 @@ export function rowsToMeds(rows: any[]): EditableMedication[] {
     id: String(i),
     name: m.name ?? "",
     dose: m.dose ?? "",
-    withMeal: m.with_meal ?? undefined,
+    // Rows written before withMeal became an array (#94 follow-up) have a
+    // bare string here — wrap it so old data still loads into the editor.
+    withMeal: m.with_meal == null ? undefined : Array.isArray(m.with_meal) ? m.with_meal : [m.with_meal],
     notes: m.notes ?? "",
   }));
 }

@@ -27,7 +27,7 @@ type Data = {
   decisionContacts: { name: string; phone: string }[];
   commands: any[];
   scared: string; noGo: string; flightRisk: string; temperament: string;
-  allergies: string; conditions: string; meds: { name: string; dose: string; withMeal?: string; notes?: string }[];
+  allergies: string; conditions: string; meds: { name: string; dose: string; withMeal?: string[]; notes?: string }[];
   feeding: any; walks: string; sleep: string; bathroom: string; leftAlone: string; toileting: string;
   updatedAt: string;
 };
@@ -103,7 +103,12 @@ export default function Preview() {
         .filter((c: any) => c.is_decision_contact)
         .sort((a: any, b: any) => (a.decision_priority ?? 99) - (b.decision_priority ?? 99))
         .map((c: any) => ({ name: c.name ?? "", phone: c.phone ?? "" }));
-      const meds = (medical?.medications ?? []).map((m: any) => ({ name: m.name ?? "", dose: m.dose ?? "", withMeal: m.with_meal ?? undefined, notes: m.notes || undefined }));
+      const meds = (medical?.medications ?? []).map((m: any) => ({
+        name: m.name ?? "", dose: m.dose ?? "",
+        // Legacy rows (pre-#94 follow-up) stored a bare string.
+        withMeal: m.with_meal == null ? undefined : Array.isArray(m.with_meal) ? m.with_meal : [m.with_meal],
+        notes: m.notes || undefined,
+      }));
 
       setData({
         name: (pet.name ?? "").trim(), breed: pet.breed ?? "", age: computeAge(pet.dob, pet.dob_is_estimated), photoUrl: pet.photo_url,
@@ -145,7 +150,7 @@ export default function Preview() {
   // to it — otherwise a med tied to an unfilled-in meal (e.g. "with lunch"
   // when lunch itself was never filled in) would have nowhere to point from.
   const allMealSlots = [["Breakfast", "breakfast", f.breakfast], ["Lunch", "lunch", f.lunch], ["Dinner", "dinner", f.dinner]] as const;
-  const meals = allMealSlots.filter(([, key, slot]) => mealComplete(slot) || (slot as any)?.skip || d.meds.some((m) => m.withMeal === key));
+  const meals = allMealSlots.filter(([, key, slot]) => mealComplete(slot) || (slot as any)?.skip || d.meds.some((m) => m.withMeal?.includes(key)));
   const hasFeeding = !!(meals.length || treatEntries(f.treats).length || f.notes);
   // Meds tied to a shown meal ALSO render inline in the routine as a
   // convenience, but every medication always shows in the standalone
@@ -304,7 +309,7 @@ export default function Preview() {
                       <Text style={{ ...microLabel, color: colors.primary }}>Feeding</Text>
                     </View>
                     {meals.map(([label, key, slot]: any, i) => {
-                      const tied = d.meds.filter((m) => m.withMeal === key);
+                      const tied = d.meds.filter((m) => m.withMeal?.includes(key));
                       return (
                         <View key={label} style={{ borderBottomWidth: i < meals.length - 1 ? 1 : 0, borderBottomColor: colors.border }}>
                           <MealRow label={label} time={slot?.skip ? undefined : slot?.time} amount={slot?.skip ? undefined : slot?.amount} skipped={!!slot?.skip} divider={false} medOnly={tied.length > 0 && !mealComplete(slot)} />

@@ -52,12 +52,16 @@ export type MealSlot = "breakfast" | "lunch" | "dinner" | "anytime";
 
 export type Medication = {
   name: string;
+  // Per-administration amount — e.g. "1 tablet" given at each of withMeal's
+  // slots, never a daily total. A medication given at more than one slot
+  // (#94 follow-up) is one entry with multiple slots, not one entry per
+  // slot, so the dose can't drift between an AM and PM copy of the same row.
   dose: string;
   frequency: string;
   timeOfDay: string;
   locationStored: string;
   notes: string;
-  withMeal?: MealSlot;
+  withMeal?: MealSlot[];
 };
 
 export type PetMedical = {
