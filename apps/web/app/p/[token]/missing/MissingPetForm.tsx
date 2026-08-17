@@ -116,17 +116,16 @@ export default function MissingPetForm({ token, petName, ownerName, photoUrl }: 
   }
 
   return (
-    // Back is pinned at the top; everything else floats vertically centered
-    // in the remaining space (flex-1 + justify-center on the inner wrapper)
-    // rather than starting immediately below Back — reads as one composed
-    // screen instead of a form crammed against the header.
+    // Back now moves with the rest of the content (part of the centered
+    // block, right above the heading) rather than staying pinned at the
+    // top separately from it.
     <main className="flex min-h-screen flex-col bg-background px-6 pt-8 pb-8">
-      <a href={`/p/${token}`} className="font-satoshi text-sm text-text-muted">
-        ‹ Back
-      </a>
-
       <div className="flex flex-1 flex-col justify-center">
         <div className="mx-auto w-full max-w-sm">
+          <a href={`/p/${token}`} className="mb-3 block font-satoshi text-sm text-text-muted">
+            ‹ Back
+          </a>
+
           {/* Photo + heading, same identity-block pattern as the recipient
               page (photo beside the name) — ties this screen visually back
               to the profile the sitter just came from. */}
