@@ -59,15 +59,11 @@ async function sendOwnerEmail(params: {
         ${lookFor ? `<tr><td style="padding:6px 0;color:#74555D;font-size:13px;">Look for</td>
             <td style="padding:6px 0;color:#3E0000;font-size:13px;">${escapeHtml(lookFor)}</td></tr>` : ""}
       </table>
-      <a href="${recipientUrl}" style="display:inline-block;background:#510000;color:#F8ECEE;padding:12px 20px;border-radius:8px;text-decoration:none;font-size:14px;">
-        View full details
-      </a>
-
       <!-- Owner-facing, deliberately different from the sitter's on-screen
            checklist — the sitter's steps are what to do standing in the
            street right now (don't chase, check nearby); the owner's are the
            things only they can do, so the two don't duplicate effort. -->
-      <div style="margin-top:28px;padding-top:20px;border-top:1px solid #E5BEC4;">
+      <div style="margin-top:20px;padding-top:20px;border-top:1px solid #E5BEC4;">
         <p style="color:#510000;font-size:14px;font-weight:bold;margin:0 0 10px;">What you can do from here</p>
         <ul style="color:#3E0000;font-size:13px;line-height:1.6;margin:0;padding-left:18px;">
           <li>Call your vet and any microchip registry — flag ${escapeHtml(petName)} as missing so a scan anywhere gets matched back to you.</li>
@@ -76,6 +72,15 @@ async function sendOwnerEmail(params: {
           <li>Stay reachable — the sitter's out looking now and may need to reach you quickly.</li>
         </ul>
       </div>
+
+      <!-- Not a big CTA button — this is a fallback for the vet/microchip
+           step above, not the point of the email, so it reads as a plain
+           link rather than competing with the actual content for attention. -->
+      <p style="margin-top:20px;font-size:12px;">
+        <a href="${recipientUrl}" style="color:#74555D;">
+          Need the vet's number or microchip details? See ${escapeHtml(petName)}'s full profile
+        </a>
+      </p>
     </div>
   `;
 
