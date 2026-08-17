@@ -58,6 +58,20 @@ async function sendOwnerEmail(params: {
       <a href="${recipientUrl}" style="display:inline-block;background:#510000;color:#F8ECEE;padding:12px 20px;border-radius:8px;text-decoration:none;font-size:14px;">
         View full details
       </a>
+
+      <!-- Owner-facing, deliberately different from the sitter's on-screen
+           checklist — the sitter's steps are what to do standing in the
+           street right now (don't chase, check nearby); the owner's are the
+           things only they can do, so the two don't duplicate effort. -->
+      <div style="margin-top:28px;padding-top:20px;border-top:1px solid #E5BEC4;">
+        <p style="color:#510000;font-size:14px;font-weight:bold;margin:0 0 10px;">What you can do from here</p>
+        <ul style="color:#3E0000;font-size:13px;line-height:1.6;margin:0;padding-left:18px;">
+          <li>Call your vet and any microchip registry — flag ${escapeHtml(petName)} as missing so a scan anywhere gets matched back to you.</li>
+          <li>Check with local shelters and vet clinics directly by phone — many don't cross-post lost pets online.</li>
+          <li>Post in nearby community/neighbourhood groups — the sitter has a printable poster with ${escapeHtml(petName)}'s photo, ask them to share it with you.</li>
+          <li>Stay reachable — the sitter's out looking now and may need to reach you quickly.</li>
+        </ul>
+      </div>
     </div>
   `;
 
