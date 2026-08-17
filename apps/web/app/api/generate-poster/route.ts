@@ -12,7 +12,7 @@ import path from "path";
 import { createClient } from "@supabase/supabase-js";
 import satori from "satori";
 import sharp from "sharp";
-import { computeAge } from "@quirksandall/shared";
+import { computeAge, formatWeight } from "@quirksandall/shared";
 import { FORMATS, renderTemplate, type PosterData, type PosterFormat } from "../../../lib/poster/templates";
 import { checkRateLimit, clientIp, rateLimitEnv } from "../../lib/rateLimit";
 import { sanitizeFreeText, isValidImageDataUri, sanitizeHeaderFilenameComponent } from "../../../lib/inputSanitize";
@@ -194,7 +194,7 @@ async function generate(params: Params): Promise<Response> {
     breed: pet.breed ?? "",
     sex: pet.sex ?? "",
     age: computeAge(pet.dob, pet.dob_is_estimated),
-    weight: pet.weight ?? "",
+    weight: formatWeight(pet.weight),
     colorMarkings: pet.color_markings ?? "",
     microchip: pet.microchip_number ?? "",
     photoDataUri,
