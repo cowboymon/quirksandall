@@ -147,7 +147,7 @@ export default function Step4() {
         supabase.from("pet_medical").insert({
           pet_id: newPet.id,
           allergies: (pet.allergies ?? []).map((s) => s.trim()).filter(Boolean),
-          conditions: pet.conditions ? [pet.conditions] : [],
+          conditions: (pet.conditions ?? []).map((s) => s.trim()).filter(Boolean),
           medications: medsToRows(pet.medications ?? []),
         }),
         supabase.from("pet_routine").insert({
@@ -345,6 +345,37 @@ export default function Step4() {
               })}
               <TouchableOpacity onPress={() => setPet({ allergies: [...(pet.allergies ?? [""]), ""] })} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}>
                 <Text style={{ fontSize: 12, color: colors.primary, fontFamily: "Satoshi-Medium" }}>+ Add another allergy</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Medical conditions — same repeatable-list pattern as Allergies
+              above. Previously had no onboarding input at all; only
+              editable later from the dashboard's Edit → Routine & Medical
+              screen. */}
+          <View>
+            <Eyebrow>Medical conditions</Eyebrow>
+            <View style={{ gap: 8, marginTop: 4 }}>
+              {(pet.conditions ?? [""]).map((c, i) => {
+                const list = pet.conditions ?? [""];
+                return (
+                  <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
+                    <Textarea
+                      style={{ flex: 1, minHeight: 52 }}
+                      placeholder="Atopic dermatitis, managed with Apoquel"
+                      value={c}
+                      onChangeText={(v) => setPet({ conditions: list.map((x, j) => (j === i ? v : x)) })}
+                    />
+                    {list.length > 1 && (
+                      <TouchableOpacity onPress={() => setPet({ conditions: list.filter((_, j) => j !== i) })} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingTop: 14 }}>
+                        <Text style={{ color: colors.danger, fontSize: 18, lineHeight: 18 }}>×</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                );
+              })}
+              <TouchableOpacity onPress={() => setPet({ conditions: [...(pet.conditions ?? [""]), ""] })} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}>
+                <Text style={{ fontSize: 12, color: colors.primary, fontFamily: "Satoshi-Medium" }}>+ Add another condition</Text>
               </TouchableOpacity>
             </View>
           </View>

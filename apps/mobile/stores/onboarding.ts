@@ -60,7 +60,7 @@ type PetDraft = {
   toileting?: string;
   allergies?: string[];
   medications?: EditableMedication[];
-  conditions?: string;
+  conditions?: string[];
 };
 
 type OnboardingStore = {
