@@ -18,6 +18,22 @@ you go. Newest work is at the top of each section.
 
 ## ▶️ Run now
 
+- [ ] **`20260817000002_policy_acceptances_cascade.sql`** — **important,
+  affects the account-deletion purge.** `policy_acceptances.user_id`
+  referenced `auth.users(id)` without `on delete cascade`, discovered when
+  a manual `delete from auth.users` failed with a FK violation. The daily
+  `purge-scheduled-deletions` cron runs the identical delete — any account
+  with a `policy_acceptances` row (most/all real users) has plausibly been
+  silently failing to actually purge for the full 30+ days it's been
+  running, since pg_cron logs a failed run but doesn't alert anyone or
+  disable the schedule. After running this migration, verify with
+  `select * from cron.job_run_details where jobname = 'purge-scheduled-deletions' order by start_time desc limit 5;`
+  — check `status` is `succeeded`, not `failed`, on the next run. If any
+  accounts are currently stuck with an old `deletion_scheduled_at` that
+  never actually purged, this migration fixes the constraint but doesn't
+  retroactively re-run the job for them — the next nightly run (03:00)
+  will catch them once they're past 30 days.
+
 - [x] **`20260817000001_drop_dead_columns.sql`** — drops four columns
   confirmed dead by a full-codebase audit (zero reads anywhere):
   `owners.consent_policy_version`/`terms_policy_version` (superseded by
