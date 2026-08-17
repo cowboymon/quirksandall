@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { possessive, isSafeHttpsUrl } from "@quirksandall/shared";
-import { MapPin, CalendarDots, ListChecks } from "@phosphor-icons/react";
+import { possessive } from "@quirksandall/shared";
+import { MapPin, CalendarDots } from "@phosphor-icons/react";
 
-type Props = { token: string; petName: string; ownerName: string; photoUrl: string | null };
+type Props = { token: string; petName: string; ownerName: string };
 
 const todayIso = () => new Date().toISOString().split("T")[0];
 
-export default function MissingPetForm({ token, petName, ownerName, photoUrl }: Props) {
+export default function MissingPetForm({ token, petName, ownerName }: Props) {
   const [lastSeenArea, setLastSeenArea] = useState("");
   // Poster templates parse lastSeenDate as ISO (templates.tsx's formatDate) —
   // a native date input hands that over directly, no MM/DD vs DD/MM parsing
@@ -57,6 +57,12 @@ export default function MissingPetForm({ token, petName, ownerName, photoUrl }: 
       }
 
       setSent(true);
+      // The scroll position from filling in the form (likely scrolled down,
+      // esp. with the keyboard having been open) otherwise carries over —
+      // this is a state swap within the same page, not a real navigation,
+      // so the browser doesn't reset scroll on its own the way it would
+      // moving to a new URL.
+      window.scrollTo(0, 0);
     } catch {
       setError("Couldn't send the alert. Check your connection and try again.");
     } finally {
@@ -68,25 +74,29 @@ export default function MissingPetForm({ token, petName, ownerName, photoUrl }: 
     return (
       <main className="min-h-screen bg-background px-6 pt-8 pb-8">
         <div className="mx-auto w-full max-w-sm">
-          {/* Same identity-block pattern as the form screen and the
-              recipient page — photo beside the heading, so this reads as
-              part of the same flow rather than a generic "success" page. */}
-          <div className="flex items-center gap-3">
-            {photoUrl && isSafeHttpsUrl(photoUrl) && (
-              <img
-                src={photoUrl}
-                alt={petName}
-                className="h-12 w-12 shrink-0 rounded-full border-2 object-cover"
-                style={{ borderColor: "#E5BEC4" }}
-              />
-            )}
-            <h1 className="font-tanker text-2xl font-normal leading-tight text-foreground">
-              Alert sent.
-            </h1>
-          </div>
+          <h1 className="font-tanker text-3xl font-normal leading-tight text-foreground">
+            Alert sent.
+          </h1>
           <p className="mt-2.5 font-satoshi text-sm leading-snug text-text-muted">
             {ownerName} has been sent what you entered, and knows to check their phone.
           </p>
+
+          {/* Sitter-facing, not the owner's — this is the person physically
+              searching, so this is where actionable guidance actually helps.
+              Shown after the alert's already sent so it never slows that
+              down. Standard lost-pet-recovery advice, not anything specific
+              to this app or pet. */}
+          <div className="mt-5 rounded-card border p-4" style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF" }}>
+            <p className="eyebrow text-text-muted mb-2.5">What to do right now</p>
+            <ol className="flex flex-col gap-2 font-satoshi text-sm text-text-muted list-decimal pl-4">
+              <li>Don't chase — call their name calmly and crouch down. Chasing usually makes a scared animal run further.</li>
+              <li>Check nearby hiding spots first: under decks, parked cars, bushes, before searching further out.</li>
+              <li>Leave a door or gate open with their bed or food nearby — many pets find their own way back.</li>
+              <li>Walk the immediate area calling their name every minute or so, and pause to listen.</li>
+              <li>Knock on neighbours' doors directly — people notice more than they think to mention online.</li>
+              <li>Once you have the poster, put it up in the streets right around where they were last seen first.</li>
+            </ol>
+          </div>
 
           {posterUrl ? (
             <a
@@ -102,26 +112,6 @@ export default function MissingPetForm({ token, petName, ownerName, photoUrl }: 
               The poster couldn't be generated, but {ownerName} has already been alerted.
             </p>
           )}
-
-          {/* Sitter-facing, not the owner's — this is the person physically
-              searching, so this is where actionable guidance actually helps.
-              Shown after the alert's already sent so it never slows that
-              down. Standard lost-pet-recovery advice, not anything specific
-              to this app or pet. */}
-          <div className="mt-5 rounded-card border p-4" style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF" }}>
-            <div className="mb-2.5 flex items-center gap-2">
-              <ListChecks size={16} weight="duotone" color="#74555D" />
-              <p className="eyebrow text-text-muted">What to do right now</p>
-            </div>
-            <ol className="flex flex-col gap-2 font-satoshi text-sm text-text-muted list-decimal pl-4">
-              <li>Don't chase — call their name calmly and crouch down. Chasing usually makes a scared animal run further.</li>
-              <li>Check nearby hiding spots first: under decks, parked cars, bushes, before searching further out.</li>
-              <li>Leave a door or gate open with their bed or food nearby — many pets find their own way back.</li>
-              <li>Walk the immediate area calling their name every minute or so, and pause to listen.</li>
-              <li>Knock on neighbours' doors directly — people notice more than they think to mention online.</li>
-              <li>Once you have the poster, put it up in the streets right around where they were last seen first.</li>
-            </ol>
-          </div>
 
           <a href={`/p/${token}`} className="mt-3 block text-center font-satoshi text-sm text-text-muted underline">
             Back to {petName}'s info
@@ -142,22 +132,9 @@ export default function MissingPetForm({ token, petName, ownerName, photoUrl }: 
             ‹ Back
           </a>
 
-          {/* Photo + heading, same identity-block pattern as the recipient
-              page (photo beside the name) — ties this screen visually back
-              to the profile the sitter just came from. */}
-          <div className="flex items-center gap-3">
-            {photoUrl && isSafeHttpsUrl(photoUrl) && (
-              <img
-                src={photoUrl}
-                alt={petName}
-                className="h-12 w-12 shrink-0 rounded-full border-2 object-cover"
-                style={{ borderColor: "#E5BEC4" }}
-              />
-            )}
-            <h1 className="font-tanker text-2xl font-normal leading-tight text-foreground">
-              {petName} is missing
-            </h1>
-          </div>
+          <h1 className="font-tanker text-2xl font-normal leading-tight text-foreground">
+            {petName} is missing
+          </h1>
           <p className="mt-2.5 font-satoshi text-sm leading-snug text-text-muted">
             Fill in what you know. {ownerName} will be alerted the moment you send this, and you'll get a
             printable poster with {petName}'s photo.
