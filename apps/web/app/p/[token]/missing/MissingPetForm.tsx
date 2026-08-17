@@ -66,7 +66,7 @@ export default function MissingPetForm({ token, petName, ownerName, photoUrl }: 
 
   if (sent) {
     return (
-      <main className="min-h-screen bg-background px-6 pt-5 pb-8">
+      <main className="min-h-screen bg-background px-6 pt-8 pb-8">
         <div className="mx-auto w-full max-w-sm">
           <h1 className="font-tanker text-2xl font-normal leading-tight text-foreground">
             Alert sent.
@@ -120,7 +120,7 @@ export default function MissingPetForm({ token, petName, ownerName, photoUrl }: 
     // in the remaining space (flex-1 + justify-center on the inner wrapper)
     // rather than starting immediately below Back — reads as one composed
     // screen instead of a form crammed against the header.
-    <main className="flex min-h-screen flex-col bg-background px-6 pt-5 pb-8">
+    <main className="flex min-h-screen flex-col bg-background px-6 pt-8 pb-8">
       <a href={`/p/${token}`} className="font-satoshi text-sm text-text-muted">
         ‹ Back
       </a>
