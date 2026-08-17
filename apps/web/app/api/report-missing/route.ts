@@ -78,7 +78,7 @@ async function sendOwnerEmail(params: {
            link rather than competing with the actual content for attention. -->
       <p style="margin-top:20px;font-size:12px;">
         <a href="${recipientUrl}" style="color:#74555D;">
-          Need the vet's number or microchip details? See ${escapeHtml(petName)}'s full profile
+          Need the vet's number or microchip details? Grab it from ${escapeHtml(petName)}'s web link
         </a>
       </p>
     </div>
