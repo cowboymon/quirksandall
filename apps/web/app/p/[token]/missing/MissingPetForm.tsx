@@ -120,7 +120,7 @@ export default function MissingPetForm({ token, petName, ownerName }: Props) {
               onChange={(e) => setLastSeenArea(e.target.value)}
               placeholder="Newtown IGA @ 4:40pm"
               className="h-12 w-full rounded-button border px-4 font-satoshi text-base text-foreground"
-              style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF" }}
+              style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF", boxSizing: "border-box" }}
             />
           </div>
 
@@ -132,7 +132,11 @@ export default function MissingPetForm({ token, petName, ownerName }: Props) {
               max={todayIso()}
               onChange={(e) => setLastSeenDate(e.target.value)}
               className="h-12 w-full rounded-button border px-4 font-satoshi text-base text-foreground"
-              style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF" }}
+              // Native date inputs (esp. iOS Safari) bring their own chrome
+              // that can override height/width even with identical classes
+              // to the text input beside it — appearance:none plus an
+              // explicit border-box stop it from rendering a different size.
+              style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF", WebkitAppearance: "none", appearance: "none", boxSizing: "border-box" }}
             />
           </div>
 
@@ -144,7 +148,7 @@ export default function MissingPetForm({ token, petName, ownerName }: Props) {
               placeholder="Grey knit jumper, pink bedazzled leash, red collar underneath."
               rows={3}
               className="w-full rounded-button border px-4 py-3 font-satoshi text-base text-foreground"
-              style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF" }}
+              style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF", boxSizing: "border-box" }}
             />
           </div>
 
