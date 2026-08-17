@@ -42,3 +42,11 @@ body {
 input[type="date"]::-webkit-date-and-time-value {
   text-align: left;
 }
+
+/* Shrinks placeholder/example text without touching the input's own
+   font-size — that stays at 16px (text-base) so iOS Safari doesn't zoom the
+   viewport on focus. The placeholder pseudo-element can be sized
+   independently of the element it belongs to. */
+.field-placeholder-sm::placeholder {
+  font-size: 13px;
+}

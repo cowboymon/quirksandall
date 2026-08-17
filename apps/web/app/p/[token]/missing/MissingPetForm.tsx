@@ -164,7 +164,7 @@ export default function MissingPetForm({ token, petName, ownerName, photoUrl }: 
                   value={lastSeenArea}
                   onChange={(e) => setLastSeenArea(e.target.value)}
                   placeholder="Newtown IGA @ 4:40pm"
-                  className="h-10 w-full rounded-button border pl-9 pr-3.5 font-satoshi text-base text-foreground"
+                  className="field-placeholder-sm h-10 w-full rounded-button border pl-9 pr-3.5 font-satoshi text-base text-foreground"
                   style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF", boxSizing: "border-box" }}
                 />
               </div>
@@ -198,7 +198,7 @@ export default function MissingPetForm({ token, petName, ownerName, photoUrl }: 
                   onChange={(e) => setLookFor(e.target.value)}
                   placeholder="Grey knit jumper, pink bedazzled leash, red collar underneath."
                   rows={2}
-                  className="w-full rounded-button border py-2 pl-9 pr-3.5 font-satoshi text-base text-foreground"
+                  className="field-placeholder-sm w-full rounded-button border py-2 pl-9 pr-3.5 font-satoshi text-base text-foreground"
                   style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF", boxSizing: "border-box" }}
                 />
               </div>
