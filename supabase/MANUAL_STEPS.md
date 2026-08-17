@@ -183,3 +183,15 @@ you go. Newest work is at the top of each section.
 - [ ] **`PIN_UNLOCK_SECRET`** (Vercel/Supabase env) — dedicated signing secret
   for the persisted-PIN-unlock cookie (#87). **Optional** — it falls back to
   `SUPABASE_SERVICE_KEY` if unset, so nothing breaks without it.
+- [ ] **`RESEND_API_KEY`** (Vercel env, web app) — **required** for the
+  "[Pet name] is missing" flow (`/api/report-missing`) to actually email the
+  owner. Without it, a sitter can fill in and submit the missing-pet form and
+  it silently fails to alert anyone — the route logs the missing key
+  server-side but the only thing a real user sees is a generic "Couldn't send
+  the alert" error. May already be set for the marketing waitlist's Resend
+  Audience sync (`apps/marketing`); this is the same key, just also needed on
+  the web app's Vercel project.
+- [ ] **`RESEND_FROM_EMAIL`** (Vercel env, web app) — sender address for the
+  missing-pet alert email, e.g. `Quirks & All <quirksandall@itshypothetical.com>`.
+  **Optional** — falls back to that exact address if unset, but the sending
+  domain must be verified in Resend or every send fails.
