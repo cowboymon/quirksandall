@@ -259,6 +259,17 @@ export default function EditRoutine() {
         />
       </View>
 
+      {/* Medications sit right after Feeding, not down in Medical — a
+          medication is almost always tagged to a meal slot, so the input
+          it needs (which meal) is right above it. Medical below still
+          carries the section title/scroll-anchor for Allergies/Conditions,
+          which aren't feeding-related. MedicationsEditor carries its own
+          "Medications" heading, so it doesn't rely on Medical's title for
+          context. */}
+      <View style={{ marginBottom: 12 }}>
+        <MedicationsEditor meds={meds} onChange={setMeds} />
+      </View>
+
       {/* Walks */}
       <Card style={{ marginBottom: 12 }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
@@ -375,9 +386,6 @@ export default function EditRoutine() {
           style={{ height: 60, paddingTop: 10, textAlignVertical: "top" }}
         />
       </Card>
-
-      {/* Medications — structured entries, each tied to a meal (#94) */}
-      <MedicationsEditor meds={meds} onChange={setMeds} />
     </EditShell>
   );
 }

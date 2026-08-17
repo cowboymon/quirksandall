@@ -281,6 +281,14 @@ export default function Step4() {
             />
           </View>
 
+          {/* Medications sit right after Feeding, not down in Medical — a
+              medication is almost always tagged to a meal slot, so the
+              input it needs (which meal) is right above it. Medical below
+              still holds Allergies, which isn't feeding-related.
+              MedicationsEditor carries its own "Medications" heading, so
+              it doesn't rely on Medical's title for context. */}
+          <MedicationsEditor meds={pet.medications ?? []} onChange={(meds) => setPet({ medications: meds })} />
+
           <View>
             <Eyebrow>Walks</Eyebrow>
             <Textarea style={{ marginTop: 4 }} placeholder="Frequency, duration, any notes…" value={pet.walks ?? ""} onChangeText={(v) => setPet({ walks: v })} />
@@ -315,7 +323,6 @@ export default function Step4() {
             <Eyebrow>Allergies</Eyebrow>
             <Textarea style={{ marginTop: 4 }} placeholder="Food, environmental, medication…" value={pet.allergies ?? ""} onChangeText={(v) => setPet({ allergies: v })} />
           </View>
-          <MedicationsEditor meds={pet.medications ?? []} onChange={(meds) => setPet({ medications: meds })} />
         </View>
       </View>
 
