@@ -189,19 +189,6 @@ export default function RecipientView({ profile, token }: Props) {
         )}
       </div>
 
-      {/* Missing-pet report — deliberately its own small button, not styled
-          like a primary action, so it doesn't compete with the page's normal
-          content. Links to a dedicated page (not a modal) so filling in
-          last-seen details is the actual friction against an accidental tap,
-          rather than a confirm dialog stacked on top of a one-tap trigger. */}
-      <a
-        href={`/p/${token}/missing`}
-        className="mb-6 flex items-center justify-center gap-2 rounded-button border py-2.5 text-sm font-medium"
-        style={{ borderColor: "#E5BEC4", color: "#9A5050" }}
-      >
-        {name} is missing
-      </a>
-
       <div className="flex flex-col gap-6">
         {/* Emergency contacts — dark card, PIN-gated only when the owner set a PIN */}
         {pinSet && !pinUnlocked ? (
@@ -311,6 +298,21 @@ export default function RecipientView({ profile, token }: Props) {
             </section>
           )
         )}
+
+        {/* Missing-pet report — sits right below the emergency box, the
+            other place a sitter's attention goes in a moment like this.
+            Deliberately its own small button, not styled like a primary
+            action, so it doesn't compete with the page's normal content.
+            Links to a dedicated page (not a modal) so filling in last-seen
+            details is the actual friction against an accidental tap, rather
+            than a confirm dialog stacked on top of a one-tap trigger. */}
+        <a
+          href={`/p/${token}/missing`}
+          className="flex items-center justify-center gap-2 rounded-button border py-2.5 text-sm font-medium"
+          style={{ borderColor: "#E5BEC4", color: "#9A5050" }}
+        >
+          Is {name} missing?
+        </a>
 
         {/* Daily Routine — feeding is free; walks/sleep/bathroom are paid */}
         {routine && (hasFeeding(routine.feeding, allMeds) || (paidVisible && (routine.walks || routine.sleep || routine.bathroomHabits || routine.leftAlone || routine.toileting))) && (
