@@ -93,16 +93,16 @@ export default function Step3() {
           that word exists, so nothing is offered twice. Sits right under the
           heading rather than below the cards — the more commands you've
           added, the further a bottom-anchored version would sink, which is
-          backwards for a shortcut meant to stay reachable. */}
+          backwards for a shortcut meant to stay reachable. No "Quick add"
+          label — every other eyebrow-style label in the app lives inside a
+          card (e.g. "SCARED OF ANYTHING?"), never floating directly under a
+          section heading, and the chips are self-explanatory without one. */}
       {(() => {
         const have = new Set(commands.map((c) => c.word.trim().toLowerCase()).filter(Boolean));
         const remaining = SUGGESTED_COMMANDS.filter((sug) => !have.has(sug.word.toLowerCase()));
         if (!remaining.length) return null;
         return (
           <View style={{ marginTop: 8 }}>
-            <Text style={{ color: colors.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium", marginBottom: 8 }}>
-              Quick add
-            </Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
               {remaining.map((sug) => (
                 <TouchableOpacity
