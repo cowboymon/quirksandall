@@ -99,7 +99,7 @@ export default function MissingPetForm({ token, petName, ownerName }: Props) {
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-6 py-16">
       <div className="w-full max-w-sm">
-        <a href={`/p/${token}`} className="font-satoshi text-sm text-text-muted underline">
+        <a href={`/p/${token}`} className="font-satoshi text-base text-text-muted">
           ‹ Back
         </a>
 
@@ -136,7 +136,7 @@ export default function MissingPetForm({ token, petName, ownerName }: Props) {
               // that can override height/width even with identical classes
               // to the text input beside it — appearance:none plus an
               // explicit border-box stop it from rendering a different size.
-              style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF", WebkitAppearance: "none", appearance: "none", boxSizing: "border-box" }}
+              style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF", WebkitAppearance: "none", appearance: "none", boxSizing: "border-box", textAlign: "left" }}
             />
           </div>
 
