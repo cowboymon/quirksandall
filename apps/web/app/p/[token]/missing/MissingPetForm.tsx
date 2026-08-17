@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { possessive } from "@quirksandall/shared";
 
 type Props = { token: string; petName: string; ownerName: string };
 
@@ -88,6 +89,23 @@ export default function MissingPetForm({ token, petName, ownerName }: Props) {
             </p>
           )}
 
+          {/* Sitter-facing, not the owner's — this is the person physically
+              searching, so this is where actionable guidance actually helps.
+              Shown after the alert's already sent so it never slows that
+              down. Standard lost-pet-recovery advice, not anything specific
+              to this app or pet. */}
+          <div className="mt-8 rounded-card border p-4" style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF" }}>
+            <p className="eyebrow text-foreground mb-3">What to do right now</p>
+            <ol className="flex flex-col gap-2.5 font-satoshi text-sm text-text-muted list-decimal pl-4">
+              <li>Don't chase — call their name calmly and crouch down. Chasing usually makes a scared animal run further.</li>
+              <li>Check nearby hiding spots first: under decks, parked cars, bushes, before searching further out.</li>
+              <li>Leave a door or gate open with their bed or food nearby — many pets find their own way back.</li>
+              <li>Walk the immediate area calling their name every minute or so, and pause to listen.</li>
+              <li>Knock on neighbours' doors directly — people notice more than they think to mention online.</li>
+              <li>Once you have the poster, put it up in the streets right around where they were last seen first.</li>
+            </ol>
+          </div>
+
           <a href={`/p/${token}`} className="mt-4 block text-center font-satoshi text-sm text-text-muted underline">
             Back to {petName}'s info
           </a>
@@ -164,7 +182,7 @@ export default function MissingPetForm({ token, petName, ownerName }: Props) {
             className="h-12 rounded-button font-satoshi text-sm font-bold disabled:opacity-50"
             style={{ backgroundColor: "#510000", color: "#F8ECEE" }}
           >
-            {submitting ? "Sending…" : `Alert ${ownerName} & create poster`}
+            {submitting ? "Sending…" : `Alert ${possessive(petName)} human & create the poster`}
           </button>
         </div>
       </div>
