@@ -110,12 +110,20 @@ you go. Newest work is at the top of each section.
 
 ## ✉️ Auth (dashboard, not SQL)
 
-- [x] **OTP sign-in email** — Authentication → Email Templates → **Magic Link**.
-  Paste `supabase/email-templates/magic-link.html` (now version-controlled);
-  set subject to `{{ .Token }} — that's the one`; send yourself a test.
-  *(Confirm the hosted logo renders — the image lives in the project's public
-  `brand` storage bucket, so a new project needs `email-header-1x.webp`
-  re-uploaded there.)* *(Applied to the Sydney project 6 Aug 2026.)*
+- [ ] **OTP sign-in email — dark-mode fix** — re-paste
+  `supabase/email-templates/magic-link.html` into Authentication → Email
+  Templates → **Magic Link**. Apple Mail was fully inverting every color pair
+  (dark card → showed light, light code block → showed dark) because
+  `supported-color-schemes` was missing alongside `color-scheme` — Apple Mail
+  needs both meta tags together, plus a matching CSS-level
+  `:root{color-scheme:light}` declaration, to actually suppress its
+  auto-dark-mode inversion. Also added `bgcolor` HTML attributes on the three
+  background containers as a second layer, since some Apple Mail versions
+  weigh that over the inline `background-color` style. Send yourself a test
+  and check it in Apple Mail specifically (the client that broke) —
+  Gmail/Outlook weren't confirmed broken but should render unaffected either
+  way. *(Original applied to the Sydney project 6 Aug 2026; this fix not yet
+  re-pasted.)*
 
 ---
 

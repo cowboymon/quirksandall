@@ -18,8 +18,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
 <title>HERE'S YOUR WAY IN</title>
 <style>
+  /* Apple Mail needs both the meta tags above AND this CSS-level
+     declaration to fully suppress its automatic dark-mode color inversion —
+     without it, every color pair in this template (card/text, code
+     block/digits) rendered inverted, which is worse than no styling at all
+     since it's the exact opposite of the intended contrast. */
+  :root { color-scheme: light; supported-color-schemes: light; }
   @media screen and (max-width: 520px) {
     .wrap { padding: 28px 12px !important; }
     .card { padding: 30px 24px 26px 24px !important; }
@@ -27,19 +34,19 @@
   }
 </style>
 </head>
-<body style="margin:0; padding:0; background-color:#510000;">
+<body bgcolor="#510000" style="margin:0; padding:0; background-color:#510000;">
 
   <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:#510000; font-size:1px; line-height:1px;">
     Your Quirks &amp; All sign-in code &mdash; expires in 10 minutes.
   </div>
 
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#510000;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#510000" style="background-color:#510000;">
     <tr>
       <td align="center" class="wrap" style="padding:48px 20px;">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="max-width:480px; width:100%;">
 
           <tr>
-            <td class="card" style="background-color:#E5BEC4; border-radius:16px; padding:40px 32px 36px 32px;">
+            <td class="card" bgcolor="#E5BEC4" style="background-color:#E5BEC4; border-radius:16px; padding:40px 32px 36px 32px;">
 
               <!-- Logo -->
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
@@ -60,7 +67,7 @@
               <!-- Code block -->
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:0;">
                 <tr>
-                  <td style="background-color:#510000; border-radius:10px; padding:24px 16px; text-align:center;">
+                  <td bgcolor="#510000" style="background-color:#510000; border-radius:10px; padding:24px 16px; text-align:center;">
                     <span class="code" style="font-family:'SFMono-Regular',Menlo,Consolas,'Courier New',monospace; font-size:42px; line-height:1; font-weight:700; letter-spacing:11px; color:#F8ECEE; display:block;">{{ .Token }}</span>
                   </td>
                 </tr>
