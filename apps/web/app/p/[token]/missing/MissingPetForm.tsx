@@ -70,7 +70,7 @@ export default function MissingPetForm({ token, petName, ownerName }: Props) {
           <h1 className="font-tanker text-3xl font-normal leading-tight text-foreground">
             {ownerName} has been alerted.
           </h1>
-          <p className="mt-3 font-satoshi text-base leading-relaxed text-text-muted">
+          <p className="mt-3 font-satoshi text-sm leading-relaxed text-text-muted">
             They've been sent what you entered, and know to check their phone.
           </p>
 
@@ -124,12 +124,16 @@ export default function MissingPetForm({ token, petName, ownerName }: Props) {
         <h1 className="mt-3 font-tanker text-3xl font-normal leading-tight text-foreground">
           {petName} is missing
         </h1>
-        <p className="mt-3 font-satoshi text-base leading-relaxed text-text-muted">
+        <p className="mt-3 font-satoshi text-sm leading-relaxed text-text-muted">
           Fill in what you know. {ownerName} will be alerted the moment you send this, and you'll get a
           printable poster with {petName}'s photo.
         </p>
 
         <div className="mt-8 flex flex-col gap-5">
+          {/* Field text stays at text-base (16px) even though everything else
+              on this page dropped to text-sm to match the recipient page's
+              scale — iOS Safari auto-zooms the viewport on focusing any input
+              under 16px, which is worse than a slightly larger field. */}
           <div>
             <label className="eyebrow mb-1.5 block text-foreground">Last seen where</label>
             <input
