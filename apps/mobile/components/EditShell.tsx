@@ -68,6 +68,11 @@ export default function EditShell({ title, subtitle, children, onSave, saving, s
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="interactive"
           automaticallyAdjustKeyboardInsets
+          // Same fix as OnboardingShell — collapsing command cards above the
+          // fold (#19) shrinks content height out from under the scroll
+          // offset, which otherwise clamps to the new max and reads as the
+          // page freezing then jumping to the bottom.
+          maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
         >
           {subtitle ? (
             <Text style={{ color: colors.textMuted, fontSize: 14, lineHeight: 21, marginBottom: 20, fontFamily: "Satoshi-Light" }}>

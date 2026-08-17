@@ -34,6 +34,13 @@ export default function OnboardingShell({ step, total = 4, children }: { step: n
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="interactive"
         automaticallyAdjustKeyboardInsets
+        // Without this, collapsing command cards above the fold (#19) shrinks
+        // the content height out from under the current scroll offset, and
+        // the ScrollView clamps to the new (much shorter) max — which reads
+        // as the page freezing then jumping to the bottom. This keeps
+        // whatever's currently on screen anchored instead of letting the
+        // offset get reinterpreted against the new content size.
+        maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
         contentContainerStyle={{ padding: 24, paddingTop: 20, paddingBottom: 48, width: "100%", maxWidth: 600, alignSelf: "center" }}
       >
         {children}
