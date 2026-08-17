@@ -69,6 +69,22 @@ type ChangelogEntry = {
 
 const ENTRIES: ChangelogEntry[] = [
   {
+    date: "17 August 2026",
+    document: "Privacy Policy",
+    href: "/privacy",
+    version: "1.2",
+    summary:
+      "Added the \"report missing\" feature to section 4 (a recipient can send an owner last-seen details by email) and added Resend, our transactional email provider, to our service providers.",
+  },
+  {
+    date: "17 August 2026",
+    document: "Terms of Service",
+    href: "/terms",
+    version: "1.2",
+    summary:
+      "Section 6: a recipient can now use the \"report missing\" feature to send an owner last-seen details, which we forward by email without verifying.",
+  },
+  {
     date: "12 August 2026",
     document: "Terms of Service",
     href: "/terms",

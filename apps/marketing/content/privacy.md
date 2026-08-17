@@ -1,11 +1,11 @@
 # Privacy Policy
 
-**Version 1.1 — Last updated 12 August 2026**
+**Version 1.2 — Last updated 17 August 2026**
 
-> **What changed in version 1.1**
+> **What changed in version 1.2**
 >
-> - We added **Sentry**, a crash- and error-reporting tool, to help us find and fix problems in our mobile app. It's now listed among our service providers (section 5).
-> - We spelled out, in section 4, that when you open a shared pet profile link we count that visit **anonymously** through our analytics provider — there's no account and we don't try to identify you — and that a small identifier is stored on your device so the same visit isn't counted twice.
+> - We added a "report missing" feature: if a sitter opens your shared link and your pet goes missing, they can send you the details (last seen location, date and description) by email. We spelled this out in section 4, and don't store what's entered beyond what's needed to send that one alert.
+> - We added **Resend**, the provider that delivers our transactional emails (sign-in codes and missing-pet alerts), to our service providers (section 5).
 >
 > The full record of changes between versions is on our [change history](/legal/changelog) page.
 
@@ -65,6 +65,7 @@ You don't need an account to open a Quirks & All link, and we don't ask you to c
 - We record when the link was last opened, and show that to the person who shared it with you.
 - We count each time the link is opened, using our analytics provider (Mixpanel), so the owner can see it's been viewed and so we can measure how the Service is used. This is anonymous — you don't have an account and we don't try to identify you — and a small random identifier is stored on your device so the same visit isn't counted twice. Mixpanel processes this in the European Union (see section 10).
 - If a PIN is entered incorrectly, we log the time and IP address to prevent guessing attacks, and show the owner a count of failed attempts. We don't record who made them.
+- If you use the "report missing" feature, we send the details you enter (last seen location, date and description) directly to the owner by email, along with a link back to the profile. We don't store this beyond what's needed to send that one alert.
 
 The pet information you see belongs to the person who shared the link. They decide what it contains and can revoke your access at any time. If you have questions about that information, speak to them.
 
@@ -77,6 +78,7 @@ We use a small number of providers to run the Service. They only handle informat
 - **Expo** — infrastructure for building and updating the mobile app.
 - **Mixpanel** — product analytics, to understand how the app is used and where it can be improved.
 - **Sentry** — crash and error reporting for our mobile app. When the app hits an error, Sentry receives technical diagnostic information — device type, operating system, app version and the technical details of what went wrong — so we can find and fix it. We don't send your pet profiles, emergency contacts or uploaded documents to Sentry.
+- **Resend** — delivers our transactional emails: sign-in codes and missing-pet alerts.
 - **Apple App Store and Google Play** — to process your purchase. We don't receive your full payment details.
 - **RevenueCat** — to verify and manage purchase entitlements.
 - **Anthropic** — classifies themes in feature suggestions submitted on our marketing website, to help us prioritise what to build. No pet, account or emergency-contact data is sent — only the suggestion text itself, and the output is used internally by us, not shown to any user.

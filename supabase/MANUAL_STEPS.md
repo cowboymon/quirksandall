@@ -142,6 +142,13 @@ you go. Newest work is at the top of each section.
   retention. Depends on the §7.1 `share_links` column extension
   (`write_closes_at` etc.) landing first.
 
+- [x] **Missing-pet report → legal docs** — Privacy Policy v1.2 (17 Aug 2026)
+  covers the "report missing" feature in §4 (recipient-submitted last-seen
+  details, forwarded to the owner by email, not stored) and adds Resend to
+  §5. Terms of Service v1.2 (same date) covers it in §6 (recipient's own
+  content, unverified). Minor bump on both — no active in-app notice, per
+  the changelog page's own minor-vs-major rule. *(Done 17 Aug 2026.)*
+
 - [x] **Mixpanel → privacy policy** — Mixpanel is listed in §5, and Privacy
   Policy v1.1 (12 Aug 2026) covers the recipient page's anonymous view
   tracking in §4 (no account, local identifier, EU processing) to match the

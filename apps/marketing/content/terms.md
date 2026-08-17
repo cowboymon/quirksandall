@@ -1,6 +1,12 @@
 # Terms of Service
 
-**Version 1.1 — Last updated 12 August 2026**
+**Version 1.2 — Last updated 17 August 2026**
+
+> **What changed in version 1.2**
+>
+> - Section 6 now covers the "report missing" feature: a recipient can send you last-seen details about your pet, which we forward to you by email. That information is theirs, and we don't verify it.
+>
+> The full record of changes between versions is on our [change history](/legal/changelog) page.
 
 These Terms of Service ("Terms") govern your access to and use of the Quirks & All mobile app, website and the shareable links it generates (together, the "Service"), operated by Monica Rattanong trading as Its Hypothetical (ABN 22 525 634 531) ("we", "us"). By downloading, accessing or using the Service, you agree to these Terms. If you don't agree, please don't use the Service.
 
@@ -36,6 +42,8 @@ You are responsible for Your Content. You agree that:
 ## 6. Shareable links
 
 The Service lets you generate links that display your pet's profile. Anyone with a link can view the non-PIN-protected parts of that profile — treat a link like you'd treat a key. Emergency contact details are protected behind a PIN you set. You can revoke a link at any time, which stops it working; on a paid plan you can run several links at once — one per sitter — and revoke any of them on its own. We can't control what recipients do with information after they've seen it.
+
+If your pet goes missing while in someone's care, they can use the "report missing" feature on your shared link to send you last-seen details, which we forward to you by email. That's the recipient's own content — we don't verify it, and you're responsible for deciding how to act on it.
 
 ## 7. Acceptable use
 
