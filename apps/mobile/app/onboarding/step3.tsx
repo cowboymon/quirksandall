@@ -89,8 +89,38 @@ export default function Step3() {
         </View>
       </View>
 
+      {/* #18 — quick-add chips. A suggestion disappears once a command with
+          that word exists, so nothing is offered twice. Sits right under the
+          heading rather than below the cards — the more commands you've
+          added, the further a bottom-anchored version would sink, which is
+          backwards for a shortcut meant to stay reachable. */}
+      {(() => {
+        const have = new Set(commands.map((c) => c.word.trim().toLowerCase()).filter(Boolean));
+        const remaining = SUGGESTED_COMMANDS.filter((sug) => !have.has(sug.word.toLowerCase()));
+        if (!remaining.length) return null;
+        return (
+          <View style={{ marginTop: 8 }}>
+            <Text style={{ color: colors.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium", marginBottom: 8 }}>
+              Quick add
+            </Text>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+              {remaining.map((sug) => (
+                <TouchableOpacity
+                  key={sug.word}
+                  onPress={() => quickAdd(sug.word, sug.meaning)}
+                  activeOpacity={0.85}
+                  style={{ paddingHorizontal: 12, height: 34, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: colors.secondary, borderWidth: 1, borderColor: colors.border }}
+                >
+                  <Text style={{ color: colors.textDark, fontSize: 12, fontFamily: "Satoshi-Medium" }}>+ {sug.word}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        );
+      })()}
+
       {/* Numbered command cards — same structure as the Dashboard edit screen */}
-      <View style={{ gap: 10, marginTop: 8 }}>
+      <View style={{ gap: 10, marginTop: 14 }}>
         {commands.map((cmd, i) => {
           // #19 — condensed one-line row once the list is long, expanded on tap.
           const collapsed = commands.length > 2 && expandedId !== cmd.id;
@@ -143,32 +173,6 @@ export default function Step3() {
           );
         })}
       </View>
-      {/* #18 — quick-add chips. A suggestion disappears once a command with
-          that word exists, so nothing is offered twice. */}
-      {(() => {
-        const have = new Set(commands.map((c) => c.word.trim().toLowerCase()).filter(Boolean));
-        const remaining = SUGGESTED_COMMANDS.filter((sug) => !have.has(sug.word.toLowerCase()));
-        if (!remaining.length) return null;
-        return (
-          <View style={{ marginTop: 14 }}>
-            <Text style={{ color: colors.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium", marginBottom: 8 }}>
-              Quick add
-            </Text>
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-              {remaining.map((sug) => (
-                <TouchableOpacity
-                  key={sug.word}
-                  onPress={() => quickAdd(sug.word, sug.meaning)}
-                  activeOpacity={0.85}
-                  style={{ paddingHorizontal: 12, height: 34, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: colors.secondary, borderWidth: 1, borderColor: colors.border }}
-                >
-                  <Text style={{ color: colors.textDark, fontSize: 12, fontFamily: "Satoshi-Medium" }}>+ {sug.word}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        );
-      })()}
 
       <TouchableOpacity
         onPress={addCommand}
