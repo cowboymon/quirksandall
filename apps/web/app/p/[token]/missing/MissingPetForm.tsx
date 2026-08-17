@@ -115,84 +115,88 @@ export default function MissingPetForm({ token, petName, ownerName }: Props) {
   }
 
   return (
-    // Top-aligned, not vertically centered — centering pushed Back down to
-    // wherever the block happened to start, and on a short/keyboard-open
-    // viewport that could sit off-screen. Compact spacing throughout so the
-    // whole form (including the submit button) fits without scrolling on a
-    // typical phone screen.
-    <main className="min-h-screen bg-background px-6 pt-5 pb-8">
-      <div className="mx-auto w-full max-w-sm">
-        <a href={`/p/${token}`} className="font-satoshi text-sm text-text-muted">
-          ‹ Back
-        </a>
+    // Back is pinned at the top; everything else floats vertically centered
+    // in the remaining space (flex-1 + justify-center on the inner wrapper)
+    // rather than starting immediately below Back — reads as one composed
+    // screen instead of a form crammed against the header.
+    <main className="flex min-h-screen flex-col bg-background px-6 pt-5 pb-8">
+      <a href={`/p/${token}`} className="font-satoshi text-sm text-text-muted">
+        ‹ Back
+      </a>
 
-        <h1 className="mt-2 font-tanker text-2xl font-normal leading-tight text-foreground">
-          {petName} is missing
-        </h1>
-        <p className="mt-1.5 font-satoshi text-sm leading-snug text-text-muted">
-          Fill in what you know. {ownerName} will be alerted the moment you send this, and you'll get a
-          printable poster with {petName}'s photo.
-        </p>
+      <div className="flex flex-1 flex-col justify-center">
+        <div className="mx-auto w-full max-w-sm">
+          <h1 className="font-tanker text-2xl font-normal leading-tight text-foreground">
+            {petName} is missing
+          </h1>
+          <p className="mt-1.5 font-satoshi text-sm leading-snug text-text-muted">
+            Fill in what you know. {ownerName} will be alerted the moment you send this, and you'll get a
+            printable poster with {petName}'s photo.
+          </p>
 
-        <div className="mt-5 flex flex-col gap-3.5">
-          {/* Field text stays at text-base (16px) even though everything else
-              on this page runs text-sm — iOS Safari auto-zooms the viewport
-              on focusing any input under 16px, which is worse than a
-              slightly larger field. */}
-          <div>
-            <label className="eyebrow mb-1 block text-foreground">Last seen where</label>
-            <input
-              type="text"
-              value={lastSeenArea}
-              onChange={(e) => setLastSeenArea(e.target.value)}
-              placeholder="Newtown IGA @ 4:40pm"
-              className="h-11 w-full rounded-button border px-4 font-satoshi text-base text-foreground"
-              style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF", boxSizing: "border-box" }}
-            />
+          <div className="mt-5 flex flex-col gap-3.5">
+            {/* Field text stays at text-base (16px) even though everything
+                else on this page runs smaller — iOS Safari auto-zooms the
+                viewport on focusing any input under 16px, which is worse
+                than a slightly larger field. Labels use an inline
+                font-size rather than the shared .eyebrow class's own size,
+                since that class is used elsewhere at 11px and changing it
+                would affect other pages. */}
+            <div>
+              <label className="eyebrow mb-1 block text-foreground" style={{ fontSize: 10 }}>Last seen where</label>
+              <input
+                type="text"
+                value={lastSeenArea}
+                onChange={(e) => setLastSeenArea(e.target.value)}
+                placeholder="Newtown IGA @ 4:40pm"
+                className="h-10 w-full rounded-button border px-3.5 font-satoshi text-base text-foreground"
+                style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF", boxSizing: "border-box" }}
+              />
+            </div>
+
+            <div>
+              <label className="eyebrow mb-1 block text-foreground" style={{ fontSize: 10 }}>Last seen when</label>
+              <input
+                type="date"
+                value={lastSeenDate}
+                max={todayIso()}
+                onChange={(e) => setLastSeenDate(e.target.value)}
+                className="h-10 w-full rounded-button border px-3.5 font-satoshi text-base text-foreground"
+                // Native date inputs (esp. iOS Safari) bring their own chrome
+                // that can override height/width even with identical classes
+                // to the text input beside it — appearance:none plus an
+                // explicit border-box stop it from rendering a different size.
+                style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF", WebkitAppearance: "none", appearance: "none", boxSizing: "border-box", textAlign: "left" }}
+              />
+            </div>
+
+            <div>
+              <label className="eyebrow mb-1 block text-foreground" style={{ fontSize: 10 }}>What they look like right now</label>
+              <textarea
+                value={lookFor}
+                onChange={(e) => setLookFor(e.target.value)}
+                placeholder="Grey knit jumper, pink bedazzled leash, red collar underneath."
+                rows={2}
+                className="w-full rounded-button border px-3.5 py-2 font-satoshi text-base text-foreground"
+                style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF", boxSizing: "border-box" }}
+              />
+            </div>
+
+            {error && (
+              <p className="font-satoshi text-sm" style={{ color: "#9A5050" }}>
+                {error}
+              </p>
+            )}
+
+            <button
+              onClick={submit}
+              disabled={!canSubmit}
+              className="rounded-button py-3 px-4 font-satoshi text-sm font-bold leading-snug disabled:opacity-50"
+              style={{ backgroundColor: "#510000", color: "#F8ECEE" }}
+            >
+              {submitting ? "Sending…" : `Alert ${possessive(petName)} human & create the poster`}
+            </button>
           </div>
-
-          <div>
-            <label className="eyebrow mb-1 block text-foreground">Last seen when</label>
-            <input
-              type="date"
-              value={lastSeenDate}
-              max={todayIso()}
-              onChange={(e) => setLastSeenDate(e.target.value)}
-              className="h-11 w-full rounded-button border px-4 font-satoshi text-base text-foreground"
-              // Native date inputs (esp. iOS Safari) bring their own chrome
-              // that can override height/width even with identical classes
-              // to the text input beside it — appearance:none plus an
-              // explicit border-box stop it from rendering a different size.
-              style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF", WebkitAppearance: "none", appearance: "none", boxSizing: "border-box", textAlign: "left" }}
-            />
-          </div>
-
-          <div>
-            <label className="eyebrow mb-1 block text-foreground">What they look like right now</label>
-            <textarea
-              value={lookFor}
-              onChange={(e) => setLookFor(e.target.value)}
-              placeholder="Grey knit jumper, pink bedazzled leash, red collar underneath."
-              rows={2}
-              className="w-full rounded-button border px-4 py-2.5 font-satoshi text-base text-foreground"
-              style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF", boxSizing: "border-box" }}
-            />
-          </div>
-
-          {error && (
-            <p className="font-satoshi text-sm" style={{ color: "#9A5050" }}>
-              {error}
-            </p>
-          )}
-
-          <button
-            onClick={submit}
-            disabled={!canSubmit}
-            className="rounded-button py-3 px-4 font-satoshi text-sm font-bold leading-snug disabled:opacity-50"
-            style={{ backgroundColor: "#510000", color: "#F8ECEE" }}
-          >
-            {submitting ? "Sending…" : `Alert ${possessive(petName)} human & create the poster`}
-          </button>
         </div>
       </div>
     </main>
