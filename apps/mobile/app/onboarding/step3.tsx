@@ -5,6 +5,7 @@ import { router } from "expo-router";
 import { Headline, Textarea, Input, Card, PrimaryButton, SkipButton, Eyebrow } from "../../components/ui";
 import OnboardingShell from "../../components/OnboardingShell";
 import { Underlined } from "../../components/Underlined";
+import { CaretRight } from "../../components/icons";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { colors, SUGGESTED_COMMANDS } from "@quirksandall/shared";
 import type { Command, CommandStrength } from "@quirksandall/shared";
@@ -20,6 +21,12 @@ export default function Step3() {
   const [commands, setCommands] = useState<Command[]>(
     pet.commands ?? [{ id: "1", word: "", meaning: "", reward: "", howToCue: "" }]
   );
+  // #19 — past COLLAPSE_AFTER commands the list becomes an accordion: every
+  // entry is a condensed one-line row except the single one being worked on.
+  // Adding or quick-adding a command makes it the open one. Ported from the
+  // Dashboard edit screen (edit/behavior.tsx), which had this but this
+  // onboarding screen never did.
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const updateCommand = (id: string, field: keyof Command, val: string) => {
     const updated = commands.map((c) => (c.id === id ? { ...c, [field]: val } : c));
@@ -32,15 +39,19 @@ export default function Step3() {
     setPet({ commands: updated });
   };
   const addCommand = () => {
-    const updated = [...commands, { id: Date.now().toString(), word: "", meaning: "", reward: "", howToCue: "" }];
+    const id = Date.now().toString();
+    const updated = [...commands, { id, word: "", meaning: "", reward: "", howToCue: "" }];
     setCommands(updated);
     setPet({ commands: updated });
+    setExpandedId(id);
   };
   const removeCommand = (id: string) => {
     const updated = commands.filter((c) => c.id !== id);
     setCommands(updated);
     setPet({ commands: updated });
   };
+  // Accordion: opening one closes the rest; tapping the open one closes it.
+  const toggleExpanded = (id: string) => setExpandedId((cur) => (cur === id ? null : id));
   // #18 — quick-add a common command with word + meaning pre-filled. Reward is
   // left blank (pet-specific) and everything stays editable. Fills the first
   // blank card if there is one, so the empty card this screen starts with
@@ -52,6 +63,7 @@ export default function Step3() {
       : [...commands, { id: Date.now().toString(), word, meaning, reward: "", howToCue: "" }];
     setCommands(updated);
     setPet({ commands: updated });
+    setExpandedId(blank ? blank.id : updated[updated.length - 1].id);
   };
 
   const filled = commands.filter((c) => c.word.trim()).length;
@@ -79,41 +91,57 @@ export default function Step3() {
 
       {/* Numbered command cards — same structure as the Dashboard edit screen */}
       <View style={{ gap: 10, marginTop: 8 }}>
-        {commands.map((cmd, i) => (
-          <Card key={cmd.id}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <Eyebrow>Command {i + 1}</Eyebrow>
-              {commands.length > 1 && (
-                <TouchableOpacity onPress={() => removeCommand(cmd.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                  <Text style={{ color: colors.danger, fontSize: 20, lineHeight: 20 }}>×</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-            <Input placeholder="Word (e.g. Settle)" value={cmd.word} onChangeText={(v) => updateCommand(cmd.id, "word", v)} />
-            <Input className="mt-2" placeholder="Means…" value={cmd.meaning} onChangeText={(v) => updateCommand(cmd.id, "meaning", v)} />
-            <Input className="mt-2" placeholder="How to cue (optional)" value={cmd.howToCue ?? ""} onChangeText={(v) => updateCommand(cmd.id, "howToCue", v)} />
-            <Input className="mt-2" placeholder="Reward" value={cmd.reward} onChangeText={(v) => updateCommand(cmd.id, "reward", v)} />
-            {/* Strength tag (#92) — how solid is it? Optional; shown to sitters. */}
-            <Text style={{ color: colors.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium", marginTop: 12, marginBottom: 6 }}>
-              How solid is it?
-            </Text>
-            <View style={{ flexDirection: "row", gap: 6 }}>
-              {STRENGTHS.map((s) => {
-                const active = cmd.strength === s.key;
-                return (
-                  <TouchableOpacity
-                    key={s.key}
-                    onPress={() => setStrength(cmd.id, s.key)}
-                    activeOpacity={0.85}
-                    style={{ flex: 1, height: 34, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: active ? colors.cardDark : colors.secondary, borderWidth: 1, borderColor: active ? colors.cardDark : colors.border }}
-                  >
-                    <Text style={{ color: active ? colors.cardDarkText : colors.textDark, fontSize: 12, fontFamily: "Satoshi-Medium" }}>{s.label}</Text>
+        {commands.map((cmd, i) => {
+          // #19 — condensed one-line row once the list is long, expanded on tap.
+          const collapsed = commands.length > 3 && expandedId !== cmd.id;
+          return collapsed ? (
+            <TouchableOpacity key={cmd.id} onPress={() => toggleExpanded(cmd.id)} activeOpacity={0.8}>
+              <Card style={{ paddingVertical: 12 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                  <Text numberOfLines={1} style={{ flex: 1, fontSize: 14, color: colors.textDark, fontFamily: "Satoshi" }}>
+                    <Text style={{ fontFamily: "Satoshi-Bold" }}>{cmd.word || "Unnamed"}</Text>
+                    {cmd.meaning ? ` → ${cmd.meaning}` : ""}
+                  </Text>
+                  <CaretRight size={14} color={colors.textMuted} />
+                </View>
+              </Card>
+            </TouchableOpacity>
+          ) : (
+            <Card key={cmd.id}>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <Eyebrow>Command {i + 1}</Eyebrow>
+                {commands.length > 1 && (
+                  <TouchableOpacity onPress={() => removeCommand(cmd.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                    <Text style={{ color: colors.danger, fontSize: 20, lineHeight: 20 }}>×</Text>
                   </TouchableOpacity>
-                );
-              })}
-            </View>
-          </Card>
-        ))}
+                )}
+              </View>
+              <Input placeholder="Word (e.g. Settle)" value={cmd.word} onChangeText={(v) => updateCommand(cmd.id, "word", v)} />
+              <Input className="mt-2" placeholder="Means…" value={cmd.meaning} onChangeText={(v) => updateCommand(cmd.id, "meaning", v)} />
+              <Input className="mt-2" placeholder="How to cue (optional)" value={cmd.howToCue ?? ""} onChangeText={(v) => updateCommand(cmd.id, "howToCue", v)} />
+              <Input className="mt-2" placeholder="Reward" value={cmd.reward} onChangeText={(v) => updateCommand(cmd.id, "reward", v)} />
+              {/* Strength tag (#92) — how solid is it? Optional; shown to sitters. */}
+              <Text style={{ color: colors.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium", marginTop: 12, marginBottom: 6 }}>
+                How solid is it?
+              </Text>
+              <View style={{ flexDirection: "row", gap: 6 }}>
+                {STRENGTHS.map((s) => {
+                  const active = cmd.strength === s.key;
+                  return (
+                    <TouchableOpacity
+                      key={s.key}
+                      onPress={() => setStrength(cmd.id, s.key)}
+                      activeOpacity={0.85}
+                      style={{ flex: 1, height: 34, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: active ? colors.cardDark : colors.secondary, borderWidth: 1, borderColor: active ? colors.cardDark : colors.border }}
+                    >
+                      <Text style={{ color: active ? colors.cardDarkText : colors.textDark, fontSize: 12, fontFamily: "Satoshi-Medium" }}>{s.label}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </Card>
+          );
+        })}
       </View>
       {/* #18 — quick-add chips. A suggestion disappears once a command with
           that word exists, so nothing is offered twice. */}
