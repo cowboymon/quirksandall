@@ -18,7 +18,7 @@ you go. Newest work is at the top of each section.
 
 ## ▶️ Run now
 
-- [ ] **`20260817000001_drop_dead_columns.sql`** — drops four columns
+- [x] **`20260817000001_drop_dead_columns.sql`** — drops four columns
   confirmed dead by a full-codebase audit (zero reads anywhere):
   `owners.consent_policy_version`/`terms_policy_version` (superseded by
   `policy_acceptances`), `owners.pet_count_limit`, `owners.purchase_restored_at`,
@@ -27,7 +27,8 @@ you go. Newest work is at the top of each section.
   write-only columns were considered and deliberately excluded —
   `cancelled_at`, `push_token`, `unlocked_at`, `terms_accepted_at` — since
   each is plausibly staged for a not-yet-shipped feature rather than dead;
-  see the audit discussion for the reasoning if revisiting.
+  see the audit discussion for the reasoning if revisiting. *(Run 17 Aug
+  2026.)*
 
 - [x] **`20260723000002_add_deletion_scheduled.sql`** — adds
   `owners.deletion_scheduled_at` and a daily (03:00) `pg_cron` job
