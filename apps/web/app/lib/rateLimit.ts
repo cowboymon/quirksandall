@@ -40,6 +40,39 @@ export async function checkRateLimit(
   return true;
 }
 
+// Read-only half of checkRateLimit, for callers where recording a hit for an
+// attempt that then fails downstream (e.g. a third-party API rejecting the
+// request) would wrongly burn the caller's quota on nothing. Use with
+// recordRateLimitHit below: peek before doing the expensive/sensitive work,
+// record only once that work actually succeeds.
+export async function peekRateLimit(
+  supabase: SupabaseClient,
+  bucket: string,
+  key: string,
+  max: number,
+  windowSeconds: number,
+): Promise<boolean> {
+  const windowStart = new Date(Date.now() - windowSeconds * 1000).toISOString();
+  const { count } = await supabase
+    .from("rate_limit_hits")
+    .select("id", { count: "exact", head: true })
+    .eq("bucket", bucket)
+    .eq("key", key)
+    .gte("created_at", windowStart);
+  return (count ?? 0) < max;
+}
+
+export async function recordRateLimitHit(supabase: SupabaseClient, bucket: string, key: string): Promise<void> {
+  await supabase.from("rate_limit_hits").insert({ bucket, key });
+  const windowStart = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  await supabase
+    .from("rate_limit_hits")
+    .delete()
+    .eq("bucket", bucket)
+    .eq("key", key)
+    .lt("created_at", windowStart);
+}
+
 export function clientIp(req: Request): string {
   return (req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown").trim();
 }

@@ -7,7 +7,7 @@
 // failure never blocks the part that actually matters (the owner finding out).
 
 import { createClient } from "@supabase/supabase-js";
-import { checkRateLimit, clientIp, rateLimitEnv } from "../../lib/rateLimit";
+import { peekRateLimit, recordRateLimitHit, clientIp, rateLimitEnv } from "../../lib/rateLimit";
 import { sanitizeFreeText } from "../../../lib/inputSanitize";
 
 export const runtime = "nodejs";
@@ -114,7 +114,12 @@ export async function POST(req: Request) {
 
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_KEY!);
 
-    const allowed = await checkRateLimit(supabase, "report_missing", `${token}:${clientIp(req)}`, MAX_PER_WINDOW, WINDOW_SECONDS);
+    // Only a hit that actually results in a sent email should count against
+    // this — recording on every attempt meant a run of failed sends (e.g. a
+    // misconfigured sender domain) burned the sitter's quota on nothing,
+    // leaving them rate-limited with no email ever having gone out.
+    const rateLimitKey = `${token}:${clientIp(req)}`;
+    const allowed = await peekRateLimit(supabase, "report_missing", rateLimitKey, MAX_PER_WINDOW, WINDOW_SECONDS);
     if (!allowed) return Response.json({ ok: false, error: "rate_limited" }, { status: 429 });
 
     const { data: link } = await supabase
@@ -148,6 +153,7 @@ export async function POST(req: Request) {
     });
     if (!sent) return Response.json({ ok: false, error: "server_error" }, { status: 500 });
 
+    await recordRateLimitHit(supabase, "report_missing", rateLimitKey);
     return Response.json({ ok: true });
   } catch (err) {
     console.error("report-missing failed", err);
