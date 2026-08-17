@@ -46,42 +46,127 @@ async function sendOwnerEmail(params: {
   const dateLabel = lastSeenDate
     ? new Date(lastSeenDate).toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" })
     : "just now";
+  const safePet = escapeHtml(petName);
 
+  // Same visual system as the OTP email (magic-link.html): dark crimson
+  // envelope, blush card, logo, table-based layout for Outlook/Gmail
+  // compatibility, and the same paired color-scheme meta tags + bgcolor
+  // attributes — Apple Mail inverted every color pair in the OTP email
+  // without those, and this template has the same risk without them.
   const html = `
-    <div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
-      <h1 style="color:#510000;font-size:22px;">${escapeHtml(petName)} is missing</h1>
-      <p style="color:#3E0000;font-size:15px;line-height:1.5;">
-        The sitter looking after ${escapeHtml(petName)} just reported them missing.
-      </p>
-      <table style="width:100%;border-collapse:collapse;margin:16px 0;">
-        <tr><td style="padding:6px 0;color:#74555D;font-size:13px;">Last seen</td>
-            <td style="padding:6px 0;color:#3E0000;font-size:13px;">${escapeHtml(lastSeenArea)} — ${dateLabel}</td></tr>
-        ${lookFor ? `<tr><td style="padding:6px 0;color:#74555D;font-size:13px;">Look for</td>
-            <td style="padding:6px 0;color:#3E0000;font-size:13px;">${escapeHtml(lookFor)}</td></tr>` : ""}
-      </table>
-      <!-- Owner-facing, deliberately different from the sitter's on-screen
-           checklist — the sitter's steps are what to do standing in the
-           street right now (don't chase, check nearby); the owner's are the
-           things only they can do, so the two don't duplicate effort. -->
-      <div style="margin-top:20px;padding-top:20px;border-top:1px solid #E5BEC4;">
-        <p style="color:#510000;font-size:14px;font-weight:bold;margin:0 0 10px;">What you can do from here</p>
-        <ul style="color:#3E0000;font-size:13px;line-height:1.6;margin:0;padding-left:18px;">
-          <li>Call your vet and any microchip registry — flag ${escapeHtml(petName)} as missing so a scan anywhere gets matched back to you.</li>
-          <li>Check with local shelters and vet clinics directly by phone — many don't cross-post lost pets online.</li>
-          <li>Post in nearby community/neighbourhood groups — the sitter has a printable poster with ${escapeHtml(petName)}'s photo, ask them to share it with you.</li>
-          <li>Stay reachable — the sitter's out looking now and may need to reach you quickly.</li>
-        </ul>
-      </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>${safePet} is missing</title>
+<style>
+  :root { color-scheme: light; supported-color-schemes: light; }
+  @media screen and (max-width: 520px) {
+    .wrap { padding: 28px 12px !important; }
+    .card { padding: 30px 24px 26px 24px !important; }
+  }
+</style>
+</head>
+<body bgcolor="#510000" style="margin:0; padding:0; background-color:#510000;">
 
-      <!-- Not a big CTA button — this is a fallback for the vet/microchip
-           step above, not the point of the email, so it reads as a plain
-           link rather than competing with the actual content for attention. -->
-      <p style="margin-top:20px;font-size:12px;">
-        <a href="${recipientUrl}" style="color:#74555D;">
-          Need the vet's number or microchip details? Grab it from ${escapeHtml(petName)}'s web link
-        </a>
-      </p>
-    </div>
+  <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:#510000; font-size:1px; line-height:1px;">
+    ${safePet} was reported missing — last seen ${escapeHtml(lastSeenArea)}.
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#510000" style="background-color:#510000;">
+    <tr>
+      <td align="center" class="wrap" style="padding:48px 20px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="max-width:480px; width:100%;">
+
+          <tr>
+            <td class="card" bgcolor="#E5BEC4" style="background-color:#E5BEC4; border-radius:16px; padding:40px 32px 36px 32px;">
+
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+                <tr>
+                  <td align="center">
+                    <img src="https://wlzviqgezwkcyhmofkdt.supabase.co/storage/v1/object/public/brand/email-header-1x.webp" alt="Quirks &amp; All" width="200" style="display:block; border:0; outline:none; text-decoration:none; height:auto;">
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:0 0 8px 0; font-family:Helvetica,Arial,sans-serif; font-size:26px; line-height:1.2; color:#510000; font-weight:700; letter-spacing:-0.3px;">${safePet} is missing.</p>
+              <p style="margin:0 0 24px 0; font-family:Helvetica,Arial,sans-serif; font-size:14px; line-height:1.6; color:#74555D;">The sitter looking after ${safePet} just reported them missing.</p>
+
+              <!-- Last seen — white sub-card, same pattern the app itself
+                   uses (blush page background, white content cards). -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#FFFFFF" style="background-color:#FFFFFF; border-radius:12px;">
+                <tr>
+                  <td style="padding:18px 20px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="padding:4px 0; font-family:Helvetica,Arial,sans-serif; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:#74555D; width:90px; vertical-align:top;">Last seen</td>
+                        <td style="padding:4px 0; font-family:Helvetica,Arial,sans-serif; font-size:14px; color:#3E0000; font-weight:600;">${escapeHtml(lastSeenArea)} — ${dateLabel}</td>
+                      </tr>
+                      ${lookFor ? `<tr>
+                        <td style="padding:8px 0 0; font-family:Helvetica,Arial,sans-serif; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:#74555D; width:90px; vertical-align:top;">Look for</td>
+                        <td style="padding:8px 0 0; font-family:Helvetica,Arial,sans-serif; font-size:14px; color:#3E0000; font-weight:600;">${escapeHtml(lookFor)}</td>
+                      </tr>` : ""}
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Owner-facing, deliberately different from the sitter's
+                   on-screen checklist — the sitter's steps are what to do
+                   standing in the street right now (don't chase, check
+                   nearby); the owner's are the things only they can do, so
+                   the two don't duplicate effort. -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:16px;">
+                <tr>
+                  <td style="border-top:1px solid #D4A8B2; padding-top:20px;">
+                    <p style="margin:0 0 10px 0; font-family:Helvetica,Arial,sans-serif; font-size:11px; line-height:1; color:#510000; text-transform:uppercase; letter-spacing:0.09em; font-weight:700;">What you can do from here</p>
+                    <ul style="margin:0; padding-left:18px; font-family:Helvetica,Arial,sans-serif; font-size:13px; line-height:1.7; color:#3E0000;">
+                      <li>Call your vet and any microchip registry — flag ${safePet} as missing so a scan anywhere gets matched back to you.</li>
+                      <li>Check with local shelters and vet clinics directly by phone — many don't cross-post lost pets online.</li>
+                      <li>Post in nearby community/neighbourhood groups — the sitter has a printable poster with ${safePet}'s photo, ask them to share it with you.</li>
+                      <li>Stay reachable — the sitter's out looking now and may need to reach you quickly.</li>
+                    </ul>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Not a big CTA button — this is a fallback for the vet/
+                   microchip step above, not the point of the email, so it
+                   reads as a plain link rather than competing with the
+                   actual content for attention. -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:20px; border-top:1px solid #D4A8B2;">
+                <tr>
+                  <td style="padding-top:16px;">
+                    <a href="${recipientUrl}" style="font-family:Helvetica,Arial,sans-serif; font-size:12px; color:#74555D;">
+                      Need the vet's number or microchip details? Grab it from ${safePet}'s web link
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Footer — same as the OTP email's, so every Quirks & All
+                   email reads as one consistent system. -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:24px; border-top:1px solid #D4A8B2;">
+                <tr>
+                  <td align="center" style="padding-top:20px;">
+                    <p style="margin:0 0 3px 0; font-family:Helvetica,Arial,sans-serif; font-size:11px; line-height:1.5; color:#74555D;">quirksandall.itshypothetical.com</p>
+                    <p style="margin:0; font-family:Helvetica,Arial,sans-serif; font-size:11px; line-height:1.5; color:#987080;">Made by Its Hypothetical</p>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
   `;
 
   try {
