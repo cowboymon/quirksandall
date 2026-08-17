@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { possessive, isSafeHttpsUrl } from "@quirksandall/shared";
-import { MapPin, CalendarBlank, Eye } from "@phosphor-icons/react";
+import { MapPin, CalendarDots } from "@phosphor-icons/react";
 
 type Props = { token: string; petName: string; ownerName: string; photoUrl: string | null };
 
@@ -173,13 +173,16 @@ export default function MissingPetForm({ token, petName, ownerName, photoUrl }: 
             <div>
               <label className="eyebrow mb-1 block text-text-muted">Last seen when</label>
               <div className="relative flex items-center">
-                <CalendarBlank size={16} weight="duotone" color="#74555D" className="pointer-events-none absolute left-3" />
+                <CalendarDots size={16} weight="duotone" color="#74555D" className="pointer-events-none absolute left-3" />
                 <input
                   type="date"
                   value={lastSeenDate}
                   max={todayIso()}
                   onChange={(e) => setLastSeenDate(e.target.value)}
-                  className="h-10 w-full rounded-button border pl-9 pr-3.5 font-satoshi text-base text-foreground"
+                  // Deliberately smaller than the app's usual 16px
+                  // zoom-safe floor, per explicit direction — iOS Safari
+                  // may zoom the viewport on focusing this field.
+                  className="date-field-sm h-10 w-full rounded-button border pl-9 pr-3.5 font-satoshi text-sm text-foreground"
                   // Native date inputs (esp. iOS Safari) bring their own chrome
                   // that can override height/width even with identical classes
                   // to the text input beside it — appearance:none plus an
@@ -192,13 +195,12 @@ export default function MissingPetForm({ token, petName, ownerName, photoUrl }: 
             <div>
               <label className="eyebrow mb-1 block text-text-muted">What they look like right now</label>
               <div className="relative">
-                <Eye size={16} weight="duotone" color="#74555D" className="pointer-events-none absolute left-3 top-2.5" />
                 <textarea
                   value={lookFor}
                   onChange={(e) => setLookFor(e.target.value)}
                   placeholder="Grey knit jumper, pink bedazzled leash, red collar underneath."
                   rows={2}
-                  className="field-placeholder-sm w-full rounded-button border py-2 pl-9 pr-3.5 font-satoshi text-base text-foreground"
+                  className="field-placeholder-sm w-full rounded-button border py-2 px-3.5 font-satoshi text-base text-foreground"
                   style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF", boxSizing: "border-box" }}
                 />
               </div>

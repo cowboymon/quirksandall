@@ -50,3 +50,10 @@ input[type="date"]::-webkit-date-and-time-value {
 .field-placeholder-sm::placeholder {
   font-size: 13px;
 }
+
+/* Explicit request to size this field below the 16px iOS zoom-safe floor —
+   the outer text-sm class alone doesn't reliably reach the value rendered
+   inside the shadow-DOM pseudo-element above, same issue as text-align. */
+.date-field-sm::-webkit-date-and-time-value {
+  font-size: 14px;
+}
