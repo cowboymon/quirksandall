@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { possessive } from "@quirksandall/shared";
+import { possessive, isSafeHttpsUrl } from "@quirksandall/shared";
+import { MapPin, CalendarBlank, Eye } from "@phosphor-icons/react";
 
-type Props = { token: string; petName: string; ownerName: string };
+type Props = { token: string; petName: string; ownerName: string; photoUrl: string | null };
 
 const todayIso = () => new Date().toISOString().split("T")[0];
 
-export default function MissingPetForm({ token, petName, ownerName }: Props) {
+export default function MissingPetForm({ token, petName, ownerName, photoUrl }: Props) {
   const [lastSeenArea, setLastSeenArea] = useState("");
   // Poster templates parse lastSeenDate as ISO (templates.tsx's formatDate) —
   // a native date input hands that over directly, no MM/DD vs DD/MM parsing
@@ -68,10 +69,10 @@ export default function MissingPetForm({ token, petName, ownerName }: Props) {
       <main className="min-h-screen bg-background px-6 pt-5 pb-8">
         <div className="mx-auto w-full max-w-sm">
           <h1 className="font-tanker text-2xl font-normal leading-tight text-foreground">
-            {ownerName} has been alerted.
+            Alert sent.
           </h1>
           <p className="mt-1.5 font-satoshi text-sm leading-snug text-text-muted">
-            They've been sent what you entered, and know to check their phone.
+            {ownerName} has been sent what you entered, and knows to check their phone.
           </p>
 
           {posterUrl ? (
@@ -126,10 +127,23 @@ export default function MissingPetForm({ token, petName, ownerName }: Props) {
 
       <div className="flex flex-1 flex-col justify-center">
         <div className="mx-auto w-full max-w-sm">
-          <h1 className="font-tanker text-2xl font-normal leading-tight text-foreground">
-            {petName} is missing
-          </h1>
-          <p className="mt-1.5 font-satoshi text-sm leading-snug text-text-muted">
+          {/* Photo + heading, same identity-block pattern as the recipient
+              page (photo beside the name) — ties this screen visually back
+              to the profile the sitter just came from. */}
+          <div className="flex items-center gap-3">
+            {photoUrl && isSafeHttpsUrl(photoUrl) && (
+              <img
+                src={photoUrl}
+                alt={petName}
+                className="h-12 w-12 shrink-0 rounded-full border-2 object-cover"
+                style={{ borderColor: "#E5BEC4" }}
+              />
+            )}
+            <h1 className="font-tanker text-2xl font-normal leading-tight text-foreground">
+              {petName} is missing
+            </h1>
+          </div>
+          <p className="mt-2.5 font-satoshi text-sm leading-snug text-text-muted">
             Fill in what you know. {ownerName} will be alerted the moment you send this, and you'll get a
             printable poster with {petName}'s photo.
           </p>
@@ -138,48 +152,57 @@ export default function MissingPetForm({ token, petName, ownerName }: Props) {
             {/* Field text stays at text-base (16px) even though everything
                 else on this page runs smaller — iOS Safari auto-zooms the
                 viewport on focusing any input under 16px, which is worse
-                than a slightly larger field. Labels use an inline
-                font-size rather than the shared .eyebrow class's own size,
-                since that class is used elsewhere at 11px and changing it
-                would affect other pages. */}
+                than a slightly larger field. Labels use the app's standard
+                eyebrow style (11px, muted grey) — matches every label on
+                the recipient page (WEIGHT, SEX, etc.) rather than standing
+                out in the heading's crimson. */}
             <div>
-              <label className="eyebrow mb-1 block text-foreground" style={{ fontSize: 10 }}>Last seen where</label>
-              <input
-                type="text"
-                value={lastSeenArea}
-                onChange={(e) => setLastSeenArea(e.target.value)}
-                placeholder="Newtown IGA @ 4:40pm"
-                className="h-10 w-full rounded-button border px-3.5 font-satoshi text-base text-foreground"
-                style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF", boxSizing: "border-box" }}
-              />
+              <label className="eyebrow mb-1 block text-text-muted">Last seen where</label>
+              <div className="relative flex items-center">
+                <MapPin size={16} weight="duotone" color="#74555D" className="pointer-events-none absolute left-3" />
+                <input
+                  type="text"
+                  value={lastSeenArea}
+                  onChange={(e) => setLastSeenArea(e.target.value)}
+                  placeholder="Newtown IGA @ 4:40pm"
+                  className="h-10 w-full rounded-button border pl-9 pr-3.5 font-satoshi text-base text-foreground"
+                  style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF", boxSizing: "border-box" }}
+                />
+              </div>
             </div>
 
             <div>
-              <label className="eyebrow mb-1 block text-foreground" style={{ fontSize: 10 }}>Last seen when</label>
-              <input
-                type="date"
-                value={lastSeenDate}
-                max={todayIso()}
-                onChange={(e) => setLastSeenDate(e.target.value)}
-                className="h-10 w-full rounded-button border px-3.5 font-satoshi text-base text-foreground"
-                // Native date inputs (esp. iOS Safari) bring their own chrome
-                // that can override height/width even with identical classes
-                // to the text input beside it — appearance:none plus an
-                // explicit border-box stop it from rendering a different size.
-                style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF", WebkitAppearance: "none", appearance: "none", boxSizing: "border-box", textAlign: "left" }}
-              />
+              <label className="eyebrow mb-1 block text-text-muted">Last seen when</label>
+              <div className="relative flex items-center">
+                <CalendarBlank size={16} weight="duotone" color="#74555D" className="pointer-events-none absolute left-3" />
+                <input
+                  type="date"
+                  value={lastSeenDate}
+                  max={todayIso()}
+                  onChange={(e) => setLastSeenDate(e.target.value)}
+                  className="h-10 w-full rounded-button border pl-9 pr-3.5 font-satoshi text-base text-foreground"
+                  // Native date inputs (esp. iOS Safari) bring their own chrome
+                  // that can override height/width even with identical classes
+                  // to the text input beside it — appearance:none plus an
+                  // explicit border-box stop it from rendering a different size.
+                  style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF", WebkitAppearance: "none", appearance: "none", boxSizing: "border-box", textAlign: "left" }}
+                />
+              </div>
             </div>
 
             <div>
-              <label className="eyebrow mb-1 block text-foreground" style={{ fontSize: 10 }}>What they look like right now</label>
-              <textarea
-                value={lookFor}
-                onChange={(e) => setLookFor(e.target.value)}
-                placeholder="Grey knit jumper, pink bedazzled leash, red collar underneath."
-                rows={2}
-                className="w-full rounded-button border px-3.5 py-2 font-satoshi text-base text-foreground"
-                style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF", boxSizing: "border-box" }}
-              />
+              <label className="eyebrow mb-1 block text-text-muted">What they look like right now</label>
+              <div className="relative">
+                <Eye size={16} weight="duotone" color="#74555D" className="pointer-events-none absolute left-3 top-2.5" />
+                <textarea
+                  value={lookFor}
+                  onChange={(e) => setLookFor(e.target.value)}
+                  placeholder="Grey knit jumper, pink bedazzled leash, red collar underneath."
+                  rows={2}
+                  className="w-full rounded-button border py-2 pl-9 pr-3.5 font-satoshi text-base text-foreground"
+                  style={{ borderColor: "#E5BEC4", backgroundColor: "#FFFFFF", boxSizing: "border-box" }}
+                />
+              </div>
             </div>
 
             {error && (

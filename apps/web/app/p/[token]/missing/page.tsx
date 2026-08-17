@@ -18,7 +18,7 @@ function liveClient() {
 // profile. The actual report (and the owner alert it triggers) is handled
 // server-side by /api/report-missing, re-validating the token itself rather
 // than trusting anything resolved here.
-async function fetchNames(token: string): Promise<{ petName: string; ownerName: string } | null> {
+async function fetchNames(token: string): Promise<{ petName: string; ownerName: string; photoUrl: string | null } | null> {
   const supabase = liveClient();
   const { data: link } = await supabase
     .from("share_links")
@@ -28,11 +28,11 @@ async function fetchNames(token: string): Promise<{ petName: string; ownerName: 
   if (!link || link.revoked) return null;
   if (link.expires_at && new Date(link.expires_at) < new Date()) return null;
 
-  const { data: pet } = await supabase.from("pets").select("name, owner_id, status").eq("id", link.pet_id).maybeSingle();
+  const { data: pet } = await supabase.from("pets").select("name, owner_id, status, photo_url").eq("id", link.pet_id).maybeSingle();
   if (!pet || (pet as any).status === "archived") return null;
 
   const { data: owner } = await supabase.from("owners").select("name").eq("id", (pet as any).owner_id).maybeSingle();
-  return { petName: (pet as any).name ?? "", ownerName: (owner as any)?.name ?? "the owner" };
+  return { petName: (pet as any).name ?? "", ownerName: (owner as any)?.name ?? "the owner", photoUrl: (pet as any).photo_url ?? null };
 }
 
 export default async function MissingPage({ params }: { params: { token: string } }) {
@@ -40,5 +40,5 @@ export default async function MissingPage({ params }: { params: { token: string 
   const names = await fetchNames(token);
   if (!names) return <LinkUnavailable />;
 
-  return <MissingPetForm token={token} petName={names.petName} ownerName={names.ownerName} />;
+  return <MissingPetForm token={token} petName={names.petName} ownerName={names.ownerName} photoUrl={names.photoUrl} />;
 }
