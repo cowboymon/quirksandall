@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { RecipientProfile } from "@quirksandall/shared";
 import { formatWeight, formatPhone, formatVetName, possessive, commandStrengthLabel, mealSlotLabel, shortAddress, isSafeHttpsUrl, sanitizeTelValue, treatEntries } from "@quirksandall/shared";
+import { WarningCircle } from "@phosphor-icons/react";
 import PINGate from "./PINGate";
 import { trackWeb, startTimingWeb, WebAnalyticsEvent } from "../../lib/analytics";
 
@@ -314,11 +315,7 @@ export default function RecipientView({ profile, token }: Props) {
           className="flex items-center gap-3 rounded-card border p-4"
           style={{ borderColor: "rgba(154,80,80,0.35)", backgroundColor: "rgba(154,80,80,0.06)" }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9A5050" strokeWidth="2" className="shrink-0">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 8v5" strokeLinecap="round" />
-            <path d="M12 16.5v.01" strokeLinecap="round" />
-          </svg>
+          <WarningCircle size={20} weight="duotone" color="#9A5050" className="shrink-0" />
           <div className="flex-1">
             <p className="text-sm font-semibold" style={{ color: "#9A5050" }}>Is {name} missing?</p>
             <p className="text-xs mt-0.5" style={{ color: MUTED }}>Alerts the owner immediately and creates a printable poster.</p>
