@@ -301,17 +301,34 @@ export default function RecipientView({ profile, token }: Props) {
 
         {/* Missing-pet report — sits right below the emergency box, the
             other place a sitter's attention goes in a moment like this.
-            Deliberately its own small button, not styled like a primary
-            action, so it doesn't compete with the page's normal content.
+            Ghost version of the dashboard's "Account scheduled for
+            deletion" banner: same icon + two-line-text + pill-button
+            layout, but a light tinted card instead of a solid dark fill —
+            this is a standing option every sitter sees, not an active
+            warning state, so it shouldn't read with that much alarm.
             Links to a dedicated page (not a modal) so filling in last-seen
             details is the actual friction against an accidental tap, rather
             than a confirm dialog stacked on top of a one-tap trigger. */}
         <a
           href={`/p/${token}/missing`}
-          className="flex items-center justify-center gap-2 rounded-button border py-2.5 text-sm font-medium"
-          style={{ borderColor: "#E5BEC4", color: "#9A5050" }}
+          className="flex items-center gap-3 rounded-card border p-4"
+          style={{ borderColor: "rgba(154,80,80,0.35)", backgroundColor: "rgba(154,80,80,0.06)" }}
         >
-          Is {name} missing?
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9A5050" strokeWidth="2" className="shrink-0">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 8v5" strokeLinecap="round" />
+            <path d="M12 16.5v.01" strokeLinecap="round" />
+          </svg>
+          <div className="flex-1">
+            <p className="text-sm font-semibold" style={{ color: "#9A5050" }}>Is {name} missing?</p>
+            <p className="text-xs mt-0.5" style={{ color: MUTED }}>Alerts the owner immediately and creates a printable poster.</p>
+          </div>
+          <span
+            className="shrink-0 rounded-button px-4 py-2 text-sm font-bold"
+            style={{ backgroundColor: "#FFFFFF", color: "#9A5050" }}
+          >
+            Report
+          </span>
         </a>
 
         {/* Daily Routine — feeding is free; walks/sleep/bathroom are paid */}
