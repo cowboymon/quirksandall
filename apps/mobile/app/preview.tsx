@@ -303,82 +303,81 @@ export default function Preview() {
             </View>
           </View>
 
-          {/* Order (#15): Daily Routine (Feeding → Medication → walks/sleep/
-              bathroom) → Allergies → Commands → Triggers. Medication sits
-              right after Feeding & Meds — it's the safety-critical section
-              and shouldn't sit behind walks/sleep/bathroom as a scroll
-              hurdle. Feeding & Medication are free at every tier; the rest
-              of the routine is paid. */}
-          {(hasFeeding || d.meds.length > 0 || d.conditions || (showFull && (d.walks || d.sleep || d.bathroom || d.leftAlone || d.toileting))) && (
+          {/* Order (#96 follow-up): Feeding & Meds → Medications → Daily
+              Routine → Conditions & Allergies → Commands → Triggers. Each of
+              the first two gets its own header now rather than nesting under
+              Daily Routine — Medications is safety-critical and deserves to
+              stand on its own, not be a scroll hurdle away. Feeding &
+              Medications are free at every tier; the rest of the routine is
+              paid. */}
+          {hasFeeding && (
             <View>
-              <SectionHeader lead={possessive(d.name)} underline="Daily Routine" />
-              <View style={{ gap: 12 }}>
-                {hasFeeding && (
-                  <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden" }}>
-                    <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-                      <Text style={{ ...microLabel, color: colors.primary }}>Feeding & Meds</Text>
-                    </View>
-                    {meals.map(([label, key, slot]: any, i) => {
-                      const tied = d.meds.filter((m) => m.withMeal?.includes(key));
-                      return (
-                        <View key={label} style={{ borderBottomWidth: i < meals.length - 1 ? 1 : 0, borderBottomColor: colors.border }}>
-                          <MealRow label={label} time={slot?.skip ? undefined : slot?.time} amount={slot?.skip ? undefined : slot?.amount} skipped={!!slot?.skip} divider={false} medOnly={tied.length > 0 && !mealComplete(slot)} />
-                          {tied.map((m, mi) => (
-                            <Text key={mi} style={{ color: colors.primary, fontSize: 12, fontFamily: "Satoshi-Medium", paddingLeft: 80, paddingRight: 16, paddingBottom: 8 }}>
-                              + {[m.name, m.dose].filter(Boolean).join(" — ")}
-                            </Text>
-                          ))}
-                          {tied.length > 0 && (
-                            <Text style={{ color: colors.textMuted, fontSize: 11, paddingLeft: 80, paddingRight: 16, paddingBottom: 8 }}>
-                              See Medications for notes
-                            </Text>
-                          )}
-                        </View>
-                      );
-                    })}
-                    {anytimeMeds.length > 0 && (
-                      <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border }}>
-                        <MealRow label="Anytime" divider={false} medOnly />
-                        {anytimeMeds.map((m, mi) => (
-                          <Text key={mi} style={{ color: colors.primary, fontSize: 12, fontFamily: "Satoshi-Medium", paddingLeft: 80, paddingRight: 16, paddingBottom: 8 }}>
-                            + {[m.name, m.dose].filter(Boolean).join(" — ")}
-                          </Text>
-                        ))}
+              <SectionHeader lead={possessive(d.name)} underline="Feeding & Meds" />
+              <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden" }}>
+                {meals.map(([label, key, slot]: any, i) => {
+                  const tied = d.meds.filter((m) => m.withMeal?.includes(key));
+                  return (
+                    <View key={label} style={{ borderBottomWidth: i < meals.length - 1 ? 1 : 0, borderBottomColor: colors.border }}>
+                      <MealRow label={label} time={slot?.skip ? undefined : slot?.time} amount={slot?.skip ? undefined : slot?.amount} skipped={!!slot?.skip} divider={false} medOnly={tied.length > 0 && !mealComplete(slot)} />
+                      {tied.map((m, mi) => (
+                        <Text key={mi} style={{ color: colors.primary, fontSize: 12, fontFamily: "Satoshi-Medium", paddingLeft: 80, paddingRight: 16, paddingBottom: 8 }}>
+                          + {[m.name, m.dose].filter(Boolean).join(" — ")}
+                        </Text>
+                      ))}
+                      {tied.length > 0 && (
                         <Text style={{ color: colors.textMuted, fontSize: 11, paddingLeft: 80, paddingRight: 16, paddingBottom: 8 }}>
                           See Medications for notes
                         </Text>
-                      </View>
-                    )}
-                    {treatEntries(f.treats).length ? (
-                      <View style={{ flexDirection: "row", paddingHorizontal: 16, paddingVertical: 8, borderTopWidth: 1, borderTopColor: colors.border, alignItems: "flex-start" }}>
-                        <Text style={{ width: 64, fontSize: 13, fontFamily: "Satoshi-Medium", color: colors.textMuted }}>Treats</Text>
-                        <View style={{ flex: 1, gap: 4 }}>
-                          {/* Limit inline rather than stacked — see the same
-                              note in the web RecipientView. */}
-                          {treatEntries(f.treats).map((t, ti) => (
-                            <Text key={ti} style={{ fontSize: 13, color: BODY }}>
-                              {t.type}
-                              {t.type && t.limit ? <Text style={{ color: colors.textMuted, fontFamily: "Satoshi-Light" }}> — {t.limit}</Text> : null}
-                              {!t.type && t.limit ? <Text style={{ color: colors.textMuted, fontFamily: "Satoshi-Light" }}>{t.limit}</Text> : null}
-                            </Text>
-                          ))}
-                        </View>
-                      </View>
-                    ) : null}
-                    {f.notes ? (
-                      <View style={{ paddingHorizontal: 16, paddingVertical: 10, borderTopWidth: 1, borderTopColor: colors.border }}>
-                        <Text style={{ fontSize: 12, color: colors.textMuted, fontFamily: "Satoshi-Light" }}>{f.notes}</Text>
-                      </View>
-                    ) : null}
+                      )}
+                    </View>
+                  );
+                })}
+                {anytimeMeds.length > 0 && (
+                  <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border }}>
+                    <MealRow label="Anytime" divider={false} medOnly />
+                    {anytimeMeds.map((m, mi) => (
+                      <Text key={mi} style={{ color: colors.primary, fontSize: 12, fontFamily: "Satoshi-Medium", paddingLeft: 80, paddingRight: 16, paddingBottom: 8 }}>
+                        + {[m.name, m.dose].filter(Boolean).join(" — ")}
+                      </Text>
+                    ))}
+                    <Text style={{ color: colors.textMuted, fontSize: 11, paddingLeft: 80, paddingRight: 16, paddingBottom: 8 }}>
+                      See Medications for notes
+                    </Text>
                   </View>
                 )}
-                {/* Medication & conditions — free at every tier (#87
-                    follow-up): a sitter dosing the wrong thing because the
-                    owner hadn't paid is a safety failure. Shows in both
-                    quick and full view, like allergies. Placed here (right
-                    after Feeding & Meds, before walks/sleep/bathroom) so
-                    it's not gated behind paid-only fields. */}
-                {d.conditions ? <InfoCard label="Conditions" text={d.conditions} /> : null}
+                {treatEntries(f.treats).length ? (
+                  <View style={{ flexDirection: "row", paddingHorizontal: 16, paddingVertical: 8, borderTopWidth: 1, borderTopColor: colors.border, alignItems: "flex-start" }}>
+                    <Text style={{ width: 64, fontSize: 13, fontFamily: "Satoshi-Medium", color: colors.textMuted }}>Treats</Text>
+                    <View style={{ flex: 1, gap: 4 }}>
+                      {/* Limit inline rather than stacked — see the same
+                          note in the web RecipientView. */}
+                      {treatEntries(f.treats).map((t, ti) => (
+                        <Text key={ti} style={{ fontSize: 13, color: BODY }}>
+                          {t.type}
+                          {t.type && t.limit ? <Text style={{ color: colors.textMuted, fontFamily: "Satoshi-Light" }}> — {t.limit}</Text> : null}
+                          {!t.type && t.limit ? <Text style={{ color: colors.textMuted, fontFamily: "Satoshi-Light" }}>{t.limit}</Text> : null}
+                        </Text>
+                      ))}
+                    </View>
+                  </View>
+                ) : null}
+                {f.notes ? (
+                  <View style={{ paddingHorizontal: 16, paddingVertical: 10, borderTopWidth: 1, borderTopColor: colors.border }}>
+                    <Text style={{ fontSize: 12, color: colors.textMuted, fontFamily: "Satoshi-Light" }}>{f.notes}</Text>
+                  </View>
+                ) : null}
+              </View>
+            </View>
+          )}
+
+          {/* Medications — free at every tier (#87 follow-up): a sitter
+              dosing the wrong thing because the owner hadn't paid is a
+              safety failure. Shows in both quick and full view, like
+              allergies. */}
+          {d.meds.length > 0 && (
+            <View>
+              <SectionHeader lead={possessive(d.name)} underline="Medications" />
+              <View style={{ gap: 12 }}>
                 {d.meds.map((m, i) => (
                   <View key={i} style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 16 }}>
                     <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.primary }}>Medication</Text>
@@ -391,20 +390,29 @@ export default function Preview() {
                     ) : null}
                   </View>
                 ))}
-                {showFull && d.walks ? <InfoCard label="Walks" text={d.walks} locked={locked} /> : null}
-                {showFull && d.sleep ? <InfoCard label="Sleep" text={d.sleep} locked={locked} /> : null}
-                {showFull && d.bathroom ? <InfoCard label="Bathroom" text={d.bathroom} locked={locked} /> : null}
-                {showFull && d.leftAlone ? <InfoCard label="Left alone" text={d.leftAlone} locked={locked} /> : null}
-                {showFull && d.toileting ? <InfoCard label="Toileting" text={d.toileting} locked={locked} /> : null}
               </View>
             </View>
           )}
 
-          {d.allergies ? (
+          {showFull && (d.walks || d.sleep || d.bathroom || d.leftAlone || d.toileting) && (
             <View>
-              <SectionHeader lead={possessive(d.name)} underline="Allergies" />
-              <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 16 }}>
-                <Text style={{ color: BODY, fontSize: 14, lineHeight: 20 }}>{d.allergies}</Text>
+              <SectionHeader lead={possessive(d.name)} underline="Daily Routine" />
+              <View style={{ gap: 12 }}>
+                {d.walks ? <InfoCard label="Walks" text={d.walks} locked={locked} /> : null}
+                {d.sleep ? <InfoCard label="Sleep" text={d.sleep} locked={locked} /> : null}
+                {d.bathroom ? <InfoCard label="Bathroom" text={d.bathroom} locked={locked} /> : null}
+                {d.leftAlone ? <InfoCard label="Left alone" text={d.leftAlone} locked={locked} /> : null}
+                {d.toileting ? <InfoCard label="Toileting" text={d.toileting} locked={locked} /> : null}
+              </View>
+            </View>
+          )}
+
+          {(d.conditions || d.allergies) ? (
+            <View>
+              <SectionHeader lead={possessive(d.name)} underline="Conditions & Allergies" />
+              <View style={{ gap: 12 }}>
+                {d.conditions ? <InfoCard label="Conditions" text={d.conditions} /> : null}
+                {d.allergies ? <InfoCard label="Allergies" text={d.allergies} /> : null}
               </View>
             </View>
           ) : null}

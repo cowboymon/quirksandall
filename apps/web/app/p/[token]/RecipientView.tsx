@@ -328,16 +328,24 @@ export default function RecipientView({ profile, token }: Props) {
           </span>
         </a>
 
-        {/* Daily Routine — feeding is free; walks/sleep/bathroom are paid.
-            Medication renders right after Feeding, before walks/sleep/
-            bathroom — it's the safety-critical section and shouldn't sit
-            behind those as a scroll hurdle. */}
-        {((routine && hasFeeding(routine.feeding, allMeds)) || (medical?.conditions?.length ?? 0) > 0 || allMeds.length > 0 || (paidVisible && (routine?.walks || routine?.sleep || routine?.bathroomHabits || routine?.leftAlone || routine?.toileting))) && (
+        {/* Feeding & Meds — free at every tier */}
+        {routine && hasFeeding(routine.feeding, allMeds) && (
           <section>
-            <SectionTitle name={name} tail="Daily Routine" />
+            <SectionTitle name={name} tail="Feeding & Meds" />
             <div className="flex flex-col gap-2">
-              {routine && hasFeeding(routine.feeding, allMeds) && <FeedingCard feeding={routine.feeding} medications={allMeds} />}
-              {(medical?.conditions?.length ?? 0) > 0 && <InfoCard label="Conditions" text={medical!.conditions.join(", ")} />}
+              <FeedingCard feeding={routine.feeding} medications={allMeds} />
+            </div>
+          </section>
+        )}
+
+        {/* Medications — free at every tier, like allergies. A sitter needs
+            the dose whether or not the owner has paid, so it shows in both
+            views. Its own section (not nested under Daily Routine) since
+            it's safety-critical and shouldn't sit behind a scroll hurdle. */}
+        {allMeds.length > 0 && (
+          <section>
+            <SectionTitle name={name} tail="Medications" />
+            <div className="flex flex-col gap-2">
               {allMeds.map((med, i) => (
                 <div key={i} className="bg-white border rounded-card px-4 py-3" style={{ borderColor: BORDER }}>
                   <p className="eyebrow text-primary mb-1">Medication</p>
@@ -348,39 +356,51 @@ export default function RecipientView({ profile, token }: Props) {
                   {med.notes && <p className="text-text-muted text-xs italic mt-0.5">{med.notes}</p>}
                 </div>
               ))}
-              {paidVisible && routine?.walks && <InfoCard label="Walks" text={routine.walks} locked={lockedPreview} />}
-              {paidVisible && routine?.sleep && <InfoCard label="Sleep" text={routine.sleep} locked={lockedPreview} />}
-              {paidVisible && routine?.bathroomHabits && <InfoCard label="Bathroom" text={routine.bathroomHabits} locked={lockedPreview} />}
-              {paidVisible && routine?.leftAlone && <InfoCard label="Left alone" text={routine.leftAlone} locked={lockedPreview} />}
-              {paidVisible && routine?.toileting && <InfoCard label="Toileting" text={routine.toileting} locked={lockedPreview} />}
-              {/* Deliberately worded the same whether the extended routine is
-                  gated (owner on the free tier) or simply empty (owner never
-                  filled it in) — a sitter can't tell the difference and
-                  shouldn't need to. The point isn't to explain why; it's so a
-                  sitter comparing this to another pet-sitting app doesn't read
-                  "no walk schedule" as "this app can't do that". Never shown
-                  to the owner's own preview — they already get the explicit
-                  upgrade-aware banner above.
-
-                  Must NOT show for a paid owner sitting in Quick view —
-                  hasExtendedRoutine is also false there even though the
-                  content exists and just needs the Full view toggle, which
-                  isn't "not included" at all. Only genuinely-gated (free
-                  tier) or genuinely-empty (paid + full view, nothing filled
-                  in) should trip this. */}
-              {!preview && !hasExtendedRoutine && !(isPaid && !paidVisible) && (
-                <p className="text-xs italic" style={{ color: MUTED }}>Full routine not included.</p>
-              )}
             </div>
           </section>
         )}
 
-        {/* Allergies — always shown regardless of tier */}
-        {allergies.length > 0 && (
+        {/* Daily Routine — walks/sleep/bathroom are paid */}
+        {paidVisible && (routine?.walks || routine?.sleep || routine?.bathroomHabits || routine?.leftAlone || routine?.toileting) && (
           <section>
-            <SectionTitle name={name} tail="Allergies" />
-            <div className="bg-white border rounded-card px-4 py-3" style={{ borderColor: BORDER }}>
-              <p className="text-sm" style={{ color: BODY }}>{allergies.join(", ")}</p>
+            <SectionTitle name={name} tail="Daily Routine" />
+            <div className="flex flex-col gap-2">
+              {routine?.walks && <InfoCard label="Walks" text={routine.walks} locked={lockedPreview} />}
+              {routine?.sleep && <InfoCard label="Sleep" text={routine.sleep} locked={lockedPreview} />}
+              {routine?.bathroomHabits && <InfoCard label="Bathroom" text={routine.bathroomHabits} locked={lockedPreview} />}
+              {routine?.leftAlone && <InfoCard label="Left alone" text={routine.leftAlone} locked={lockedPreview} />}
+              {routine?.toileting && <InfoCard label="Toileting" text={routine.toileting} locked={lockedPreview} />}
+            </div>
+          </section>
+        )}
+
+        {/* Deliberately worded the same whether the extended routine is
+            gated (owner on the free tier) or simply empty (owner never
+            filled it in) — a sitter can't tell the difference and shouldn't
+            need to. The point isn't to explain why; it's so a sitter
+            comparing this to another pet-sitting app doesn't read "no walk
+            schedule" as "this app can't do that". Never shown to the
+            owner's own preview — they already get the explicit
+            upgrade-aware banner above.
+
+            Must NOT show for a paid owner sitting in Quick view —
+            hasExtendedRoutine is also false there even though the content
+            exists and just needs the Full view toggle, which isn't "not
+            included" at all. Only genuinely-gated (free tier) or
+            genuinely-empty (paid + full view, nothing filled in) should
+            trip this. Lives outside any one section now that Daily Routine
+            only covers walks/sleep/bathroom. */}
+        {!preview && !hasExtendedRoutine && !(isPaid && !paidVisible) && (
+          <p className="text-xs italic" style={{ color: MUTED }}>Full routine not included.</p>
+        )}
+
+        {/* Conditions & Allergies — always shown regardless of tier */}
+        {((medical?.conditions?.length ?? 0) > 0 || allergies.length > 0) && (
+          <section>
+            <SectionTitle name={name} tail="Conditions & Allergies" />
+            <div className="flex flex-col gap-2">
+              {(medical?.conditions?.length ?? 0) > 0 && <InfoCard label="Conditions" text={medical!.conditions.join(", ")} />}
+              {allergies.length > 0 && <InfoCard label="Allergies" text={allergies.join(", ")} />}
             </div>
           </section>
         )}
