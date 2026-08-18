@@ -158,6 +158,7 @@ export default function Preview() {
   // treatment as a meal-tied medication.
   const anytimeMeds = d.meds.filter((m) => m.withMeal?.includes("anytime"));
   const hasFeeding = !!(meals.length || anytimeMeds.length || treatEntries(f.treats).length || f.notes);
+  const hasRewards = d.commands.some((cmd) => cmd.reward?.trim());
   // Meds tied to a shown meal ALSO render inline in the routine as a
   // convenience, but every medication always shows in the standalone
   // Medication section too — that's the safety-critical section a sitter is
@@ -424,7 +425,10 @@ export default function Preview() {
                 <View style={{ flexDirection: "row", backgroundColor: colors.secondary, paddingHorizontal: 12, paddingVertical: 8 }}>
                   <Text style={{ width: "26%", ...microLabel, color: colors.textMuted }}>Word</Text>
                   <Text style={{ flex: 1, ...microLabel, color: colors.textMuted }}>Means</Text>
-                  <Text style={{ width: "26%", ...microLabel, color: colors.textMuted }}>Reward</Text>
+                  {/* Only when at least one command has a reward — an empty
+                      column of blank cells reads as a broken table, not
+                      "no rewards set". */}
+                  {hasRewards ? <Text style={{ width: "26%", ...microLabel, color: colors.textMuted }}>Reward</Text> : null}
                 </View>
                 {d.commands.map((cmd, i) => (
                   <View key={cmd.id ?? i} style={{ flexDirection: "row", paddingHorizontal: 12, paddingVertical: 10, backgroundColor: i % 2 === 0 ? "#FFFFFF" : colors.background, alignItems: "flex-start" }}>
@@ -438,7 +442,7 @@ export default function Preview() {
                       <Text style={{ fontSize: 13, color: BODY }}>{cmd.meaning}</Text>
                       {cmd.howToCue ? <Text style={{ fontSize: 11, color: colors.textMuted, fontStyle: "italic", marginTop: 2 }}>Cue: {cmd.howToCue}</Text> : null}
                     </View>
-                    <Text style={{ width: "26%", fontSize: 12, color: colors.textMuted }}>{cmd.reward}</Text>
+                    {hasRewards ? <Text style={{ width: "26%", fontSize: 12, color: colors.textMuted }}>{cmd.reward}</Text> : null}
                   </View>
                 ))}
               </View>

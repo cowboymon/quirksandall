@@ -107,6 +107,7 @@ export default function RecipientView({ profile, token }: Props) {
   // sitter is most likely to check, so nothing should ever be discoverable
   // only via Feeding.
   const allMeds = medical?.medications ?? [];
+  const hasRewards = behavior.commands.some((cmd) => cmd.reward?.trim());
 
   const name = pet.name?.trim() ?? "";
   const idTiles: [string, string][] = [
@@ -415,7 +416,10 @@ export default function RecipientView({ profile, token }: Props) {
                   <tr style={{ backgroundColor: CRIMSON, color: BLUSH }}>
                     <th className="text-left px-3 py-2 eyebrow font-medium">Word</th>
                     <th className="text-left px-3 py-2 eyebrow font-medium">Means</th>
-                    <th className="text-left px-3 py-2 eyebrow font-medium">Reward</th>
+                    {/* Only when at least one command has a reward — an
+                        empty column of blank cells reads as a broken table,
+                        not "no rewards set". */}
+                    {hasRewards && <th className="text-left px-3 py-2 eyebrow font-medium">Reward</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -441,7 +445,7 @@ export default function RecipientView({ profile, token }: Props) {
                           </span>
                         )}
                       </td>
-                      <td className="px-3 py-2 text-text-muted">{cmd.reward}</td>
+                      {hasRewards && <td className="px-3 py-2 text-text-muted">{cmd.reward}</td>}
                     </tr>
                   ))}
                 </tbody>
