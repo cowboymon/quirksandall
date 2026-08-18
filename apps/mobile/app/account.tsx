@@ -153,6 +153,17 @@ export default function Account() {
     else AppAlert.alert("No mail app", `Email us at ${SUPPORT_EMAIL}.`);
   };
 
+  // Manage/cancel subscription — Apple (and Google) require this to go
+  // through their own subscription-management UI; an app can't cancel an
+  // auto-renewing IAP on the user's behalf. This is just a convenience
+  // deep link so they don't have to go hunting for it in Settings.
+  const manageSubscription = () => {
+    const url = Platform.OS === "ios"
+      ? "https://apps.apple.com/account/subscriptions"
+      : "https://play.google.com/store/account/subscriptions";
+    Linking.openURL(url).catch(() => AppAlert.alert("Couldn't open that", `Manage your subscription in your ${Platform.OS === "ios" ? "iPhone's Settings app" : "Google Play Store app"}.`));
+  };
+
   // Feature request (#97, resolves the open question in #95) — the roadmap now
   // has a real suggestion form, so this no longer needs to go through email.
   // Opens in-app (not the system browser), same as the Privacy/Terms links.
@@ -285,6 +296,13 @@ export default function Account() {
             <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, fontFamily: "Satoshi-Light", marginTop: 4 }}>
               Renews {new Date(renewsAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}.
             </Text>
+          )}
+          {/* Lifetime purchases have nothing to manage/cancel — renewsAt is
+              null for those, so this only shows for an actual subscription. */}
+          {renewsAt && (
+            <TouchableOpacity onPress={manageSubscription} style={{ marginTop: 10 }}>
+              <Text style={{ color: "rgba(248,236,238,0.85)", fontSize: 12, fontFamily: "Satoshi-Medium", textDecorationLine: "underline" }}>Manage subscription</Text>
+            </TouchableOpacity>
           )}
           <TouchableOpacity onPress={handleRestore} disabled={loading} style={{ marginTop: 8 }}>
             <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, fontFamily: "Satoshi" }}>Restore purchases</Text>
