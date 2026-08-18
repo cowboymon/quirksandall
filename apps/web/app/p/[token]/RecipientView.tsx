@@ -344,7 +344,7 @@ export default function RecipientView({ profile, token }: Props) {
             it's safety-critical and shouldn't sit behind a scroll hurdle. */}
         {allMeds.length > 0 && (
           <section>
-            <SectionTitle name={name} tail="Medications" />
+            <SectionTitle tail="Medications" />
             <div className="flex flex-col gap-2">
               {allMeds.map((med, i) => (
                 <div key={i} className="bg-white border rounded-card px-4 py-3" style={{ borderColor: BORDER }}>
@@ -363,7 +363,7 @@ export default function RecipientView({ profile, token }: Props) {
         {/* Daily Routine — walks/sleep/bathroom are paid */}
         {paidVisible && (routine?.walks || routine?.sleep || routine?.bathroomHabits || routine?.leftAlone || routine?.toileting) && (
           <section>
-            <SectionTitle name={name} tail="Daily Routine" />
+            <SectionTitle tail="Daily Routine" />
             <div className="flex flex-col gap-2">
               {routine?.walks && <InfoCard label="Walks" text={routine.walks} locked={lockedPreview} />}
               {routine?.sleep && <InfoCard label="Sleep" text={routine.sleep} locked={lockedPreview} />}
@@ -397,7 +397,7 @@ export default function RecipientView({ profile, token }: Props) {
         {/* Conditions & Allergies — always shown regardless of tier */}
         {((medical?.conditions?.length ?? 0) > 0 || allergies.length > 0) && (
           <section>
-            <SectionTitle name={name} tail="Conditions & Allergies" />
+            <SectionTitle tail="Conditions & Allergies" />
             <div className="flex flex-col gap-2">
               {(medical?.conditions?.length ?? 0) > 0 && <InfoCard label="Conditions" text={medical!.conditions.join(", ")} />}
               {allergies.length > 0 && <InfoCard label="Allergies" text={allergies.join(", ")} />}
@@ -408,7 +408,7 @@ export default function RecipientView({ profile, token }: Props) {
         {/* Commands */}
         {behavior.commands.length > 0 && (
           <section>
-            <SectionTitle name={name} tail="Commands" />
+            <SectionTitle tail="Commands" />
             <div className="border rounded-card overflow-hidden" style={{ borderColor: BORDER }}>
               <table className="w-full text-sm">
                 <thead>
@@ -454,7 +454,7 @@ export default function RecipientView({ profile, token }: Props) {
             behavioural colour (scared/no-go/temperament) is paid */}
         {((behavior.flightRisk || behavior.escapeRisk.flag) || (paidVisible && (behavior.scared || behavior.noGo || behavior.temperamentSummary))) && (
           <section>
-            <SectionTitle name={name} tail="Triggers" />
+            <SectionTitle tail="Triggers" />
             <div className="flex flex-col gap-2">
               {(behavior.flightRisk || behavior.escapeRisk.flag) && (
                 <InfoCard label="Flight risk" text={behavior.flightRisk || behavior.escapeRisk.notes} />
@@ -541,11 +541,11 @@ function hasFeeding(f: NonNullable<RecipientProfile["routine"]>["feeding"], medi
   );
 }
 
-function SectionTitle({ name, tail, locked }: { name: string; tail: string; locked?: boolean }) {
+function SectionTitle({ name, tail, locked }: { name?: string; tail: string; locked?: boolean }) {
   return (
     <div className="flex items-center gap-2 mb-3">
       <h2 className="font-tanker text-2xl leading-none text-foreground">
-        {possessive(name)} {tail}
+        {name ? `${possessive(name)} ${tail}` : tail}
       </h2>
       {locked && <PaidBadge />}
     </div>

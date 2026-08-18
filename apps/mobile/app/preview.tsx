@@ -34,11 +34,11 @@ type Data = {
 
 // Tanker section header (no squiggle on the recipient/preview view — #45).
 // A right-aligned "Unlock to share" pill appears on paid-gated sections.
-function SectionHeader({ lead, underline, locked }: { lead: string; underline: string; locked?: boolean }) {
+function SectionHeader({ lead, underline, locked }: { lead?: string; underline: string; locked?: boolean }) {
   const style = { fontFamily: "Tanker", fontSize: 22, lineHeight: 26, color: colors.textDark } as const;
   return (
     <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 8 }}>
-      <Text style={[style, { flexShrink: 1 }]}>{lead} {underline}</Text>
+      <Text style={[style, { flexShrink: 1 }]}>{lead ? `${lead} ${underline}` : underline}</Text>
       {locked ? <FieldTier /> : null}
     </View>
   );
@@ -376,7 +376,7 @@ export default function Preview() {
               allergies. */}
           {d.meds.length > 0 && (
             <View>
-              <SectionHeader lead={possessive(d.name)} underline="Medications" />
+              <SectionHeader underline="Medications" />
               <View style={{ gap: 12 }}>
                 {d.meds.map((m, i) => (
                   <View key={i} style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 16 }}>
@@ -396,7 +396,7 @@ export default function Preview() {
 
           {showFull && (d.walks || d.sleep || d.bathroom || d.leftAlone || d.toileting) && (
             <View>
-              <SectionHeader lead={possessive(d.name)} underline="Daily Routine" />
+              <SectionHeader underline="Daily Routine" />
               <View style={{ gap: 12 }}>
                 {d.walks ? <InfoCard label="Walks" text={d.walks} locked={locked} /> : null}
                 {d.sleep ? <InfoCard label="Sleep" text={d.sleep} locked={locked} /> : null}
@@ -409,7 +409,7 @@ export default function Preview() {
 
           {(d.conditions || d.allergies) ? (
             <View>
-              <SectionHeader lead={possessive(d.name)} underline="Conditions & Allergies" />
+              <SectionHeader underline="Conditions & Allergies" />
               <View style={{ gap: 12 }}>
                 {d.conditions ? <InfoCard label="Conditions" text={d.conditions} /> : null}
                 {d.allergies ? <InfoCard label="Allergies" text={d.allergies} /> : null}
@@ -419,7 +419,7 @@ export default function Preview() {
 
           {d.commands.length > 0 && (
             <View>
-              <SectionHeader lead={possessive(d.name)} underline="Commands" />
+              <SectionHeader underline="Commands" />
               <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden" }}>
                 <View style={{ flexDirection: "row", backgroundColor: colors.secondary, paddingHorizontal: 12, paddingVertical: 8 }}>
                   <Text style={{ width: "26%", ...microLabel, color: colors.textMuted }}>Word</Text>
@@ -447,7 +447,7 @@ export default function Preview() {
 
           {(d.flightRisk || (showFull && (d.scared || d.noGo || d.temperament))) && (
             <View>
-              <SectionHeader lead={possessive(d.name)} underline="Triggers" />
+              <SectionHeader underline="Triggers" />
               <View style={{ gap: 12 }}>
                 {/* Flight risk is a safety override — free at every tier */}
                 {d.flightRisk ? <InfoCard label="Flight risk" text={d.flightRisk} /> : null}
