@@ -328,17 +328,31 @@ export default function RecipientView({ profile, token }: Props) {
           </span>
         </a>
 
-        {/* Daily Routine — feeding is free; walks/sleep/bathroom are paid */}
-        {routine && (hasFeeding(routine.feeding, allMeds) || (paidVisible && (routine.walks || routine.sleep || routine.bathroomHabits || routine.leftAlone || routine.toileting))) && (
+        {/* Daily Routine — feeding is free; walks/sleep/bathroom are paid.
+            Medication renders right after Feeding, before walks/sleep/
+            bathroom — it's the safety-critical section and shouldn't sit
+            behind those as a scroll hurdle. */}
+        {((routine && hasFeeding(routine.feeding, allMeds)) || (medical?.conditions?.length ?? 0) > 0 || allMeds.length > 0 || (paidVisible && (routine?.walks || routine?.sleep || routine?.bathroomHabits || routine?.leftAlone || routine?.toileting))) && (
           <section>
             <SectionTitle name={name} tail="Daily Routine" />
             <div className="flex flex-col gap-2">
-              {hasFeeding(routine.feeding, allMeds) && <FeedingCard feeding={routine.feeding} medications={allMeds} />}
-              {paidVisible && routine.walks && <InfoCard label="Walks" text={routine.walks} locked={lockedPreview} />}
-              {paidVisible && routine.sleep && <InfoCard label="Sleep" text={routine.sleep} locked={lockedPreview} />}
-              {paidVisible && routine.bathroomHabits && <InfoCard label="Bathroom" text={routine.bathroomHabits} locked={lockedPreview} />}
-              {paidVisible && routine.leftAlone && <InfoCard label="Left alone" text={routine.leftAlone} locked={lockedPreview} />}
-              {paidVisible && routine.toileting && <InfoCard label="Toileting" text={routine.toileting} locked={lockedPreview} />}
+              {routine && hasFeeding(routine.feeding, allMeds) && <FeedingCard feeding={routine.feeding} medications={allMeds} />}
+              {(medical?.conditions?.length ?? 0) > 0 && <InfoCard label="Conditions" text={medical!.conditions.join(", ")} />}
+              {allMeds.map((med, i) => (
+                <div key={i} className="bg-white border rounded-card px-4 py-3" style={{ borderColor: BORDER }}>
+                  <p className="eyebrow text-primary mb-1">Medication</p>
+                  <p className="text-sm font-semibold whitespace-pre-line" style={{ color: BODY }}>{[med.name, med.dose].filter(Boolean).join(" — ")}</p>
+                  {(mealSlotLabel(med.withMeal) || med.frequency || med.locationStored) && (
+                    <p className="text-text-muted text-xs mt-0.5">{[mealSlotLabel(med.withMeal), med.frequency, med.locationStored && `Stored: ${med.locationStored}`].filter(Boolean).join(" · ")}</p>
+                  )}
+                  {med.notes && <p className="text-text-muted text-xs italic mt-0.5">{med.notes}</p>}
+                </div>
+              ))}
+              {paidVisible && routine?.walks && <InfoCard label="Walks" text={routine.walks} locked={lockedPreview} />}
+              {paidVisible && routine?.sleep && <InfoCard label="Sleep" text={routine.sleep} locked={lockedPreview} />}
+              {paidVisible && routine?.bathroomHabits && <InfoCard label="Bathroom" text={routine.bathroomHabits} locked={lockedPreview} />}
+              {paidVisible && routine?.leftAlone && <InfoCard label="Left alone" text={routine.leftAlone} locked={lockedPreview} />}
+              {paidVisible && routine?.toileting && <InfoCard label="Toileting" text={routine.toileting} locked={lockedPreview} />}
               {/* Deliberately worded the same whether the extended routine is
                   gated (owner on the free tier) or simply empty (owner never
                   filled it in) — a sitter can't tell the difference and
@@ -357,27 +371,6 @@ export default function RecipientView({ profile, token }: Props) {
               {!preview && !hasExtendedRoutine && !(isPaid && !paidVisible) && (
                 <p className="text-xs italic" style={{ color: MUTED }}>Full routine not included.</p>
               )}
-            </div>
-          </section>
-        )}
-
-        {/* Medication — free at every tier, like allergies. A sitter needs the
-            dose whether or not the owner has paid, so it shows in both views. */}
-        {medical && (medical.conditions?.length > 0 || allMeds.length > 0) && (
-          <section>
-            <SectionTitle name={name} tail="Medication" />
-            <div className="flex flex-col gap-2">
-              {medical.conditions?.length > 0 && <InfoCard label="Conditions" text={medical.conditions.join(", ")} />}
-              {allMeds.map((med, i) => (
-                <div key={i} className="bg-white border rounded-card px-4 py-3" style={{ borderColor: BORDER }}>
-                  <p className="eyebrow text-primary mb-1">Medication</p>
-                  <p className="text-sm font-semibold whitespace-pre-line" style={{ color: BODY }}>{[med.name, med.dose].filter(Boolean).join(" — ")}</p>
-                  {(mealSlotLabel(med.withMeal) || med.frequency || med.locationStored) && (
-                    <p className="text-text-muted text-xs mt-0.5">{[mealSlotLabel(med.withMeal), med.frequency, med.locationStored && `Stored: ${med.locationStored}`].filter(Boolean).join(" · ")}</p>
-                  )}
-                  {med.notes && <p className="text-text-muted text-xs italic mt-0.5">{med.notes}</p>}
-                </div>
-              ))}
             </div>
           </section>
         )}

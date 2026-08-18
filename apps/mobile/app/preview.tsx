@@ -303,9 +303,13 @@ export default function Preview() {
             </View>
           </View>
 
-          {/* Order (#15): Daily Routine → Medication → Allergies → Commands → Triggers.
-              Feeding is free at every tier; walks/sleep/bathroom are paid. */}
-          {(hasFeeding || (showFull && (d.walks || d.sleep || d.bathroom || d.leftAlone || d.toileting))) && (
+          {/* Order (#15): Daily Routine (Feeding → Medication → walks/sleep/
+              bathroom) → Allergies → Commands → Triggers. Medication sits
+              right after Feeding & Meds — it's the safety-critical section
+              and shouldn't sit behind walks/sleep/bathroom as a scroll
+              hurdle. Feeding & Medication are free at every tier; the rest
+              of the routine is paid. */}
+          {(hasFeeding || d.meds.length > 0 || d.conditions || (showFull && (d.walks || d.sleep || d.bathroom || d.leftAlone || d.toileting))) && (
             <View>
               <SectionHeader lead={possessive(d.name)} underline="Daily Routine" />
               <View style={{ gap: 12 }}>
@@ -368,22 +372,12 @@ export default function Preview() {
                     ) : null}
                   </View>
                 )}
-                {showFull && d.walks ? <InfoCard label="Walks" text={d.walks} locked={locked} /> : null}
-                {showFull && d.sleep ? <InfoCard label="Sleep" text={d.sleep} locked={locked} /> : null}
-                {showFull && d.bathroom ? <InfoCard label="Bathroom" text={d.bathroom} locked={locked} /> : null}
-                {showFull && d.leftAlone ? <InfoCard label="Left alone" text={d.leftAlone} locked={locked} /> : null}
-                {showFull && d.toileting ? <InfoCard label="Toileting" text={d.toileting} locked={locked} /> : null}
-              </View>
-            </View>
-          )}
-
-          {/* Medication & conditions — free at every tier (#87 follow-up): a
-              sitter dosing the wrong thing because the owner hadn't paid is a
-              safety failure. Shows in both quick and full view, like allergies. */}
-          {(d.meds.length > 0 || d.conditions) && (
-            <View>
-              <SectionHeader lead={possessive(d.name)} underline="Medication" />
-              <View style={{ gap: 12 }}>
+                {/* Medication & conditions — free at every tier (#87
+                    follow-up): a sitter dosing the wrong thing because the
+                    owner hadn't paid is a safety failure. Shows in both
+                    quick and full view, like allergies. Placed here (right
+                    after Feeding & Meds, before walks/sleep/bathroom) so
+                    it's not gated behind paid-only fields. */}
                 {d.conditions ? <InfoCard label="Conditions" text={d.conditions} /> : null}
                 {d.meds.map((m, i) => (
                   <View key={i} style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 16 }}>
@@ -397,6 +391,11 @@ export default function Preview() {
                     ) : null}
                   </View>
                 ))}
+                {showFull && d.walks ? <InfoCard label="Walks" text={d.walks} locked={locked} /> : null}
+                {showFull && d.sleep ? <InfoCard label="Sleep" text={d.sleep} locked={locked} /> : null}
+                {showFull && d.bathroom ? <InfoCard label="Bathroom" text={d.bathroom} locked={locked} /> : null}
+                {showFull && d.leftAlone ? <InfoCard label="Left alone" text={d.leftAlone} locked={locked} /> : null}
+                {showFull && d.toileting ? <InfoCard label="Toileting" text={d.toileting} locked={locked} /> : null}
               </View>
             </View>
           )}
