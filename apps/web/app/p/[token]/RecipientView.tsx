@@ -332,7 +332,7 @@ export default function RecipientView({ profile, token }: Props) {
         {/* Feeding & Meds — free at every tier */}
         {routine && hasFeeding(routine.feeding, allMeds) && (
           <section>
-            <SectionTitle name={name} tail="Feeding & Meds" />
+            <SectionTitle tail="Feeding & Meds" />
             <div className="flex flex-col gap-2">
               <FeedingCard feeding={routine.feeding} medications={allMeds} />
             </div>
@@ -345,7 +345,7 @@ export default function RecipientView({ profile, token }: Props) {
             it's safety-critical and shouldn't sit behind a scroll hurdle. */}
         {allMeds.length > 0 && (
           <section>
-            <SectionTitle tail="Medications" />
+            <SectionTitle tail="Medications & Notes" />
             <div className="flex flex-col gap-2">
               {allMeds.map((med, i) => (
                 <div key={i} className="bg-white border rounded-card px-4 py-3" style={{ borderColor: BORDER }}>

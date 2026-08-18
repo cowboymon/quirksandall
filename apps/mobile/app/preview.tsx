@@ -313,7 +313,7 @@ export default function Preview() {
               paid. */}
           {hasFeeding && (
             <View>
-              <SectionHeader lead={possessive(d.name)} underline="Feeding & Meds" />
+              <SectionHeader underline="Feeding & Meds" />
               <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden" }}>
                 {meals.map(([label, key, slot]: any, i) => {
                   const tied = d.meds.filter((m) => m.withMeal?.includes(key));
@@ -377,7 +377,7 @@ export default function Preview() {
               allergies. */}
           {d.meds.length > 0 && (
             <View>
-              <SectionHeader underline="Medications" />
+              <SectionHeader underline="Medications & Notes" />
               <View style={{ gap: 12 }}>
                 {d.meds.map((m, i) => (
                   <View key={i} style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 16 }}>
