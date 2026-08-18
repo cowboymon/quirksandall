@@ -313,7 +313,7 @@ export default function Preview() {
               paid. */}
           {hasFeeding && (
             <View>
-              <SectionHeader underline="Feeding & Meds" />
+              <SectionHeader underline="Meals & Meds" />
               <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden" }}>
                 {meals.map(([label, key, slot]: any, i) => {
                   const tied = d.meds.filter((m) => m.withMeal?.includes(key));

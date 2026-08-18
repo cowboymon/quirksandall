@@ -332,7 +332,7 @@ export default function RecipientView({ profile, token }: Props) {
         {/* Feeding & Meds — free at every tier */}
         {routine && hasFeeding(routine.feeding, allMeds) && (
           <section>
-            <SectionTitle tail="Feeding & Meds" />
+            <SectionTitle tail="Meals & Meds" />
             <div className="flex flex-col gap-2">
               <FeedingCard feeding={routine.feeding} medications={allMeds} />
             </div>
