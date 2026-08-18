@@ -188,6 +188,10 @@ export default function Step3() {
         </Text>
         <View style={{ gap: 14 }}>
           <View>
+            <Eyebrow>What's their temperament like?</Eyebrow>
+            <Textarea style={{ marginTop: 4 }} placeholder="e.g. Shy at first, warms up fast. Loves belly rubs." value={pet.temperament ?? ""} onChangeText={(v) => setPet({ temperament: v })} />
+          </View>
+          <View>
             <Eyebrow>Scared of anything?</Eyebrow>
             <Textarea style={{ marginTop: 4 }} placeholder="e.g. Skateboards, loud machinery…" value={pet.scared ?? ""} onChangeText={(v) => setPet({ scared: v })} />
           </View>
@@ -198,10 +202,6 @@ export default function Step3() {
           <View>
             <Eyebrow>Do they bolt if they get the chance?</Eyebrow>
             <Textarea style={{ marginTop: 4 }} placeholder="e.g. Doors, gates, slipped leads — always check the latch." value={pet.flightRisk ?? ""} onChangeText={(v) => setPet({ flightRisk: v })} />
-          </View>
-          <View>
-            <Eyebrow>What's their temperament like?</Eyebrow>
-            <Textarea style={{ marginTop: 4 }} placeholder="e.g. Shy at first, warms up fast. Loves belly rubs." value={pet.temperament ?? ""} onChangeText={(v) => setPet({ temperament: v })} />
           </View>
         </View>
       </View>

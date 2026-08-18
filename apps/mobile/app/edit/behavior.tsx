@@ -344,6 +344,21 @@ export default function EditBehavior() {
 
         <Card>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <Eyebrow>What's their temperament like?</Eyebrow>
+            {softLocked && <FieldTier />}
+          </View>
+          <Input
+            className="mt-2"
+            placeholder="Friendly but anxious with strangers. Needs 10 minutes to settle."
+            value={temperament}
+            onChangeText={setTemperament}
+            multiline
+            style={{ height: 88, paddingTop: 10, textAlignVertical: "top" }}
+          />
+        </Card>
+
+        <Card>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
             <Eyebrow>Scared of anything?</Eyebrow>
             {softLocked && <FieldTier />}
           </View>
@@ -381,21 +396,6 @@ export default function EditBehavior() {
             onChangeText={setFlightRisk}
             multiline
             style={{ height: 72, paddingTop: 10, textAlignVertical: "top" }}
-          />
-        </Card>
-
-        <Card>
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-            <Eyebrow>What's their temperament like?</Eyebrow>
-            {softLocked && <FieldTier />}
-          </View>
-          <Input
-            className="mt-2"
-            placeholder="Friendly but anxious with strangers. Needs 10 minutes to settle."
-            value={temperament}
-            onChangeText={setTemperament}
-            multiline
-            style={{ height: 88, paddingTop: 10, textAlignVertical: "top" }}
           />
         </Card>
       </View>

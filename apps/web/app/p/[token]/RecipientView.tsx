@@ -446,9 +446,9 @@ export default function RecipientView({ profile, token }: Props) {
               {(behavior.flightRisk || behavior.escapeRisk.flag) && (
                 <InfoCard label="Flight risk" text={behavior.flightRisk || behavior.escapeRisk.notes} />
               )}
+              {paidVisible && behavior.temperamentSummary && <InfoCard label="Temperament" text={behavior.temperamentSummary} locked={lockedPreview} />}
               {paidVisible && behavior.scared && <InfoCard label="Scared of" text={behavior.scared} locked={lockedPreview} />}
               {paidVisible && behavior.noGo && <InfoCard label="No-go zones" text={behavior.noGo} locked={lockedPreview} />}
-              {paidVisible && behavior.temperamentSummary && <InfoCard label="Temperament" text={behavior.temperamentSummary} locked={lockedPreview} />}
             </div>
           </section>
         )}
