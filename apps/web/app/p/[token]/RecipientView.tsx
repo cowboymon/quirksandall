@@ -345,7 +345,7 @@ export default function RecipientView({ profile, token }: Props) {
             it's safety-critical and shouldn't sit behind a scroll hurdle. */}
         {allMeds.length > 0 && (
           <section>
-            <SectionTitle tail="Medications & Notes" />
+            <SectionTitle tail="Meds & Notes" />
             <div className="flex flex-col gap-2">
               {allMeds.map((med, i) => (
                 <div key={i} className="bg-white border rounded-card px-4 py-3" style={{ borderColor: BORDER }}>

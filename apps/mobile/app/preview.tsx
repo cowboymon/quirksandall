@@ -377,7 +377,7 @@ export default function Preview() {
               allergies. */}
           {d.meds.length > 0 && (
             <View>
-              <SectionHeader underline="Medications & Notes" />
+              <SectionHeader underline="Meds & Notes" />
               <View style={{ gap: 12 }}>
                 {d.meds.map((m, i) => (
                   <View key={i} style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 16 }}>
