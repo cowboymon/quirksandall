@@ -453,9 +453,9 @@ export default function Preview() {
             <View>
               <SectionHeader underline="Triggers" />
               <View style={{ gap: 12 }}>
+                {showFull && d.temperament ? <InfoCard label="Temperament" text={d.temperament} locked={locked} /> : null}
                 {/* Flight risk is a safety override — free at every tier */}
                 {d.flightRisk ? <InfoCard label="Flight risk" text={d.flightRisk} /> : null}
-                {showFull && d.temperament ? <InfoCard label="Temperament" text={d.temperament} locked={locked} /> : null}
                 {showFull && d.scared ? <InfoCard label="Scared of" text={d.scared} locked={locked} /> : null}
                 {showFull && d.noGo ? <InfoCard label="No-go zones" text={d.noGo} locked={locked} /> : null}
               </View>

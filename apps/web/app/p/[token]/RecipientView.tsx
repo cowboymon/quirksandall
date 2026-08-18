@@ -460,10 +460,10 @@ export default function RecipientView({ profile, token }: Props) {
           <section>
             <SectionTitle tail="Triggers" />
             <div className="flex flex-col gap-2">
+              {paidVisible && behavior.temperamentSummary && <InfoCard label="Temperament" text={behavior.temperamentSummary} locked={lockedPreview} />}
               {(behavior.flightRisk || behavior.escapeRisk.flag) && (
                 <InfoCard label="Flight risk" text={behavior.flightRisk || behavior.escapeRisk.notes} />
               )}
-              {paidVisible && behavior.temperamentSummary && <InfoCard label="Temperament" text={behavior.temperamentSummary} locked={lockedPreview} />}
               {paidVisible && behavior.scared && <InfoCard label="Scared of" text={behavior.scared} locked={lockedPreview} />}
               {paidVisible && behavior.noGo && <InfoCard label="No-go zones" text={behavior.noGo} locked={lockedPreview} />}
             </div>
