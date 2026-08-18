@@ -516,11 +516,15 @@ function mealComplete(slot?: { time?: string; amount?: string; skip?: boolean })
 function hasFeeding(f: NonNullable<RecipientProfile["routine"]>["feeding"], medications: NonNullable<RecipientProfile["medical"]>["medications"] = []): boolean {
   // A meal-tied medication also earns the Feeding card its own row (with a
   // "See Medications" pointer), even if that meal itself was never filled in.
+  // An "anytime" medication does the same — it isn't tied to a meal, but
+  // Feeding is the card sitters treat as the day's source of truth, so an
+  // anytime-only medication still needs to earn this card its own row
+  // rather than being invisible unless they scroll to Medication below.
   return !!(
     mealComplete(f.breakfast) || mealComplete(f.lunch) || mealComplete(f.dinner) ||
     f.breakfast?.skip || f.lunch?.skip || f.dinner?.skip ||
     treatEntries(f.treats).length > 0 || f.notes ||
-    medications.some((m) => m.withMeal?.some((s) => s === "breakfast" || s === "lunch" || s === "dinner"))
+    medications.some((m) => m.withMeal?.some((s) => s === "breakfast" || s === "lunch" || s === "dinner" || s === "anytime"))
   );
 }
 
@@ -602,6 +606,10 @@ function FeedingCard({ feeding, medications }: { feeding: NonNullable<RecipientP
   // to it — otherwise a med tied to an unfilled-in meal (e.g. "with lunch"
   // when lunch itself was never filled in) would have nowhere to point from.
   const shown = meals.filter(([, key, slot]) => mealComplete(slot) || slot?.skip || medications.some((m) => m.withMeal?.includes(key)));
+  // Not tied to any meal, so never matched a row above — surfaced as its
+  // own row instead of being invisible on the card sitters treat as the
+  // day's source of truth. See the comment on hasFeeding() above.
+  const anytimeMeds = medications.filter((m) => m.withMeal?.includes("anytime"));
   return (
     <div className="bg-white border rounded-card overflow-hidden" style={{ borderColor: BORDER }}>
       <div className="px-4 pt-3 pb-2">
@@ -641,6 +649,19 @@ function FeedingCard({ feeding, medications }: { feeding: NonNullable<RecipientP
         </div>
         );
       })}
+      {anytimeMeds.length > 0 && (
+        <div className="flex px-4 py-2 gap-3" style={{ borderTop: shown.length > 0 ? `1px solid ${BORDER}` : undefined }}>
+          <span className="text-sm font-medium w-20 shrink-0" style={{ color: MUTED }}>Anytime</span>
+          <div className="flex flex-col">
+            {anytimeMeds.map((m, mi) => (
+              <span key={mi} className="text-xs font-medium" style={{ color: "#B83A52" }}>
+                + {[m.name, m.dose].filter(Boolean).join(" — ")}
+              </span>
+            ))}
+            <span className="text-[11px] mt-0.5" style={{ color: MUTED }}>See Medications</span>
+          </div>
+        </div>
+      )}
       {treatEntries(feeding.treats).length > 0 && (
         <div className="flex px-4 py-2 gap-3" style={{ borderTop: `1px solid ${BORDER}` }}>
           <span className="text-sm font-medium w-20 shrink-0" style={{ color: MUTED }}>Treats</span>

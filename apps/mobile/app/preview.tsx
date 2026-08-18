@@ -151,7 +151,13 @@ export default function Preview() {
   // when lunch itself was never filled in) would have nowhere to point from.
   const allMealSlots = [["Breakfast", "breakfast", f.breakfast], ["Lunch", "lunch", f.lunch], ["Dinner", "dinner", f.dinner]] as const;
   const meals = allMealSlots.filter(([, key, slot]) => mealComplete(slot) || (slot as any)?.skip || d.meds.some((m) => m.withMeal?.includes(key)));
-  const hasFeeding = !!(meals.length || treatEntries(f.treats).length || f.notes);
+  // "Anytime" meds aren't tied to a meal at all, so they never matched any
+  // row above and were invisible on Feeding — the card that's meant to be
+  // the day's source of truth — with no sign there was anything else to
+  // check. Surfaced as its own row below the meals, same "+ name — dose"
+  // treatment as a meal-tied medication.
+  const anytimeMeds = d.meds.filter((m) => m.withMeal?.includes("anytime"));
+  const hasFeeding = !!(meals.length || anytimeMeds.length || treatEntries(f.treats).length || f.notes);
   // Meds tied to a shown meal ALSO render inline in the routine as a
   // convenience, but every medication always shows in the standalone
   // Medication section too — that's the safety-critical section a sitter is
@@ -326,6 +332,19 @@ export default function Preview() {
                         </View>
                       );
                     })}
+                    {anytimeMeds.length > 0 && (
+                      <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border }}>
+                        <MealRow label="Anytime" divider={false} medOnly />
+                        {anytimeMeds.map((m, mi) => (
+                          <Text key={mi} style={{ color: colors.primary, fontSize: 12, fontFamily: "Satoshi-Medium", paddingLeft: 80, paddingRight: 16, paddingBottom: 8 }}>
+                            + {[m.name, m.dose].filter(Boolean).join(" — ")}
+                          </Text>
+                        ))}
+                        <Text style={{ color: colors.textMuted, fontSize: 11, paddingLeft: 80, paddingRight: 16, paddingBottom: 8 }}>
+                          See Medications
+                        </Text>
+                      </View>
+                    )}
                     {treatEntries(f.treats).length ? (
                       <View style={{ flexDirection: "row", paddingHorizontal: 16, paddingVertical: 8, borderTopWidth: 1, borderTopColor: colors.border, alignItems: "flex-start" }}>
                         <Text style={{ width: 64, fontSize: 13, fontFamily: "Satoshi-Medium", color: colors.textMuted }}>Treats</Text>
