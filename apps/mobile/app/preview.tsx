@@ -381,8 +381,7 @@ export default function Preview() {
               <View style={{ gap: 12 }}>
                 {d.meds.map((m, i) => (
                   <View key={i} style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 16 }}>
-                    <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.primary }}>Medication</Text>
-                    <Text style={{ color: BODY, fontSize: 14, fontFamily: "Satoshi-Bold", marginTop: 6 }}>{[m.name, m.dose].filter(Boolean).join(" — ")}</Text>
+                    <Text style={{ color: BODY, fontSize: 14, fontFamily: "Satoshi-Bold" }}>{[m.name, m.dose].filter(Boolean).join(" — ")}</Text>
                     {mealSlotLabel(m.withMeal) ? (
                       <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>{mealSlotLabel(m.withMeal)}</Text>
                     ) : null}

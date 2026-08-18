@@ -349,7 +349,6 @@ export default function RecipientView({ profile, token }: Props) {
             <div className="flex flex-col gap-2">
               {allMeds.map((med, i) => (
                 <div key={i} className="bg-white border rounded-card px-4 py-3" style={{ borderColor: BORDER }}>
-                  <p className="eyebrow text-primary mb-1">Medication</p>
                   <p className="text-sm font-semibold whitespace-pre-line" style={{ color: BODY }}>{[med.name, med.dose].filter(Boolean).join(" — ")}</p>
                   {(mealSlotLabel(med.withMeal) || med.frequency || med.locationStored) && (
                     <p className="text-text-muted text-xs mt-0.5">{[mealSlotLabel(med.withMeal), med.frequency, med.locationStored && `Stored: ${med.locationStored}`].filter(Boolean).join(" · ")}</p>
