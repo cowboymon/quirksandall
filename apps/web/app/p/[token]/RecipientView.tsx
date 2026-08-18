@@ -643,7 +643,7 @@ function FeedingCard({ feeding, medications }: { feeding: NonNullable<RecipientP
               </span>
             ))}
             {meds.length > 0 && (
-              <span className="text-[11px] mt-0.5" style={{ color: MUTED }}>See Medications</span>
+              <span className="text-[11px] mt-0.5" style={{ color: MUTED }}>See Medications for notes</span>
             )}
           </div>
         </div>
@@ -658,7 +658,7 @@ function FeedingCard({ feeding, medications }: { feeding: NonNullable<RecipientP
                 + {[m.name, m.dose].filter(Boolean).join(" — ")}
               </span>
             ))}
-            <span className="text-[11px] mt-0.5" style={{ color: MUTED }}>See Medications</span>
+            <span className="text-[11px] mt-0.5" style={{ color: MUTED }}>See Medications for notes</span>
           </div>
         </div>
       )}

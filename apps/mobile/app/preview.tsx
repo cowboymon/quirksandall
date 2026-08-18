@@ -326,7 +326,7 @@ export default function Preview() {
                           ))}
                           {tied.length > 0 && (
                             <Text style={{ color: colors.textMuted, fontSize: 11, paddingLeft: 80, paddingRight: 16, paddingBottom: 8 }}>
-                              See Medications
+                              See Medications for notes
                             </Text>
                           )}
                         </View>
@@ -341,7 +341,7 @@ export default function Preview() {
                           </Text>
                         ))}
                         <Text style={{ color: colors.textMuted, fontSize: 11, paddingLeft: 80, paddingRight: 16, paddingBottom: 8 }}>
-                          See Medications
+                          See Medications for notes
                         </Text>
                       </View>
                     )}
