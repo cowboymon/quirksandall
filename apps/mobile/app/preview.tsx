@@ -312,7 +312,7 @@ export default function Preview() {
                 {hasFeeding && (
                   <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden" }}>
                     <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
-                      <Text style={{ ...microLabel, color: colors.primary }}>Feeding</Text>
+                      <Text style={{ ...microLabel, color: colors.primary }}>Feeding & Meds</Text>
                     </View>
                     {meals.map(([label, key, slot]: any, i) => {
                       const tied = d.meds.filter((m) => m.withMeal?.includes(key));

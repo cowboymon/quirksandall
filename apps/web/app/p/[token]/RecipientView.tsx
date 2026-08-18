@@ -613,7 +613,7 @@ function FeedingCard({ feeding, medications }: { feeding: NonNullable<RecipientP
   return (
     <div className="bg-white border rounded-card overflow-hidden" style={{ borderColor: BORDER }}>
       <div className="px-4 pt-3 pb-2">
-        <p className="eyebrow" style={{ color: "#B83A52" }}>Feeding</p>
+        <p className="eyebrow" style={{ color: "#B83A52" }}>Feeding & Meds</p>
       </div>
       {shown.map(([label, key, slot], i) => {
         const meds = medications.filter((m) => m.withMeal?.includes(key));
