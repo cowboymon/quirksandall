@@ -664,39 +664,39 @@ export function WeightInput({ value, onChangeText, style }: { value: string; onC
   const [focused, setFocused] = useState(false);
   const { amount, unit } = parseWeight(value);
   return (
-    <View
-      style={[
-        {
-          minHeight: 46, borderRadius: radius.input, borderWidth: 1,
+    <View style={[{ flexDirection: "row", alignItems: "center", gap: 8 }, style as any]}>
+      <View
+        style={{
+          flex: 1, minHeight: 46, borderRadius: radius.input, borderWidth: 1,
           borderColor: focused ? colors.primary : colors.border, backgroundColor: "#FFFFFF",
-          paddingLeft: 16, paddingRight: 6, flexDirection: "row", alignItems: "center", gap: 8,
-        },
-        style as any,
-      ]}
-    >
-      <TextInput
-        value={amount}
-        onChangeText={(v) => onChangeText(composeWeight(sanitizeWeight(v), unit))}
-        placeholder="28"
-        placeholderTextColor={colors.textMuted}
-        keyboardType="decimal-pad"
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        style={{ flex: 1, paddingVertical: 12, fontSize: 15, fontFamily: "Satoshi", color: colors.textDark, letterSpacing: 0 }}
-      />
-      {/* kg/lb toggle — re-composes the same amount under the new unit
+          paddingHorizontal: 16, justifyContent: "center",
+        }}
+      >
+        <TextInput
+          value={amount}
+          onChangeText={(v) => onChangeText(composeWeight(sanitizeWeight(v), unit))}
+          placeholder="28"
+          placeholderTextColor={colors.textMuted}
+          keyboardType="decimal-pad"
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          style={{ paddingVertical: 12, fontSize: 15, fontFamily: "Satoshi", color: colors.textDark, letterSpacing: 0 }}
+        />
+      </View>
+      {/* kg/lb toggle — its own separate field, not nested inside the
+          amount's border. Re-composes the same amount under the new unit
           rather than converting the number, since the owner is switching
           which unit they're about to type in, not asking for a conversion
           of what's already there. */}
-      <View style={{ flexDirection: "row", borderWidth: 1, borderColor: colors.border, borderRadius: 8, overflow: "hidden" }}>
+      <View style={{ flexDirection: "row", height: 46, borderWidth: 1, borderColor: colors.border, borderRadius: radius.input, overflow: "hidden" }}>
         {(["kg", "lb"] as const).map((u) => (
           <TouchableOpacity
             key={u}
             onPress={() => onChangeText(composeWeight(amount, u))}
             activeOpacity={0.85}
             style={{
-              paddingHorizontal: 10, height: 30, alignItems: "center", justifyContent: "center",
-              backgroundColor: unit === u ? colors.cardDark : "transparent",
+              paddingHorizontal: 14, alignItems: "center", justifyContent: "center",
+              backgroundColor: unit === u ? colors.cardDark : "#FFFFFF",
             }}
           >
             <Text style={{ fontSize: 13, fontFamily: "Satoshi-Medium", color: unit === u ? colors.cardDarkText : colors.textMuted }}>{u}</Text>
