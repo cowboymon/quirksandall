@@ -292,20 +292,43 @@ export default function Account() {
       ) : (
         <View style={{ marginTop: 24, backgroundColor: "#510000", borderRadius: 14, paddingHorizontal: 20, paddingVertical: 20 }}>
           <Text style={{ color: "#F8ECEE", fontFamily: "Satoshi-Medium", fontSize: 15 }}>You're in. Everything's open.</Text>
+          {/* Brighter than body copy — this is live status (when the sub
+              actually renews), not disclaimer text, and was reading as the
+              same muted grey as everything else in the card. */}
           {renewsAt && !isNaN(new Date(renewsAt).getTime()) && (
-            <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, fontFamily: "Satoshi-Light", marginTop: 4 }}>
+            <Text style={{ color: "rgba(248,236,238,0.85)", fontSize: 12, fontFamily: "Satoshi-Medium", marginTop: 4 }}>
               Renews {new Date(renewsAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}.
             </Text>
           )}
           {/* Lifetime purchases have nothing to manage/cancel — renewsAt is
-              null for those, so this only shows for an actual subscription. */}
+              null for those, so this only shows for an actual subscription.
+              Outlined pill, not an underlined text link — this opens the
+              App Store's own subscription settings, a real external action
+              that deserves a tappable-looking affordance. */}
           {renewsAt && (
-            <TouchableOpacity onPress={manageSubscription} style={{ marginTop: 10 }}>
-              <Text style={{ color: "rgba(248,236,238,0.85)", fontSize: 12, fontFamily: "Satoshi-Medium", textDecorationLine: "underline" }}>Manage subscription</Text>
+            <TouchableOpacity
+              onPress={manageSubscription}
+              activeOpacity={0.8}
+              style={{
+                marginTop: 14, alignSelf: "flex-start",
+                paddingHorizontal: 16, paddingVertical: 9,
+                borderRadius: 999, borderWidth: 1, borderColor: "rgba(248,236,238,0.25)",
+              }}
+            >
+              <Text style={{ color: "#F8ECEE", fontSize: 13, fontFamily: "Satoshi-Medium" }}>Manage subscription</Text>
             </TouchableOpacity>
           )}
-          <TouchableOpacity onPress={handleRestore} disabled={loading} style={{ marginTop: 8 }}>
-            <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, fontFamily: "Satoshi" }}>Restore purchases</Text>
+          {/* Hairline separates it from Restore below — Manage opens the App
+              Store (an external action), Restore re-checks entitlement
+              locally (an internal safety net). Different enough actions
+              that stacking them as one list read as more related than they
+              are. */}
+          <View style={{ height: 1, backgroundColor: "rgba(248,236,238,0.12)", marginTop: 16, marginBottom: 12 }} />
+          {/* Small, no underline, muted — rarely needed, so it stays quiet
+              rather than competing with Manage subscription at the same
+              visual weight. */}
+          <TouchableOpacity onPress={handleRestore} disabled={loading}>
+            <Text style={{ color: "rgba(248,236,238,0.45)", fontSize: 11, fontFamily: "Satoshi" }}>Restore purchases</Text>
           </TouchableOpacity>
         </View>
       )}
