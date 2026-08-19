@@ -2,7 +2,7 @@
 // Mirrors the prototype's primitives.tsx (fonts, buttons, dots, inputs).
 import { useEffect, useMemo, useState, useRef, forwardRef } from "react";
 import { Animated, Easing, Keyboard, Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
-import { CalendarDots, LockSimple, XCircle } from "./icons";
+import { CalendarDots, CaretDown, LockSimple, XCircle } from "./icons";
 import { router, useNavigation } from "expo-router";
 import { colors, radius, capitalizeFirst, capitalizeWords, formatPhone, displayDateToISO, dateFieldError } from "@quirksandall/shared";
 import DatePickerSheet from "./DatePickerSheet";
@@ -825,7 +825,7 @@ export function Select({
         <Text style={{ fontSize: 15, letterSpacing: 0, fontFamily: "Satoshi", color: value ? colors.textDark : colors.textMuted }}>
           {value || placeholder}
         </Text>
-        <Text style={{ color: colors.textMuted, fontSize: 12 }}>▾</Text>
+        <CaretDown size={14} color={colors.textMuted} />
       </TouchableOpacity>
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
         {/* Dim scrim so the fields behind the dropdown recede instead of showing
