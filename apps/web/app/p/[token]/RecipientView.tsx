@@ -411,7 +411,7 @@ export default function RecipientView({ profile, token }: Props) {
                     {medical!.conditions.map((c, i) => (
                       <div key={i} className="bg-white border rounded-card overflow-hidden" style={{ borderColor: BORDER }}>
                         <div className="px-4 py-3">
-                          <p className="text-sm font-semibold" style={{ color: "#B83A52" }}>{c.name}</p>
+                          <p className="text-sm font-semibold" style={{ color: BODY }}>{c.name}</p>
                         </div>
                         {c.meaning && (
                           <div className="px-4 py-3" style={{ borderTop: `1px solid ${BORDER}` }}>

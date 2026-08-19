@@ -430,7 +430,7 @@ export default function Preview() {
                       {d.conditions.map((c, i) => (
                         <View key={i} style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden" }}>
                           <View style={{ paddingHorizontal: 14, paddingVertical: 12 }}>
-                            <Text style={{ color: colors.primary, fontSize: 14, fontFamily: "Satoshi-Bold" }}>{c.name}</Text>
+                            <Text style={{ color: BODY, fontSize: 14, fontFamily: "Satoshi-Bold" }}>{c.name}</Text>
                           </View>
                           {c.meaning ? (
                             <View style={{ paddingHorizontal: 14, paddingVertical: 12, borderTopWidth: 1, borderTopColor: colors.border }}>
