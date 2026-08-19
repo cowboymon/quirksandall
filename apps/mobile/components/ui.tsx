@@ -366,7 +366,11 @@ export function DateInput({
                     and this has to persist rather than appear while editing.
                     Matching the weight keeps the two reading as one
                     affordance despite that. */}
-                <XCircle size={17} color={colors.dashedBorder} weight="fill" />
+                {/* #C7C7CC — iOS's actual system-gray clear-button fill, not
+                    our rose-tinted dashedBorder — this is meant to read as
+                    the same native affordance every other field's built-in
+                    clearButtonMode shows, not a branded one-off. */}
+                <XCircle size={17} color="#C7C7CC" weight="fill" />
               </TouchableOpacity>
             ) : null}
             {/* Kept even when a value is set, so the "this opens a picker"
