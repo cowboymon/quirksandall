@@ -252,20 +252,15 @@ function AddButton({ icon: AddIcon, label, onPress, disabled, primary }: { icon:
         opacity: disabled ? 0.5 : 1,
       }}
     >
-      {/* Dashed-circle icon badge — same "something goes here" motif as the
-          dashboard's add-a-link row, instead of a bare dashed rectangle. */}
-      <View
-        style={{
-          width: 36, height: 36, borderRadius: 18,
-          borderWidth: primary ? 0 : 1.5,
-          borderColor: colors.dashedBorder,
-          borderStyle: primary ? "solid" : "dashed",
-          backgroundColor: primary ? "rgba(248,236,238,0.15)" : "transparent",
-          alignItems: "center", justifyContent: "center",
-        }}
-      >
-        <AddIcon size={16} weight="duotone" color={primary ? colors.cardDarkText : colors.primary} />
-      </View>
+      {primary ? (
+        // Solid translucent circle badge — matches the dark-card CTA
+        // treatment used elsewhere (e.g. the unlock module).
+        <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(248,236,238,0.15)", alignItems: "center", justifyContent: "center" }}>
+          <AddIcon size={16} weight="duotone" color={colors.cardDarkText} />
+        </View>
+      ) : (
+        <AddIcon size={22} weight="duotone" color={colors.primary} />
+      )}
       <Text style={{ color: primary ? colors.cardDarkText : colors.textDark, fontSize: 13, fontFamily: "Satoshi-Medium" }}>{label}</Text>
     </TouchableOpacity>
   );
