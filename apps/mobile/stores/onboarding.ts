@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Command } from "@quirksandall/shared";
+import type { Command, Condition } from "@quirksandall/shared";
 import type { EditableMedication } from "../components/MedicationsEditor";
 
 type PetDraft = {
@@ -60,7 +60,7 @@ type PetDraft = {
   toileting?: string;
   allergies?: string[];
   medications?: EditableMedication[];
-  conditions?: string[];
+  conditions?: Condition[];
 };
 
 type OnboardingStore = {

@@ -64,9 +64,18 @@ export type Medication = {
   withMeal?: MealSlot[];
 };
 
+// A named medical condition + what it means for the sitter — same
+// name/meaning split as Commands, rather than one free-text line, so a
+// condition like "Phantom pregnancy" reads with its explanation attached
+// instead of as two unrelated lines.
+export type Condition = {
+  name: string;
+  meaning: string;
+};
+
 export type PetMedical = {
   allergies: string[]; // always visible to recipients
-  conditions: string[]; // free — always visible to recipients
+  conditions: Condition[]; // free — always visible to recipients
   medications: Medication[]; // free — always visible to recipients
 };
 

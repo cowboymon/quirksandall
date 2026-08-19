@@ -198,7 +198,11 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
     ...(medical
       ? {
           medical: {
-            conditions: medical.conditions ?? [],
+            // Legacy rows (pre name/meaning split) stored a bare string per
+            // condition — fold it into { name, meaning: "" } rather than lose it.
+            conditions: (medical.conditions ?? []).map((c: any) =>
+              typeof c === "string" ? { name: c, meaning: "" } : { name: c.name ?? "", meaning: c.meaning ?? "" }
+            ),
             // Map the stored (snake_case) medication rows to the camelCase type
             // the view renders, including the meal slot (#94).
             medications: (medical.medications ?? []).map((m: any) => ({

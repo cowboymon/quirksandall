@@ -12,6 +12,7 @@ import { MARKETING_URL, PRIVACY_URL } from "../lib/config";
 import { useRequireAuth } from "../hooks/useRequireAuth";
 import { FieldTier } from "../components/ui";
 import { colors, computeAge, formatWeight, formatPhone, formatVetName, possessive, orderedCommands, commandStrengthLabel, mealSlotLabel, shortAddress, isUnlocked, treatEntries } from "@quirksandall/shared";
+import type { Condition } from "@quirksandall/shared";
 
 type Data = {
   name: string; breed: string; age: string; photoUrl: string | null;
@@ -27,7 +28,7 @@ type Data = {
   decisionContacts: { name: string; phone: string }[];
   commands: any[];
   scared: string; noGo: string; flightRisk: string; temperament: string;
-  allergies: string[]; conditions: string[]; meds: { name: string; dose: string; withMeal?: string[]; notes?: string }[];
+  allergies: string[]; conditions: Condition[]; meds: { name: string; dose: string; withMeal?: string[]; notes?: string }[];
   feeding: any; walks: string; sleep: string; bathroom: string; leftAlone: string; toileting: string;
   updatedAt: string;
 };
@@ -121,7 +122,13 @@ export default function Preview() {
         decisionContacts,
         commands: orderedCommands(behavior?.commands ?? [], paid, false),
         scared: behavior?.scared ?? "", noGo: behavior?.no_go ?? "", flightRisk: behavior?.flight_risk ?? "", temperament: behavior?.temperament_summary ?? "",
-        allergies: medical?.allergies ?? [], conditions: medical?.conditions ?? [], meds,
+        // Legacy rows (pre name/meaning split) stored a bare string per
+        // condition — fold it into { name, meaning: "" } rather than lose it.
+        allergies: medical?.allergies ?? [],
+        conditions: (medical?.conditions ?? []).map((c: any) =>
+          typeof c === "string" ? { name: c, meaning: "" } : { name: c.name ?? "", meaning: c.meaning ?? "" }
+        ),
+        meds,
         feeding: routine?.feeding ?? null, walks: routine?.walks ?? "", sleep: routine?.sleep ?? "", bathroom: routine?.bathroom_habits ?? "",
         leftAlone: routine?.left_alone?.ok ? (routine.left_alone.detail ? `${routine.left_alone.ok} — ${routine.left_alone.detail}` : routine.left_alone.ok) : "",
         toileting: routine?.toileting_frequency ?? "",
@@ -411,17 +418,25 @@ export default function Preview() {
             <View>
               <SectionHeader underline="Conditions & Allergies" />
               <View style={{ gap: 16 }}>
-                {/* Each group is one bordered list — items divided by a
-                    hairline rather than each floating as its own fully
-                    separate card, which read as unrelated entries even
-                    when they clearly belonged to the same category. */}
+                {/* Conditions — each is its own card, name bold in the
+                    accent colour with its meaning below (same shape as
+                    Commands' word/means split), rather than a flat list of
+                    lines that gave a condition and its own explanation no
+                    visual relationship to each other. */}
                 {d.conditions.length > 0 && (
                   <View style={{ gap: 8 }}>
                     <Text style={{ ...microLabel, color: colors.primary }}>Conditions</Text>
-                    <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden" }}>
+                    <View style={{ gap: 10 }}>
                       {d.conditions.map((c, i) => (
-                        <View key={i} style={{ paddingHorizontal: 14, paddingVertical: 12, borderTopWidth: i > 0 ? 1 : 0, borderTopColor: colors.border }}>
-                          <Text style={{ color: BODY, fontSize: 14, lineHeight: 20 }}>{c}</Text>
+                        <View key={i} style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden" }}>
+                          <View style={{ paddingHorizontal: 14, paddingVertical: 12 }}>
+                            <Text style={{ color: colors.primary, fontSize: 14, fontFamily: "Satoshi-Bold" }}>{c.name}</Text>
+                          </View>
+                          {c.meaning ? (
+                            <View style={{ paddingHorizontal: 14, paddingVertical: 12, borderTopWidth: 1, borderTopColor: colors.border }}>
+                              <Text style={{ color: BODY, fontSize: 14, lineHeight: 20 }}>{c.meaning}</Text>
+                            </View>
+                          ) : null}
                         </View>
                       ))}
                     </View>

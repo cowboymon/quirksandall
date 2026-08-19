@@ -394,11 +394,7 @@ export default function RecipientView({ profile, token }: Props) {
           <p className="text-xs italic" style={{ color: MUTED }}>Full routine not included.</p>
         )}
 
-        {/* Conditions & Allergies — always shown regardless of tier. Each
-            group is one bordered list with items divided by a hairline,
-            rather than each floating as its own fully separate card, which
-            read as unrelated entries even when they clearly belonged to
-            the same category. */}
+        {/* Conditions & Allergies — always shown regardless of tier. */}
         {((medical?.conditions?.length ?? 0) > 0 || allergies.length > 0) && (
           <section>
             <SectionTitle tail="Conditions & Allergies" />
@@ -406,10 +402,22 @@ export default function RecipientView({ profile, token }: Props) {
               {(medical?.conditions?.length ?? 0) > 0 && (
                 <div className="flex flex-col gap-2">
                   <p className="eyebrow text-primary">Conditions</p>
-                  <div className="bg-white border rounded-card overflow-hidden" style={{ borderColor: BORDER }}>
+                  {/* Each is its own card, name bold in the accent colour
+                      with its meaning below (same shape as Commands'
+                      word/means split), rather than a flat list of lines
+                      that gave a condition and its own explanation no
+                      visual relationship to each other. */}
+                  <div className="flex flex-col gap-2.5">
                     {medical!.conditions.map((c, i) => (
-                      <div key={i} className="px-4 py-3" style={{ borderTop: i > 0 ? `1px solid ${BORDER}` : undefined }}>
-                        <p className="text-sm leading-relaxed" style={{ color: BODY }}>{c}</p>
+                      <div key={i} className="bg-white border rounded-card overflow-hidden" style={{ borderColor: BORDER }}>
+                        <div className="px-4 py-3">
+                          <p className="text-sm font-semibold" style={{ color: "#B83A52" }}>{c.name}</p>
+                        </div>
+                        {c.meaning && (
+                          <div className="px-4 py-3" style={{ borderTop: `1px solid ${BORDER}` }}>
+                            <p className="text-sm leading-relaxed" style={{ color: BODY }}>{c.meaning}</p>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

@@ -92,7 +92,10 @@ function buildProfileSummary(d: { pet: any; behavior: any; routine: any; medical
   }
 
   const allergies = (m.allergies ?? []).join(", ");
-  const conditions = (m.conditions ?? []).join(", ");
+  const conditions = (m.conditions ?? [])
+    .map((c: any) => (typeof c === "string" ? c : [c.name, c.meaning].filter(Boolean).join(" — ")))
+    .filter(Boolean)
+    .join(", ");
   const meds = (m.medications ?? []).map((x: any) => [x.name, x.dose].filter(Boolean).join(" ")).filter(Boolean).join("; ");
   if (allergies || conditions || meds) {
     H("Medical");
