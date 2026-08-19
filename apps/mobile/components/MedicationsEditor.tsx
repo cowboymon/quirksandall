@@ -5,6 +5,7 @@
 // edit it).
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import { Input, Eyebrow, Card } from "./ui";
+import { Trash } from "./icons";
 import { colors } from "@quirksandall/shared";
 import type { MealSlot } from "@quirksandall/shared";
 
@@ -53,7 +54,7 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
               <Input style={{ flex: 2 }} placeholder="Name (e.g. Apoquel)" value={m.name} onChangeText={(v) => updateMed(m.id, "name", v)} />
               <Input style={{ flex: 1 }} placeholder="Dose per time — e.g. 1 tablet" value={m.dose} onChangeText={(v) => updateMed(m.id, "dose", v)} />
               <TouchableOpacity onPress={() => removeMed(m.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ justifyContent: "center" }}>
-                <Text style={{ color: colors.danger, fontSize: 20, lineHeight: 20 }}>×</Text>
+                <Trash size={16} color={colors.danger} />
               </TouchableOpacity>
             </View>
             <Input

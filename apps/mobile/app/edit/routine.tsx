@@ -7,6 +7,7 @@ import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
 import { Input, Eyebrow, Card, InlineNote, TimeInput, FieldTier, Select } from "../../components/ui";
+import { Trash } from "../../components/icons";
 import MedicationsEditor, { medsToRows, rowsToMeds, type EditableMedication } from "../../components/MedicationsEditor";
 import { colors, capitalizeFirst, isUnlocked, treatEntries } from "@quirksandall/shared";
 import type { TreatEntry, Condition } from "@quirksandall/shared";
@@ -244,7 +245,7 @@ export default function EditRoutine() {
                 <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: i === 0 ? 0 : 4 }}>
                   <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.textMuted }}>Treat {i + 1}</Text>
                   <TouchableOpacity onPress={() => setTreats((prev) => prev.filter((_, j) => j !== i))} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
-                    <Text style={{ color: colors.danger, fontSize: 16, lineHeight: 16 }}>×</Text>
+                    <Trash size={15} color={colors.danger} />
                   </TouchableOpacity>
                 </View>
               )}
@@ -402,7 +403,7 @@ export default function EditRoutine() {
               </View>
               {conditions.length > 1 && (
                 <TouchableOpacity onPress={() => setConditions((prev) => prev.filter((_, j) => j !== i))} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingTop: 14 }}>
-                  <Text style={{ color: colors.danger, fontSize: 18, lineHeight: 18 }}>×</Text>
+                  <Trash size={16} color={colors.danger} />
                 </TouchableOpacity>
               )}
             </View>
@@ -436,7 +437,7 @@ export default function EditRoutine() {
               />
               {allergies.length > 1 && (
                 <TouchableOpacity onPress={() => setAllergies((prev) => prev.filter((_, j) => j !== i))} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingTop: 14 }}>
-                  <Text style={{ color: colors.danger, fontSize: 18, lineHeight: 18 }}>×</Text>
+                  <Trash size={16} color={colors.danger} />
                 </TouchableOpacity>
               )}
             </View>

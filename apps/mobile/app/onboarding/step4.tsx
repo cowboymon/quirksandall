@@ -4,6 +4,7 @@ import { AppAlert } from "../../stores/appAlert";
 import { router } from "expo-router";
 import { track, AnalyticsEvent } from "../../lib/analytics";
 import { Headline, Textarea, Input, InlineNote, PrimaryButton, SkipButton, Eyebrow, TimeInput, Select } from "../../components/ui";
+import { Trash } from "../../components/icons";
 import OnboardingShell from "../../components/OnboardingShell";
 import { Underlined } from "../../components/Underlined";
 import MedicationsEditor, { medsToRows } from "../../components/MedicationsEditor";
@@ -254,7 +255,7 @@ export default function Step4() {
                       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: i === 0 ? 0 : 4 }}>
                         <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.textMuted }}>Treat {i + 1}</Text>
                         <TouchableOpacity onPress={() => setPet({ feedingTreats: list.filter((_, j) => j !== i) })} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
-                          <Text style={{ color: colors.danger, fontSize: 16, lineHeight: 16 }}>×</Text>
+                          <Trash size={15} color={colors.danger} />
                         </TouchableOpacity>
                       </View>
                     )}
@@ -356,7 +357,7 @@ export default function Step4() {
                     </View>
                     {list.length > 1 && (
                       <TouchableOpacity onPress={() => setPet({ conditions: list.filter((_, j) => j !== i) })} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingTop: 14 }}>
-                        <Text style={{ color: colors.danger, fontSize: 18, lineHeight: 18 }}>×</Text>
+                        <Trash size={16} color={colors.danger} />
                       </TouchableOpacity>
                     )}
                   </View>
@@ -391,7 +392,7 @@ export default function Step4() {
                     />
                     {list.length > 1 && (
                       <TouchableOpacity onPress={() => setPet({ allergies: list.filter((_, j) => j !== i) })} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingTop: 14 }}>
-                        <Text style={{ color: colors.danger, fontSize: 18, lineHeight: 18 }}>×</Text>
+                        <Trash size={16} color={colors.danger} />
                       </TouchableOpacity>
                     )}
                   </View>
