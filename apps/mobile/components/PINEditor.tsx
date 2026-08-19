@@ -8,11 +8,11 @@ import { rememberPin } from "../lib/pinVault";
 import { colors } from "@quirksandall/shared";
 import { Eyebrow, Card } from "./ui";
 
-type Props = { petId: string | null; petName?: string | null; autoStart?: boolean };
+type Props = { petId: string | null; petName?: string | null; autoStart?: boolean; onSaved?: () => void };
 
 type Stage = "idle" | "set" | "confirm";
 
-export default function PINEditor({ petId, petName, autoStart }: Props) {
+export default function PINEditor({ petId, petName, autoStart, onSaved }: Props) {
   const [stage, setStage] = useState<Stage>(autoStart ? "set" : "idle");
   // Setting a first PIN and replacing an existing one are different actions
   // and need different words — "change" and "the old PIN stopped working"
@@ -106,7 +106,8 @@ export default function PINEditor({ petId, petName, autoStart }: Props) {
             ? "The old PIN stopped working straight away. Anyone still looking after " +
               who + " will need the new one — send it to them when you get a chance."
             : "The emergency contacts on " + who + "'s link now wait for this PIN. " +
-              "You'll find it on the dashboard whenever you need to send it."
+              "You'll find it on the dashboard whenever you need to send it.",
+          onSaved ? [{ text: "OK", onPress: onSaved }] : undefined
         );
       } catch (e: any) {
         AppAlert.alert("Couldn't update PIN", e.message);

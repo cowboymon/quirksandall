@@ -294,7 +294,16 @@ export default function EditEmergency() {
 
         {/* PIN editor */}
         <View onLayout={(e) => { pinY.current = e.nativeEvent.layout.y; }}>
-          <PINEditor petId={petId} petName={pet?.name} autoStart={section === "pin"} />
+          <PINEditor
+            petId={petId}
+            petName={pet?.name}
+            autoStart={section === "pin"}
+            // Only bounce back to the dashboard when we arrived via its own
+            // "Change PIN" deep link — landing here any other way (e.g.
+            // browsing the emergency screen directly) shouldn't kick the
+            // owner back out after a save they didn't ask to be routed from.
+            onSaved={section === "pin" ? () => router.back() : undefined}
+          />
         </View>
       </View>
     </EditShell>

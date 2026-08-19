@@ -631,22 +631,52 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
 
 // Numeric weight field with a persistent "kg" suffix (the unit stays visible
 // after a value is entered). Stores the bare number.
+// decimal-pad restricts the on-screen keyboard but not what actually lands in
+// the field — paste, autofill, and some hardware keyboards can still put any
+// character in, and the raw string was saved as-is. Strips everything but
+// digits and a single decimal point, and caps it at 2 decimal places (XX.XX).
+function sanitizeWeight(raw: string): string {
+  let s = raw.replace(/[^0-9.]/g, "");
+  const firstDot = s.indexOf(".");
+  if (firstDot !== -1) {
+    s = s.slice(0, firstDot + 1) + s.slice(firstDot + 1).replace(/\./g, "");
+  }
+  const [intPart, decPart] = s.split(".");
+  return decPart !== undefined ? `${intPart}.${decPart.slice(0, 2)}` : s;
+}
+
+// weight is stored as free text ("15" or "15 lb") — formatWeight() already
+// treats any value containing a letter as carrying its own unit and leaves
+// it untouched, a bare number as kg. Parsing/composing here just builds on
+// that existing convention rather than needing a schema change for a unit
+// column.
+function parseWeight(raw: string): { amount: string; unit: "kg" | "lb" } {
+  const trimmed = (raw ?? "").trim();
+  const isLb = /lb/i.test(trimmed);
+  return { amount: trimmed.replace(/[a-zA-Z]/g, "").trim(), unit: isLb ? "lb" : "kg" };
+}
+function composeWeight(amount: string, unit: "kg" | "lb"): string {
+  if (!amount) return "";
+  return unit === "lb" ? `${amount} lb` : amount;
+}
+
 export function WeightInput({ value, onChangeText, style }: { value: string; onChangeText: (v: string) => void; style?: TextInputProps["style"] }) {
   const [focused, setFocused] = useState(false);
+  const { amount, unit } = parseWeight(value);
   return (
     <View
       style={[
         {
           minHeight: 46, borderRadius: radius.input, borderWidth: 1,
           borderColor: focused ? colors.primary : colors.border, backgroundColor: "#FFFFFF",
-          paddingHorizontal: 16, flexDirection: "row", alignItems: "center",
+          paddingHorizontal: 16, flexDirection: "row", alignItems: "center", gap: 10,
         },
         style as any,
       ]}
     >
       <TextInput
-        value={value}
-        onChangeText={onChangeText}
+        value={amount}
+        onChangeText={(v) => onChangeText(composeWeight(sanitizeWeight(v), unit))}
         placeholder="28"
         placeholderTextColor={colors.textMuted}
         keyboardType="decimal-pad"
@@ -654,7 +684,25 @@ export function WeightInput({ value, onChangeText, style }: { value: string; onC
         onBlur={() => setFocused(false)}
         style={{ flex: 1, paddingVertical: 12, fontSize: 15, fontFamily: "Satoshi", color: colors.textDark, letterSpacing: 0 }}
       />
-      <Text style={{ fontSize: 15, letterSpacing: 0, fontFamily: "Satoshi-Medium", color: colors.textMuted, marginLeft: 6 }}>kg</Text>
+      {/* kg/lb toggle — re-composes the same amount under the new unit
+          rather than converting the number, since the owner is switching
+          which unit they're about to type in, not asking for a conversion
+          of what's already there. */}
+      <View style={{ flexDirection: "row", borderWidth: 1, borderColor: colors.border, borderRadius: 8, overflow: "hidden" }}>
+        {(["kg", "lb"] as const).map((u) => (
+          <TouchableOpacity
+            key={u}
+            onPress={() => onChangeText(composeWeight(amount, u))}
+            activeOpacity={0.85}
+            style={{
+              paddingHorizontal: 10, height: 30, alignItems: "center", justifyContent: "center",
+              backgroundColor: unit === u ? colors.cardDark : "transparent",
+            }}
+          >
+            <Text style={{ fontSize: 13, fontFamily: "Satoshi-Medium", color: unit === u ? colors.cardDarkText : colors.textMuted }}>{u}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
     </View>
   );
 }
