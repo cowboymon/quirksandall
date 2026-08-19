@@ -333,6 +333,9 @@ export default function Step4() {
               dashboard's Edit → Routine & Medical screen. */}
           <View>
             <Eyebrow>Medical conditions</Eyebrow>
+            <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 2, marginBottom: 2 }}>
+              Add each one, and what it means for the sitter.
+            </Text>
             <View style={{ gap: 8, marginTop: 4 }}>
               {(pet.conditions ?? [{ name: "", meaning: "" }]).map((c, i) => {
                 const list = pet.conditions ?? [{ name: "", meaning: "" }];
@@ -369,6 +372,9 @@ export default function Step4() {
             <Eyebrow>Allergies</Eyebrow>
             {/* One line per allergy — not a single field with everything
                 run together. */}
+            <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 2, marginBottom: 2 }}>
+              Add each one — food, environmental, medication.
+            </Text>
             <View style={{ gap: 8, marginTop: 4 }}>
               {(pet.allergies ?? [""]).map((a, i) => {
                 const list = pet.allergies ?? [""];

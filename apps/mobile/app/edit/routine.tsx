@@ -381,6 +381,9 @@ export default function EditRoutine() {
           Commands, rather than one free-text line. */}
       <Card style={{ marginBottom: 12 }}>
         <Eyebrow>Medical conditions</Eyebrow>
+        <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4 }}>
+          Add each one, and what it means for the sitter.
+        </Text>
         <View style={{ gap: 8, marginTop: 8 }}>
           {conditions.map((c, i) => (
             <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
@@ -416,6 +419,9 @@ export default function EditRoutine() {
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <Eyebrow>Allergies</Eyebrow>
         </View>
+        <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4 }}>
+          Add each one — food, environmental, medication.
+        </Text>
         <View style={{ gap: 8, marginTop: 8 }}>
           {allergies.map((a, i) => (
             <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
