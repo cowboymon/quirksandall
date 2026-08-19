@@ -423,21 +423,18 @@ export default function Preview() {
                     a row (name bold, meaning below it) inside one bordered
                     container. */}
                 {d.conditions.length > 0 && (
-                  <View style={{ gap: 8 }}>
-                    <Text style={{ ...microLabel, color: colors.primary }}>Conditions</Text>
-                    <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden" }}>
-                      <View style={{ backgroundColor: colors.secondary, paddingHorizontal: 14, paddingVertical: 8 }}>
-                        <Text style={{ ...microLabel, color: colors.textMuted }}>Conditions</Text>
-                      </View>
-                      {d.conditions.map((c, i) => (
-                        <View key={i} style={{ paddingHorizontal: 14, paddingVertical: 12, borderTopWidth: i > 0 ? 1 : 0, borderTopColor: colors.border }}>
-                          <Text style={{ color: BODY, fontSize: 14, fontFamily: "Satoshi-Bold" }}>{c.name}</Text>
-                          {c.meaning ? (
-                            <Text style={{ color: colors.textMuted, fontSize: 13, lineHeight: 18, marginTop: 2 }}>{c.meaning}</Text>
-                          ) : null}
-                        </View>
-                      ))}
+                  <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden" }}>
+                    <View style={{ backgroundColor: colors.secondary, paddingHorizontal: 14, paddingVertical: 8 }}>
+                      <Text style={{ ...microLabel, color: colors.textMuted }}>Conditions</Text>
                     </View>
+                    {d.conditions.map((c, i) => (
+                      <View key={i} style={{ paddingHorizontal: 14, paddingVertical: 12, borderTopWidth: i > 0 ? 1 : 0, borderTopColor: colors.border }}>
+                        <Text style={{ color: BODY, fontSize: 14, fontFamily: "Satoshi-Bold" }}>{c.name}</Text>
+                        {c.meaning ? (
+                          <Text style={{ color: colors.textMuted, fontSize: 13, lineHeight: 18, marginTop: 2 }}>{c.meaning}</Text>
+                        ) : null}
+                      </View>
+                    ))}
                   </View>
                 )}
                 {d.allergies.length > 0 && (

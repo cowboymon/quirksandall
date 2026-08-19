@@ -400,8 +400,7 @@ export default function RecipientView({ profile, token }: Props) {
             <SectionTitle tail="Conditions & Allergies" />
             <div className="flex flex-col gap-4">
               {(medical?.conditions?.length ?? 0) > 0 && (
-                <div className="flex flex-col gap-2">
-                  <p className="eyebrow text-primary">Conditions</p>
+                <div>
                   {/* One table like Commands, not a card per condition: a
                       single header row, then each condition as a row (name
                       bold, meaning below it) inside one bordered
