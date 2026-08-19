@@ -669,7 +669,7 @@ export function WeightInput({ value, onChangeText, style }: { value: string; onC
         {
           minHeight: 46, borderRadius: radius.input, borderWidth: 1,
           borderColor: focused ? colors.primary : colors.border, backgroundColor: "#FFFFFF",
-          paddingHorizontal: 16, flexDirection: "row", alignItems: "center", gap: 10,
+          paddingLeft: 16, paddingRight: 6, flexDirection: "row", alignItems: "center", gap: 8,
         },
         style as any,
       ]}
