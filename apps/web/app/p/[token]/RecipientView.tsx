@@ -426,10 +426,14 @@ export default function RecipientView({ profile, token }: Props) {
               {allergies.length > 0 && (
                 <div className="flex flex-col gap-2">
                   <p className="eyebrow text-primary">Allergies</p>
+                  {/* Bold, matching the weight every other list item in this
+                      section uses (Condition names, Medication names,
+                      Command words) — was the one plain-weight list, which
+                      read as a lower tier of information. */}
                   <div className="bg-white border rounded-card overflow-hidden" style={{ borderColor: BORDER }}>
                     {allergies.map((a, i) => (
                       <div key={i} className="px-4 py-3" style={{ borderTop: i > 0 ? `1px solid ${BORDER}` : undefined }}>
-                        <p className="text-sm leading-relaxed" style={{ color: BODY }}>{a}</p>
+                        <p className="text-sm font-semibold" style={{ color: BODY }}>{a}</p>
                       </div>
                     ))}
                   </div>

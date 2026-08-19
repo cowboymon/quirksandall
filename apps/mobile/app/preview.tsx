@@ -445,10 +445,14 @@ export default function Preview() {
                 {d.allergies.length > 0 && (
                   <View style={{ gap: 8 }}>
                     <Text style={{ ...microLabel, color: colors.primary }}>Allergies</Text>
+                    {/* Bold, matching the weight every other list item in
+                        this section uses (Condition names, Medication
+                        names, Command words) — was the one plain-weight
+                        list, which read as a lower tier of information. */}
                     <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden" }}>
                       {d.allergies.map((a, i) => (
                         <View key={i} style={{ paddingHorizontal: 14, paddingVertical: 12, borderTopWidth: i > 0 ? 1 : 0, borderTopColor: colors.border }}>
-                          <Text style={{ color: BODY, fontSize: 14, lineHeight: 20 }}>{a}</Text>
+                          <Text style={{ color: BODY, fontSize: 14, fontFamily: "Satoshi-Bold" }}>{a}</Text>
                         </View>
                       ))}
                     </View>
