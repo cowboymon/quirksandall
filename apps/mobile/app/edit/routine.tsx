@@ -376,15 +376,18 @@ export default function EditRoutine() {
         </View>
         <View style={{ gap: 8, marginTop: 8 }}>
           {allergies.map((a, i) => (
-            <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
+              {/* multiline so a longer entry grows the field to fit instead
+                  of scrolling out of view; starts single-line height. */}
               <Input
                 style={{ flex: 1 }}
                 placeholder="Chicken-based kibble causes skin itching"
                 value={a}
                 onChangeText={(v) => setAllergies((prev) => prev.map((x, j) => (j === i ? v : x)))}
+                multiline
               />
               {allergies.length > 1 && (
-                <TouchableOpacity onPress={() => setAllergies((prev) => prev.filter((_, j) => j !== i))} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <TouchableOpacity onPress={() => setAllergies((prev) => prev.filter((_, j) => j !== i))} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingTop: 14 }}>
                   <Text style={{ color: colors.danger, fontSize: 18, lineHeight: 18 }}>×</Text>
                 </TouchableOpacity>
               )}
@@ -401,15 +404,16 @@ export default function EditRoutine() {
         <Eyebrow>Medical conditions</Eyebrow>
         <View style={{ gap: 8, marginTop: 8 }}>
           {conditions.map((c, i) => (
-            <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
               <Input
                 style={{ flex: 1 }}
                 placeholder="Atopic dermatitis, managed with Apoquel"
                 value={c}
                 onChangeText={(v) => setConditions((prev) => prev.map((x, j) => (j === i ? v : x)))}
+                multiline
               />
               {conditions.length > 1 && (
-                <TouchableOpacity onPress={() => setConditions((prev) => prev.filter((_, j) => j !== i))} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <TouchableOpacity onPress={() => setConditions((prev) => prev.filter((_, j) => j !== i))} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingTop: 14 }}>
                   <Text style={{ color: colors.danger, fontSize: 18, lineHeight: 18 }}>×</Text>
                 </TouchableOpacity>
               )}

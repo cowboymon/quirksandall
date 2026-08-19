@@ -333,15 +333,18 @@ export default function Step4() {
               {(pet.allergies ?? [""]).map((a, i) => {
                 const list = pet.allergies ?? [""];
                 return (
-                  <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
+                    {/* multiline so a longer entry grows the field to fit
+                        instead of scrolling out of view. */}
                     <Input
                       style={{ flex: 1 }}
                       placeholder="Food, environmental, medication…"
                       value={a}
                       onChangeText={(v) => setPet({ allergies: list.map((x, j) => (j === i ? v : x)) })}
+                      multiline
                     />
                     {list.length > 1 && (
-                      <TouchableOpacity onPress={() => setPet({ allergies: list.filter((_, j) => j !== i) })} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                      <TouchableOpacity onPress={() => setPet({ allergies: list.filter((_, j) => j !== i) })} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingTop: 14 }}>
                         <Text style={{ color: colors.danger, fontSize: 18, lineHeight: 18 }}>×</Text>
                       </TouchableOpacity>
                     )}
@@ -364,15 +367,16 @@ export default function Step4() {
               {(pet.conditions ?? [""]).map((c, i) => {
                 const list = pet.conditions ?? [""];
                 return (
-                  <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
                     <Input
                       style={{ flex: 1 }}
                       placeholder="Atopic dermatitis, managed with Apoquel"
                       value={c}
                       onChangeText={(v) => setPet({ conditions: list.map((x, j) => (j === i ? v : x)) })}
+                      multiline
                     />
                     {list.length > 1 && (
-                      <TouchableOpacity onPress={() => setPet({ conditions: list.filter((_, j) => j !== i) })} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                      <TouchableOpacity onPress={() => setPet({ conditions: list.filter((_, j) => j !== i) })} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingTop: 14 }}>
                         <Text style={{ color: colors.danger, fontSize: 18, lineHeight: 18 }}>×</Text>
                       </TouchableOpacity>
                     )}
