@@ -121,7 +121,7 @@ export default function Preview() {
         decisionContacts,
         commands: orderedCommands(behavior?.commands ?? [], paid, false),
         scared: behavior?.scared ?? "", noGo: behavior?.no_go ?? "", flightRisk: behavior?.flight_risk ?? "", temperament: behavior?.temperament_summary ?? "",
-        allergies: (medical?.allergies ?? []).join(", "), conditions: (medical?.conditions ?? []).join(", "), meds,
+        allergies: (medical?.allergies ?? []).join("\n"), conditions: (medical?.conditions ?? []).join("\n"), meds,
         feeding: routine?.feeding ?? null, walks: routine?.walks ?? "", sleep: routine?.sleep ?? "", bathroom: routine?.bathroom_habits ?? "",
         leftAlone: routine?.left_alone?.ok ? (routine.left_alone.detail ? `${routine.left_alone.ok} — ${routine.left_alone.detail}` : routine.left_alone.ok) : "",
         toileting: routine?.toileting_frequency ?? "",

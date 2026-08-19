@@ -399,8 +399,8 @@ export default function RecipientView({ profile, token }: Props) {
           <section>
             <SectionTitle tail="Conditions & Allergies" />
             <div className="flex flex-col gap-2">
-              {(medical?.conditions?.length ?? 0) > 0 && <InfoCard label="Conditions" text={medical!.conditions.join(", ")} />}
-              {allergies.length > 0 && <InfoCard label="Allergies" text={allergies.join(", ")} />}
+              {(medical?.conditions?.length ?? 0) > 0 && <InfoCard label="Conditions" text={medical!.conditions.join("\n")} />}
+              {allergies.length > 0 && <InfoCard label="Allergies" text={allergies.join("\n")} />}
             </div>
           </section>
         )}
