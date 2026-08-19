@@ -169,8 +169,13 @@ export default function Documents() {
       </View>
 
       <View style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>
-        <AddButton icon={FileArrowUp} label="Upload a file" onPress={pickFile} disabled={busy} primary />
-        <AddButton icon={Camera} label="Take a photo" onPress={takePhoto} disabled={busy} />
+        {/* Explicit no-arg wrappers — TouchableOpacity calls onPress(event),
+            and pickFile/takePhoto now take an optional `kind`. Passing them
+            directly made the gesture event land in `kind`, which is
+            truthy, so it skipped the "What kind of document?" prompt and
+            tried to upload with kind set to a garbage event object. */}
+        <AddButton icon={FileArrowUp} label="Upload a file" onPress={() => pickFile()} disabled={busy} primary />
+        <AddButton icon={Camera} label="Take a photo" onPress={() => takePhoto()} disabled={busy} />
       </View>
 
       <View style={{ height: 1, backgroundColor: colors.border, marginBottom: 20 }} />
