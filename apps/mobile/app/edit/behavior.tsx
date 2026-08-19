@@ -379,7 +379,7 @@ export default function EditBehavior() {
             value={temperament}
             onChangeText={setTemperament}
             multiline
-            style={{ height: 88, paddingTop: 10, textAlignVertical: "top" }}
+            style={{ minHeight: 88, paddingTop: 10, textAlignVertical: "top" }}
           />
         </Card>
 
@@ -394,7 +394,7 @@ export default function EditBehavior() {
             value={scared}
             onChangeText={setScared}
             multiline
-            style={{ height: 72, paddingTop: 10, textAlignVertical: "top" }}
+            style={{ minHeight: 72, paddingTop: 10, textAlignVertical: "top" }}
           />
         </Card>
 
@@ -409,7 +409,7 @@ export default function EditBehavior() {
             value={noGo}
             onChangeText={setNoGo}
             multiline
-            style={{ height: 72, paddingTop: 10, textAlignVertical: "top" }}
+            style={{ minHeight: 72, paddingTop: 10, textAlignVertical: "top" }}
           />
         </Card>
 
@@ -421,7 +421,7 @@ export default function EditBehavior() {
             value={flightRisk}
             onChangeText={setFlightRisk}
             multiline
-            style={{ height: 72, paddingTop: 10, textAlignVertical: "top" }}
+            style={{ minHeight: 72, paddingTop: 10, textAlignVertical: "top" }}
           />
         </Card>
       </View>
