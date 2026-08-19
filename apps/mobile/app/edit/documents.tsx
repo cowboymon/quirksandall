@@ -3,7 +3,7 @@
 // opens a short-lived signed URL.
 import { useCallback, useState } from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator, Linking } from "react-native";
-import { Camera, File, FileArrowUp, FileText, FolderOpen, Image, ShareFat, Trash, type Icon } from "../../components/icons";
+import { Camera, File, FileArrowUp, FileText, FolderOpen, Image, LockSimple, ShareFat, Trash, type Icon } from "../../components/icons";
 import { AppAlert } from "../../stores/appAlert";
 import { useFocusEffect } from "expo-router";
 import * as DocumentPicker from "expo-document-picker";
@@ -147,13 +147,26 @@ export default function Documents() {
     >
       {/* Big Tanker page heading, same pattern as Routine/Commands & Quirks —
           the sticky header's title alone is small (Satoshi-Bold), this is
-          the actual page title. */}
-      <Text style={{ fontFamily: "Tanker", fontSize: 24, lineHeight: 28, color: colors.textDark, marginBottom: 4 }}>
-        Documents Vault
+          the actual page title. "Private" badge makes explicit up front
+          that this is the one section never shown to a sitter. */}
+      <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 4 }}>
+        <Text style={{ fontFamily: "Tanker", fontSize: 24, lineHeight: 28, color: colors.textDark, flexShrink: 1 }}>
+          Documents Vault
+        </Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: colors.secondary, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, marginTop: 2 }}>
+          <LockSimple size={13} weight="duotone" color={colors.textDark} />
+          <Text style={{ color: colors.textDark, fontSize: 12, fontFamily: "Satoshi-Medium" }}>Private</Text>
+        </View>
+      </View>
+      <Text style={{ color: colors.textMuted, fontSize: 14, lineHeight: 21, marginBottom: 16, fontFamily: "Satoshi-Light" }}>
+        Vaccination certificates, flea & worm records — the proof a kennel asks for.
       </Text>
-      <Text style={{ color: colors.textMuted, fontSize: 14, lineHeight: 21, marginBottom: 20, fontFamily: "Satoshi-Light" }}>
-        Vaccination certificates, flea & worm records — the proof a kennel asks for. Kept private; only you can see these.
-      </Text>
+
+      <View style={{ backgroundColor: colors.secondary, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, marginBottom: 20 }}>
+        <Text style={{ color: colors.textMuted, fontSize: 13, lineHeight: 19, fontFamily: "Satoshi-Light" }}>
+          Only you can see these. Never shared with sitters — yours to export when a kennel needs proof.
+        </Text>
+      </View>
 
       <View style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>
         <AddButton icon={FileArrowUp} label="Upload a file" onPress={pickFile} disabled={busy} primary />
