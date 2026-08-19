@@ -159,12 +159,12 @@ export default function Documents() {
         </View>
       </View>
       <Text style={{ color: colors.textMuted, fontSize: 14, lineHeight: 21, marginBottom: 16, fontFamily: "Satoshi-Light" }}>
-        Vaccination certificates, flea & worm records — the proof a kennel asks for.
+        Vaccination certificates, insurance papers, flea & worm records, and anything else you might need to hand over. Photograph or upload it once, store it here. Nobody but you can see it — export it whenever someone actually asks.
       </Text>
 
       <View style={{ backgroundColor: colors.secondary, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, marginBottom: 20 }}>
         <Text style={{ color: colors.textMuted, fontSize: 13, lineHeight: 19, fontFamily: "Satoshi-Light" }}>
-          Only you can see these. Never shared with sitters — yours to export when a kennel needs proof.
+          Only you can see these. Never shared with anyone — yours to export whenever someone needs it.
         </Text>
       </View>
 
@@ -195,7 +195,7 @@ export default function Documents() {
             Nothing in the vault yet
           </Text>
           <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 6, fontFamily: "Satoshi-Light", textAlign: "center", lineHeight: 19 }}>
-            Vaccination or flea & worm records — add them now so they're not a scramble the night before a stay.
+            Vaccination certificates, insurance papers, flea & worm records — add them now so they're not a scramble when someone needs them.
           </Text>
         </View>
       )}
