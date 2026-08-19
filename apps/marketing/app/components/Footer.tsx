@@ -21,6 +21,32 @@ export default function Footer() {
           <div>
             <img src="/brand/logo-footer.png" alt={site.name} className="h-16 w-auto" />
             <p className="mt-2 text-sm text-text-muted">{site.tagline}</p>
+            <div className="mt-3 -ml-2 flex items-center gap-1">
+              <a
+                href={site.instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${site.name} on Instagram`}
+                className="flex h-9 w-9 items-center justify-center rounded-full text-text-muted transition-colors hover:text-foreground"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+                  <rect x="3" y="3" width="18" height="18" rx="5" />
+                  <circle cx="12" cy="12" r="4" />
+                  <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none" />
+                </svg>
+              </a>
+              <a
+                href={site.tiktokUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${site.name} on TikTok`}
+                className="flex h-9 w-9 items-center justify-center rounded-full text-text-muted transition-colors hover:text-foreground"
+              >
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                  <path d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5 2.59 2.59 0 0 1-2.59-2.59 2.59 2.59 0 0 1 3.02-2.55V7.3a5.66 5.66 0 0 0-5.68 5.66 5.66 5.66 0 0 0 10.86 2.3V9.01a7.35 7.35 0 0 0 4.29 1.38V7.3a4.28 4.28 0 0 1-3.16-1.48z" />
+                </svg>
+              </a>
+            </div>
           </div>
 
           <nav className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:gap-x-8">

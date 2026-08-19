@@ -41,6 +41,9 @@ export const site = {
   ctaLabel: LAUNCHED ? "Download" : "Get Notified",
   // Contact used in the legal pages and the footer.
   contactEmail: "quirksandall@itshypothetical.com",
+  // Social profiles (handle: quirksandall.app on both).
+  instagramUrl: "https://instagram.com/quirksandall.app",
+  tiktokUrl: "https://www.tiktok.com/@quirksandall.app",
   // Company / operator name shown in legal copy.
   operator: "Quirks & All",
   // The registered contracting party named in the Terms and Privacy Policy.
