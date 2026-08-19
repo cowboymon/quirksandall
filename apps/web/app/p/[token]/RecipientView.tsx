@@ -424,15 +424,19 @@ export default function RecipientView({ profile, token }: Props) {
               {allergies.length > 0 && (
                 <div className="flex flex-col gap-2">
                   <p className="eyebrow text-primary">Allergies</p>
-                  {/* Bold, matching the weight every other list item in this
-                      section uses (Condition names, Medication names,
-                      Command words) — was the one plain-weight list, which
-                      read as a lower tier of information. */}
-                  <div className="bg-white border rounded-card overflow-hidden" style={{ borderColor: BORDER }}>
+                  {/* Chips, not stacked rows — short single-word/phrase
+                      entries read faster wrapped than each taking a full
+                      row. Danger-tinted (not the neutral chip style) since
+                      these are "avoid this" flags. */}
+                  <div className="flex flex-wrap gap-2">
                     {allergies.map((a, i) => (
-                      <div key={i} className="px-4 py-3" style={{ borderTop: i > 0 ? `1px solid ${BORDER}` : undefined }}>
-                        <p className="text-sm font-semibold" style={{ color: BODY }}>{a}</p>
-                      </div>
+                      <span
+                        key={i}
+                        className="text-[13px] font-semibold px-3 py-1.5 rounded-full border"
+                        style={{ color: "#9A5050", backgroundColor: "rgba(154,80,80,0.08)", borderColor: "rgba(154,80,80,0.3)" }}
+                      >
+                        {a}
+                      </span>
                     ))}
                   </div>
                 </div>

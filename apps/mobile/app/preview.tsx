@@ -443,14 +443,14 @@ export default function Preview() {
                 {d.allergies.length > 0 && (
                   <View style={{ gap: 8 }}>
                     <Text style={{ ...microLabel, color: colors.primary }}>Allergies</Text>
-                    {/* Bold, matching the weight every other list item in
-                        this section uses (Condition names, Medication
-                        names, Command words) — was the one plain-weight
-                        list, which read as a lower tier of information. */}
-                    <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden" }}>
+                    {/* Chips, not stacked rows — short single-word/phrase
+                        entries read faster wrapped than each taking a full
+                        row. Danger-tinted (not the neutral quick-add chip
+                        style) since these are "avoid this" flags. */}
+                    <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
                       {d.allergies.map((a, i) => (
-                        <View key={i} style={{ paddingHorizontal: 14, paddingVertical: 12, borderTopWidth: i > 0 ? 1 : 0, borderTopColor: colors.border }}>
-                          <Text style={{ color: BODY, fontSize: 14, fontFamily: "Satoshi-Bold" }}>{a}</Text>
+                        <View key={i} style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 17, backgroundColor: "rgba(154,80,80,0.08)", borderWidth: 1, borderColor: "rgba(154,80,80,0.3)" }}>
+                          <Text style={{ color: colors.danger, fontSize: 13, fontFamily: "Satoshi-Bold" }}>{a}</Text>
                         </View>
                       ))}
                     </View>
