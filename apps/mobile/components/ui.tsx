@@ -192,6 +192,11 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
           ref={ref}
           autoCapitalize={name ? "words" : "sentences"}
           onChangeText={phone && onChangeText ? (t: string) => onChangeText(formatPhone(t)) : name ? wordCased(onChangeText) : sentenceCased(props.keyboardType, onChangeText)}
+          // iOS's native "✕ while editing" clear button — on by default so
+          // every single-line field gets an easy way to clear its text
+          // without a bespoke clear button per field. No-op on Android and
+          // on multiline fields (this component is never multiline).
+          clearButtonMode="while-editing"
           style={[
             {
               minHeight: 40, borderRadius: 8, borderWidth: 1,
@@ -592,6 +597,10 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
       // fields title-case every word instead ("monica ralph" → "Monica Ralph").
       autoCapitalize={name ? "words" : "sentences"}
       onChangeText={phone && onChangeText ? (t) => onChangeText(formatPhone(t)) : name ? wordCased(onChangeText) : sentenceCased(props.keyboardType, onChangeText)}
+      // iOS's native "✕ while editing" clear button — on by default so every
+      // field gets an easy way to clear its text without a bespoke clear
+      // button per field. No-op on Android and on multiline fields.
+      clearButtonMode="while-editing"
       style={[
         {
           minHeight: 46,
