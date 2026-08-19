@@ -156,7 +156,7 @@ export default function Documents() {
           <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: colors.secondary, alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
             <FolderOpen size={26} weight="duotone" color={colors.primary} />
           </View>
-          <Text style={{ color: colors.textDark, fontSize: 15, fontFamily: "Satoshi-Bold", textAlign: "center" }}>
+          <Text style={{ fontFamily: "Tanker", fontSize: 20, lineHeight: 22, color: colors.textDark, textAlign: "center" }}>
             Nothing in the vault yet
           </Text>
           <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 6, fontFamily: "Satoshi-Light", textAlign: "center", lineHeight: 19 }}>
@@ -259,7 +259,7 @@ function AddButton({ icon: AddIcon, label, onPress, disabled, primary }: { icon:
           <AddIcon size={16} weight="duotone" color={colors.cardDarkText} />
         </View>
       ) : (
-        <AddIcon size={22} weight="duotone" color={colors.primary} />
+        <AddIcon size={16} weight="duotone" color={colors.primary} />
       )}
       <Text style={{ color: primary ? colors.cardDarkText : colors.textDark, fontSize: 13, fontFamily: "Satoshi-Medium" }}>{label}</Text>
     </TouchableOpacity>
