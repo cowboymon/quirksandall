@@ -16,7 +16,7 @@ import { WarningCircle } from "../../components/icons";
 // line of text under the checkbox read as too recessive to notice. Mirrors the
 // web recipient page's "Is [pet] missing?" banner treatment (a light tint card
 // with a border), just in caution amber instead of danger rose.
-function ConsentNudge({ name }: { name: string }) {
+function ConsentNudge({ name, petName }: { name: string; petName?: string }) {
   return (
     <View
       style={{
@@ -33,7 +33,7 @@ function ConsentNudge({ name }: { name: string }) {
     >
       <WarningCircle size={16} color={colors.caution} weight="duotone" style={{ marginTop: 1 }} />
       <Text style={{ flex: 1, color: colors.caution, fontSize: 12, fontFamily: "Satoshi-Medium", lineHeight: 17 }}>
-        Sitters won't see {name || "this contact"} at all until this is ticked.
+        Whoever's looking after {petName || "your pet"} won't see {name || "this contact"}'s details until this is ticked.
       </Text>
     </View>
   );
@@ -167,7 +167,7 @@ export default function Step2() {
               a sitter sees — easy to not notice, since nothing else on this
               screen signals it. */}
           {((pet.backupName ?? "").trim() || (pet.backupPhone ?? "").trim()) && !pet.backupConsent && (
-            <ConsentNudge name={(pet.backupName ?? "").trim()} />
+            <ConsentNudge name={(pet.backupName ?? "").trim()} petName={pet.name?.trim()} />
           )}
           <CheckboxRow
             label="Can make care decisions if I'm unreachable."
@@ -199,7 +199,7 @@ export default function Step2() {
               onToggle={(v) => setPet({ backup2Consent: v })}
             />
             {((pet.backup2Name ?? "").trim() || (pet.backup2Phone ?? "").trim()) && !pet.backup2Consent && (
-              <ConsentNudge name={(pet.backup2Name ?? "").trim()} />
+              <ConsentNudge name={(pet.backup2Name ?? "").trim()} petName={pet.name?.trim()} />
             )}
             <CheckboxRow
               label="Can make care decisions if I'm unreachable."

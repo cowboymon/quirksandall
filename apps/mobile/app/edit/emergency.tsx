@@ -19,7 +19,7 @@ import { router, useLocalSearchParams } from "expo-router";
 // line of text under the checkbox read as too recessive to notice. Mirrors the
 // web recipient page's "Is [pet] missing?" banner treatment (a light tint card
 // with a border), just in caution amber instead of danger rose.
-function ConsentNudge({ name }: { name: string }) {
+function ConsentNudge({ name, petName }: { name: string; petName?: string }) {
   return (
     <View
       style={{
@@ -36,7 +36,7 @@ function ConsentNudge({ name }: { name: string }) {
     >
       <WarningCircle size={16} color={colors.caution} weight="duotone" style={{ marginTop: 1 }} />
       <Text style={{ flex: 1, color: colors.caution, fontSize: 12, fontFamily: "Satoshi-Medium", lineHeight: 17 }}>
-        Sitters won't see {name || "this contact"} at all until this is ticked.
+        Whoever's looking after {petName || "your pet"} won't see {name || "this contact"}'s details until this is ticked.
       </Text>
     </View>
   );
@@ -273,7 +273,7 @@ export default function EditEmergency() {
               reach them would be worse than omitting them, so this nudges
               toward ticking the box rather than changing what renders. */}
           {(backupName.trim() || backupPhone.trim()) && !backupConsent && (
-            <ConsentNudge name={backupName.trim()} />
+            <ConsentNudge name={backupName.trim()} petName={pet?.name} />
           )}
           <CheckboxRow
             label="Can make care decisions if I'm unreachable."
@@ -305,7 +305,7 @@ export default function EditEmergency() {
               onToggle={setBackup2Consent}
             />
             {(backup2Name.trim() || backup2Phone.trim()) && !backup2Consent && (
-              <ConsentNudge name={backup2Name.trim()} />
+              <ConsentNudge name={backup2Name.trim()} petName={pet?.name} />
             )}
             <CheckboxRow
               label="Can make care decisions if I'm unreachable."
