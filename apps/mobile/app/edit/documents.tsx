@@ -21,6 +21,7 @@ import { ensureCameraPermission } from "../../lib/photoPermission";
 const KINDS = [
   { key: "vaccination", label: "Vaccination", tint: colors.success, tintBg: "rgba(70,112,73,0.12)" },
   { key: "flea_worm", label: "Flea & worm", tint: colors.caution, tintBg: "rgba(127,90,48,0.12)" },
+  { key: "insurance", label: "Insurance", tint: colors.textDark, tintBg: "rgba(81,0,0,0.08)" },
   { key: "other", label: "Other", tint: colors.primary, tintBg: colors.secondary },
 ] as const;
 const kindLabel = (k: string) => KINDS.find((x) => x.key === k)?.label ?? "Document";

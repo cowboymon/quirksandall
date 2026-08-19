@@ -20,7 +20,7 @@ create policy "pet_documents_owner_rw" on storage.objects
 create table if not exists public.pet_documents (
   id           uuid primary key default gen_random_uuid(),
   pet_id       uuid not null references public.pets(id) on delete cascade,
-  kind         text not null default 'other',  -- 'vaccination' | 'flea_worm' | 'other'
+  kind         text not null default 'other',  -- 'vaccination' | 'flea_worm' | 'insurance' | 'other'
   title        text,
   file_name    text not null,
   storage_path text not null,                   -- path within the pet-documents bucket

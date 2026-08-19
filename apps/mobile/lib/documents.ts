@@ -23,7 +23,7 @@ const BUCKET = "pet-documents";
 
 export type NewDocument = {
   petId: string;
-  kind: string; // 'vaccination' | 'flea_worm' | 'other'
+  kind: string; // 'vaccination' | 'flea_worm' | 'insurance' | 'other'
   title?: string;
   uri: string; // local file:// URI from the picker
   fileName: string;
