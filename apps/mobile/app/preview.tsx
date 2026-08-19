@@ -27,7 +27,7 @@ type Data = {
   decisionContacts: { name: string; phone: string }[];
   commands: any[];
   scared: string; noGo: string; flightRisk: string; temperament: string;
-  allergies: string; conditions: string; meds: { name: string; dose: string; withMeal?: string[]; notes?: string }[];
+  allergies: string[]; conditions: string[]; meds: { name: string; dose: string; withMeal?: string[]; notes?: string }[];
   feeding: any; walks: string; sleep: string; bathroom: string; leftAlone: string; toileting: string;
   updatedAt: string;
 };
@@ -121,7 +121,7 @@ export default function Preview() {
         decisionContacts,
         commands: orderedCommands(behavior?.commands ?? [], paid, false),
         scared: behavior?.scared ?? "", noGo: behavior?.no_go ?? "", flightRisk: behavior?.flight_risk ?? "", temperament: behavior?.temperament_summary ?? "",
-        allergies: (medical?.allergies ?? []).join("\n"), conditions: (medical?.conditions ?? []).join("\n"), meds,
+        allergies: medical?.allergies ?? [], conditions: medical?.conditions ?? [], meds,
         feeding: routine?.feeding ?? null, walks: routine?.walks ?? "", sleep: routine?.sleep ?? "", bathroom: routine?.bathroom_habits ?? "",
         leftAlone: routine?.left_alone?.ok ? (routine.left_alone.detail ? `${routine.left_alone.ok} — ${routine.left_alone.detail}` : routine.left_alone.ok) : "",
         toileting: routine?.toileting_frequency ?? "",
@@ -407,12 +407,33 @@ export default function Preview() {
             </View>
           )}
 
-          {(d.conditions || d.allergies) ? (
+          {(d.conditions.length > 0 || d.allergies.length > 0) ? (
             <View>
               <SectionHeader underline="Conditions & Allergies" />
-              <View style={{ gap: 12 }}>
-                {d.conditions ? <InfoCard label="Conditions" text={d.conditions} /> : null}
-                {d.allergies ? <InfoCard label="Allergies" text={d.allergies} /> : null}
+              <View style={{ gap: 16 }}>
+                {/* Each condition/allergy is its own small card — a shared
+                    multi-line block read as one run-on note rather than
+                    distinct items, especially once there were several. */}
+                {d.conditions.length > 0 && (
+                  <View style={{ gap: 8 }}>
+                    <Text style={{ ...microLabel, color: colors.primary }}>Conditions</Text>
+                    {d.conditions.map((c, i) => (
+                      <View key={i} style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14 }}>
+                        <Text style={{ color: BODY, fontSize: 14, lineHeight: 20 }}>{c}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+                {d.allergies.length > 0 && (
+                  <View style={{ gap: 8 }}>
+                    <Text style={{ ...microLabel, color: colors.primary }}>Allergies</Text>
+                    {d.allergies.map((a, i) => (
+                      <View key={i} style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14 }}>
+                        <Text style={{ color: BODY, fontSize: 14, lineHeight: 20 }}>{a}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
               </View>
             </View>
           ) : null}

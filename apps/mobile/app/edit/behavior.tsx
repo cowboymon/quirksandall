@@ -264,10 +264,13 @@ export default function EditBehavior() {
                   {/* Tap to re-collapse — the row's only route back once
                       expanded, since #19's condensed row otherwise has no way
                       back without deleting or hiding the command. */}
+                  {/* No icon here — an up-caret sitting right next to the
+                      reorder up/down arrows read as one more of those rather
+                      than a distinct "collapse" affordance. The label itself
+                      stays tappable (standard accordion-header pattern). */}
                   {ordered.length > 2 ? (
-                    <TouchableOpacity onPress={() => toggleExpanded(cmd.id)} activeOpacity={0.7} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                    <TouchableOpacity onPress={() => toggleExpanded(cmd.id)} activeOpacity={0.7} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                       <Eyebrow>{cmd.hidden ? "Hidden from sitters" : `Command ${vi + 1}`}</Eyebrow>
-                      <CaretUp size={12} color={colors.textMuted} />
                     </TouchableOpacity>
                   ) : (
                     <Eyebrow>{cmd.hidden ? "Hidden from sitters" : `Command ${vi + 1}`}</Eyebrow>

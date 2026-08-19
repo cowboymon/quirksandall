@@ -394,13 +394,34 @@ export default function RecipientView({ profile, token }: Props) {
           <p className="text-xs italic" style={{ color: MUTED }}>Full routine not included.</p>
         )}
 
-        {/* Conditions & Allergies — always shown regardless of tier */}
+        {/* Conditions & Allergies — always shown regardless of tier. Each
+            item gets its own small card — a shared multi-line block read as
+            one run-on note rather than distinct items once there were
+            several. */}
         {((medical?.conditions?.length ?? 0) > 0 || allergies.length > 0) && (
           <section>
             <SectionTitle tail="Conditions & Allergies" />
-            <div className="flex flex-col gap-2">
-              {(medical?.conditions?.length ?? 0) > 0 && <InfoCard label="Conditions" text={medical!.conditions.join("\n")} />}
-              {allergies.length > 0 && <InfoCard label="Allergies" text={allergies.join("\n")} />}
+            <div className="flex flex-col gap-4">
+              {(medical?.conditions?.length ?? 0) > 0 && (
+                <div className="flex flex-col gap-2">
+                  <p className="eyebrow text-primary">Conditions</p>
+                  {medical!.conditions.map((c, i) => (
+                    <div key={i} className="bg-white border rounded-card px-4 py-3" style={{ borderColor: BORDER }}>
+                      <p className="text-sm leading-relaxed" style={{ color: BODY }}>{c}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {allergies.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  <p className="eyebrow text-primary">Allergies</p>
+                  {allergies.map((a, i) => (
+                    <div key={i} className="bg-white border rounded-card px-4 py-3" style={{ borderColor: BORDER }}>
+                      <p className="text-sm leading-relaxed" style={{ color: BODY }}>{a}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </section>
         )}
