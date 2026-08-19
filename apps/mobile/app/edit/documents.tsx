@@ -204,24 +204,34 @@ export default function Documents() {
               </TouchableOpacity>
             </View>
           ))}
-          <TouchableOpacity
-            onPress={() => addToKind(k.key)}
-            disabled={busy}
-            activeOpacity={0.85}
-            style={{
-              flexDirection: "row", alignItems: "center", gap: 12,
-              paddingHorizontal: 14, paddingVertical: 14,
-              borderRadius: 12, borderWidth: 1.5, borderColor: k.tint, borderStyle: "dashed",
-              opacity: busy ? 0.5 : 1,
-            }}
-          >
-            <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: k.tintBg, alignItems: "center", justifyContent: "center" }}>
-              <Text style={{ color: k.tint, fontSize: 18, lineHeight: 18 }}>+</Text>
-            </View>
-            <Text style={{ color: colors.textMuted, fontSize: 14, fontFamily: "Satoshi-Medium" }}>
-              {kindDocs.length ? "Add another" : `Add ${k.label.toLowerCase()} document`}
-            </Text>
-          </TouchableOpacity>
+          {kindDocs.length ? (
+            // Already has a file in this kind — a small inline link (same
+            // pattern as "+ Add another treat/allergy" elsewhere) rather
+            // than the full dashed box, which is there to invite a first
+            // upload, not to repeat itself once that job's done.
+            <TouchableOpacity onPress={() => addToKind(k.key)} disabled={busy} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }} style={{ opacity: busy ? 0.5 : 1 }}>
+              <Text style={{ color: colors.primary, fontSize: 12, fontFamily: "Satoshi-Medium" }}>+ Add another document</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              onPress={() => addToKind(k.key)}
+              disabled={busy}
+              activeOpacity={0.85}
+              style={{
+                flexDirection: "row", alignItems: "center", gap: 12,
+                paddingHorizontal: 14, paddingVertical: 14,
+                borderRadius: 12, borderWidth: 1.5, borderColor: k.tint, borderStyle: "dashed",
+                opacity: busy ? 0.5 : 1,
+              }}
+            >
+              <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: k.tintBg, alignItems: "center", justifyContent: "center" }}>
+                <Text style={{ color: k.tint, fontSize: 18, lineHeight: 18 }}>+</Text>
+              </View>
+              <Text style={{ color: colors.textMuted, fontSize: 14, fontFamily: "Satoshi-Medium" }}>
+                Add {k.label.toLowerCase()} document
+              </Text>
+            </TouchableOpacity>
+          )}
           </View>
           );
         })}
