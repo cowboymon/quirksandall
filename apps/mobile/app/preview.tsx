@@ -427,7 +427,7 @@ export default function Preview() {
                     <Text style={{ ...microLabel, color: colors.primary }}>Conditions</Text>
                     <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden" }}>
                       <View style={{ backgroundColor: colors.secondary, paddingHorizontal: 14, paddingVertical: 8 }}>
-                        <Text style={{ ...microLabel, color: colors.textMuted }}>Condition</Text>
+                        <Text style={{ ...microLabel, color: colors.textMuted }}>Conditions</Text>
                       </View>
                       {d.conditions.map((c, i) => (
                         <View key={i} style={{ paddingHorizontal: 14, paddingVertical: 12, borderTopWidth: i > 0 ? 1 : 0, borderTopColor: colors.border }}>

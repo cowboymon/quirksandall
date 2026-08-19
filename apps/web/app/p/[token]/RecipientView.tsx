@@ -408,7 +408,7 @@ export default function RecipientView({ profile, token }: Props) {
                       container. */}
                   <div className="border rounded-card overflow-hidden" style={{ borderColor: BORDER }}>
                     <div className="px-4 py-2" style={{ backgroundColor: CRIMSON, color: BLUSH }}>
-                      <p className="eyebrow font-medium">Condition</p>
+                      <p className="eyebrow font-medium">Conditions</p>
                     </div>
                     {medical!.conditions.map((c, i) => (
                       <div key={i} className="px-4 py-3" style={{ borderTop: i > 0 ? `1px solid ${BORDER}` : undefined }}>
