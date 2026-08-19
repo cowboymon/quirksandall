@@ -318,7 +318,7 @@ export default function Preview() {
                 {meals.map(([label, key, slot]: any, i) => {
                   const tied = d.meds.filter((m) => m.withMeal?.includes(key));
                   return (
-                    <View key={label} style={{ borderBottomWidth: i < meals.length - 1 ? 1 : 0, borderBottomColor: colors.border }}>
+                    <View key={label} style={{ borderBottomWidth: i < meals.length - 1 || anytimeMeds.length > 0 ? 1 : 0, borderBottomColor: colors.border }}>
                       <MealRow label={label} time={slot?.skip ? undefined : slot?.time} amount={slot?.skip ? undefined : slot?.amount} skipped={!!slot?.skip} divider={false} medOnly={tied.length > 0 && !mealComplete(slot)} />
                       {tied.map((m, mi) => (
                         <Text key={mi} style={{ color: colors.primary, fontSize: 12, fontFamily: "Satoshi-Medium", paddingLeft: 80, paddingRight: 16, paddingBottom: 8 }}>
