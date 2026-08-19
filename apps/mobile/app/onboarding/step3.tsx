@@ -153,7 +153,7 @@ export default function Step3() {
                     expanded, since #19's condensed row otherwise has no way
                     back without deleting the command. */}
                 {commands.length > 2 ? (
-                  <TouchableOpacity onPress={() => toggleExpanded(cmd.id)} activeOpacity={0.7} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <TouchableOpacity onPress={() => toggleExpanded(cmd.id)} activeOpacity={0.7} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                     <Eyebrow>Command {i + 1}</Eyebrow>
                     <CaretUp size={12} color={colors.textMuted} />
                   </TouchableOpacity>
