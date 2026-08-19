@@ -46,7 +46,13 @@ export default function Documents() {
     if (!petId) { setLoading(false); return; }
     listDocuments(petId)
       .then((d) => { setDocs(d); setLoading(false); })
-      .catch(() => setLoading(false));
+      .catch((e) => {
+        // Was silently swallowed — a fetch failure looked identical to
+        // "nothing uploaded yet". Log it so a real error is visible in the
+        // Metro console instead of just showing an empty vault.
+        console.warn("[documents] listDocuments failed:", e?.message ?? e);
+        setLoading(false);
+      });
   }, [petId]);
   useFocusEffect(load);
 
