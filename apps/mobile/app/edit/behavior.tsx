@@ -1,7 +1,7 @@
 // Edit commands, quirks, escape risk
 import { useState, useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
-import { CaretDown, CaretRight, CaretUp, Eye, EyeSlash } from "../../components/icons";
+import { CaretDown, CaretRight, CaretUp, Eye, EyeSlash, Trash } from "../../components/icons";
 import { AppAlert } from "../../stores/appAlert";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
@@ -289,7 +289,7 @@ export default function EditBehavior() {
                       </TouchableOpacity>
                     )}
                     <TouchableOpacity onPress={() => setDeleteTarget(cmd.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                      <Text style={{ color: colors.danger, fontSize: 20, lineHeight: 20 }}>×</Text>
+                      <Trash size={17} color={colors.danger} />
                     </TouchableOpacity>
                   </View>
                 </View>

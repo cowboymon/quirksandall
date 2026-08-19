@@ -5,7 +5,7 @@ import { router } from "expo-router";
 import { Headline, Textarea, Input, Card, PrimaryButton, SkipButton, Eyebrow } from "../../components/ui";
 import OnboardingShell from "../../components/OnboardingShell";
 import { Underlined } from "../../components/Underlined";
-import { CaretRight, CaretUp } from "../../components/icons";
+import { CaretRight, CaretUp, Trash } from "../../components/icons";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { colors, SUGGESTED_COMMANDS } from "@quirksandall/shared";
 import type { Command, CommandStrength } from "@quirksandall/shared";
@@ -162,7 +162,7 @@ export default function Step3() {
                 )}
                 {commands.length > 1 && (
                   <TouchableOpacity onPress={() => removeCommand(cmd.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                    <Text style={{ color: colors.danger, fontSize: 20, lineHeight: 20 }}>×</Text>
+                    <Trash size={17} color={colors.danger} />
                   </TouchableOpacity>
                 )}
               </View>
