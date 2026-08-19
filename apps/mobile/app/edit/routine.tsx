@@ -300,7 +300,7 @@ export default function EditRoutine() {
           value={walks}
           onChangeText={setWalks}
           multiline
-          style={{ height: 72, paddingTop: 10, textAlignVertical: "top" }}
+          style={{ minHeight: 72, paddingTop: 10, textAlignVertical: "top" }}
         />
       </Card>
 
@@ -316,7 +316,7 @@ export default function EditRoutine() {
           value={sleep}
           onChangeText={setSleep}
           multiline
-          style={{ height: 72, paddingTop: 10, textAlignVertical: "top" }}
+          style={{ minHeight: 72, paddingTop: 10, textAlignVertical: "top" }}
         />
       </Card>
 
@@ -332,7 +332,7 @@ export default function EditRoutine() {
           value={bathroom}
           onChangeText={setBathroom}
           multiline
-          style={{ height: 72, paddingTop: 10, textAlignVertical: "top" }}
+          style={{ minHeight: 72, paddingTop: 10, textAlignVertical: "top" }}
         />
       </Card>
 
@@ -365,7 +365,7 @@ export default function EditRoutine() {
           value={leftAloneDetail}
           onChangeText={(v) => setLeftAloneDetail(capitalizeFirst(v))}
           multiline
-          style={{ height: 64, paddingTop: 10, textAlignVertical: "top" }}
+          style={{ minHeight: 64, paddingTop: 10, textAlignVertical: "top" }}
         />
       </Card>
 
