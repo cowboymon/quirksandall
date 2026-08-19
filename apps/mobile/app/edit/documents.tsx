@@ -173,6 +173,8 @@ export default function Documents() {
         <AddButton icon={Camera} label="Take a photo" onPress={takePhoto} disabled={busy} />
       </View>
 
+      <View style={{ height: 1, backgroundColor: colors.border, marginBottom: 20 }} />
+
       {busy && (
         <View style={{ marginBottom: 16, alignItems: "center" }}>
           <ActivityIndicator color={colors.primary} />
