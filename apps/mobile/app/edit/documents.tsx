@@ -71,20 +71,24 @@ export default function Documents() {
     }
   };
 
-  const pickFile = async () => {
+  // kind, when given (tapping a specific category's "Add ___ document" row),
+  // skips the "What kind of document?" prompt — the category is already implied.
+  const pickFile = async (kind?: string) => {
     const res = await DocumentPicker.getDocumentAsync({ type: ["application/pdf", "image/*"], copyToCacheDirectory: true });
     if (res.canceled || !res.assets?.[0]) return;
     const a = res.assets[0];
-    askKindAndUpload({ uri: a.uri, fileName: a.name, mimeType: a.mimeType ?? undefined, sizeBytes: a.size ?? undefined });
+    const file = { uri: a.uri, fileName: a.name, mimeType: a.mimeType ?? undefined, sizeBytes: a.size ?? undefined };
+    if (kind) doUpload({ ...file, kind }); else askKindAndUpload(file);
   };
 
-  const takePhoto = async () => {
+  const takePhoto = async (kind?: string) => {
     const ok = await ensureCameraPermission("Photograph a document — a vaccination card, a vet letter — straight into the vault.");
     if (!ok) return;
     const res = await ImagePicker.launchCameraAsync({ quality: 0.8 });
     if (res.canceled || !res.assets?.[0]) return;
     const a = res.assets[0];
-    askKindAndUpload({ uri: a.uri, fileName: a.fileName ?? `photo-${Date.now()}.jpg`, mimeType: a.mimeType ?? "image/jpeg", sizeBytes: a.fileSize ?? undefined });
+    const file = { uri: a.uri, fileName: a.fileName ?? `photo-${Date.now()}.jpg`, mimeType: a.mimeType ?? "image/jpeg", sizeBytes: a.fileSize ?? undefined };
+    if (kind) doUpload({ ...file, kind }); else askKindAndUpload(file);
   };
 
   // Per-document rather than multi-select: the OS share sheet takes one
@@ -111,6 +115,14 @@ export default function Documents() {
     }
   };
 
+  const addToKind = (kind: string) => {
+    AppAlert.alert(`Add ${kindLabel(kind).toLowerCase()} document`, undefined, [
+      { text: "Choose file", onPress: () => pickFile(kind) },
+      { text: "Take photo", onPress: () => takePhoto(kind) },
+      { text: "Cancel", style: "cancel" },
+    ]);
+  };
+
   const doRemove = async () => {
     const doc = removeTarget;
     setRemoveTarget(null);
@@ -128,7 +140,7 @@ export default function Documents() {
       loading={loading}
     >
       <View style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>
-        <AddButton icon={FileArrowUp} label="Choose file" onPress={pickFile} disabled={busy} />
+        <AddButton icon={FileArrowUp} label="Choose file" onPress={pickFile} disabled={busy} primary />
         <AddButton icon={Camera} label="Take photo" onPress={takePhoto} disabled={busy} />
       </View>
 
@@ -138,10 +150,10 @@ export default function Documents() {
         </View>
       )}
 
-      {docs.length === 0 ? (
-        <View style={{ alignItems: "center", paddingVertical: 36, paddingHorizontal: 24, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 14 }}>
-          <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: colors.secondary, alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
-            <FolderOpen size={30} weight="duotone" color={colors.primary} />
+      {docs.length === 0 && (
+        <View style={{ alignItems: "center", paddingVertical: 28, paddingHorizontal: 24, marginBottom: 4 }}>
+          <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: colors.secondary, alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+            <FolderOpen size={26} weight="duotone" color={colors.primary} />
           </View>
           <Text style={{ color: colors.textDark, fontSize: 15, fontFamily: "Satoshi-Bold", textAlign: "center" }}>
             Nothing in the vault yet
@@ -150,17 +162,22 @@ export default function Documents() {
             Vaccination or flea & worm records — add them now so they're not a scramble the night before a stay.
           </Text>
         </View>
-      ) : (
-        <View style={{ gap: 18 }}>
-          {/* Grouped by the kind chosen at upload (#9) — the categorisation
-              already happens in the add flow, so the list just honours it.
-              KINDS order, empty groups skipped. */}
-          {KINDS.filter((k) => docs.some((d) => d.kind === k.key)).map((k) => (
+      )}
+
+      <View style={{ gap: 18 }}>
+        {/* Grouped by the kind chosen at upload (#9) — the categorisation
+            already happens in the add flow, so the list just honours it.
+            Every kind always shows, even empty — a dashed "Add ___ document"
+            row in that kind's tint, rather than only surfacing once
+            something's already been uploaded to it. */}
+        {KINDS.map((k) => {
+          const kindDocs = docs.filter((d) => d.kind === k.key);
+          return (
           <View key={k.key} style={{ gap: 10 }}>
           <Text style={{ color: colors.textMuted, fontSize: 11, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.5 }}>
             {k.label}
           </Text>
-          {docs.filter((d) => d.kind === k.key).map((doc) => (
+          {kindDocs.map((doc) => (
             <View key={doc.id} style={{ flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14 }}>
               <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: k.tintBg, alignItems: "center", justifyContent: "center" }}>
                 {(() => { const DocIcon = iconFor(doc.mime_type); return <DocIcon size={18} weight="duotone" color={k.tint} />; })()}
@@ -186,10 +203,28 @@ export default function Documents() {
               </TouchableOpacity>
             </View>
           ))}
+          <TouchableOpacity
+            onPress={() => addToKind(k.key)}
+            disabled={busy}
+            activeOpacity={0.85}
+            style={{
+              flexDirection: "row", alignItems: "center", gap: 12,
+              paddingHorizontal: 14, paddingVertical: 14,
+              borderRadius: 12, borderWidth: 1.5, borderColor: k.tint, borderStyle: "dashed",
+              opacity: busy ? 0.5 : 1,
+            }}
+          >
+            <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: k.tintBg, alignItems: "center", justifyContent: "center" }}>
+              <Text style={{ color: k.tint, fontSize: 18, lineHeight: 18 }}>+</Text>
+            </View>
+            <Text style={{ color: colors.textMuted, fontSize: 14, fontFamily: "Satoshi-Medium" }}>
+              {kindDocs.length ? "Add another" : `Add ${k.label.toLowerCase()} document`}
+            </Text>
+          </TouchableOpacity>
           </View>
-          ))}
-        </View>
-      )}
+          );
+        })}
+      </View>
 
       <ConfirmModal
         visible={!!removeTarget}
@@ -204,7 +239,11 @@ export default function Documents() {
   );
 }
 
-function AddButton({ icon: AddIcon, label, onPress, disabled }: { icon: Icon; label: string; onPress: () => void; disabled?: boolean }) {
+// "Choose file" renders as the dark primary tile (matching the app's other
+// dark-card CTAs — emergency block, unlock module) so the top of the screen
+// isn't just more blush-on-white; "Take photo" stays the lighter secondary
+// action beside it.
+function AddButton({ icon: AddIcon, label, onPress, disabled, primary }: { icon: Icon; label: string; onPress: () => void; disabled?: boolean; primary?: boolean }) {
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -214,9 +253,9 @@ function AddButton({ icon: AddIcon, label, onPress, disabled }: { icon: Icon; la
         flex: 1,
         height: 88,
         borderRadius: 14,
-        borderWidth: 1,
+        borderWidth: primary ? 0 : 1,
         borderColor: colors.border,
-        backgroundColor: "#FFFFFF",
+        backgroundColor: primary ? colors.cardDark : "#FFFFFF",
         alignItems: "center",
         justifyContent: "center",
         gap: 8,
@@ -225,10 +264,19 @@ function AddButton({ icon: AddIcon, label, onPress, disabled }: { icon: Icon; la
     >
       {/* Dashed-circle icon badge — same "something goes here" motif as the
           dashboard's add-a-link row, instead of a bare dashed rectangle. */}
-      <View style={{ width: 36, height: 36, borderRadius: 18, borderWidth: 1.5, borderColor: colors.dashedBorder, borderStyle: "dashed", alignItems: "center", justifyContent: "center" }}>
-        <AddIcon size={16} weight="duotone" color={colors.primary} />
+      <View
+        style={{
+          width: 36, height: 36, borderRadius: 18,
+          borderWidth: primary ? 0 : 1.5,
+          borderColor: colors.dashedBorder,
+          borderStyle: primary ? "solid" : "dashed",
+          backgroundColor: primary ? "rgba(248,236,238,0.15)" : "transparent",
+          alignItems: "center", justifyContent: "center",
+        }}
+      >
+        <AddIcon size={16} weight="duotone" color={primary ? colors.cardDarkText : colors.primary} />
       </View>
-      <Text style={{ color: colors.textDark, fontSize: 13, fontFamily: "Satoshi-Medium" }}>{label}</Text>
+      <Text style={{ color: primary ? colors.cardDarkText : colors.textDark, fontSize: 13, fontFamily: "Satoshi-Medium" }}>{label}</Text>
     </TouchableOpacity>
   );
 }
