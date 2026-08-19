@@ -196,7 +196,7 @@ export default function EditBehavior() {
               <TouchableOpacity
                 onPress={addCommand}
                 activeOpacity={0.85}
-                style={{ paddingHorizontal: 14, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center", backgroundColor: "#FFFFFF", borderWidth: 1.5, borderColor: colors.dashedBorder, borderStyle: "dashed" }}
+                style={{ paddingHorizontal: 14, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center", backgroundColor: "transparent", borderWidth: 1.5, borderColor: colors.dashedBorder, borderStyle: "dashed" }}
               >
                 <Text style={{ color: colors.textMuted, fontSize: 12, fontFamily: "Satoshi-Medium" }}>+ Add a word</Text>
               </TouchableOpacity>
@@ -261,7 +261,17 @@ export default function EditBehavior() {
               ) : (
               <Card style={cmd.hidden ? { opacity: 0.6 } : undefined}>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                  <Eyebrow>{cmd.hidden ? "Hidden from sitters" : `Command ${vi + 1}`}</Eyebrow>
+                  {/* Tap to re-collapse — the row's only route back once
+                      expanded, since #19's condensed row otherwise has no way
+                      back without deleting or hiding the command. */}
+                  {ordered.length > 2 ? (
+                    <TouchableOpacity onPress={() => toggleExpanded(cmd.id)} activeOpacity={0.7} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                      <Eyebrow>{cmd.hidden ? "Hidden from sitters" : `Command ${vi + 1}`}</Eyebrow>
+                      <CaretUp size={12} color={colors.textMuted} />
+                    </TouchableOpacity>
+                  ) : (
+                    <Eyebrow>{cmd.hidden ? "Hidden from sitters" : `Command ${vi + 1}`}</Eyebrow>
+                  )}
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
                     {isPaid && !cmd.hidden && (
                       <>

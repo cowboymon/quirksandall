@@ -5,7 +5,7 @@ import { router } from "expo-router";
 import { Headline, Textarea, Input, Card, PrimaryButton, SkipButton, Eyebrow } from "../../components/ui";
 import OnboardingShell from "../../components/OnboardingShell";
 import { Underlined } from "../../components/Underlined";
-import { CaretRight } from "../../components/icons";
+import { CaretRight, CaretUp } from "../../components/icons";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { colors, SUGGESTED_COMMANDS } from "@quirksandall/shared";
 import type { Command, CommandStrength } from "@quirksandall/shared";
@@ -120,7 +120,7 @@ export default function Step3() {
               <TouchableOpacity
                 onPress={addCommand}
                 activeOpacity={0.85}
-                style={{ paddingHorizontal: 14, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center", backgroundColor: "#FFFFFF", borderWidth: 1.5, borderColor: colors.dashedBorder, borderStyle: "dashed" }}
+                style={{ paddingHorizontal: 14, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center", backgroundColor: "transparent", borderWidth: 1.5, borderColor: colors.dashedBorder, borderStyle: "dashed" }}
               >
                 <Text style={{ color: colors.textMuted, fontSize: 12, fontFamily: "Satoshi-Medium" }}>+ Add a word</Text>
               </TouchableOpacity>
@@ -149,7 +149,17 @@ export default function Step3() {
           ) : (
             <Card key={cmd.id}>
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                <Eyebrow>Command {i + 1}</Eyebrow>
+                {/* Tap to re-collapse — the row's only route back once
+                    expanded, since #19's condensed row otherwise has no way
+                    back without deleting the command. */}
+                {commands.length > 2 ? (
+                  <TouchableOpacity onPress={() => toggleExpanded(cmd.id)} activeOpacity={0.7} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                    <Eyebrow>Command {i + 1}</Eyebrow>
+                    <CaretUp size={12} color={colors.textMuted} />
+                  </TouchableOpacity>
+                ) : (
+                  <Eyebrow>Command {i + 1}</Eyebrow>
+                )}
                 {commands.length > 1 && (
                   <TouchableOpacity onPress={() => removeCommand(cmd.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                     <Text style={{ color: colors.danger, fontSize: 20, lineHeight: 20 }}>×</Text>
