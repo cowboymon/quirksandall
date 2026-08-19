@@ -269,7 +269,10 @@ export default function EditBehavior() {
                       than a distinct "collapse" affordance. The label itself
                       stays tappable (standard accordion-header pattern). */}
                   {ordered.length > 2 ? (
-                    <TouchableOpacity onPress={() => toggleExpanded(cmd.id)} activeOpacity={0.7} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                    // flex: 1 + a tall hit area — tap anywhere in that left
+                    // portion of the header row to collapse, not just the
+                    // "Command N" text itself.
+                    <TouchableOpacity onPress={() => toggleExpanded(cmd.id)} activeOpacity={0.7} style={{ flex: 1, paddingVertical: 10, marginVertical: -10 }}>
                       <Eyebrow>{cmd.hidden ? "Hidden from sitters" : `Command ${vi + 1}`}</Eyebrow>
                     </TouchableOpacity>
                   ) : (

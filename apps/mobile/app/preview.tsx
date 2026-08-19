@@ -411,27 +411,32 @@ export default function Preview() {
             <View>
               <SectionHeader underline="Conditions & Allergies" />
               <View style={{ gap: 16 }}>
-                {/* Each condition/allergy is its own small card — a shared
-                    multi-line block read as one run-on note rather than
-                    distinct items, especially once there were several. */}
+                {/* Each group is one bordered list — items divided by a
+                    hairline rather than each floating as its own fully
+                    separate card, which read as unrelated entries even
+                    when they clearly belonged to the same category. */}
                 {d.conditions.length > 0 && (
                   <View style={{ gap: 8 }}>
                     <Text style={{ ...microLabel, color: colors.primary }}>Conditions</Text>
-                    {d.conditions.map((c, i) => (
-                      <View key={i} style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14 }}>
-                        <Text style={{ color: BODY, fontSize: 14, lineHeight: 20 }}>{c}</Text>
-                      </View>
-                    ))}
+                    <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden" }}>
+                      {d.conditions.map((c, i) => (
+                        <View key={i} style={{ paddingHorizontal: 14, paddingVertical: 12, borderTopWidth: i > 0 ? 1 : 0, borderTopColor: colors.border }}>
+                          <Text style={{ color: BODY, fontSize: 14, lineHeight: 20 }}>{c}</Text>
+                        </View>
+                      ))}
+                    </View>
                   </View>
                 )}
                 {d.allergies.length > 0 && (
                   <View style={{ gap: 8 }}>
                     <Text style={{ ...microLabel, color: colors.primary }}>Allergies</Text>
-                    {d.allergies.map((a, i) => (
-                      <View key={i} style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14 }}>
-                        <Text style={{ color: BODY, fontSize: 14, lineHeight: 20 }}>{a}</Text>
-                      </View>
-                    ))}
+                    <View style={{ backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: "hidden" }}>
+                      {d.allergies.map((a, i) => (
+                        <View key={i} style={{ paddingHorizontal: 14, paddingVertical: 12, borderTopWidth: i > 0 ? 1 : 0, borderTopColor: colors.border }}>
+                          <Text style={{ color: BODY, fontSize: 14, lineHeight: 20 }}>{a}</Text>
+                        </View>
+                      ))}
+                    </View>
                   </View>
                 )}
               </View>

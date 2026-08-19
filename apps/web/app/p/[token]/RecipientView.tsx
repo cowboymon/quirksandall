@@ -395,9 +395,10 @@ export default function RecipientView({ profile, token }: Props) {
         )}
 
         {/* Conditions & Allergies — always shown regardless of tier. Each
-            item gets its own small card — a shared multi-line block read as
-            one run-on note rather than distinct items once there were
-            several. */}
+            group is one bordered list with items divided by a hairline,
+            rather than each floating as its own fully separate card, which
+            read as unrelated entries even when they clearly belonged to
+            the same category. */}
         {((medical?.conditions?.length ?? 0) > 0 || allergies.length > 0) && (
           <section>
             <SectionTitle tail="Conditions & Allergies" />
@@ -405,21 +406,25 @@ export default function RecipientView({ profile, token }: Props) {
               {(medical?.conditions?.length ?? 0) > 0 && (
                 <div className="flex flex-col gap-2">
                   <p className="eyebrow text-primary">Conditions</p>
-                  {medical!.conditions.map((c, i) => (
-                    <div key={i} className="bg-white border rounded-card px-4 py-3" style={{ borderColor: BORDER }}>
-                      <p className="text-sm leading-relaxed" style={{ color: BODY }}>{c}</p>
-                    </div>
-                  ))}
+                  <div className="bg-white border rounded-card overflow-hidden" style={{ borderColor: BORDER }}>
+                    {medical!.conditions.map((c, i) => (
+                      <div key={i} className="px-4 py-3" style={{ borderTop: i > 0 ? `1px solid ${BORDER}` : undefined }}>
+                        <p className="text-sm leading-relaxed" style={{ color: BODY }}>{c}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
               {allergies.length > 0 && (
                 <div className="flex flex-col gap-2">
                   <p className="eyebrow text-primary">Allergies</p>
-                  {allergies.map((a, i) => (
-                    <div key={i} className="bg-white border rounded-card px-4 py-3" style={{ borderColor: BORDER }}>
-                      <p className="text-sm leading-relaxed" style={{ color: BODY }}>{a}</p>
-                    </div>
-                  ))}
+                  <div className="bg-white border rounded-card overflow-hidden" style={{ borderColor: BORDER }}>
+                    {allergies.map((a, i) => (
+                      <div key={i} className="px-4 py-3" style={{ borderTop: i > 0 ? `1px solid ${BORDER}` : undefined }}>
+                        <p className="text-sm leading-relaxed" style={{ color: BODY }}>{a}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
