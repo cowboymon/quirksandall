@@ -209,7 +209,7 @@ export default function Dashboard() {
           route: "/edit/routine",
         },
         { label: "Medical", detail: medicalFilled ? "Shown to sitters" : "Allergies, meds, conditions", status: medicalFilled ? "done" : "empty", route: "/edit/routine?section=medical" },
-        { label: "Documents", detail: docCount ? `${docCount} file${docCount === 1 ? "" : "s"}` : "Vaccinations, flea & worm", status: docCount ? "done" : "empty", route: "/edit/documents" },
+        { label: "Documents Vault", detail: docCount ? `${docCount} file${docCount === 1 ? "" : "s"}` : "Vaccinations, flea & worm", status: docCount ? "done" : "empty", route: "/edit/documents" },
       ],
     });
     setLoading(false);

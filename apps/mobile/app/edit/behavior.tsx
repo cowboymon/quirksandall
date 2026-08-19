@@ -176,7 +176,6 @@ export default function EditBehavior() {
       {(() => {
         const have = new Set(commands.map((c) => c.word.trim().toLowerCase()).filter(Boolean));
         const remaining = SUGGESTED_COMMANDS.filter((sug) => !have.has(sug.word.toLowerCase()));
-        if (!remaining.length) return null;
         return (
           <View style={{ marginTop: 12 }}>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
@@ -190,6 +189,17 @@ export default function EditBehavior() {
                   <Text style={{ color: colors.textDark, fontSize: 12, fontFamily: "Satoshi-Medium" }}>+ {sug.word}</Text>
                 </TouchableOpacity>
               ))}
+              {/* A duplicate of the bottom "+ Add another word" button, kept
+                  reachable up here too — with the list auto-collapsing (and
+                  hidden commands pushing it even further down), the
+                  bottom-anchored one alone got buried. */}
+              <TouchableOpacity
+                onPress={addCommand}
+                activeOpacity={0.85}
+                style={{ paddingHorizontal: 12, height: 34, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: "#FFFFFF", borderWidth: 1.5, borderColor: colors.dashedBorder, borderStyle: "dashed" }}
+              >
+                <Text style={{ color: colors.textMuted, fontSize: 12, fontFamily: "Satoshi-Medium" }}>+ Add a word</Text>
+              </TouchableOpacity>
             </View>
           </View>
         );

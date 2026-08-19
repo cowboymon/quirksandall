@@ -121,7 +121,7 @@ export default function Documents() {
 
   return (
     <EditShell
-      title="Documents"
+      title="Documents Vault"
       subtitle="Vaccination certificates, flea & worm records — the proof a kennel asks for. Kept private; only you can see these."
       onSave={() => {}}
       hideSave
