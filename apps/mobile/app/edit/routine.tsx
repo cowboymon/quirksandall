@@ -284,8 +284,9 @@ export default function EditRoutine() {
       </View>
 
       {/* Daily Routine — groups walks/sleep/bathroom/toileting/left alone,
-          mirroring the same heading on the recipient link. */}
-      <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.textMuted, marginBottom: 12 }}>
+          mirroring the same heading on the recipient link. Same Tanker
+          treatment as Routine/Medical above, not a small uppercase label. */}
+      <Text style={{ fontFamily: "Tanker", fontSize: 24, lineHeight: 28, color: colors.textDark, marginTop: 8, marginBottom: 12 }}>
         Daily Routine
       </Text>
 

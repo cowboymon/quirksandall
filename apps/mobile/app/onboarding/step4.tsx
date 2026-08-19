@@ -293,10 +293,13 @@ export default function Step4() {
           <MedicationsEditor meds={pet.medications ?? []} onChange={(meds) => setPet({ medications: meds })} />
 
           {/* Daily Routine — groups walks/sleep/bathroom/toileting/left
-              alone, mirroring the same heading on the recipient link. */}
-          <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.textMuted, marginTop: 4 }}>
-            Daily Routine
-          </Text>
+              alone, mirroring the same heading on the recipient link. This
+              screen has no Tanker sub-headings at all (Feeding/Routine/
+              Medical are all Eyebrow ochre), so matches that pattern
+              instead of introducing Tanker here alone. */}
+          <View style={{ marginTop: 8 }}>
+            <Eyebrow ochre>Daily Routine</Eyebrow>
+          </View>
 
           <View>
             <Eyebrow>Walks</Eyebrow>
