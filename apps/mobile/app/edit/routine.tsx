@@ -273,6 +273,12 @@ export default function EditRoutine() {
         <MedicationsEditor meds={meds} onChange={setMeds} />
       </View>
 
+      {/* Daily Routine — groups walks/sleep/bathroom/toileting/left alone,
+          mirroring the same heading on the recipient link. */}
+      <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.textMuted, marginBottom: 12 }}>
+        Daily Routine
+      </Text>
+
       {/* Walks */}
       <Card style={{ marginBottom: 12 }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
@@ -362,25 +368,23 @@ export default function EditRoutine() {
         Medical
       </Text>
 
-      {/* Allergies — always visible, free. One line per allergy, tall
-          enough (2 lines) to actually read back what was written, not a
-          single-line field or one comma-run-together paragraph. */}
+      {/* Allergies — always visible, free. One line per allergy, rather
+          than a single comma-run-together paragraph. */}
       <Card style={{ marginBottom: 12 }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <Eyebrow>Allergies</Eyebrow>
         </View>
         <View style={{ gap: 8, marginTop: 8 }}>
           {allergies.map((a, i) => (
-            <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
+            <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
               <Input
-                style={{ flex: 1, minHeight: 52, paddingTop: 10, textAlignVertical: "top" }}
+                style={{ flex: 1 }}
                 placeholder="Chicken-based kibble causes skin itching"
                 value={a}
                 onChangeText={(v) => setAllergies((prev) => prev.map((x, j) => (j === i ? v : x)))}
-                multiline
               />
               {allergies.length > 1 && (
-                <TouchableOpacity onPress={() => setAllergies((prev) => prev.filter((_, j) => j !== i))} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingTop: 14 }}>
+                <TouchableOpacity onPress={() => setAllergies((prev) => prev.filter((_, j) => j !== i))} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                   <Text style={{ color: colors.danger, fontSize: 18, lineHeight: 18 }}>×</Text>
                 </TouchableOpacity>
               )}
@@ -397,16 +401,15 @@ export default function EditRoutine() {
         <Eyebrow>Medical conditions</Eyebrow>
         <View style={{ gap: 8, marginTop: 8 }}>
           {conditions.map((c, i) => (
-            <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
+            <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
               <Input
-                style={{ flex: 1, minHeight: 52, paddingTop: 10, textAlignVertical: "top" }}
+                style={{ flex: 1 }}
                 placeholder="Atopic dermatitis, managed with Apoquel"
                 value={c}
                 onChangeText={(v) => setConditions((prev) => prev.map((x, j) => (j === i ? v : x)))}
-                multiline
               />
               {conditions.length > 1 && (
-                <TouchableOpacity onPress={() => setConditions((prev) => prev.filter((_, j) => j !== i))} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingTop: 14 }}>
+                <TouchableOpacity onPress={() => setConditions((prev) => prev.filter((_, j) => j !== i))} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                   <Text style={{ color: colors.danger, fontSize: 18, lineHeight: 18 }}>×</Text>
                 </TouchableOpacity>
               )}

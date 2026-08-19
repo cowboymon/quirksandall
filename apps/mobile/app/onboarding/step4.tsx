@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Platform } from "react-native"
 import { AppAlert } from "../../stores/appAlert";
 import { router } from "expo-router";
 import { track, AnalyticsEvent } from "../../lib/analytics";
-import { Headline, Textarea, InlineNote, PrimaryButton, SkipButton, Eyebrow, TimeInput, Select } from "../../components/ui";
+import { Headline, Textarea, Input, InlineNote, PrimaryButton, SkipButton, Eyebrow, TimeInput, Select } from "../../components/ui";
 import OnboardingShell from "../../components/OnboardingShell";
 import { Underlined } from "../../components/Underlined";
 import MedicationsEditor, { medsToRows } from "../../components/MedicationsEditor";
@@ -289,6 +289,12 @@ export default function Step4() {
               it doesn't rely on Medical's title for context. */}
           <MedicationsEditor meds={pet.medications ?? []} onChange={(meds) => setPet({ medications: meds })} />
 
+          {/* Daily Routine — groups walks/sleep/bathroom/toileting/left
+              alone, mirroring the same heading on the recipient link. */}
+          <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.textMuted, marginTop: 4 }}>
+            Daily Routine
+          </Text>
+
           <View>
             <Eyebrow>Walks</Eyebrow>
             <Textarea style={{ marginTop: 4 }} placeholder="Frequency, duration, any notes…" value={pet.walks ?? ""} onChangeText={(v) => setPet({ walks: v })} />
@@ -321,22 +327,21 @@ export default function Step4() {
         <View style={{ marginTop: 12, gap: 12 }}>
           <View>
             <Eyebrow>Allergies</Eyebrow>
-            {/* One line per allergy, tall enough (2 lines) to read back what
-                was written — not a single field with everything run
-                together. */}
+            {/* One line per allergy — not a single field with everything
+                run together. */}
             <View style={{ gap: 8, marginTop: 4 }}>
               {(pet.allergies ?? [""]).map((a, i) => {
                 const list = pet.allergies ?? [""];
                 return (
-                  <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
-                    <Textarea
-                      style={{ flex: 1, minHeight: 52 }}
+                  <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                    <Input
+                      style={{ flex: 1 }}
                       placeholder="Food, environmental, medication…"
                       value={a}
                       onChangeText={(v) => setPet({ allergies: list.map((x, j) => (j === i ? v : x)) })}
                     />
                     {list.length > 1 && (
-                      <TouchableOpacity onPress={() => setPet({ allergies: list.filter((_, j) => j !== i) })} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingTop: 14 }}>
+                      <TouchableOpacity onPress={() => setPet({ allergies: list.filter((_, j) => j !== i) })} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                         <Text style={{ color: colors.danger, fontSize: 18, lineHeight: 18 }}>×</Text>
                       </TouchableOpacity>
                     )}
@@ -359,15 +364,15 @@ export default function Step4() {
               {(pet.conditions ?? [""]).map((c, i) => {
                 const list = pet.conditions ?? [""];
                 return (
-                  <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
-                    <Textarea
-                      style={{ flex: 1, minHeight: 52 }}
+                  <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                    <Input
+                      style={{ flex: 1 }}
                       placeholder="Atopic dermatitis, managed with Apoquel"
                       value={c}
                       onChangeText={(v) => setPet({ conditions: list.map((x, j) => (j === i ? v : x)) })}
                     />
                     {list.length > 1 && (
-                      <TouchableOpacity onPress={() => setPet({ conditions: list.filter((_, j) => j !== i) })} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingTop: 14 }}>
+                      <TouchableOpacity onPress={() => setPet({ conditions: list.filter((_, j) => j !== i) })} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                         <Text style={{ color: colors.danger, fontSize: 18, lineHeight: 18 }}>×</Text>
                       </TouchableOpacity>
                     )}
