@@ -118,8 +118,8 @@ export default function Documents() {
 
   const addToKind = (kind: string) => {
     AppAlert.alert(`Add ${kindLabel(kind).toLowerCase()} document`, undefined, [
-      { text: "Choose file", onPress: () => pickFile(kind) },
-      { text: "Take photo", onPress: () => takePhoto(kind) },
+      { text: "Upload a file", onPress: () => pickFile(kind) },
+      { text: "Take a photo", onPress: () => takePhoto(kind) },
       { text: "Cancel", style: "cancel" },
     ]);
   };
@@ -135,14 +135,23 @@ export default function Documents() {
   return (
     <EditShell
       title="Documents Vault"
-      subtitle="Vaccination certificates, flea & worm records — the proof a kennel asks for. Kept private; only you can see these."
       onSave={() => {}}
       hideSave
       loading={loading}
     >
+      {/* Big Tanker page heading, same pattern as Routine/Commands & Quirks —
+          the sticky header's title alone is small (Satoshi-Bold), this is
+          the actual page title. */}
+      <Text style={{ fontFamily: "Tanker", fontSize: 24, lineHeight: 28, color: colors.textDark, marginBottom: 4 }}>
+        Documents Vault
+      </Text>
+      <Text style={{ color: colors.textMuted, fontSize: 14, lineHeight: 21, marginBottom: 20, fontFamily: "Satoshi-Light" }}>
+        Vaccination certificates, flea & worm records — the proof a kennel asks for. Kept private; only you can see these.
+      </Text>
+
       <View style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>
-        <AddButton icon={FileArrowUp} label="Choose file" onPress={pickFile} disabled={busy} primary />
-        <AddButton icon={Camera} label="Take photo" onPress={takePhoto} disabled={busy} />
+        <AddButton icon={FileArrowUp} label="Upload a file" onPress={pickFile} disabled={busy} primary />
+        <AddButton icon={Camera} label="Take a photo" onPress={takePhoto} disabled={busy} />
       </View>
 
       {busy && (
@@ -229,9 +238,9 @@ export default function Documents() {
   );
 }
 
-// "Choose file" renders as the dark primary tile (matching the app's other
+// "Upload a file" renders as the dark primary tile (matching the app's other
 // dark-card CTAs — emergency block, unlock module) so the top of the screen
-// isn't just more blush-on-white; "Take photo" stays the lighter secondary
+// isn't just more blush-on-white; "Take a photo" stays the lighter secondary
 // action beside it.
 function AddButton({ icon: AddIcon, label, onPress, disabled, primary }: { icon: Icon; label: string; onPress: () => void; disabled?: boolean; primary?: boolean }) {
   return (
@@ -252,15 +261,17 @@ function AddButton({ icon: AddIcon, label, onPress, disabled, primary }: { icon:
         opacity: disabled ? 0.5 : 1,
       }}
     >
-      {primary ? (
-        // Solid translucent circle badge — matches the dark-card CTA
-        // treatment used elsewhere (e.g. the unlock module).
-        <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(248,236,238,0.15)", alignItems: "center", justifyContent: "center" }}>
-          <AddIcon size={16} weight="duotone" color={colors.cardDarkText} />
-        </View>
-      ) : (
-        <AddIcon size={16} weight="duotone" color={colors.primary} />
-      )}
+      {/* Solid (not dashed) circle badge on both tiles — same size so the
+          label lines up at the same height regardless of which tile. */}
+      <View
+        style={{
+          width: 36, height: 36, borderRadius: 18,
+          backgroundColor: primary ? "rgba(248,236,238,0.15)" : colors.secondary,
+          alignItems: "center", justifyContent: "center",
+        }}
+      >
+        <AddIcon size={16} weight="duotone" color={primary ? colors.cardDarkText : colors.primary} />
+      </View>
       <Text style={{ color: primary ? colors.cardDarkText : colors.textDark, fontSize: 13, fontFamily: "Satoshi-Medium" }}>{label}</Text>
     </TouchableOpacity>
   );
