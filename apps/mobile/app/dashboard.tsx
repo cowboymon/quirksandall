@@ -449,9 +449,12 @@ export default function Dashboard() {
               Sits directly under the header, above the links: it applies to
               all of them, so it reads as a property of the set rather than
               something attached to whichever link happens to be last. */}
-          <View style={{ paddingHorizontal: 20, paddingBottom: 14, flexDirection: "row", alignItems: "center", gap: 12 }}>
-            <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-              <Key size={12} color="rgba(248,236,238,0.5)" />
+          {/* flex-start, not center: the PIN branch is two lines now (code +
+              "Send separately"), and a centered key icon would float between
+              them instead of sitting with the code. */}
+          <View style={{ paddingHorizontal: 20, paddingBottom: 14, flexDirection: "row", alignItems: "flex-start", gap: 12 }}>
+            <View style={{ flex: 1, flexDirection: "row", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
+              <Key size={12} color="rgba(248,236,238,0.5)" style={{ marginTop: 2 }} />
               {!links.some((l) => l.pin_hash) ? (
                 // No PIN anywhere on this pet — the emergency block is open to
                 // anyone holding the link, which is worth saying out loud.
@@ -461,13 +464,15 @@ export default function Dashboard() {
                   </Text>
                 </TouchableOpacity>
               ) : petPin ? (
-                <>
+                <View style={{ gap: 6 }}>
                   <Text style={{ color: "rgba(248,236,238,0.85)", fontSize: 12, fontFamily: "Satoshi-Bold", letterSpacing: 2 }}>{petPin}</Text>
                   {/* One action, not two: copying and sending are the same
                       intent — get this PIN to the sitter. So it lands on the
                       clipboard and opens the share sheet together, which also
                       covers the apps the sheet can't reach (paste it there
-                      instead). */}
+                      instead). On its own line under the PIN rather than
+                      beside it — the copied state's longer text needs the
+                      room, and the PIN row stays a clean key + code. */}
                   <TouchableOpacity
                     onPress={() => {
                       Clipboard.setStringAsync(petPin);
@@ -481,7 +486,7 @@ export default function Dashboard() {
                       {pinCopied ? "Copied — send it on its own" : "Send separately"}
                     </Text>
                   </TouchableOpacity>
-                </>
+                </View>
               ) : (
                 // A PIN exists but this phone doesn't hold it: reinstalled, new
                 // device, or simply set before the app started remembering it.
