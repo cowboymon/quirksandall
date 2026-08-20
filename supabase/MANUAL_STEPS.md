@@ -18,6 +18,13 @@ you go. Newest work is at the top of each section.
 
 ## ▶️ Run now
 
+- [ ] **Redeploy the `pin-check` edge function** — `supabase functions deploy
+  pin-check` (from repo root, with the project linked). The 2026-08-20
+  security fixes (link-expiry/archived-pet enforcement + per-link
+  brute-force cap) only take effect on the deployed copy once it's pushed;
+  the web API routes ship automatically with the next Vercel deploy, this
+  one doesn't.
+
 - [ ] **`20260820000001_drop_share_links_last_viewed_by.sql`** — drops
   `share_links.last_viewed_by`, dead since the initial schema (never
   written anywhere, null on every row; `last_viewed_at` + `view_count`
