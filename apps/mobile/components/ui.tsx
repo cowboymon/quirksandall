@@ -610,6 +610,13 @@ export function Card({ children, style, ...props }: ViewProps) {
 // emergency/routine cards; default is white with a rose focus border.
 export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; phone?: boolean; name?: boolean }>(function Input({ style, filled, phone, name, onFocus, onBlur, onChangeText, ...props }, ref) {
   const [focused, setFocused] = useState(false);
+  // Auto-grow for multiline. RN does NOT size a multiline TextInput to its
+  // content on iOS — with scrolling disabled (which these fields want, so
+  // they read as a growing box rather than a tiny scroll pane) anything past
+  // the fixed frame is simply clipped and never rendered. The height has to
+  // be driven from the measured content instead. minHeight in the style
+  // still acts as the floor, so this only ever grows the field.
+  const [contentHeight, setContentHeight] = useState(0);
   // Custom clear button, not the native clearButtonMode: UIKit reserves its
   // own inset beyond whatever paddingRight we give it, so the ✕ always sits
   // further right than the left text margin suggests it should — no amount
@@ -661,11 +668,19 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
             letterSpacing: 0, // guard against iOS placeholder letter-spacing quirk
           },
           fieldStyle,
+          // Last, so it beats any caller height — but minHeight above still
+          // wins as the floor, so the field grows and never shrinks below
+          // its intended size.
+          props.multiline && contentHeight ? { height: contentHeight } : null,
         ]}
         placeholderTextColor={colors.textMuted}
         onFocus={(e) => { setFocused(true); onFocus?.(e); }}
         onBlur={(e) => { setFocused(false); onBlur?.(e); }}
         {...props}
+        onContentSizeChange={(e) => {
+          if (props.multiline) setContentHeight(e.nativeEvent.contentSize.height);
+          props.onContentSizeChange?.(e);
+        }}
         // After the spread so it's a real default, not something the spread
         // clobbers: multiline usages grow with their content (callers set a
         // minHeight, not a fixed height), so nothing should ever scroll
@@ -769,6 +784,10 @@ export function WeightInput({ value, onChangeText, style }: { value: string; onC
 // Multiline variant for quirks / walks / notes.
 export function Textarea({ style, filled, onFocus, onBlur, onChangeText, ...props }: TextInputProps & { filled?: boolean }) {
   const [focused, setFocused] = useState(false);
+  // Same as Input's: RN won't size a multiline TextInput to its content on
+  // iOS, so with scrolling off the overflow is clipped rather than shown.
+  // Drive the height from the measured content; minHeight stays the floor.
+  const [contentHeight, setContentHeight] = useState(0);
   return (
     <TextInput
       multiline
@@ -795,11 +814,16 @@ export function Textarea({ style, filled, onFocus, onBlur, onChangeText, ...prop
           lineHeight: 21,
         },
         style,
+        contentHeight ? { height: contentHeight } : null,
       ]}
       placeholderTextColor={colors.textMuted}
       onFocus={(e) => { setFocused(true); onFocus?.(e); }}
       onBlur={(e) => { setFocused(false); onBlur?.(e); }}
       {...props}
+      onContentSizeChange={(e) => {
+        setContentHeight(e.nativeEvent.contentSize.height);
+        props.onContentSizeChange?.(e);
+      }}
     />
   );
 }
