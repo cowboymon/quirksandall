@@ -47,26 +47,19 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
       <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4, marginBottom: 4 }}>
         Add each one, and when it's given.
       </Text>
-      {/* Wider gap between entries than within one, since the cards no longer
-          have borders to separate them. */}
       <View style={{ gap: 20, marginTop: 4 }}>
         {meds.map((m, i) => (
           // No border/padding of its own — a bordered box inside the section's
           // own bordered Card read as a stray rectangle, especially against
           // the borderless Treats entries directly above. Same structure as
           // Treats now: a label + delete header, then plain stacked fields.
-          // Hairline between entries, same as the feeding blocks — with three
-          // or four medications stacked, gap alone left it reading as one
-          // long undifferentiated run of fields.
-          <View
-            key={m.id}
-            style={{
-              gap: 8,
-              paddingBottom: i < meds.length - 1 ? 20 : 0,
-              borderBottomWidth: i < meds.length - 1 ? 1 : 0,
-              borderBottomColor: colors.border,
-            }}
-          >
+          <View key={m.id} style={{ gap: 8 }}>
+            {/* Rule above every entry, the first included, so each one is
+                introduced by a line rather than the first floating loose
+                under the section heading. Negative margins cancel the
+                Card's own padding so it runs edge to edge, matching the
+                feeding blocks' dividers. */}
+            <View style={{ height: 1, backgroundColor: colors.border, marginHorizontal: -16, marginBottom: 4 }} />
             {/* Delete belongs here rather than beside the dose field: it
                 removes the whole medication, not one value — and sitting
                 inline it read as part of the form and crowded the dose. */}
