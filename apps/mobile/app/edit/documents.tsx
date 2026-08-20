@@ -8,6 +8,7 @@ import { AppAlert } from "../../stores/appAlert";
 import { useFocusEffect } from "expo-router";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
 import EditShell from "../../components/EditShell";
 import ConfirmModal from "../../components/ConfirmModal";
 import { colors } from "@quirksandall/shared";
@@ -93,13 +94,39 @@ export default function Documents() {
     }
   };
 
+  // Downscales + re-compresses any image before it reaches doUpload — a
+  // photo picked straight from the camera roll (unlike a camera capture,
+  // which already gets `quality: 0.8` at the point of capture) had no
+  // compression at all, so a modern phone's 12+MP gallery photo uploaded
+  // and counted against the size cap at full resolution. 1600px is plenty
+  // for a vaccination card or vet letter to stay legible; re-encoding to
+  // JPEG also strips EXIF (GPS, etc.) the same way the pet-photo upload
+  // path already does. PDFs are left untouched — there's no equivalent safe
+  // re-compression for them here.
+  const compressIfImage = async (file: { uri: string; fileName: string; mimeType?: string; sizeBytes?: number }) => {
+    if (!file.mimeType?.startsWith("image/")) return file;
+    try {
+      const result = await ImageManipulator.manipulateAsync(
+        file.uri,
+        [{ resize: { width: 1600 } }],
+        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+      );
+      const fileName = file.fileName.replace(/\.\w+$/, "") + ".jpg";
+      return { uri: result.uri, fileName, mimeType: "image/jpeg", sizeBytes: undefined };
+    } catch {
+      // If re-encoding fails for any reason, fall back to the original
+      // rather than blocking the upload entirely.
+      return file;
+    }
+  };
+
   // kind, when given (tapping a specific category's "Add ___ document" row),
   // skips the "What kind of document?" prompt — the category is already implied.
   const pickFile = async (kind?: string) => {
     const res = await DocumentPicker.getDocumentAsync({ type: ["application/pdf", "image/*"], copyToCacheDirectory: true });
     if (res.canceled || !res.assets?.[0]) return;
     const a = res.assets[0];
-    const file = { uri: a.uri, fileName: a.name, mimeType: a.mimeType ?? undefined, sizeBytes: a.size ?? undefined };
+    const file = await compressIfImage({ uri: a.uri, fileName: a.name, mimeType: a.mimeType ?? undefined, sizeBytes: a.size ?? undefined });
     if (kind) doUpload({ ...file, kind }); else askKindAndUpload(file);
   };
 
@@ -109,7 +136,7 @@ export default function Documents() {
     const res = await ImagePicker.launchCameraAsync({ quality: 0.8 });
     if (res.canceled || !res.assets?.[0]) return;
     const a = res.assets[0];
-    const file = { uri: a.uri, fileName: a.fileName ?? `photo-${Date.now()}.jpg`, mimeType: a.mimeType ?? "image/jpeg", sizeBytes: a.fileSize ?? undefined };
+    const file = await compressIfImage({ uri: a.uri, fileName: a.fileName ?? `photo-${Date.now()}.jpg`, mimeType: a.mimeType ?? "image/jpeg", sizeBytes: a.fileSize ?? undefined });
     if (kind) doUpload({ ...file, kind }); else askKindAndUpload(file);
   };
 
