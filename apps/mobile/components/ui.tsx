@@ -668,12 +668,16 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
   const flat = StyleSheet.flatten(style) ?? {};
   const { flex, flexGrow, flexShrink, flexBasis, alignSelf, width, maxWidth, minWidth, margin, marginTop, marginBottom, marginLeft, marginRight, marginHorizontal, marginVertical, ...fieldStyle } = flat as any;
   const wrapperStyle = { flex, flexGrow, flexShrink, flexBasis, alignSelf, width, maxWidth, minWidth, margin, marginTop, marginBottom, marginLeft, marginRight, marginHorizontal, marginVertical };
-  // Multiline auto-grow: height follows the text's real contentSize, with
-  // scrolling left ON. That last part is load-bearing twice over: with
-  // scrolling disabled, iOS clamps contentSize to the frame (the source of
-  // both the frozen fields and the runaway), and leaving it on means a
-  // height that ever lags renders as a scroll — never as hidden text.
-  const [contentHeight, setContentHeight] = useState(0);
+  // Multiline auto-grow. Instrumentation proved onContentSizeChange is
+  // unusable on this RN version — the same one-line content reported 21,
+  // 43 and 62 in different fields, a two-line value reported three lines'
+  // worth, and it sat stale mid-typing — so the height comes from the one
+  // channel that measured correctly every time: an invisible Text ghost
+  // mirroring the value at the field's width, reporting through onLayout.
+  // The input keeps scrolling ENABLED as the safety net: an off-by-a-hair
+  // height renders as a scroll, never as hidden text (disabling scroll is
+  // what made UITextView clip its last line at a grown height).
+  const [ghostHeight, setGhostHeight] = useState(0);
   const baseField = {
     minHeight: 46,
     borderRadius: radius.input,
@@ -702,25 +706,28 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
         style={[
           baseField,
           fieldStyle,
-          props.multiline && contentHeight ? { height: Math.max(contentHeight, (fieldStyle as any).minHeight ?? 46) } : null,
+          props.multiline && ghostHeight ? { height: Math.max(ghostHeight, (fieldStyle as any).minHeight ?? 46) } : null,
         ]}
         placeholderTextColor={colors.textMuted}
         onFocus={(e) => { setFocused(true); onFocus?.(e); }}
         onBlur={(e) => { setFocused(false); onBlur?.(e); }}
         {...props}
-        onContentSizeChange={(e) => {
-          const h = Math.ceil(e.nativeEvent.contentSize.height);
-          if (props.multiline) setContentHeight((cur) => (Math.abs(h - cur) > 1 ? h : cur));
-          props.onContentSizeChange?.(e);
-        }}
       />
-      {/* TEMPORARY (dev only): mount-time sizing is right but typing-time
-          runs short and some one-line fields overshoot — show the raw
-          measurement so the fix comes from numbers, not a sixth theory.
-          Remove once confirmed. */}
-      {__DEV__ && props.multiline && (
-        <Text style={{ position: "absolute", right: 4, top: -12, fontSize: 9, color: colors.danger }}>
-          cs {contentHeight}
+      {/* The measuring ghost — same box and font styles, exactly the same
+          wrap width as the input (no padding bias: parity beats erring
+          tall, since scroll-on makes a rare hair-short height scrollable
+          rather than clipped). Placeholder fallback sizes empty fields to
+          their own helper text. */}
+      {props.multiline && (
+        <Text
+          onLayout={(e) => {
+            const h = Math.ceil(e.nativeEvent.layout.height);
+            setGhostHeight((cur) => (Math.abs(h - cur) > 1 ? h : cur));
+          }}
+          style={[baseField, fieldStyle, { position: "absolute", top: 0, left: 0, right: 0, opacity: 0, minHeight: 0 }]}
+          pointerEvents="none"
+        >
+          {((typeof props.value === "string" && props.value) || props.placeholder || "") + "\u00A0"}
         </Text>
       )}
       {showClear && focused && !!props.value && (
@@ -817,8 +824,8 @@ export function Textarea({ style, filled, onFocus, onBlur, onChangeText, ...prop
   const flat = StyleSheet.flatten(style) ?? {};
   const { flex, flexGrow, flexShrink, flexBasis, alignSelf, width, maxWidth, minWidth, margin, marginTop, marginBottom, marginLeft, marginRight, marginHorizontal, marginVertical, ...fieldStyle } = flat as any;
   const wrapperStyle = { flex, flexGrow, flexShrink, flexBasis, alignSelf, width, maxWidth, minWidth, margin, marginTop, marginBottom, marginLeft, marginRight, marginHorizontal, marginVertical };
-  // Same measured auto-grow as Input — see the note there.
-  const [contentHeight, setContentHeight] = useState(0);
+  // Same ghost-measured auto-grow as Input — see the note there.
+  const [ghostHeight, setGhostHeight] = useState(0);
   const baseField = {
     minHeight: 68,
     borderRadius: radius.input,
@@ -839,17 +846,22 @@ export function Textarea({ style, filled, onFocus, onBlur, onChangeText, ...prop
         textAlignVertical="top"
         autoCapitalize="sentences"
         onChangeText={sentenceCased(props.keyboardType, onChangeText)}
-        style={[baseField, fieldStyle, contentHeight ? { height: Math.max(contentHeight, (fieldStyle as any).minHeight ?? 68) } : null]}
+        style={[baseField, fieldStyle, ghostHeight ? { height: Math.max(ghostHeight, (fieldStyle as any).minHeight ?? 68) } : null]}
         placeholderTextColor={colors.textMuted}
         onFocus={(e) => { setFocused(true); onFocus?.(e); }}
         onBlur={(e) => { setFocused(false); onBlur?.(e); }}
         {...props}
-        onContentSizeChange={(e) => {
-          const h = Math.ceil(e.nativeEvent.contentSize.height);
-          setContentHeight((cur) => (Math.abs(h - cur) > 1 ? h : cur));
-          props.onContentSizeChange?.(e);
-        }}
       />
+      <Text
+        onLayout={(e) => {
+          const h = Math.ceil(e.nativeEvent.layout.height);
+          setGhostHeight((cur) => (Math.abs(h - cur) > 1 ? h : cur));
+        }}
+        style={[baseField, fieldStyle, { position: "absolute", top: 0, left: 0, right: 0, opacity: 0, minHeight: 0 }]}
+        pointerEvents="none"
+      >
+        {((typeof props.value === "string" && props.value) || props.placeholder || "") + "\u00A0"}
+      </Text>
     </View>
   );
 }
