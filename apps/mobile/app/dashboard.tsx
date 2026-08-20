@@ -645,7 +645,12 @@ export default function Dashboard() {
             >
               {showAllLinks ? <CaretUp size={13} color={colors.cardDarkLabel} /> : <CaretDown size={13} color={colors.cardDarkLabel} />}
               <Text style={{ color: colors.cardDarkLabel, fontSize: 12, fontFamily: "Satoshi-Medium" }}>
-                {showAllLinks ? "Show fewer" : `Show all ${links.length} links`}
+                {/* Count the HIDDEN links, not the total — four are already
+                    on screen, so "Show all 5 links" oversold what the tap
+                    reveals. */}
+                {showAllLinks
+                  ? "Show fewer"
+                  : `Show ${links.length - LINKS_COLLAPSED_COUNT} more ${links.length - LINKS_COLLAPSED_COUNT === 1 ? "link" : "links"}`}
               </Text>
             </TouchableOpacity>
           )}
