@@ -18,7 +18,7 @@ you go. Newest work is at the top of each section.
 
 ## ▶️ Run now
 
-- [ ] **Redeploy the `pin-check` edge function** — `supabase functions deploy
+- [x] **Redeploy the `pin-check` edge function** — `supabase functions deploy
   pin-check` (from repo root, with the project linked). The 2026-08-20
   security fixes (link-expiry/archived-pet enforcement + per-link
   brute-force cap) only take effect on the deployed copy once it's pushed;
