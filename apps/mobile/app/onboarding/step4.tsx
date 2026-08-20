@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Platform } from "react-native"
 import { AppAlert } from "../../stores/appAlert";
 import { router } from "expo-router";
 import { track, AnalyticsEvent } from "../../lib/analytics";
-import { Headline, Textarea, Input, InlineNote, PrimaryButton, SkipButton, Eyebrow, TimeInput, Select, fieldFill } from "../../components/ui";
+import { Headline, Textarea, Input, InlineNote, PrimaryButton, SkipButton, Eyebrow, TimeInput, Select, Card, fieldFill } from "../../components/ui";
 import { Trash } from "../../components/icons";
 import OnboardingShell from "../../components/OnboardingShell";
 import { Underlined } from "../../components/Underlined";
@@ -335,7 +335,10 @@ export default function Step4() {
               split as Commands, rather than one free-text line. Previously
               had no onboarding input at all; only editable later from the
               dashboard's Edit → Routine & Medical screen. */}
-          <View>
+          {/* White Card, matching the edit screen — bare on the blush page
+              the blush fieldFill inputs had nothing to contrast against,
+              and the edge-to-edge rules ran across the whole screen. */}
+          <Card>
             <Eyebrow ochre>Medical conditions</Eyebrow>
             <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 2, marginBottom: 2 }}>
               Add each one, and what it means for the sitter.
@@ -382,9 +385,9 @@ export default function Step4() {
                 <Text style={{ fontSize: 12, color: colors.primary, fontFamily: "Satoshi-Medium" }}>+ Add another condition</Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </Card>
 
-          <View>
+          <Card>
             <Eyebrow ochre>Allergies</Eyebrow>
             {/* One line per allergy — not a single field with everything
                 run together. */}
@@ -420,7 +423,7 @@ export default function Step4() {
                 <Text style={{ fontSize: 12, color: colors.primary, fontFamily: "Satoshi-Medium" }}>+ Add another allergy</Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </Card>
         </View>
       </View>
 
