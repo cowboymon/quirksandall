@@ -11,6 +11,7 @@ import { LabeledPlacesInput } from "../../components/PlacesInput";
 import { InsurerInput } from "../../components/InsurerInput";
 import CheckboxRow from "../../components/CheckboxRow";
 import PINEditor from "../../components/PINEditor";
+import { Trash } from "../../components/icons";
 import { colors } from "@quirksandall/shared";
 import { router, useLocalSearchParams } from "expo-router";
 
@@ -261,7 +262,23 @@ export default function EditEmergency() {
           </TouchableOpacity>
         ) : (
           <Card>
-            <Eyebrow bold>Second backup contact</Eyebrow>
+            {/* Removable — there was no way to take a second contact back off
+                once added, so a mistaken or outdated one was stuck there. The
+                fields are cleared as well as hidden, otherwise the values
+                would still be saved from state. */}
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+              <Eyebrow bold>Second backup contact</Eyebrow>
+              <TouchableOpacity
+                onPress={() => {
+                  setBackup2Name(""); setBackup2Rel(""); setBackup2Phone("");
+                  setBackup2Consent(false); setBackup2IsDecisionContact(false);
+                  setShowSecondBackup(false);
+                }}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Trash size={15} color={colors.danger} />
+              </TouchableOpacity>
+            </View>
             <View style={{ gap: 8, marginTop: 12 }}>
               <LabeledInput name label="Name" placeholder="Name" value={backup2Name} onChangeText={setBackup2Name} />
               <LabeledInput label="Relationship" placeholder="e.g. neighbour" value={backup2Rel} onChangeText={setBackup2Rel} />

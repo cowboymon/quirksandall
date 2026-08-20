@@ -10,6 +10,7 @@ import { useOnboardingStore } from "../../stores/onboarding";
 import { colors } from "@quirksandall/shared";
 import CheckboxRow from "../../components/CheckboxRow";
 import ConsentNudge from "../../components/ConsentNudge";
+import { Trash } from "../../components/icons";
 
 export default function Step2() {
   const { pet, setPet } = useOnboardingStore();
@@ -155,7 +156,20 @@ export default function Step2() {
           </TouchableOpacity>
         ) : (
           <Card>
-            <Eyebrow bold>Second backup contact</Eyebrow>
+            {/* Removable — clears the fields as well as hiding the card, so
+                nothing lingers in the draft to be saved anyway. */}
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+              <Eyebrow bold>Second backup contact</Eyebrow>
+              <TouchableOpacity
+                onPress={() => {
+                  setPet({ backup2Name: "", backup2Relationship: "", backup2Phone: "", backup2Consent: false, backup2IsDecisionContact: false });
+                  setShowSecondBackup(false);
+                }}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Trash size={15} color={colors.danger} />
+              </TouchableOpacity>
+            </View>
             <View style={{ gap: 8, marginTop: 12 }}>
               <LabeledInput name label="Name" placeholder="Name" value={pet.backup2Name ?? ""} onChangeText={(v) => setPet({ backup2Name: v })} returnKeyType="next" submitBehavior="submit" onSubmitEditing={() => backup2RelRef.current?.focus()} />
               <LabeledInput ref={backup2RelRef} label="Relationship" placeholder="e.g. neighbour" value={pet.backup2Relationship ?? ""} onChangeText={(v) => setPet({ backup2Relationship: v })} />
