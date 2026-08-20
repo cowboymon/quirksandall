@@ -159,7 +159,7 @@ export default function Documents() {
         </View>
       </View>
       <Text style={{ color: colors.textMuted, fontSize: 14, lineHeight: 21, marginBottom: 16, fontFamily: "Satoshi-Light" }}>
-        Vaccination certificates, insurance papers, flea & worm records, and anything else you might need to hand over. Photograph or upload it once, store it here. Nobody but you can see it — export it whenever someone actually asks.
+        Vaccination certificates, insurance papers, flea & worm records, and anything else you might need to hand over. Photograph or upload it once, store it here.
       </Text>
 
       <View style={{ backgroundColor: colors.secondary, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, marginBottom: 20 }}>
