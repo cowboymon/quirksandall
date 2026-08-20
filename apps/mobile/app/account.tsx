@@ -335,7 +335,7 @@ export default function Account() {
               rather than competing with Manage subscription at the same
               visual weight. */}
           <TouchableOpacity onPress={handleRestore} disabled={loading}>
-            <Text style={{ color: "rgba(248,236,238,0.45)", fontSize: 11, fontFamily: "Satoshi" }}>Restore purchases</Text>
+            <Text style={{ color: "rgba(248,236,238,0.6)", fontSize: 12, fontFamily: "Satoshi" }}>Restore purchases</Text>
           </TouchableOpacity>
         </View>
       )}
