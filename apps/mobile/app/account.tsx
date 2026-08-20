@@ -99,9 +99,14 @@ export default function Account() {
   };
 
   const save = async () => {
-    // Onboarding requires a phone number upfront (it feeds the missing
-    // poster and the PIN-gated contact block) — this screen let it be
-    // cleared and saved blank with no check at all.
+    // Both required for the same reason onboarding requires them upfront —
+    // name and phone feed the missing poster and the PIN-gated contact
+    // block. This screen let either be cleared and saved blank with no
+    // check at all.
+    if (!name.trim()) {
+      AppAlert.alert("Name required", "Add your name before saving — it's how sitters know who they're talking to.");
+      return;
+    }
     if (!phone.trim()) {
       AppAlert.alert("Phone number required", "Add a phone number before saving — it's how sitters and the missing poster reach you.");
       return;
@@ -109,7 +114,7 @@ export default function Account() {
     setSaving(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      await supabase.from("owners").update({ name, primary_phone: phone.trim() }).eq("id", user.id);
+      await supabase.from("owners").update({ name: name.trim(), primary_phone: phone.trim() }).eq("id", user.id);
     }
     setSaving(false);
     router.back();
