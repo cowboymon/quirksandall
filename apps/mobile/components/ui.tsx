@@ -714,6 +714,15 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
           props.onContentSizeChange?.(e);
         }}
       />
+      {/* TEMPORARY (dev only): mount-time sizing is right but typing-time
+          runs short and some one-line fields overshoot — show the raw
+          measurement so the fix comes from numbers, not a sixth theory.
+          Remove once confirmed. */}
+      {__DEV__ && props.multiline && (
+        <Text style={{ position: "absolute", right: 4, top: -12, fontSize: 9, color: colors.danger }}>
+          cs {contentHeight}
+        </Text>
+      )}
       {showClear && focused && !!props.value && (
         <TouchableOpacity
           onPress={() => clearHandler?.("")}
