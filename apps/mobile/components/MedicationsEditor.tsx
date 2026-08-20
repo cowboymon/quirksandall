@@ -55,7 +55,18 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
           // own bordered Card read as a stray rectangle, especially against
           // the borderless Treats entries directly above. Same structure as
           // Treats now: a label + delete header, then plain stacked fields.
-          <View key={m.id} style={{ gap: 8 }}>
+          // Hairline between entries, same as the feeding blocks — with three
+          // or four medications stacked, gap alone left it reading as one
+          // long undifferentiated run of fields.
+          <View
+            key={m.id}
+            style={{
+              gap: 8,
+              paddingBottom: i < meds.length - 1 ? 20 : 0,
+              borderBottomWidth: i < meds.length - 1 ? 1 : 0,
+              borderBottomColor: colors.border,
+            }}
+          >
             {/* Delete belongs here rather than beside the dose field: it
                 removes the whole medication, not one value — and sitting
                 inline it read as part of the form and crowded the dose. */}

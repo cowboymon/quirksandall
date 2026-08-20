@@ -670,8 +670,18 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
           fieldStyle,
           // Last, so it beats any caller height — but minHeight above still
           // wins as the floor, so the field grows and never shrinks below
-          // its intended size.
-          props.multiline && contentHeight ? { height: contentHeight } : null,
+          // its intended size. contentSize measures the TEXT only, so the
+          // field's own vertical padding (defaults below, caller overrides
+          // from fieldStyle) has to be added back — without it every grown
+          // field came up short by its padding and clipped its last line.
+          props.multiline && contentHeight
+            ? {
+                height:
+                  contentHeight +
+                  (fieldStyle.paddingTop ?? fieldStyle.paddingVertical ?? 12) +
+                  (fieldStyle.paddingBottom ?? fieldStyle.paddingVertical ?? 12),
+              }
+            : null,
         ]}
         placeholderTextColor={colors.textMuted}
         onFocus={(e) => { setFocused(true); onFocus?.(e); }}
@@ -814,7 +824,17 @@ export function Textarea({ style, filled, onFocus, onBlur, onChangeText, ...prop
           lineHeight: 21,
         },
         style,
-        contentHeight ? { height: contentHeight } : null,
+        // contentSize measures the text only — add the vertical padding back
+        // (12 default each side, or whatever the caller overrode) so the
+        // grown field doesn't clip its last line by the padding amount.
+        contentHeight
+          ? {
+              height:
+                contentHeight +
+                ((StyleSheet.flatten(style) as any)?.paddingTop ?? (StyleSheet.flatten(style) as any)?.paddingVertical ?? 12) +
+                ((StyleSheet.flatten(style) as any)?.paddingBottom ?? (StyleSheet.flatten(style) as any)?.paddingVertical ?? 12),
+            }
+          : null,
       ]}
       placeholderTextColor={colors.textMuted}
       onFocus={(e) => { setFocused(true); onFocus?.(e); }}

@@ -55,7 +55,7 @@ function MealBlock({ label, time, amount, onTime, onAmount, divider, defaultPeri
       ) : (
         <>
           <TimeInput style={mealInput} placeholder="7:30" value={time} onChangeText={onTime} defaultPeriod={defaultPeriod} />
-          <Input style={mealInput} placeholder="Amount & brand" value={amount} onChangeText={onAmount} />
+          <Input style={mealInput} placeholder="Amount & brand" value={amount} onChangeText={onAmount} multiline />
           {quickFill && onQuickFill && !amount ? (
             <TouchableOpacity onPress={onQuickFill} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}>
               <Text style={{ fontSize: 12, color: colors.primary, fontFamily: "Satoshi-Medium" }}>{quickFill}</Text>
@@ -259,9 +259,9 @@ export default function Step4() {
                         </TouchableOpacity>
                       </View>
                     )}
-                    <Input ref={(r) => { treatTypeRefs.current[i] = r; }} style={mealInput} placeholder="Type / brand" value={t.type}
+                    <Input ref={(r) => { treatTypeRefs.current[i] = r; }} style={mealInput} placeholder="Type / brand" value={t.type} multiline
                       onChangeText={(v) => setPet({ feedingTreats: list.map((x, j) => (j === i ? { ...x, type: v } : x)) })} />
-                    <Input style={mealInput} placeholder="Daily limit — e.g. max 3 per day" value={t.limit}
+                    <Input style={mealInput} placeholder="Daily limit — e.g. max 3 per day" value={t.limit} multiline
                       onChangeText={(v) => setPet({ feedingTreats: list.map((x, j) => (j === i ? { ...x, limit: v } : x)) })} />
                   </View>
                 );
