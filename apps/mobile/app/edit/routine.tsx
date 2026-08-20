@@ -6,7 +6,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
-import { Input, Eyebrow, Card, InlineNote, TimeInput, FieldTier, Select } from "../../components/ui";
+import { Input, Eyebrow, Card, InlineNote, TimeInput, FieldTier, Select, fieldFill } from "../../components/ui";
 import { Trash } from "../../components/icons";
 import MedicationsEditor, { medsToRows, rowsToMeds, type EditableMedication } from "../../components/MedicationsEditor";
 import { colors, capitalizeFirst, isUnlocked, treatEntries } from "@quirksandall/shared";
@@ -393,11 +393,13 @@ export default function EditRoutine() {
             <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
               <View style={{ flex: 1, gap: 6 }}>
                 <Input
+                  style={fieldFill}
                   placeholder="Condition — e.g. Phantom pregnancy"
                   value={c.name}
                   onChangeText={(v) => setConditions((prev) => prev.map((x, j) => (j === i ? { ...x, name: v } : x)))}
                 />
                 <Input
+                  style={fieldFill}
                   placeholder="What it means for the sitter"
                   value={c.meaning}
                   onChangeText={(v) => setConditions((prev) => prev.map((x, j) => (j === i ? { ...x, meaning: v } : x)))}
@@ -432,7 +434,7 @@ export default function EditRoutine() {
               {/* multiline so a longer entry grows the field to fit instead
                   of scrolling out of view; starts single-line height. */}
               <Input
-                style={{ flex: 1 }}
+                style={{ ...fieldFill, flex: 1 }}
                 placeholder="Chicken-based kibble causes skin itching"
                 value={a}
                 onChangeText={(v) => setAllergies((prev) => prev.map((x, j) => (j === i ? v : x)))}

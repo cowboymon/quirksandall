@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Platform } from "react-native"
 import { AppAlert } from "../../stores/appAlert";
 import { router } from "expo-router";
 import { track, AnalyticsEvent } from "../../lib/analytics";
-import { Headline, Textarea, Input, InlineNote, PrimaryButton, SkipButton, Eyebrow, TimeInput, Select } from "../../components/ui";
+import { Headline, Textarea, Input, InlineNote, PrimaryButton, SkipButton, Eyebrow, TimeInput, Select, fieldFill } from "../../components/ui";
 import { Trash } from "../../components/icons";
 import OnboardingShell from "../../components/OnboardingShell";
 import { Underlined } from "../../components/Underlined";
@@ -347,11 +347,13 @@ export default function Step4() {
                   <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
                     <View style={{ flex: 1, gap: 6 }}>
                       <Input
+                        style={fieldFill}
                         placeholder="Condition — e.g. Phantom pregnancy"
                         value={c.name}
                         onChangeText={(v) => setPet({ conditions: list.map((x, j) => (j === i ? { ...x, name: v } : x)) })}
                       />
                       <Input
+                        style={fieldFill}
                         placeholder="What it means for the sitter"
                         value={c.meaning}
                         onChangeText={(v) => setPet({ conditions: list.map((x, j) => (j === i ? { ...x, meaning: v } : x)) })}
@@ -387,7 +389,7 @@ export default function Step4() {
                     {/* multiline so a longer entry grows the field to fit
                         instead of scrolling out of view. */}
                     <Input
-                      style={{ flex: 1 }}
+                      style={{ ...fieldFill, flex: 1 }}
                       placeholder="Food, environmental, medication…"
                       value={a}
                       onChangeText={(v) => setPet({ allergies: list.map((x, j) => (j === i ? v : x)) })}
