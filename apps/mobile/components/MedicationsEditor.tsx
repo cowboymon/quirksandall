@@ -64,7 +64,10 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
                 removes the whole medication, not one value — and sitting
                 inline it read as part of the form and crowded the dose. */}
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-              <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.textMuted }}>
+              {/* Same weight as the meal headings ("Dinner"), not the small
+                  uppercase micro-label — this names the entry, so it should
+                  read as its heading. */}
+              <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.textDark }}>
                 Medication {i + 1}
               </Text>
               <TouchableOpacity onPress={() => removeMed(m.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
@@ -88,7 +91,7 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
               style={{ ...fieldFill, minHeight: 44, paddingTop: 10, textAlignVertical: "top" }}
             />
             <Text style={{ color: colors.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium" }}>
-              Given when
+              Given when?
             </Text>
             {/* Compact pills, matching the quick-add command chips. These are
                 a multi-select, not a primary action — at full plum fill and
@@ -118,6 +121,11 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
             </View>
           </View>
         ))}
+        {/* Closes the list off, so the add link sits below the run of
+            medications rather than looking like part of the last one. */}
+        {meds.length > 0 && (
+          <View style={{ height: 1, backgroundColor: colors.border, marginHorizontal: -16 }} />
+        )}
       </View>
       {/* Plain rose text link, same as "+ Add another treat" — the dashed
           box this used to be was a much heavier affordance than the

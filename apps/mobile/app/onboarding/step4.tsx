@@ -347,8 +347,10 @@ export default function Step4() {
                 const list = pet.conditions ?? [{ name: "", meaning: "" }];
                 return (
                   <View key={i} style={{ gap: 6 }}>
+                    {/* Same edge-to-edge rule as Medications. */}
+                    <View style={{ height: 1, backgroundColor: colors.border, marginHorizontal: -16, marginBottom: 4 }} />
                     <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                      <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.textMuted }}>
+                      <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.textDark }}>
                         Condition {i + 1}
                       </Text>
                       {list.length > 1 && (
