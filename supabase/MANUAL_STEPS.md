@@ -18,6 +18,14 @@ you go. Newest work is at the top of each section.
 
 ## ▶️ Run now
 
+- [ ] **`20260820000001_drop_share_links_last_viewed_by.sql`** — drops
+  `share_links.last_viewed_by`, dead since the initial schema (never
+  written anywhere, null on every row; `last_viewed_at` + `view_count`
+  carry the real view tracking — confirmed by the 2026-08-20 audit).
+  The one code reference (a select in the web recipient page) was removed
+  in the same commit, so run order doesn't matter, but run it soon so the
+  schema matches the migration files.
+
 - [x] **`20260817000002_policy_acceptances_cascade.sql`** — **important,
   affects the account-deletion purge.** `policy_acceptances.user_id`
   referenced `auth.users(id)` without `on delete cascade`, discovered when
@@ -138,7 +146,7 @@ you go. Newest work is at the top of each section.
 
 ## ✉️ Auth (dashboard, not SQL)
 
-- [ ] **OTP sign-in email — dark-mode fix** — re-paste
+- [x] **OTP sign-in email — dark-mode fix** — re-paste
   `supabase/email-templates/magic-link.html` into Authentication → Email
   Templates → **Magic Link**. Apple Mail was fully inverting every color pair
   (dark card → showed light, light code block → showed dark) because

@@ -42,7 +42,7 @@ async function fetchProfile(token: string, logView = true, preview = false): Pro
   // Resolve the share link
   const { data: link } = await supabase
     .from("share_links")
-    .select("id, pet_id, mode, revoked, expires_at, pin_hash, last_viewed_at, last_viewed_by, duration_preset, starts_at, ends_at")
+    .select("id, pet_id, mode, revoked, expires_at, pin_hash, last_viewed_at, duration_preset, starts_at, ends_at")
     .eq("token", token)
     .single();
 
