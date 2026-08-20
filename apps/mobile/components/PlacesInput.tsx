@@ -13,7 +13,7 @@
 // dropdown pushing surrounding form content around as it opens/closes.
 import { useEffect, useRef, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Modal, Pressable, Animated, Easing, Keyboard, Dimensions } from "react-native";
-import { Keyboard as KeyboardIcon, MagnifyingGlass } from "./icons";
+import { Keyboard as KeyboardIcon, MagnifyingGlass, XCircle } from "./icons";
 import { colors } from "@quirksandall/shared";
 import { FieldLabel, UNLOCK_PULSE_MS, UNLOCK_PULSE_PEAK_COLOR } from "./ui";
 
@@ -227,9 +227,10 @@ export function LabeledPlacesInput({
           <TouchableOpacity
             onPress={clear}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            style={{ position: "absolute", right: 10, height: 20, width: 20, borderRadius: 10, backgroundColor: colors.textMuted, alignItems: "center", justifyContent: "center" }}
+            accessibilityLabel="Clear"
+            style={{ position: "absolute", right: 10, top: 0, bottom: 0, justifyContent: "center" }}
           >
-            <Text style={{ color: "#FFFFFF", fontSize: 12, fontFamily: "Satoshi-Bold", lineHeight: 14 }}>×</Text>
+            <XCircle size={17} color={colors.dashedBorder} weight="fill" />
           </TouchableOpacity>
         )}
       </View>

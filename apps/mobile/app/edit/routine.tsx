@@ -45,7 +45,7 @@ function RoutineMeal({ label, time, amount, onTime, onAmount, divider, defaultPe
       ) : (
         <>
           <TimeInput style={mealInput} placeholder="7:30" value={time} onChangeText={onTime} defaultPeriod={defaultPeriod} />
-          <TextInput style={mealInput} placeholder="Amount & brand" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" clearButtonMode="while-editing" value={amount} onChangeText={(v) => onAmount(capitalizeFirst(v))} />
+          <Input style={mealInput} placeholder="Amount & brand" value={amount} onChangeText={onAmount} />
           {quickFill && onQuickFill && !amount ? (
             <TouchableOpacity onPress={onQuickFill} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}>
               <Text style={{ fontSize: 12, color: colors.primary, fontFamily: "Satoshi-Medium" }}>{quickFill}</Text>
@@ -249,10 +249,10 @@ export default function EditRoutine() {
                   </TouchableOpacity>
                 </View>
               )}
-              <TextInput ref={(r) => { treatTypeRefs.current[i] = r; }} style={mealInput} placeholder="Type / brand" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" clearButtonMode="while-editing" value={t.type}
-                onChangeText={(v) => setTreats((prev) => prev.map((x, j) => (j === i ? { ...x, type: capitalizeFirst(v) } : x)))} />
-              <TextInput style={mealInput} placeholder="Daily limit — e.g. max 3 per day" placeholderTextColor={colors.textMuted} autoCapitalize="sentences" clearButtonMode="while-editing" value={t.limit}
-                onChangeText={(v) => setTreats((prev) => prev.map((x, j) => (j === i ? { ...x, limit: capitalizeFirst(v) } : x)))} />
+              <Input ref={(r) => { treatTypeRefs.current[i] = r; }} style={mealInput} placeholder="Type / brand" value={t.type}
+                onChangeText={(v) => setTreats((prev) => prev.map((x, j) => (j === i ? { ...x, type: v } : x)))} />
+              <Input style={mealInput} placeholder="Daily limit — e.g. max 3 per day" value={t.limit}
+                onChangeText={(v) => setTreats((prev) => prev.map((x, j) => (j === i ? { ...x, limit: v } : x)))} />
             </View>
           ))}
           <TouchableOpacity onPress={() => {
