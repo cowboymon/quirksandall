@@ -644,6 +644,9 @@ export function Card({ children, style, ...props }: ViewProps) {
 // emergency/routine cards; default is white with a rose focus border.
 export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; phone?: boolean; name?: boolean }>(function Input({ style, filled, phone, name, onFocus, onBlur, onChangeText, ...props }, ref) {
   const [focused, setFocused] = useState(false);
+  // Auto-grow: measure the text and set the height from it. minHeight in
+  // the caller's style stays the floor.
+  const [contentHeight, setContentHeight] = useState(0);
   // Custom clear button, not the native clearButtonMode: UIKit reserves its
   // own inset beyond whatever paddingRight we give it, so the ✕ always sits
   // further right than the left text margin suggests it should — no amount
@@ -695,20 +698,26 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
             letterSpacing: 0, // guard against iOS placeholder letter-spacing quirk
           },
           fieldStyle,
+          props.multiline && contentHeight ? { height: contentHeight } : null,
         ]}
         placeholderTextColor={colors.textMuted}
         onFocus={(e) => { setFocused(true); onFocus?.(e); }}
         onBlur={(e) => { setFocused(false); onBlur?.(e); }}
         {...props}
-        // A multiline field sizes itself to its content — but only while
-        // nothing pins its height. Earlier versions here drove the height
-        // from onContentSizeChange, and that measurement is coupled to the
-        // frame set from it, so the field could measure once on mount and
-        // then never learn it had to grow as you typed. No height is set
-        // anywhere now; RN does the sizing, which is what it does natively
-        // once scrolling is off.
+        onContentSizeChange={(e) => {
+          if (props.multiline) setContentHeight(e.nativeEvent.contentSize.height);
+          props.onContentSizeChange?.(e);
+        }}
         scrollEnabled={props.multiline ? props.scrollEnabled ?? false : props.scrollEnabled}
       />
+      {/* TEMPORARY (dev only): the auto-grow has been wrong three times, so
+          show the numbers rather than guessing at them again. Remove once
+          the sizing is confirmed. */}
+      {__DEV__ && props.multiline && (
+        <Text style={{ position: "absolute", right: 4, top: -12, fontSize: 9, color: colors.danger }}>
+          measured {Math.round(contentHeight)}
+        </Text>
+      )}
       {showClear && focused && !!props.value && (
         <TouchableOpacity
           onPress={() => clearHandler?.("")}
