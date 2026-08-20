@@ -403,11 +403,16 @@ export default function EditRoutine() {
                 <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.textDark }}>
                   Condition {i + 1}
                 </Text>
-                {conditions.length > 1 && (
-                  <TouchableOpacity onPress={() => setConditions((prev) => prev.filter((_, j) => j !== i))} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                    <Trash size={15} color={colors.danger} />
-                  </TouchableOpacity>
-                )}
+                {/* Always shown — hidden at one entry there was no way to
+                    delete a condition at all. Deleting the last one resets
+                    to a single empty pair rather than an empty list, since
+                    the form always renders at least one row. */}
+                <TouchableOpacity
+                  onPress={() => setConditions((prev) => (prev.length > 1 ? prev.filter((_, j) => j !== i) : [{ name: "", meaning: "" }]))}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Trash size={15} color={colors.danger} />
+                </TouchableOpacity>
               </View>
               <Input
                 style={fieldFill}
@@ -452,11 +457,15 @@ export default function EditRoutine() {
                 onChangeText={(v) => setAllergies((prev) => prev.map((x, j) => (j === i ? v : x)))}
                 multiline
               />
-              {allergies.length > 1 && (
-                <TouchableOpacity onPress={() => setAllergies((prev) => prev.filter((_, j) => j !== i))} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingTop: 14 }}>
-                  <Trash size={16} color={colors.danger} />
-                </TouchableOpacity>
-              )}
+              {/* Always shown — same fix as Conditions: hidden at one entry
+                  there was no way to delete the last allergy. */}
+              <TouchableOpacity
+                onPress={() => setAllergies((prev) => (prev.length > 1 ? prev.filter((_, j) => j !== i) : [""]))}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                style={{ paddingTop: 14 }}
+              >
+                <Trash size={16} color={colors.danger} />
+              </TouchableOpacity>
             </View>
           ))}
           <TouchableOpacity onPress={() => setAllergies((prev) => [...prev, ""])} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}>

@@ -644,9 +644,6 @@ export function Card({ children, style, ...props }: ViewProps) {
 // emergency/routine cards; default is white with a rose focus border.
 export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; phone?: boolean; name?: boolean }>(function Input({ style, filled, phone, name, onFocus, onBlur, onChangeText, ...props }, ref) {
   const [focused, setFocused] = useState(false);
-  // Auto-grow: measure the text and set the height from it. minHeight in
-  // the caller's style stays the floor.
-  const [contentHeight, setContentHeight] = useState(0);
   // Custom clear button, not the native clearButtonMode: UIKit reserves its
   // own inset beyond whatever paddingRight we give it, so the ✕ always sits
   // further right than the left text margin suggests it should — no amount
@@ -671,8 +668,42 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
   const flat = StyleSheet.flatten(style) ?? {};
   const { flex, flexGrow, flexShrink, flexBasis, alignSelf, width, maxWidth, minWidth, margin, marginTop, marginBottom, marginLeft, marginRight, marginHorizontal, marginVertical, ...fieldStyle } = flat as any;
   const wrapperStyle = { flex, flexGrow, flexShrink, flexBasis, alignSelf, width, maxWidth, minWidth, margin, marginTop, marginBottom, marginLeft, marginRight, marginHorizontal, marginVertical };
+  const baseField = {
+    minHeight: 46,
+    borderRadius: radius.input,
+    borderWidth: 1,
+    borderColor: focused ? colors.primary : colors.border,
+    backgroundColor: filled ? colors.secondary : "#FFFFFF",
+    paddingLeft: 16,
+    // Room for the custom clear button below — multiline fields don't show
+    // it, so they keep the plain 16 on both sides.
+    paddingRight: showClear ? 36 : 16,
+    paddingVertical: 12,
+    fontSize: 15,
+    fontFamily: "Satoshi",
+    color: colors.textDark,
+    letterSpacing: 0, // guard against iOS placeholder letter-spacing quirk
+  } as const;
   return (
     <View style={wrapperStyle}>
+      {/* Auto-grow, ghost-text version. Every TextInput-based approach —
+          driving height from onContentSizeChange, or intrinsic sizing with
+          scrolling off — sized correctly on mount but never re-measured as
+          you typed (Fabric doesn't reliably re-layout a multiline TextInput
+          on text change, and contentSize gets clamped to the frame after
+          first layout, which is also what made the padding version run
+          away). So the height comes from something that DOES re-layout on
+          every change: an invisible Text with the same box and font styles
+          renders the value in normal flow and sets the wrapper's height,
+          and the real input absolute-fills on top of it. The NBSP keeps a
+          trailing empty line counted; the extra paddingRight makes the
+          ghost wrap a hair earlier than the input can, so any wrap-width
+          mismatch errs taller (clipping is the failure that matters). */}
+      {props.multiline && (
+        <Text style={[baseField, fieldStyle, { opacity: 0, paddingRight: ((fieldStyle as any).paddingRight ?? 16) + 10 }]}>
+          {(typeof props.value === "string" ? props.value : "") + "\u00A0"}
+        </Text>
+      )}
       <TextInput
         ref={ref}
         // Sentence-case the first char programmatically so it works regardless of
@@ -681,43 +712,17 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
         autoCapitalize={name ? "words" : "sentences"}
         onChangeText={clearHandler}
         style={[
-          {
-            minHeight: 46,
-            borderRadius: radius.input,
-            borderWidth: 1,
-            borderColor: focused ? colors.primary : colors.border,
-            backgroundColor: filled ? colors.secondary : "#FFFFFF",
-            paddingLeft: 16,
-            // Room for the custom clear button below — multiline fields
-            // don't show it, so they keep the plain 16 on both sides.
-            paddingRight: showClear ? 36 : 16,
-            paddingVertical: 12,
-            fontSize: 15,
-            fontFamily: "Satoshi",
-            color: colors.textDark,
-            letterSpacing: 0, // guard against iOS placeholder letter-spacing quirk
-          },
+          baseField,
           fieldStyle,
-          props.multiline && contentHeight ? { height: contentHeight } : null,
+          // Fill the ghost-sized wrapper; minHeight would fight the fill.
+          props.multiline ? { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, minHeight: 0 } : null,
         ]}
         placeholderTextColor={colors.textMuted}
         onFocus={(e) => { setFocused(true); onFocus?.(e); }}
         onBlur={(e) => { setFocused(false); onBlur?.(e); }}
         {...props}
-        onContentSizeChange={(e) => {
-          if (props.multiline) setContentHeight(e.nativeEvent.contentSize.height);
-          props.onContentSizeChange?.(e);
-        }}
         scrollEnabled={props.multiline ? props.scrollEnabled ?? false : props.scrollEnabled}
       />
-      {/* TEMPORARY (dev only): the auto-grow has been wrong three times, so
-          show the numbers rather than guessing at them again. Remove once
-          the sizing is confirmed. */}
-      {__DEV__ && props.multiline && (
-        <Text style={{ position: "absolute", right: 4, top: -12, fontSize: 9, color: colors.danger }}>
-          measured {Math.round(contentHeight)}
-        </Text>
-      )}
       {showClear && focused && !!props.value && (
         <TouchableOpacity
           onPress={() => clearHandler?.("")}
@@ -806,36 +811,43 @@ export function WeightInput({ value, onChangeText, style }: { value: string; onC
 // Multiline variant for quirks / walks / notes.
 export function Textarea({ style, filled, onFocus, onBlur, onChangeText, ...props }: TextInputProps & { filled?: boolean }) {
   const [focused, setFocused] = useState(false);
+  // Same ghost-text auto-grow as Input's multiline path — see the note
+  // there. Layout props from the caller go on the wrapper, box/text props
+  // on both the ghost and the field, exactly as Input splits them.
+  const flat = StyleSheet.flatten(style) ?? {};
+  const { flex, flexGrow, flexShrink, flexBasis, alignSelf, width, maxWidth, minWidth, margin, marginTop, marginBottom, marginLeft, marginRight, marginHorizontal, marginVertical, ...fieldStyle } = flat as any;
+  const wrapperStyle = { flex, flexGrow, flexShrink, flexBasis, alignSelf, width, maxWidth, minWidth, margin, marginTop, marginBottom, marginLeft, marginRight, marginHorizontal, marginVertical };
+  const baseField = {
+    minHeight: 68,
+    borderRadius: radius.input,
+    borderWidth: 1,
+    borderColor: focused ? colors.primary : colors.border,
+    backgroundColor: filled ? colors.secondary : "#FFFFFF",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 15,
+    letterSpacing: 0, fontFamily: "Satoshi" as const,
+    color: colors.textDark,
+    lineHeight: 21,
+  };
   return (
-    <TextInput
-      multiline
-      // No height is set anywhere below — see Input's note. RN sizes a
-      // multiline field to its content only while nothing pins it.
-      scrollEnabled={false}
-      textAlignVertical="top"
-      autoCapitalize="sentences"
-      onChangeText={sentenceCased(props.keyboardType, onChangeText)}
-      style={[
-        {
-          minHeight: 68,
-          borderRadius: radius.input,
-          borderWidth: 1,
-          borderColor: focused ? colors.primary : colors.border,
-          backgroundColor: filled ? colors.secondary : "#FFFFFF",
-          paddingHorizontal: 16,
-          paddingVertical: 12,
-          fontSize: 15,
-          letterSpacing: 0, fontFamily: "Satoshi",
-          color: colors.textDark,
-          lineHeight: 21,
-        },
-        style,
-      ]}
-      placeholderTextColor={colors.textMuted}
-      onFocus={(e) => { setFocused(true); onFocus?.(e); }}
-      onBlur={(e) => { setFocused(false); onBlur?.(e); }}
-      {...props}
-    />
+    <View style={wrapperStyle}>
+      <Text style={[baseField, fieldStyle, { opacity: 0, paddingRight: ((fieldStyle as any).paddingRight ?? (fieldStyle as any).paddingHorizontal ?? 16) + 10 }]}>
+        {(typeof props.value === "string" ? props.value : "") + "\u00A0"}
+      </Text>
+      <TextInput
+        multiline
+        scrollEnabled={false}
+        textAlignVertical="top"
+        autoCapitalize="sentences"
+        onChangeText={sentenceCased(props.keyboardType, onChangeText)}
+        style={[baseField, fieldStyle, { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, minHeight: 0 }]}
+        placeholderTextColor={colors.textMuted}
+        onFocus={(e) => { setFocused(true); onFocus?.(e); }}
+        onBlur={(e) => { setFocused(false); onBlur?.(e); }}
+        {...props}
+      />
+    </View>
   );
 }
 
