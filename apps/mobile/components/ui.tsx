@@ -668,6 +668,8 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
   const flat = StyleSheet.flatten(style) ?? {};
   const { flex, flexGrow, flexShrink, flexBasis, alignSelf, width, maxWidth, minWidth, margin, marginTop, marginBottom, marginLeft, marginRight, marginHorizontal, marginVertical, ...fieldStyle } = flat as any;
   const wrapperStyle = { flex, flexGrow, flexShrink, flexBasis, alignSelf, width, maxWidth, minWidth, margin, marginTop, marginBottom, marginLeft, marginRight, marginHorizontal, marginVertical };
+  // Ghost-measured height for multiline — see the note at the ghost below.
+  const [ghostHeight, setGhostHeight] = useState(0);
   const baseField = {
     minHeight: 46,
     borderRadius: radius.input,
@@ -686,24 +688,30 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
   } as const;
   return (
     <View style={wrapperStyle}>
-      {/* Auto-grow, ghost-text version. Every TextInput-based approach —
-          driving height from onContentSizeChange, or intrinsic sizing with
-          scrolling off — sized correctly on mount but never re-measured as
-          you typed (Fabric doesn't reliably re-layout a multiline TextInput
-          on text change, and contentSize gets clamped to the frame after
-          first layout, which is also what made the padding version run
-          away). So the height comes from something that DOES re-layout on
-          every change: an invisible Text with the same box and font styles
-          renders the value in normal flow and sets the wrapper's height,
-          and the real input absolute-fills on top of it. The NBSP keeps a
-          trailing empty line counted; the extra paddingRight makes the
-          ghost wrap a hair earlier than the input can, so any wrap-width
-          mismatch errs taller (clipping is the failure that matters). */}
+      {/* Auto-grow, ghost-measure version. The input's own layout can't be
+          trusted for this on the current RN: it sizes once on mount and
+          never re-measures on text change (contentSize clamps to the frame,
+          intrinsic sizing goes stale, and an absolute-fill input didn't
+          re-wrap into a grown box either). What HAS worked all along:
+          Text re-lays-out on every change, and an explicit numeric height
+          on the input is always applied. So an invisible, absolutely
+          positioned Text mirrors the value at the field's own width and
+          reports its height via onLayout, and the input — a normal flow
+          child, exactly as it was when rendering/wrapping was known-good —
+          gets that height set explicitly. The NBSP keeps a trailing empty
+          line counted; the extra paddingRight makes the ghost wrap a hair
+          earlier than the input, so any wrap mismatch errs taller
+          (clipping is the failure that matters). Placeholder fallback so
+          an empty field fits its own helper text. */}
       {props.multiline && (
-        <Text style={[baseField, fieldStyle, { opacity: 0, paddingRight: ((fieldStyle as any).paddingRight ?? 16) + 10 }]}>
-          {/* Falls back to the placeholder when empty, so an empty field is
-              sized to fit its own helper text instead of squeezing it into
-              one ellipsized line. */}
+        <Text
+          onLayout={(e) => {
+            const h = Math.ceil(e.nativeEvent.layout.height);
+            setGhostHeight((cur) => (Math.abs(h - cur) > 1 ? h : cur));
+          }}
+          style={[baseField, fieldStyle, { position: "absolute", top: 0, left: 0, right: 0, opacity: 0, minHeight: 0, paddingRight: ((fieldStyle as any).paddingRight ?? 16) + 10 }]}
+          pointerEvents="none"
+        >
           {((typeof props.value === "string" && props.value) || props.placeholder || "") + "\u00A0"}
         </Text>
       )}
@@ -717,8 +725,7 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
         style={[
           baseField,
           fieldStyle,
-          // Fill the ghost-sized wrapper; minHeight would fight the fill.
-          props.multiline ? { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, minHeight: 0 } : null,
+          props.multiline && ghostHeight ? { height: Math.max(ghostHeight, (fieldStyle as any).minHeight ?? 46) } : null,
         ]}
         placeholderTextColor={colors.textMuted}
         onFocus={(e) => { setFocused(true); onFocus?.(e); }}
@@ -820,6 +827,8 @@ export function Textarea({ style, filled, onFocus, onBlur, onChangeText, ...prop
   const flat = StyleSheet.flatten(style) ?? {};
   const { flex, flexGrow, flexShrink, flexBasis, alignSelf, width, maxWidth, minWidth, margin, marginTop, marginBottom, marginLeft, marginRight, marginHorizontal, marginVertical, ...fieldStyle } = flat as any;
   const wrapperStyle = { flex, flexGrow, flexShrink, flexBasis, alignSelf, width, maxWidth, minWidth, margin, marginTop, marginBottom, marginLeft, marginRight, marginHorizontal, marginVertical };
+  // Ghost-measured height — see Input's note.
+  const [ghostHeight, setGhostHeight] = useState(0);
   const baseField = {
     minHeight: 68,
     borderRadius: radius.input,
@@ -835,8 +844,16 @@ export function Textarea({ style, filled, onFocus, onBlur, onChangeText, ...prop
   };
   return (
     <View style={wrapperStyle}>
-      <Text style={[baseField, fieldStyle, { opacity: 0, paddingRight: ((fieldStyle as any).paddingRight ?? (fieldStyle as any).paddingHorizontal ?? 16) + 10 }]}>
-        {/* Placeholder fallback for the same reason as Input's ghost. */}
+      {/* Absolute invisible ghost measures; the input stays a normal flow
+          child with an explicit height — see Input's note. */}
+      <Text
+        onLayout={(e) => {
+          const h = Math.ceil(e.nativeEvent.layout.height);
+          setGhostHeight((cur) => (Math.abs(h - cur) > 1 ? h : cur));
+        }}
+        style={[baseField, fieldStyle, { position: "absolute", top: 0, left: 0, right: 0, opacity: 0, minHeight: 0, paddingRight: ((fieldStyle as any).paddingRight ?? (fieldStyle as any).paddingHorizontal ?? 16) + 10 }]}
+        pointerEvents="none"
+      >
         {((typeof props.value === "string" && props.value) || props.placeholder || "") + "\u00A0"}
       </Text>
       <TextInput
@@ -845,7 +862,7 @@ export function Textarea({ style, filled, onFocus, onBlur, onChangeText, ...prop
         textAlignVertical="top"
         autoCapitalize="sentences"
         onChangeText={sentenceCased(props.keyboardType, onChangeText)}
-        style={[baseField, fieldStyle, { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, minHeight: 0 }]}
+        style={[baseField, fieldStyle, ghostHeight ? { height: Math.max(ghostHeight, (fieldStyle as any).minHeight ?? 68) } : null]}
         placeholderTextColor={colors.textMuted}
         onFocus={(e) => { setFocused(true); onFocus?.(e); }}
         onBlur={(e) => { setFocused(false); onBlur?.(e); }}
