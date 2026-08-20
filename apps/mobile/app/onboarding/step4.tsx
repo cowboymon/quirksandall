@@ -353,11 +353,14 @@ export default function Step4() {
                       <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.textDark }}>
                         Condition {i + 1}
                       </Text>
-                      {list.length > 1 && (
-                        <TouchableOpacity onPress={() => setPet({ conditions: list.filter((_, j) => j !== i) })} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                          <Trash size={15} color={colors.danger} />
-                        </TouchableOpacity>
-                      )}
+                      {/* Always shown — hidden at one entry there was no way
+                          to delete a condition at all. */}
+                      <TouchableOpacity
+                        onPress={() => setPet({ conditions: list.length > 1 ? list.filter((_, j) => j !== i) : [{ name: "", meaning: "" }] })}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
+                        <Trash size={15} color={colors.danger} />
+                      </TouchableOpacity>
                     </View>
                     <Input
                       style={fieldFill}
@@ -402,11 +405,14 @@ export default function Step4() {
                       onChangeText={(v) => setPet({ allergies: list.map((x, j) => (j === i ? v : x)) })}
                       multiline
                     />
-                    {list.length > 1 && (
-                      <TouchableOpacity onPress={() => setPet({ allergies: list.filter((_, j) => j !== i) })} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingTop: 14 }}>
-                        <Trash size={16} color={colors.danger} />
-                      </TouchableOpacity>
-                    )}
+                    {/* Always shown — same fix as Conditions. */}
+                    <TouchableOpacity
+                      onPress={() => setPet({ allergies: list.length > 1 ? list.filter((_, j) => j !== i) : [""] })}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      style={{ paddingTop: 14 }}
+                    >
+                      <Trash size={16} color={colors.danger} />
+                    </TouchableOpacity>
                   </View>
                 );
               })}
