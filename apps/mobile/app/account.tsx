@@ -6,7 +6,7 @@ import Constants from "expo-constants";
 import { router } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { checkEntitlement, restorePurchases, identifyPurchaser } from "../lib/purchases";
-import { REDEMPTION_ENABLED, MARKETING_URL } from "../lib/config";
+import { REDEMPTION_ENABLED, MARKETING_URL, PRIVACY_URL, TERMS_URL } from "../lib/config";
 import { colors, CONSENT_POLICY_VERSION, isUnlocked } from "@quirksandall/shared";
 import { Platform } from "react-native";
 import { track, resetAnalytics, AnalyticsEvent } from "../lib/analytics";
@@ -99,10 +99,17 @@ export default function Account() {
   };
 
   const save = async () => {
+    // Onboarding requires a phone number upfront (it feeds the missing
+    // poster and the PIN-gated contact block) — this screen let it be
+    // cleared and saved blank with no check at all.
+    if (!phone.trim()) {
+      AppAlert.alert("Phone number required", "Add a phone number before saving — it's how sitters and the missing poster reach you.");
+      return;
+    }
     setSaving(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      await supabase.from("owners").update({ name, primary_phone: phone }).eq("id", user.id);
+      await supabase.from("owners").update({ name, primary_phone: phone.trim() }).eq("id", user.id);
     }
     setSaving(false);
     router.back();
@@ -341,6 +348,14 @@ export default function Account() {
       </TouchableOpacity>
       <TouchableOpacity onPress={openFeatureRequest} activeOpacity={0.7} style={{ marginTop: 14, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 4 }}>
         <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Feature request</Text>
+        <Text style={{ color: colors.textMuted, fontSize: 16 }}>›</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => WebBrowser.openBrowserAsync(TERMS_URL)} activeOpacity={0.7} style={{ marginTop: 14, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 4 }}>
+        <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Terms of Use</Text>
+        <Text style={{ color: colors.textMuted, fontSize: 16 }}>›</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => WebBrowser.openBrowserAsync(PRIVACY_URL)} activeOpacity={0.7} style={{ marginTop: 14, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 4 }}>
+        <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Privacy Policy</Text>
         <Text style={{ color: colors.textMuted, fontSize: 16 }}>›</Text>
       </TouchableOpacity>
 
