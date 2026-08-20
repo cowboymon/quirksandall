@@ -40,17 +40,21 @@ export default function Documents() {
   const [docs, setDocs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [removeTarget, setRemoveTarget] = useState<any>(null);
 
   const load = useCallback(() => {
     if (!petId) { setLoading(false); return; }
     listDocuments(petId)
-      .then((d) => { setDocs(d); setLoading(false); })
+      .then((d) => { setDocs(d); setLoadError(false); setLoading(false); })
       .catch((e) => {
-        // Was silently swallowed — a fetch failure looked identical to
-        // "nothing uploaded yet". Log it so a real error is visible in the
-        // Metro console instead of just showing an empty vault.
+        // A failed fetch must NOT render as an empty vault — the dashboard's
+        // file count comes from its own separate query, so "2 files" there
+        // with nothing here reads as documents having vanished. Keep
+        // whatever list we already have and surface an explicit error/retry
+        // state instead (the intermittent "my files don't render" report).
         console.warn("[documents] listDocuments failed:", e?.message ?? e);
+        setLoadError(true);
         setLoading(false);
       });
   }, [petId]);
@@ -186,7 +190,30 @@ export default function Documents() {
         </View>
       )}
 
-      {docs.length === 0 && (
+      {/* Couldn't-load state — must NOT fall through to "Nothing in the
+          vault yet": rendering a fetch failure as an empty vault made
+          uploaded files look like they'd vanished whenever the list call
+          transiently failed. Only shows when we have nothing cached to
+          display; if a previous successful load is on screen, it stays. */}
+      {loadError && docs.length === 0 && (
+        <View style={{ alignItems: "center", paddingVertical: 28, paddingHorizontal: 24, marginBottom: 4 }}>
+          <Text style={{ fontFamily: "Tanker", fontSize: 20, lineHeight: 22, color: colors.textDark, textAlign: "center" }}>
+            Couldn't load your documents
+          </Text>
+          <Text style={{ color: colors.textMuted, fontSize: 13, marginTop: 6, fontFamily: "Satoshi-Light", textAlign: "center", lineHeight: 19 }}>
+            They're still safe in the vault — this is just a connection hiccup.
+          </Text>
+          <TouchableOpacity
+            onPress={() => { setLoading(true); load(); }}
+            activeOpacity={0.85}
+            style={{ marginTop: 14, paddingHorizontal: 20, height: 40, borderRadius: 10, backgroundColor: colors.button, alignItems: "center", justifyContent: "center" }}
+          >
+            <Text style={{ color: colors.buttonText, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Try again</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {!loadError && docs.length === 0 && (
         <View style={{ alignItems: "center", paddingVertical: 28, paddingHorizontal: 24, marginBottom: 4 }}>
           <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: colors.secondary, alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
             <FolderOpen size={26} weight="duotone" color={colors.primary} />
