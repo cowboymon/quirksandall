@@ -1,7 +1,7 @@
 // Shared primitive UI components for the mobile app.
 // Mirrors the prototype's primitives.tsx (fonts, buttons, dots, inputs).
 import { useEffect, useMemo, useState, useRef, forwardRef } from "react";
-import { Animated, Easing, Keyboard, Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
+import { Animated, Easing, Keyboard, StyleSheet, Text, TouchableOpacity, View, TextInput, Modal, Dimensions, type TextInputProps, type ViewProps } from "react-native";
 import { CalendarDots, CaretDown, LockSimple, XCircle } from "./icons";
 import { router, useNavigation } from "expo-router";
 import { colors, radius, capitalizeFirst, capitalizeWords, formatPhone, displayDateToISO, dateFieldError } from "@quirksandall/shared";
@@ -619,8 +619,18 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
   // clearButtonMode correctly no-op'd on multiline for the same reason; this
   // custom replacement has to opt out the same way.
   const showClear = !props.multiline;
+  // The clear button needs a positioned wrapper, but callers style this
+  // component as if it IS the field — `<Input style={{ flex: 2 }} />` and
+  // friends. Left on the TextInput, those sizing props apply inside a
+  // wrapper that has none of them, so the wrapper collapses to its content
+  // and the caller's intended widths silently stop working. Layout props
+  // are lifted to the wrapper; everything else (borders, padding, colours,
+  // heights) stays on the field itself.
+  const flat = StyleSheet.flatten(style) ?? {};
+  const { flex, flexGrow, flexShrink, flexBasis, alignSelf, width, maxWidth, minWidth, margin, marginTop, marginBottom, marginLeft, marginRight, marginHorizontal, marginVertical, ...fieldStyle } = flat as any;
+  const wrapperStyle = { flex, flexGrow, flexShrink, flexBasis, alignSelf, width, maxWidth, minWidth, margin, marginTop, marginBottom, marginLeft, marginRight, marginHorizontal, marginVertical };
   return (
-    <View>
+    <View style={wrapperStyle}>
       <TextInput
         ref={ref}
         // Sentence-case the first char programmatically so it works regardless of
@@ -645,12 +655,19 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
             color: colors.textDark,
             letterSpacing: 0, // guard against iOS placeholder letter-spacing quirk
           },
-          style,
+          fieldStyle,
         ]}
         placeholderTextColor={colors.textMuted}
         onFocus={(e) => { setFocused(true); onFocus?.(e); }}
         onBlur={(e) => { setFocused(false); onBlur?.(e); }}
         {...props}
+        // After the spread so it's a real default, not something the spread
+        // clobbers: multiline usages grow with their content (callers set a
+        // minHeight, not a fixed height), so nothing should ever scroll
+        // internally — without this iOS's UITextView can still show a scroll
+        // thumb, which reads as a broken field. A caller wanting a bounded,
+        // scrollable box passes scrollEnabled explicitly.
+        scrollEnabled={props.multiline ? props.scrollEnabled ?? false : props.scrollEnabled}
       />
       {showClear && focused && !!props.value && (
         <TouchableOpacity
@@ -750,6 +767,11 @@ export function Textarea({ style, filled, onFocus, onBlur, onChangeText, ...prop
   return (
     <TextInput
       multiline
+      // No internal scrolling — these fields are meant to grow with their
+      // content (minHeight only, no fixed height below), so nothing should
+      // ever need to scroll. Without this, iOS's UITextView can still show
+      // its scroll thumb in edge cases, which reads as a broken field.
+      scrollEnabled={false}
       textAlignVertical="top"
       autoCapitalize="sentences"
       onChangeText={sentenceCased(props.keyboardType, onChangeText)}

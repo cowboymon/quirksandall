@@ -395,18 +395,19 @@ export default function Dashboard() {
 
   return (
     <View style={{ flex: 1 }}>
+    {/* Top bar — label + owner avatar. Outside the ScrollView so it stays
+        put while the page scrolls; the account avatar is the only way off
+        this screen, so it shouldn't scroll out of reach. */}
+    <View style={{ backgroundColor: colors.background, paddingHorizontal: 24, paddingTop: 56, paddingBottom: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+      <Eyebrow>Dashboard</Eyebrow>
+      <TouchableOpacity
+        onPress={() => router.push("/account")}
+        style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: colors.cardDark, alignItems: "center", justifyContent: "center" }}
+      >
+        <Text style={{ color: colors.cardDarkText, fontSize: 11, fontFamily: "Satoshi-Bold" }}>{ownerInitials}</Text>
+      </TouchableOpacity>
+    </View>
     <ScrollView className="flex-1 bg-background" contentContainerStyle={{ paddingBottom: 40 }}>
-      {/* Top bar — label + owner avatar */}
-      <View style={{ paddingHorizontal: 24, paddingTop: 56, paddingBottom: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-        <Eyebrow>Dashboard</Eyebrow>
-        <TouchableOpacity
-          onPress={() => router.push("/account")}
-          style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: colors.cardDark, alignItems: "center", justifyContent: "center" }}
-        >
-          <Text style={{ color: colors.cardDarkText, fontSize: 11, fontFamily: "Satoshi-Bold" }}>{ownerInitials}</Text>
-        </TouchableOpacity>
-      </View>
-
       <PetSwitcher isPaid={isPaid} />
 
       {deletionScheduled && (
