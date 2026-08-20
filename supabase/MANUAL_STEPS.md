@@ -18,7 +18,7 @@ you go. Newest work is at the top of each section.
 
 ## ▶️ Run now
 
-- [ ] **`20260817000002_policy_acceptances_cascade.sql`** — **important,
+- [x] **`20260817000002_policy_acceptances_cascade.sql`** — **important,
   affects the account-deletion purge.** `policy_acceptances.user_id`
   referenced `auth.users(id)` without `on delete cascade`, discovered when
   a manual `delete from auth.users` failed with a FK violation. The daily
