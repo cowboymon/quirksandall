@@ -6,6 +6,7 @@ import { AppAlert } from "../../stores/appAlert";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
 import EditShell from "../../components/EditShell";
+import { useUnsavedChanges } from "../../hooks/useUnsavedChanges";
 import { Input, Eyebrow, Card, FieldTier } from "../../components/ui";
 import ConfirmModal from "../../components/ConfirmModal";
 import { colors, orderedCommands, isUnlocked, SUGGESTED_COMMANDS } from "@quirksandall/shared";
@@ -38,6 +39,14 @@ export default function EditBehavior() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   // Paid-gated fields carry the "Unlock to share" pill for free owners.
   const softLocked = !isPaid;
+  const [hydrated, setHydrated] = useState(false);
+
+  // Discard prompt when leaving with unsaved edits — snapshot covers what
+  // save() writes (reorders, hides and strength taps count as edits too).
+  const { markClean } = useUnsavedChanges(
+    hydrated,
+    JSON.stringify([commands, scared, noGo, flightRisk, temperament])
+  );
 
   // Deep-link from the dashboard "Quirks & Triggers" row → scroll to that block.
   useEffect(() => {
@@ -55,6 +64,11 @@ export default function EditBehavior() {
         supabase.from("owners").select("purchase_status, expires_at").eq("id", user!.id).single(),
       ]);
       setIsPaid(isUnlocked(owner));
+      // Before the empty-row early return, so a pet with no behavior row
+      // still arms the guard (its baseline is the blank form). The data
+      // setStates below land in the same batch, so the baseline includes
+      // them when a row exists.
+      setHydrated(true);
       if (!data) return;
       setCommands(
         (data.commands ?? []).map((c: any, i: number) => ({ ...c, id: c.id ?? String(i + 1) }))
@@ -137,6 +151,7 @@ export default function EditBehavior() {
         temperament_summary: temperament,
       }, { onConflict: "pet_id" });
       if (error) throw error;
+      markClean();
       router.back();
     } catch (e: any) {
       AppAlert.alert("Couldn't save", e.message);

@@ -5,6 +5,7 @@ import { AppAlert } from "../../stores/appAlert";
 import { router, useLocalSearchParams } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
+import { useUnsavedChanges } from "../../hooks/useUnsavedChanges";
 import EditShell from "../../components/EditShell";
 import { Input, Eyebrow, Card, InlineNote, TimeInput, FieldTier, Select, fieldFill } from "../../components/ui";
 import { Trash } from "../../components/icons";
@@ -112,6 +113,19 @@ export default function EditRoutine() {
 
   const [isPaid, setIsPaid] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+
+  // Discard prompt when leaving with unsaved edits — snapshot covers what
+  // save() writes. hydrated flips only once the load below has landed.
+  const { markClean } = useUnsavedChanges(
+    hydrated,
+    JSON.stringify([
+      feedingBrand, breakfastTime, breakfastAmount, lunchTime, lunchAmount,
+      dinnerTime, dinnerAmount, breakfastSkip, lunchSkip, dinnerSkip,
+      treats, feedingNotes, walks, sleep, bathroom, leftAloneOk,
+      leftAloneDetail, toileting, allergies, conditions, meds,
+    ])
+  );
 
   useEffect(() => {
     if (!petId) return;
@@ -160,6 +174,7 @@ export default function EditRoutine() {
         );
         setMeds(rowsToMeds(medical.medications ?? []));
       }
+      setHydrated(true);
     })();
   }, [petId]);
 
@@ -197,6 +212,7 @@ export default function EditRoutine() {
           medications: medsToRows(meds),
         }, { onConflict: "pet_id" }),
       ]);
+      markClean();
       router.back();
     } catch (e: any) {
       AppAlert.alert("Couldn't save", e.message);

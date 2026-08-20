@@ -8,6 +8,7 @@ import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
+import { useUnsavedChanges } from "../../hooks/useUnsavedChanges";
 import { useActivePetStore } from "../../stores/activePet";
 import EditShell from "../../components/EditShell";
 import { Input, Eyebrow, Card, Select, DateInput, WeightInput } from "../../components/ui";
@@ -140,6 +141,7 @@ export default function EditPet() {
   // no local file:// and skips the upload entirely — "photo doesn't save until
   // you leave and come back", with no error anywhere.
   const seededForPetId = useRef<string | null>(null);
+  const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
     if (!pet || seededForPetId.current === pet.id) return;
     seededForPetId.current = pet.id;
@@ -156,7 +158,16 @@ export default function EditPet() {
     setMicrochip(pet.microchip_number ?? "");
     setDescriptionForId(pet.description_for_id ?? "");
     setPhotoUri(pet.photo_url ?? null);
+    setHydrated(true);
   }, [pet]);
+
+  // Discard prompt when leaving with unsaved edits. Snapshot covers exactly
+  // what save() writes; hydrated flips only after the seed above, so loaded
+  // values never read as edits.
+  const { markClean } = useUnsavedChanges(
+    hydrated,
+    JSON.stringify([name, breed, species, dob, dobIsEstimated, sex, weight, colorMarkings, microchip, descriptionForId, photoUri])
+  );
 
   const pickPhoto = async () => {
     const ok = await ensurePhotoPermission(
@@ -202,6 +213,7 @@ export default function EditPet() {
         })
         .eq("id", petId);
       if (error) throw error;
+      markClean();
       router.back();
     } catch (e: any) {
       AppAlert.alert("Couldn't save", e.message);
@@ -270,6 +282,7 @@ export default function EditPet() {
       .from("pets").select("id").eq("owner_id", user!.id).eq("status", "active").neq("id", petId).limit(1).maybeSingle();
     setShowDelete(false);
     if (next?.id) setPetId(next.id);
+    markClean(); // archiving the pet IS the intent — never prompt about field edits here
     router.replace(next?.id ? "/dashboard" : "/onboarding/step1");
   };
 
