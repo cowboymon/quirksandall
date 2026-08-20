@@ -13,6 +13,7 @@ import { track, resetAnalytics, AnalyticsEvent } from "../lib/analytics";
 import { identifyForErrors } from "../lib/errors";
 import { Eyebrow, Input } from "../components/ui";
 import EditShell from "../components/EditShell";
+import { useUnsavedChanges } from "../hooks/useUnsavedChanges";
 import ConfirmModal from "../components/ConfirmModal";
 import { useRequireAuth } from "../hooks/useRequireAuth";
 
@@ -35,6 +36,11 @@ export default function Account() {
   const [insuranceConsent, setInsuranceConsent] = useState<boolean | null>(null);
   const [marketingConsent, setMarketingConsent] = useState<boolean | null>(null);
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+
+  // Discard prompt for the two fields save() writes. Consent toggles save
+  // on tap and stay out of the snapshot.
+  const { markClean } = useUnsavedChanges(hydrated, JSON.stringify([name, phone]));
 
   useEffect(() => {
     (async () => {
@@ -54,6 +60,7 @@ export default function Account() {
       // screen opens — reflects changes made on another device or a withdrawal.
       setInsuranceConsent(owner?.consent_insurance_offers ?? false);
       setMarketingConsent(owner?.consent_marketing ?? false);
+      setHydrated(true);
     })();
     checkEntitlement().then((v) => v && setIsPaid(true)).catch(() => {});
   }, []);
@@ -117,6 +124,7 @@ export default function Account() {
       await supabase.from("owners").update({ name: name.trim(), primary_phone: phone.trim() }).eq("id", user.id);
     }
     setSaving(false);
+    markClean();
     router.back();
   };
 
@@ -150,6 +158,7 @@ export default function Account() {
     // locally — signing out actually invalidates the session, not just the
     // on-device copy of it.
     await supabase.auth.signOut({ scope: "global" });
+    markClean(); // leaving the account is the intent — never prompt about field edits here
     router.replace("/auth");
   };
 
@@ -202,6 +211,7 @@ export default function Account() {
     // locally — signing out actually invalidates the session, not just the
     // on-device copy of it.
     await supabase.auth.signOut({ scope: "global" });
+    markClean(); // leaving the account is the intent — never prompt about field edits here
     router.replace("/auth");
   };
 

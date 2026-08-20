@@ -4,6 +4,7 @@ import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { AppAlert } from "../../stores/appAlert";
 import { supabase } from "../../lib/supabase";
 import { useActivePet } from "../../hooks/useActivePet";
+import { useUnsavedChanges } from "../../hooks/useUnsavedChanges";
 import EditShell from "../../components/EditShell";
 import { LabeledInput, Eyebrow, Card, InlineNote } from "../../components/ui";
 import ConsentNudge from "../../components/ConsentNudge";
@@ -61,6 +62,20 @@ export default function EditEmergency() {
   // a saved clinic's address/phone means re-searching or going manual again.
   const [vetManual, setVetManual] = useState(false);
   const [emergManual, setEmergManual] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+
+  // Discard prompt when leaving with unsaved edits — snapshot covers what
+  // save() writes. hydrated flips only once the load below has landed.
+  const { markClean } = useUnsavedChanges(
+    hydrated,
+    JSON.stringify([
+      vetContactName, vetClinic, vetAddress, vetPhone,
+      emergClinic, emergAddress, emergPhone,
+      insuranceProvider, insurancePolicy,
+      backupName, backupRel, backupPhone, backupConsent, backupIsDecisionContact,
+      backup2Name, backup2Rel, backup2Phone, backup2Consent, backup2IsDecisionContact,
+    ])
+  );
 
   useEffect(() => {
     if (!petId) return;
@@ -99,6 +114,7 @@ export default function EditEmergency() {
           setShowSecondBackup(true);
         }
       }
+      setHydrated(true);
     })();
   }, [petId]);
 
@@ -129,6 +145,7 @@ export default function EditEmergency() {
         supabase.from("owners").update({ backup_contacts: backups }).eq("id", user.id),
       ]);
       if (vetError || ownerError) throw new Error((vetError ?? ownerError)!.message);
+      markClean();
       router.back();
     } catch (e: any) {
       AppAlert.alert("Couldn't save", e.message);
