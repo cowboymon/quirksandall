@@ -11,7 +11,7 @@ import * as ImagePicker from "expo-image-picker";
 import EditShell from "../../components/EditShell";
 import ConfirmModal from "../../components/ConfirmModal";
 import { colors } from "@quirksandall/shared";
-import { useActivePetStore } from "../../stores/activePet";
+import { useActivePet } from "../../hooks/useActivePet";
 import { listDocuments, uploadDocument, removeDocument, documentSignedUrl, shareDocument, type NewDocument } from "../../lib/documents";
 import { ensureCameraPermission } from "../../lib/photoPermission";
 
@@ -36,7 +36,13 @@ function iconFor(mime?: string): Icon {
 }
 
 export default function Documents() {
-  const { petId } = useActivePetStore();
+  // useActivePet, not the raw store — the store's petId can sit null/stale
+  // even while the dashboard is showing a resolved pet (dashboard only
+  // caches the pet object, it never persists the id back to the store), and
+  // reading it directly here meant a stale/empty petId silently rendered as
+  // an empty vault instead of resolving to the actual active pet like every
+  // other edit screen does.
+  const { petId, loading: petLoading } = useActivePet();
   const [docs, setDocs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -44,6 +50,11 @@ export default function Documents() {
   const [removeTarget, setRemoveTarget] = useState<any>(null);
 
   const load = useCallback(() => {
+    // Still resolving which pet is active — wait rather than falling through
+    // to "no docs", which would flash the empty-vault state before petId
+    // arrives (or permanently, if this fired before useActivePet's fallback
+    // had a chance to resolve a stale/missing selection).
+    if (petLoading) return;
     if (!petId) { setLoading(false); return; }
     listDocuments(petId)
       .then((d) => { setDocs(d); setLoadError(false); setLoading(false); })
@@ -57,7 +68,7 @@ export default function Documents() {
         setLoadError(true);
         setLoading(false);
       });
-  }, [petId]);
+  }, [petId, petLoading]);
   useFocusEffect(load);
 
   // Pick the kind after choosing a file — a two-tap flow that avoids a whole
