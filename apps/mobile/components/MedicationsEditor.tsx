@@ -60,13 +60,18 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
       <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4, marginBottom: 4 }}>
         Add each one, and when it's given.
       </Text>
-      <View style={{ gap: 12, marginTop: 4 }}>
+      {/* Wider gap between entries than within one, since the cards no longer
+          have borders to separate them. */}
+      <View style={{ gap: 20, marginTop: 4 }}>
         {meds.map((m, i) => (
-          <View key={m.id} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 12, gap: 8 }}>
-            {/* Card-level header, same shape as the Treats section's. Delete
-                belongs here rather than beside the dose field: it removes the
-                whole medication, not one value — and sitting inline it read
-                as part of the form and crowded the dose field. */}
+          // No border/padding of its own — a bordered box inside the section's
+          // own bordered Card read as a stray rectangle, especially against
+          // the borderless Treats entries directly above. Same structure as
+          // Treats now: a label + delete header, then plain stacked fields.
+          <View key={m.id} style={{ gap: 8 }}>
+            {/* Delete belongs here rather than beside the dose field: it
+                removes the whole medication, not one value — and sitting
+                inline it read as part of the form and crowded the dose. */}
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
               <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.textMuted }}>
                 Medication {i + 1}
@@ -75,13 +80,11 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
                 <Trash size={15} color={colors.danger} />
               </TouchableOpacity>
             </View>
-            <View style={{ flexDirection: "row", gap: 8 }}>
-              {/* 3:2 rather than 2:1 — with the trash icon out of this row
-                  there's more to share, and at 2:1 a dose like "1 teaspoon"
-                  was truncating. */}
-              <Input style={{ flex: 3 }} placeholder="Name (e.g. Apoquel)" value={m.name} onChangeText={(v) => updateMed(m.id, "name", v)} />
-              <Input style={{ flex: 2 }} placeholder="Dose — e.g. 1 tablet" value={m.dose} onChangeText={(v) => updateMed(m.id, "dose", v)} />
-            </View>
+            {/* Stacked full-width rather than side by side, matching Treats.
+                Sharing one row is what kept truncating the dose — "1 teaspoon"
+                didn't fit at any split that still left the name readable. */}
+            <Input placeholder="Name (e.g. Apoquel)" value={m.name} onChangeText={(v) => updateMed(m.id, "name", v)} />
+            <Input placeholder="Dose — e.g. 1 tablet" value={m.dose} onChangeText={(v) => updateMed(m.id, "dose", v)} />
             <View>
               <Input
                 ref={(r) => { notesRefs.current[m.id] = r; }}
