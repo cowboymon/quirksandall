@@ -701,7 +701,10 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
           mismatch errs taller (clipping is the failure that matters). */}
       {props.multiline && (
         <Text style={[baseField, fieldStyle, { opacity: 0, paddingRight: ((fieldStyle as any).paddingRight ?? 16) + 10 }]}>
-          {(typeof props.value === "string" ? props.value : "") + "\u00A0"}
+          {/* Falls back to the placeholder when empty, so an empty field is
+              sized to fit its own helper text instead of squeezing it into
+              one ellipsized line. */}
+          {((typeof props.value === "string" && props.value) || props.placeholder || "") + "\u00A0"}
         </Text>
       )}
       <TextInput
@@ -833,7 +836,8 @@ export function Textarea({ style, filled, onFocus, onBlur, onChangeText, ...prop
   return (
     <View style={wrapperStyle}>
       <Text style={[baseField, fieldStyle, { opacity: 0, paddingRight: ((fieldStyle as any).paddingRight ?? (fieldStyle as any).paddingHorizontal ?? 16) + 10 }]}>
-        {(typeof props.value === "string" ? props.value : "") + "\u00A0"}
+        {/* Placeholder fallback for the same reason as Input's ghost. */}
+        {((typeof props.value === "string" && props.value) || props.placeholder || "") + "\u00A0"}
       </Text>
       <TextInput
         multiline
