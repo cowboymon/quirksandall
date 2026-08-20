@@ -3,7 +3,7 @@
 // medications as one free-text blob while editing had this structured form,
 // so anything entered at onboarding lost its dose/timing once you went to
 // edit it).
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import { Input, Eyebrow, Card } from "./ui";
 import { Trash } from "./icons";
@@ -31,6 +31,11 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
   // this is the edit screen, and tapping in reveals the rest; the
   // sitter-facing view never truncates.
   const [editingNotes, setEditingNotes] = useState<string | null>(null);
+  const notesRefs = useRef<Record<string, TextInput | null>>({});
+  // Collapsed height fits exactly the two lines the overlay renders:
+  // paddingTop 10 + 2 × lineHeight 20 + paddingBottom 12.
+  const NOTES_COLLAPSED_HEIGHT = 62;
+  const NOTES_LINE_HEIGHT = 20;
   const addMed = () => onChange([...meds, newMedication()]);
   const updateMed = (id: string, field: "name" | "dose" | "notes", val: string) =>
     onChange(meds.map((m) => (m.id === id ? { ...m, [field]: val } : m)));
@@ -65,19 +70,47 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
                 <Trash size={16} color={colors.danger} />
               </TouchableOpacity>
             </View>
-            <Input
-              placeholder="Cut into smaller pieces — she won't take it whole."
-              value={m.notes}
-              onChangeText={(v) => updateMed(m.id, "notes", v)}
-              multiline
-              onFocus={() => setEditingNotes(m.id)}
-              onBlur={() => setEditingNotes((cur) => (cur === m.id ? null : cur))}
-              style={
-                editingNotes === m.id
-                  ? { minHeight: 44, paddingTop: 10, textAlignVertical: "top" }
-                  : { height: 44, paddingTop: 10, textAlignVertical: "top" }
-              }
-            />
+            <View>
+              <Input
+                ref={(r) => { notesRefs.current[m.id] = r; }}
+                placeholder="Cut into smaller pieces — she won't take it whole."
+                value={m.notes}
+                onChangeText={(v) => updateMed(m.id, "notes", v)}
+                multiline
+                onFocus={() => setEditingNotes(m.id)}
+                onBlur={() => setEditingNotes((cur) => (cur === m.id ? null : cur))}
+                style={
+                  editingNotes === m.id
+                    ? { minHeight: NOTES_COLLAPSED_HEIGHT, paddingTop: 10, lineHeight: NOTES_LINE_HEIGHT, textAlignVertical: "top" }
+                    : { height: NOTES_COLLAPSED_HEIGHT, paddingTop: 10, lineHeight: NOTES_LINE_HEIGHT, textAlignVertical: "top" }
+                }
+              />
+              {/* A multiline TextInput can't ellipsize — at a fixed height it
+                  just slices the last visible line in half. So while this
+                  note isn't being edited, a Text with real "…" truncation
+                  covers the field. The input stays mounted underneath, so
+                  tapping through focuses it directly (no remount, no lost
+                  caret) and the overlay disappears on focus. */}
+              {editingNotes !== m.id && !!m.notes && (
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => notesRefs.current[m.id]?.focus()}
+                  style={{
+                    position: "absolute", top: 1, left: 1, right: 1, bottom: 1,
+                    borderRadius: 9, backgroundColor: "#FFFFFF",
+                    paddingHorizontal: 16, paddingTop: 10,
+                  }}
+                >
+                  <Text
+                    numberOfLines={2}
+                    ellipsizeMode="tail"
+                    style={{ fontSize: 15, fontFamily: "Satoshi", color: colors.textDark, letterSpacing: 0, lineHeight: NOTES_LINE_HEIGHT }}
+                  >
+                    {m.notes}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
             <Text style={{ color: colors.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium" }}>
               Given — tap all that apply
             </Text>
