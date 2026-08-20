@@ -15,7 +15,7 @@
 // list filter instead of the Places API.
 import { useRef, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Modal, Pressable, Animated, Keyboard, Dimensions, ScrollView } from "react-native";
-import { MagnifyingGlass } from "./icons";
+import { MagnifyingGlass, XCircle } from "./icons";
 import * as Localization from "expo-localization";
 import { colors } from "@quirksandall/shared";
 import { FieldLabel } from "./ui";
@@ -119,9 +119,10 @@ export function InsurerInput({
           <TouchableOpacity
             onPress={clear}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            style={{ position: "absolute", right: 10, height: 20, width: 20, borderRadius: 10, backgroundColor: colors.textMuted, alignItems: "center", justifyContent: "center" }}
+            accessibilityLabel="Clear"
+            style={{ position: "absolute", right: 10, top: 0, bottom: 0, justifyContent: "center" }}
           >
-            <Text style={{ color: "#FFFFFF", fontSize: 12, fontFamily: "Satoshi-Bold", lineHeight: 14 }}>×</Text>
+            <XCircle size={17} color={colors.dashedBorder} weight="fill" />
           </TouchableOpacity>
         )}
       </View>
