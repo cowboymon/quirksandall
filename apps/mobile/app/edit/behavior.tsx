@@ -326,7 +326,10 @@ export default function EditBehavior() {
                 <Text style={{ color: colors.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium", marginTop: 12, marginBottom: 6 }}>
                   How solid is it?
                 </Text>
-                <View style={{ flexDirection: "row", gap: 6 }}>
+                {/* Same pills as the medication timing chips — an optional tag
+                    on the command, not a primary action, so it shouldn't carry
+                    a solid plum fill that outweighs the word itself. */}
+                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
                   {STRENGTHS.map((s) => {
                     const active = cmd.strength === s.key;
                     return (
@@ -334,9 +337,14 @@ export default function EditBehavior() {
                         key={s.key}
                         onPress={() => setStrength(cmd.id, s.key)}
                         activeOpacity={0.85}
-                        style={{ flex: 1, height: 34, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: active ? colors.cardDark : colors.secondary, borderWidth: 1, borderColor: active ? colors.cardDark : colors.border }}
+                        style={{
+                          paddingHorizontal: 12, height: 28, borderRadius: 14,
+                          alignItems: "center", justifyContent: "center",
+                          backgroundColor: active ? "rgba(184,58,82,0.10)" : "#FFFFFF",
+                          borderWidth: 1, borderColor: active ? colors.primary : colors.border,
+                        }}
                       >
-                        <Text style={{ color: active ? colors.cardDarkText : colors.textDark, fontSize: 12, fontFamily: "Satoshi-Medium" }}>{s.label}</Text>
+                        <Text style={{ color: active ? colors.primary : colors.textMuted, fontSize: 12, fontFamily: active ? "Satoshi-Bold" : "Satoshi-Medium" }}>{s.label}</Text>
                       </TouchableOpacity>
                     );
                   })}
