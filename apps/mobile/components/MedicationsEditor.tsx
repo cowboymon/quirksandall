@@ -79,10 +79,16 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
                 multiline
                 onFocus={() => setEditingNotes(m.id)}
                 onBlur={() => setEditingNotes((cur) => (cur === m.id ? null : cur))}
+                // No lineHeight here, deliberately: on iOS a multiline
+                // TextInput with an explicit lineHeight renders its text and
+                // caret offset outside the field's own bounds, so the field
+                // looks empty and untypable. It's safe on the overlay Text
+                // below, which is what actually needs a predictable
+                // two-line height.
                 style={
                   editingNotes === m.id
-                    ? { minHeight: NOTES_COLLAPSED_HEIGHT, paddingTop: 10, lineHeight: NOTES_LINE_HEIGHT, textAlignVertical: "top" }
-                    : { height: NOTES_COLLAPSED_HEIGHT, paddingTop: 10, lineHeight: NOTES_LINE_HEIGHT, textAlignVertical: "top" }
+                    ? { minHeight: NOTES_COLLAPSED_HEIGHT, paddingTop: 10, textAlignVertical: "top" }
+                    : { height: NOTES_COLLAPSED_HEIGHT, paddingTop: 10, textAlignVertical: "top" }
                 }
               />
               {/* A multiline TextInput can't ellipsize — at a fixed height it
