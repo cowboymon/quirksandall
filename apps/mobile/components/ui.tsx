@@ -499,6 +499,49 @@ function maskTime12(raw: string): string {
   return `${h}:${m}`;
 }
 
+// Two-or-more-choice segmented control — AM/PM, kg/lb. These were built
+// separately and had drifted on radius, padding and press feedback despite
+// being the same control, so they share one definition now.
+//
+// `height` is optional: pass it to line up with a fixed-height field beside
+// it (the weight input), omit it to self-size from padding (the AM/PM toggle,
+// which sits next to a shorter meal-row field).
+export function SegmentedToggle({
+  options,
+  value,
+  onChange,
+  height,
+}: {
+  options: readonly string[];
+  value: string;
+  onChange: (value: string) => void;
+  height?: number;
+}) {
+  return (
+    <View style={[{ flexDirection: "row", borderWidth: 1, borderColor: colors.border, borderRadius: radius.input, overflow: "hidden" }, height ? { height } : null]}>
+      {options.map((o) => {
+        const active = value === o;
+        return (
+          <TouchableOpacity
+            key={o}
+            onPress={() => onChange(o)}
+            activeOpacity={0.85}
+            style={{
+              paddingHorizontal: 14,
+              paddingVertical: height ? 0 : 9,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: active ? colors.cardDark : "#FFFFFF",
+            }}
+          >
+            <Text style={{ fontSize: 13, fontFamily: "Satoshi-Medium", color: active ? colors.cardDarkText : colors.textMuted }}>{o}</Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
+
 // 12-hour time field with an AM/PM toggle. Stores "h:mm AM" / "h:mm PM".
 export function TimeInput({ value, onChangeText, style, placeholder, defaultPeriod }: { value: string; onChangeText: (v: string) => void; style?: TextInputProps["style"]; placeholder?: string; defaultPeriod?: "AM" | "PM" }) {
   const parsed = parseTime12(value);
@@ -520,16 +563,7 @@ export function TimeInput({ value, onChangeText, style, placeholder, defaultPeri
           style={style}
         />
       </View>
-      <View style={{ flexDirection: "row", borderWidth: 1, borderColor: colors.border, borderRadius: 8, overflow: "hidden" }}>
-        {(["AM", "PM"] as const).map((p) => {
-          const active = period === p;
-          return (
-            <TouchableOpacity key={p} onPress={() => commit(hhmm, p)} style={{ paddingHorizontal: 12, paddingVertical: 9, backgroundColor: active ? colors.cardDark : "#FFFFFF" }}>
-              <Text style={{ fontSize: 13, fontFamily: "Satoshi-Medium", color: active ? colors.cardDarkText : colors.textMuted }}>{p}</Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+      <SegmentedToggle options={["AM", "PM"]} value={period} onChange={(p) => commit(hhmm, p as "AM" | "PM")} />
     </View>
   );
 }
@@ -772,21 +806,14 @@ export function WeightInput({ value, onChangeText, style }: { value: string; onC
           rather than converting the number, since the owner is switching
           which unit they're about to type in, not asking for a conversion
           of what's already there. */}
-      <View style={{ flexDirection: "row", height: 46, borderWidth: 1, borderColor: colors.border, borderRadius: radius.input, overflow: "hidden" }}>
-        {(["kg", "lb"] as const).map((u) => (
-          <TouchableOpacity
-            key={u}
-            onPress={() => onChangeText(composeWeight(amount, u))}
-            activeOpacity={0.85}
-            style={{
-              paddingHorizontal: 14, alignItems: "center", justifyContent: "center",
-              backgroundColor: unit === u ? colors.cardDark : "#FFFFFF",
-            }}
-          >
-            <Text style={{ fontSize: 13, fontFamily: "Satoshi-Medium", color: unit === u ? colors.cardDarkText : colors.textMuted }}>{u}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      {/* height 46 to line up with the amount field beside it — the AM/PM
+          toggle sits next to a shorter meal field, so it self-sizes instead. */}
+      <SegmentedToggle
+        options={["kg", "lb"]}
+        value={unit}
+        onChange={(u) => onChangeText(composeWeight(amount, u as "kg" | "lb"))}
+        height={46}
+      />
     </View>
   );
 }
