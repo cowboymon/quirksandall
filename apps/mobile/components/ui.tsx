@@ -777,7 +777,13 @@ function composeWeight(amount: string, unit: "kg" | "lb"): string {
 
 export function WeightInput({ value, onChangeText, style }: { value: string; onChangeText: (v: string) => void; style?: TextInputProps["style"] }) {
   const [focused, setFocused] = useState(false);
-  const { amount, unit } = parseWeight(value);
+  const { amount, unit: parsedUnit } = parseWeight(value);
+  // The unit travels inside the composed value string, so with no amount
+  // there is nothing to carry it — tapping "lb" on an empty field used to
+  // snap straight back to kg. Local state remembers the choice until an
+  // amount exists to carry it; once one does, the value is the truth.
+  const [pendingUnit, setPendingUnit] = useState<"kg" | "lb" | null>(null);
+  const unit = amount ? parsedUnit : (pendingUnit ?? parsedUnit);
   return (
     <View style={[{ flexDirection: "row", alignItems: "center", gap: 8 }, style as any]}>
       <View
@@ -795,8 +801,21 @@ export function WeightInput({ value, onChangeText, style }: { value: string; onC
           keyboardType="decimal-pad"
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          style={{ paddingVertical: 12, fontSize: 15, fontFamily: "Satoshi", color: colors.textDark, letterSpacing: 0 }}
+          style={{ paddingVertical: 12, paddingRight: 24, fontSize: 15, fontFamily: "Satoshi", color: colors.textDark, letterSpacing: 0 }}
         />
+        {/* Same pink clear as every other field — this bespoke TextInput
+            never picked it up from Input. Remembers the unit before
+            clearing, so wiping the number doesn't also flip the toggle. */}
+        {focused && !!amount && (
+          <TouchableOpacity
+            onPress={() => { setPendingUnit(unit); onChangeText(""); }}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityLabel="Clear"
+            style={{ position: "absolute", right: 12, top: 0, bottom: 0, justifyContent: "center" }}
+          >
+            <XCircle size={17} color={colors.dashedBorder} weight="fill" />
+          </TouchableOpacity>
+        )}
       </View>
       {/* kg/lb toggle — its own separate field, not nested inside the
           amount's border. Re-composes the same amount under the new unit
@@ -808,7 +827,7 @@ export function WeightInput({ value, onChangeText, style }: { value: string; onC
       <SegmentedToggle
         options={["kg", "lb"]}
         value={unit}
-        onChange={(u) => onChangeText(composeWeight(amount, u as "kg" | "lb"))}
+        onChange={(u) => { setPendingUnit(u as "kg" | "lb"); onChangeText(composeWeight(amount, u as "kg" | "lb")); }}
         height={46}
       />
     </View>
