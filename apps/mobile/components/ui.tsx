@@ -167,6 +167,19 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
   // whose opacity CAN animate, layered on top of the input's own (always
   // solid) border.
   const chromeOpacity = useRef(new Animated.Value(locked ? 1 : 0)).current;
+  // Custom clear button, replacing iOS's native clearButtonMode here: the
+  // native ✕ sits inside UIKit's own reserved inset, which lands well right
+  // of this field's actual right edge and reads as off-balance against the
+  // left text margin (no amount of paddingRight fully closes that gap — see
+  // Input below, which still uses the native one and lives with it). This
+  // one is a plain absolutely-positioned button, so it sits exactly where we
+  // put it. Same visibility rule as native "while-editing": shown only when
+  // focused and non-empty, not just whenever there's text.
+  const clearHandler = phone && onChangeText
+    ? (t: string) => onChangeText(formatPhone(t))
+    : name
+    ? wordCased(onChangeText)
+    : sentenceCased(props.keyboardType, onChangeText);
   useEffect(() => {
     if (pulseOn === undefined) return;
     if (!mounted.current) { mounted.current = true; return; }
@@ -191,12 +204,7 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
         <AnimatedTextInput
           ref={ref}
           autoCapitalize={name ? "words" : "sentences"}
-          onChangeText={phone && onChangeText ? (t: string) => onChangeText(formatPhone(t)) : name ? wordCased(onChangeText) : sentenceCased(props.keyboardType, onChangeText)}
-          // iOS's native "✕ while editing" clear button — on by default so
-          // every single-line field gets an easy way to clear its text
-          // without a bespoke clear button per field. No-op on Android and
-          // on multiline fields (this component is never multiline).
-          clearButtonMode="while-editing"
+          onChangeText={clearHandler}
           style={[
             {
               minHeight: 40, borderRadius: 8, borderWidth: 1,
@@ -217,12 +225,10 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
                     outputRange: [locked ? colors.secondary : colors.background, UNLOCK_PULSE_PEAK_COLOR],
                   }),
               paddingHorizontal: 12,
-              // 18 rather than 12 when unlocked — iOS's native clear button
-              // reserves its own inset beyond whatever padding we give it,
-              // so a symmetric 12/12 still read as less margin on the right
-              // than the left. Nudged right-only so the text's left start
-              // stays put.
-              paddingRight: chromeOpacity.interpolate({ inputRange: [0, 1], outputRange: [18, 32] }),
+              // Room for the custom clear button when unlocked (32 matches
+              // the locked padlock's own reserved space, so nothing jumps
+              // width when chromeOpacity crossfades between the two).
+              paddingRight: chromeOpacity.interpolate({ inputRange: [0, 1], outputRange: [32, 32] }),
               paddingVertical: 8,
               fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: locked ? colors.textMuted : colors.textDark,
             },
@@ -249,6 +255,16 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
           pointerEvents="none"
           style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, borderRadius: 8, borderWidth: 1, borderStyle: "dashed", borderColor: colors.textMuted, opacity: chromeOpacity }}
         />
+        {!locked && focused && !!props.value && (
+          <TouchableOpacity
+            onPress={() => clearHandler?.("")}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityLabel="Clear"
+            style={{ position: "absolute", right: 10, top: 0, bottom: 0, justifyContent: "center" }}
+          >
+            <XCircle size={17} color={colors.dashedBorder} weight="fill" />
+          </TouchableOpacity>
+        )}
         <Animated.View style={{ position: "absolute", right: 10, top: 0, bottom: 0, justifyContent: "center", opacity: chromeOpacity }} pointerEvents="none">
           <LockSimple size={14} weight="fill" color={colors.textMuted} />
         </Animated.View>
@@ -364,18 +380,12 @@ export function DateInput({
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 accessibilityLabel="Clear date"
               >
-                {/* Styled to match iOS's own clearButtonMode ✕, which the text
-                    fields use — a light filled circle rather than a heavy one.
-                    It can't BE that button: this field is a picker button with
-                    no focus state, so a native clear has nothing to attach to
-                    and this has to persist rather than appear while editing.
-                    Matching the weight keeps the two reading as one
-                    affordance despite that. */}
-                {/* #C7C7CC — iOS's actual system-gray clear-button fill, not
-                    our rose-tinted dashedBorder — this is meant to read as
-                    the same native affordance every other field's built-in
-                    clearButtonMode shows, not a branded one-off. */}
-                <XCircle size={17} color="#C7C7CC" weight="fill" />
+                {/* Same brand-pink clear ✕ as LabeledInput/Input's custom
+                    clear buttons — this field is a picker button with no
+                    focus state, so it persists rather than appearing only
+                    while editing, but matches their color/weight so all
+                    three read as one affordance. */}
+                <XCircle size={17} color={colors.dashedBorder} weight="fill" />
               </TouchableOpacity>
             ) : null}
             {/* Kept even when a value is set, so the "this opens a picker"
@@ -598,44 +608,64 @@ export function Card({ children, style, ...props }: ViewProps) {
 // emergency/routine cards; default is white with a rose focus border.
 export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; phone?: boolean; name?: boolean }>(function Input({ style, filled, phone, name, onFocus, onBlur, onChangeText, ...props }, ref) {
   const [focused, setFocused] = useState(false);
+  // Custom clear button, not the native clearButtonMode: UIKit reserves its
+  // own inset beyond whatever paddingRight we give it, so the ✕ always sits
+  // further right than the left text margin suggests it should — no amount
+  // of padding tuning fully closed that gap. A plain absolutely-positioned
+  // button sits exactly where we put it instead. Same visibility rule as
+  // native "while-editing": shown only when focused and non-empty.
+  const clearHandler = phone && onChangeText ? (t: string) => onChangeText(formatPhone(t)) : name ? wordCased(onChangeText) : sentenceCased(props.keyboardType, onChangeText);
+  // Multiline fields never get the clear button — vertically centering it
+  // across a tall box floats it mid-paragraph instead of pinned to one
+  // corner, and reserving right-padding on every wrapped line (not just the
+  // first) eats into the text width for no reason. iOS's native
+  // clearButtonMode correctly no-op'd on multiline for the same reason; this
+  // custom replacement has to opt out the same way.
+  const showClear = !props.multiline;
   return (
-    <TextInput
-      ref={ref}
-      // Sentence-case the first char programmatically so it works regardless of
-      // the device's keyboard auto-capitalize setting (text fields only). Name
-      // fields title-case every word instead ("monica ralph" → "Monica Ralph").
-      autoCapitalize={name ? "words" : "sentences"}
-      onChangeText={phone && onChangeText ? (t) => onChangeText(formatPhone(t)) : name ? wordCased(onChangeText) : sentenceCased(props.keyboardType, onChangeText)}
-      // iOS's native "✕ while editing" clear button — on by default so every
-      // field gets an easy way to clear its text without a bespoke clear
-      // button per field. No-op on Android and on multiline fields.
-      clearButtonMode="while-editing"
-      style={[
-        {
-          minHeight: 46,
-          borderRadius: radius.input,
-          borderWidth: 1,
-          borderColor: focused ? colors.primary : colors.border,
-          backgroundColor: filled ? colors.secondary : "#FFFFFF",
-          paddingLeft: 16,
-          // iOS's native clear button reserves its own inset beyond
-          // whatever padding we give it, so a symmetric 16/16 still reads
-          // as less margin on the right than the left. Nudged right-only
-          // so the text's left start stays put.
-          paddingRight: 22,
-          paddingVertical: 12,
-          fontSize: 15,
-          fontFamily: "Satoshi",
-          color: colors.textDark,
-          letterSpacing: 0, // guard against iOS placeholder letter-spacing quirk
-        },
-        style,
-      ]}
-      placeholderTextColor={colors.textMuted}
-      onFocus={(e) => { setFocused(true); onFocus?.(e); }}
-      onBlur={(e) => { setFocused(false); onBlur?.(e); }}
-      {...props}
-    />
+    <View>
+      <TextInput
+        ref={ref}
+        // Sentence-case the first char programmatically so it works regardless of
+        // the device's keyboard auto-capitalize setting (text fields only). Name
+        // fields title-case every word instead ("monica ralph" → "Monica Ralph").
+        autoCapitalize={name ? "words" : "sentences"}
+        onChangeText={clearHandler}
+        style={[
+          {
+            minHeight: 46,
+            borderRadius: radius.input,
+            borderWidth: 1,
+            borderColor: focused ? colors.primary : colors.border,
+            backgroundColor: filled ? colors.secondary : "#FFFFFF",
+            paddingLeft: 16,
+            // Room for the custom clear button below — multiline fields
+            // don't show it, so they keep the plain 16 on both sides.
+            paddingRight: showClear ? 36 : 16,
+            paddingVertical: 12,
+            fontSize: 15,
+            fontFamily: "Satoshi",
+            color: colors.textDark,
+            letterSpacing: 0, // guard against iOS placeholder letter-spacing quirk
+          },
+          style,
+        ]}
+        placeholderTextColor={colors.textMuted}
+        onFocus={(e) => { setFocused(true); onFocus?.(e); }}
+        onBlur={(e) => { setFocused(false); onBlur?.(e); }}
+        {...props}
+      />
+      {showClear && focused && !!props.value && (
+        <TouchableOpacity
+          onPress={() => clearHandler?.("")}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityLabel="Clear"
+          style={{ position: "absolute", right: 12, top: 0, bottom: 0, justifyContent: "center" }}
+        >
+          <XCircle size={17} color={colors.dashedBorder} weight="fill" />
+        </TouchableOpacity>
+      )}
+    </View>
   );
 });
 

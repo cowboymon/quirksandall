@@ -114,7 +114,7 @@ function buildProfileSummary(d: { pet: any; behavior: any; routine: any; medical
 }
 
 export default function EditPet() {
-  const { pet, petId, loading } = useActivePet();
+  const { pet, petId, loading, error } = useActivePet();
   const setPetId = useActivePetStore((s) => s.setPetId);
 
   const [name, setName] = useState("");
@@ -275,6 +275,25 @@ export default function EditPet() {
 
   const dobISO = displayDateToISO(dob);
   const age = dobISO ? computeAge(dobISO, dobIsEstimated) : null;
+
+  // Distinguish "no pet could be resolved" from a genuinely blank new-pet
+  // form — without this, the two looked identical and a resolution failure
+  // (stale selection, deleted pet) just silently showed an empty form with
+  // no explanation.
+  if (!loading && !pet && error) {
+    return (
+      <EditShell title="Pet Basics" onSave={() => {}} saving={false} loading={false} saveLabel="Save">
+        <View style={{ alignItems: "center", paddingVertical: 40, gap: 12 }}>
+          <Text style={{ color: colors.textMuted, fontSize: 14, textAlign: "center" }}>
+            Couldn't load this pet's details. Try going back to the dashboard and opening Pet Basics again.
+          </Text>
+          <TouchableOpacity onPress={() => router.replace("/dashboard")} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
+            <Text style={{ color: colors.primary, fontFamily: "Satoshi-Bold", fontSize: 14 }}>Back to dashboard</Text>
+          </TouchableOpacity>
+        </View>
+      </EditShell>
+    );
+  }
 
   return (
     <EditShell title="Pet Basics" onSave={save} saving={saving} loading={loading} saveLabel="Save">
