@@ -302,7 +302,7 @@ export default function EditRoutine() {
           value={walks}
           onChangeText={setWalks}
           multiline
-          style={{ minHeight: 72, paddingTop: 10, textAlignVertical: "top" }}
+          style={{ minHeight: 46, paddingTop: 10, textAlignVertical: "top" }}
         />
       </Card>
 
@@ -318,7 +318,7 @@ export default function EditRoutine() {
           value={sleep}
           onChangeText={setSleep}
           multiline
-          style={{ minHeight: 72, paddingTop: 10, textAlignVertical: "top" }}
+          style={{ minHeight: 46, paddingTop: 10, textAlignVertical: "top" }}
         />
       </Card>
 
@@ -334,7 +334,7 @@ export default function EditRoutine() {
           value={bathroom}
           onChangeText={setBathroom}
           multiline
-          style={{ minHeight: 72, paddingTop: 10, textAlignVertical: "top" }}
+          style={{ minHeight: 46, paddingTop: 10, textAlignVertical: "top" }}
         />
       </Card>
 
@@ -350,7 +350,7 @@ export default function EditRoutine() {
           value={toileting}
           onChangeText={(v) => setToileting(capitalizeFirst(v))}
           multiline
-          style={{ minHeight: 72, paddingTop: 10, textAlignVertical: "top" }}
+          style={{ minHeight: 46, paddingTop: 10, textAlignVertical: "top" }}
         />
       </Card>
 
@@ -369,7 +369,7 @@ export default function EditRoutine() {
           value={leftAloneDetail}
           onChangeText={(v) => setLeftAloneDetail(capitalizeFirst(v))}
           multiline
-          style={{ minHeight: 64, paddingTop: 10, textAlignVertical: "top" }}
+          style={{ minHeight: 46, paddingTop: 10, textAlignVertical: "top" }}
         />
       </Card>
 
@@ -396,8 +396,11 @@ export default function EditRoutine() {
         <View style={{ gap: 20, marginTop: 8 }}>
           {conditions.map((c, i) => (
             <View key={i} style={{ gap: 6 }}>
+              {/* Same edge-to-edge rule as Medications — negative margins
+                  cancel the Card's own padding. */}
+              <View style={{ height: 1, backgroundColor: colors.border, marginHorizontal: -16, marginBottom: 4 }} />
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.textMuted }}>
+                <Text style={{ fontSize: 12, fontFamily: "Satoshi-Bold", color: colors.textDark }}>
                   Condition {i + 1}
                 </Text>
                 {conditions.length > 1 && (
@@ -421,6 +424,7 @@ export default function EditRoutine() {
               />
             </View>
           ))}
+          <View style={{ height: 1, backgroundColor: colors.border, marginHorizontal: -16 }} />
           <TouchableOpacity onPress={() => setConditions((prev) => [...prev, { name: "", meaning: "" }])} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}>
             <Text style={{ fontSize: 12, color: colors.primary, fontFamily: "Satoshi-Medium" }}>+ Add another condition</Text>
           </TouchableOpacity>
