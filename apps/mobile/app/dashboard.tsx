@@ -102,6 +102,10 @@ export default function Dashboard() {
   const [pinCopied, setPinCopied] = useState(false);
   const [showTripNudge, setShowTripNudge] = useState(false);
   const [showAllLinks, setShowAllLinks] = useState(false);
+  // Once the pet switcher scrolls away there's nothing on screen saying
+  // whose profile this is — the pinned bar picks the name up, the same way
+  // an iOS nav bar takes over a large title once it scrolls out.
+  const [scrolledPastSwitcher, setScrolledPastSwitcher] = useState(false);
 
   // Reload every time the dashboard regains focus (e.g. returning from an edit
   // screen) so counts/status reflect the latest saves — not just on pet switch.
@@ -400,6 +404,15 @@ export default function Dashboard() {
         this screen, so it shouldn't scroll out of reach. */}
     <View style={{ backgroundColor: colors.background, paddingHorizontal: 24, paddingTop: 56, paddingBottom: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
       <Eyebrow>Dashboard</Eyebrow>
+      {/* Centered over the row, not in flex flow, so it can't shove the
+          label or avatar around when it appears. */}
+      {scrolledPastSwitcher && (
+        <View pointerEvents="none" style={{ position: "absolute", left: 0, right: 0, top: 56, bottom: 12, alignItems: "center", justifyContent: "center" }}>
+          <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Bold" }} numberOfLines={1}>
+            {pet.name}
+          </Text>
+        </View>
+      )}
       <TouchableOpacity
         onPress={() => router.push("/account")}
         style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: colors.cardDark, alignItems: "center", justifyContent: "center" }}
@@ -407,7 +420,13 @@ export default function Dashboard() {
         <Text style={{ color: colors.cardDarkText, fontSize: 11, fontFamily: "Satoshi-Bold" }}>{ownerInitials}</Text>
       </TouchableOpacity>
     </View>
-    <ScrollView className="flex-1 bg-background" contentContainerStyle={{ paddingBottom: 40 }}>
+    <ScrollView
+      className="flex-1 bg-background"
+      contentContainerStyle={{ paddingBottom: 40 }}
+      // Fires often enough to feel immediate without tracking every frame.
+      scrollEventThrottle={32}
+      onScroll={(e) => setScrolledPastSwitcher(e.nativeEvent.contentOffset.y > 120)}
+    >
       <PetSwitcher isPaid={isPaid} />
 
       {deletionScheduled && (
