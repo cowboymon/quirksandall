@@ -18,6 +18,12 @@ const MEAL_SLOTS: { key: MealSlot; label: string }[] = [
   { key: "anytime", label: "Anytime" },
 ];
 
+// Blush fill rather than the default white — same as the Treats fields
+// directly above, and it gives the inputs some contrast against the white
+// Card they sit on. Matches Treats' own colours.background rather than
+// Input's `filled` (colours.secondary) so the two sections can't drift.
+const fieldFill = { backgroundColor: colors.background } as const;
+
 export function newMedication(): EditableMedication {
   return { id: Date.now().toString(), name: "", dose: "", notes: "" };
 }
@@ -70,8 +76,8 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
             {/* Stacked full-width rather than side by side, matching Treats.
                 Sharing one row is what kept truncating the dose — "1 teaspoon"
                 didn't fit at any split that still left the name readable. */}
-            <Input placeholder="Name (e.g. Apoquel)" value={m.name} onChangeText={(v) => updateMed(m.id, "name", v)} />
-            <Input placeholder="Dose — e.g. 1 tablet" value={m.dose} onChangeText={(v) => updateMed(m.id, "dose", v)} />
+            <Input style={fieldFill} placeholder="Name (e.g. Apoquel)" value={m.name} onChangeText={(v) => updateMed(m.id, "name", v)} />
+            <Input style={fieldFill} placeholder="Dose — e.g. 1 tablet" value={m.dose} onChangeText={(v) => updateMed(m.id, "dose", v)} />
             {/* Grows with its content. A fixed height needs truncation to
                 look right, and a multiline TextInput can't ellipsize — the
                 Text-overlay workaround for that was more machinery than the
@@ -81,7 +87,7 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
               value={m.notes}
               onChangeText={(v) => updateMed(m.id, "notes", v)}
               multiline
-              style={{ minHeight: 44, paddingTop: 10, textAlignVertical: "top" }}
+              style={{ ...fieldFill, minHeight: 44, paddingTop: 10, textAlignVertical: "top" }}
             />
             <Text style={{ color: colors.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium" }}>
               When given
@@ -115,11 +121,11 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
           </View>
         ))}
       </View>
-      <TouchableOpacity
-        onPress={addMed}
-        style={{ height: 40, borderRadius: 10, borderWidth: 1.5, borderColor: colors.dashedBorder, borderStyle: "dashed", alignItems: "center", justifyContent: "center", marginTop: 12 }}
-      >
-        <Text style={{ color: colors.textMuted, fontSize: 14 }}>+ Add a medication</Text>
+      {/* Plain rose text link, same as "+ Add another treat" — the dashed
+          box this used to be was a much heavier affordance than the
+          equivalent control one section above. */}
+      <TouchableOpacity onPress={addMed} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }} style={{ marginTop: 12 }}>
+        <Text style={{ fontSize: 12, color: colors.primary, fontFamily: "Satoshi-Medium" }}>+ Add a medication</Text>
       </TouchableOpacity>
     </Card>
   );
