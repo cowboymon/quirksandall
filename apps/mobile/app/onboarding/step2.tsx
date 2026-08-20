@@ -150,12 +150,8 @@ export default function Step2() {
 
         {/* Second backup — prompt or expanded */}
         {!showSecondBackup ? (
-          <TouchableOpacity
-            onPress={() => setShowSecondBackup(true)}
-            style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: colors.dashedBorder, borderStyle: "dashed" }}
-          >
-            <Text style={{ color: colors.textMuted, fontSize: 18, lineHeight: 18 }}>+</Text>
-            <Text style={{ color: colors.textMuted, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Add another backup contact</Text>
+          <TouchableOpacity onPress={() => setShowSecondBackup(true)} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}>
+            <Text style={{ fontSize: 12, color: colors.primary, fontFamily: "Satoshi-Medium" }}>+ Add another backup contact</Text>
           </TouchableOpacity>
         ) : (
           <Card>

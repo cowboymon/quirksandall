@@ -200,11 +200,8 @@ export default function Step3() {
         })}
       </View>
 
-      <TouchableOpacity
-        onPress={addCommand}
-        style={{ height: 44, borderRadius: 10, borderWidth: 1.5, borderColor: colors.dashedBorder, borderStyle: "dashed", alignItems: "center", justifyContent: "center", marginTop: 10 }}
-      >
-        <Text style={{ color: colors.textMuted, fontSize: 14 }}>+ Add another word</Text>
+      <TouchableOpacity onPress={addCommand} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }} style={{ marginTop: 10 }}>
+        <Text style={{ fontSize: 12, color: colors.primary, fontFamily: "Satoshi-Medium" }}>+ Add another word</Text>
       </TouchableOpacity>
 
       {/* Quirks & triggers */}
