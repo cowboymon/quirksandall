@@ -4,7 +4,7 @@
 // so anything entered at onboarding lost its dose/timing once you went to
 // edit it).
 import { View, Text, TouchableOpacity } from "react-native";
-import { Input, Eyebrow, Card } from "./ui";
+import { Input, Eyebrow, Card, fieldFill } from "./ui";
 import { Trash } from "./icons";
 import { colors } from "@quirksandall/shared";
 import type { MealSlot } from "@quirksandall/shared";
@@ -17,12 +17,6 @@ const MEAL_SLOTS: { key: MealSlot; label: string }[] = [
   { key: "dinner", label: "Dinner" },
   { key: "anytime", label: "Anytime" },
 ];
-
-// Blush fill rather than the default white — same as the Treats fields
-// directly above, and it gives the inputs some contrast against the white
-// Card they sit on. Matches Treats' own colours.background rather than
-// Input's `filled` (colours.secondary) so the two sections can't drift.
-const fieldFill = { backgroundColor: colors.background } as const;
 
 export function newMedication(): EditableMedication {
   return { id: Date.now().toString(), name: "", dose: "", notes: "" };
@@ -83,14 +77,14 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
                 Text-overlay workaround for that was more machinery than the
                 tidiness was worth. */}
             <Input
-              placeholder="Cut into smaller pieces — she won't take it whole."
+              placeholder="How to give — e.g. hide it in cheese"
               value={m.notes}
               onChangeText={(v) => updateMed(m.id, "notes", v)}
               multiline
               style={{ ...fieldFill, minHeight: 44, paddingTop: 10, textAlignVertical: "top" }}
             />
             <Text style={{ color: colors.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium" }}>
-              When given
+              Given when
             </Text>
             {/* Compact pills, matching the quick-add command chips. These are
                 a multi-select, not a primary action — at full plum fill and

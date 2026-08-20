@@ -111,6 +111,11 @@ const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 // quick on purpose; only the fade-OUT this drives (background wash settling,
 // text disappearing, and the locked-field chrome dissolving) needed slowing
 // down — 2900 read as still a bit snappy for something meant to be noticed.
+// Blush field fill for inputs sitting inside a white Card — gives them
+// contrast instead of white-on-white. Shared so the Treats / Medications /
+// Conditions / Allergies sections can't drift apart on it.
+export const fieldFill = { backgroundColor: colors.background } as const;
+
 export const UNLOCK_PULSE_MS = 4200;
 // A solid, fully-opaque colour rather than a translucent rgba — animating
 // alpha and hue at once made the fade look like it passed through an
