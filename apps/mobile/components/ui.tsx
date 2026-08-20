@@ -651,6 +651,13 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
         onFocus={(e) => { setFocused(true); onFocus?.(e); }}
         onBlur={(e) => { setFocused(false); onBlur?.(e); }}
         {...props}
+        // After the spread so it's a real default, not something the spread
+        // clobbers: multiline usages grow with their content (callers set a
+        // minHeight, not a fixed height), so nothing should ever scroll
+        // internally — without this iOS's UITextView can still show a scroll
+        // thumb, which reads as a broken field. A caller wanting a bounded,
+        // scrollable box passes scrollEnabled explicitly.
+        scrollEnabled={props.multiline ? props.scrollEnabled ?? false : props.scrollEnabled}
       />
       {showClear && focused && !!props.value && (
         <TouchableOpacity
@@ -750,6 +757,11 @@ export function Textarea({ style, filled, onFocus, onBlur, onChangeText, ...prop
   return (
     <TextInput
       multiline
+      // No internal scrolling — these fields are meant to grow with their
+      // content (minHeight only, no fixed height below), so nothing should
+      // ever need to scroll. Without this, iOS's UITextView can still show
+      // its scroll thumb in edge cases, which reads as a broken field.
+      scrollEnabled={false}
       textAlignVertical="top"
       autoCapitalize="sentences"
       onChangeText={sentenceCased(props.keyboardType, onChangeText)}
