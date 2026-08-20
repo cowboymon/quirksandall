@@ -340,31 +340,36 @@ export default function Step4() {
             <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 2, marginBottom: 2 }}>
               Add each one, and what it means for the sitter.
             </Text>
-            <View style={{ gap: 8, marginTop: 4 }}>
+            {/* Wider gap between conditions than within one, so a name and
+                its meaning read as one pair rather than two entries. */}
+            <View style={{ gap: 20, marginTop: 4 }}>
               {(pet.conditions ?? [{ name: "", meaning: "" }]).map((c, i) => {
                 const list = pet.conditions ?? [{ name: "", meaning: "" }];
                 return (
-                  <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
-                    <View style={{ flex: 1, gap: 6 }}>
-                      <Input
-                        style={fieldFill}
-                        placeholder="Condition — e.g. Phantom pregnancy"
-                        value={c.name}
-                        onChangeText={(v) => setPet({ conditions: list.map((x, j) => (j === i ? { ...x, name: v } : x)) })}
-                      />
-                      <Input
-                        style={fieldFill}
-                        placeholder="What it means for the sitter"
-                        value={c.meaning}
-                        onChangeText={(v) => setPet({ conditions: list.map((x, j) => (j === i ? { ...x, meaning: v } : x)) })}
-                        multiline
-                      />
+                  <View key={i} style={{ gap: 6 }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                      <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.textMuted }}>
+                        Condition {i + 1}
+                      </Text>
+                      {list.length > 1 && (
+                        <TouchableOpacity onPress={() => setPet({ conditions: list.filter((_, j) => j !== i) })} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                          <Trash size={15} color={colors.danger} />
+                        </TouchableOpacity>
+                      )}
                     </View>
-                    {list.length > 1 && (
-                      <TouchableOpacity onPress={() => setPet({ conditions: list.filter((_, j) => j !== i) })} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingTop: 14 }}>
-                        <Trash size={16} color={colors.danger} />
-                      </TouchableOpacity>
-                    )}
+                    <Input
+                      style={fieldFill}
+                      placeholder="Condition — e.g. Phantom pregnancy"
+                      value={c.name}
+                      onChangeText={(v) => setPet({ conditions: list.map((x, j) => (j === i ? { ...x, name: v } : x)) })}
+                    />
+                    <Input
+                      style={fieldFill}
+                      placeholder="What it means for the sitter"
+                      value={c.meaning}
+                      onChangeText={(v) => setPet({ conditions: list.map((x, j) => (j === i ? { ...x, meaning: v } : x)) })}
+                      multiline
+                    />
                   </View>
                 );
               })}
