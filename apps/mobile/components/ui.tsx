@@ -723,13 +723,15 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
           if (props.multiline) setContentHeight((cur) => (Math.abs(next - cur) > 1 ? next : cur));
           props.onContentSizeChange?.(e);
         }}
-        // After the spread so it's a real default, not something the spread
-        // clobbers: multiline usages grow with their content (callers set a
-        // minHeight, not a fixed height), so nothing should ever scroll
-        // internally — without this iOS's UITextView can still show a scroll
-        // thumb, which reads as a broken field. A caller wanting a bounded,
-        // scrollable box passes scrollEnabled explicitly.
-        scrollEnabled={props.multiline ? props.scrollEnabled ?? false : props.scrollEnabled}
+        // Scrolling stays ENABLED on multiline, which looks backwards for a
+        // field meant to grow — but it's what makes growing work. With it
+        // disabled, iOS clamps contentSize to the frame, so the measurement
+        // above just reports back the height we set: the field can never
+        // learn it needs to be taller, and adding any constant to it grows
+        // without bound. Enabled, contentSize is the true text height, the
+        // field is sized to exactly that, and so it never has anything to
+        // scroll and no scroll indicator appears.
+        scrollEnabled={props.scrollEnabled}
       />
       {showClear && focused && !!props.value && (
         <TouchableOpacity
@@ -819,18 +821,13 @@ export function WeightInput({ value, onChangeText, style }: { value: string; onC
 // Multiline variant for quirks / walks / notes.
 export function Textarea({ style, filled, onFocus, onBlur, onChangeText, ...props }: TextInputProps & { filled?: boolean }) {
   const [focused, setFocused] = useState(false);
-  // Same as Input's: RN won't size a multiline TextInput to its content on
-  // iOS, so with scrolling off the overflow is clipped rather than shown.
-  // Drive the height from the measured content; minHeight stays the floor.
+  // Height is driven from the measured content; minHeight stays the floor.
+  // Scrolling stays enabled for this to work — see Input's note on why
+  // disabling it makes contentSize report the frame instead of the text.
   const [contentHeight, setContentHeight] = useState(0);
   return (
     <TextInput
       multiline
-      // No internal scrolling — these fields are meant to grow with their
-      // content (minHeight only, no fixed height below), so nothing should
-      // ever need to scroll. Without this, iOS's UITextView can still show
-      // its scroll thumb in edge cases, which reads as a broken field.
-      scrollEnabled={false}
       textAlignVertical="top"
       autoCapitalize="sentences"
       onChangeText={sentenceCased(props.keyboardType, onChangeText)}
