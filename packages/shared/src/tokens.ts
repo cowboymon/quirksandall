@@ -90,12 +90,12 @@ export const PRICING = {
 // in RevenueCat, or the paywall would show a plan that can't be bought.
 export const LIFETIME_AVAILABLE = false;
 
-// Stamped onto every consent record (owners.consent_policy_version + each
-// consent_log row) so we can prove which privacy-policy version a user agreed
-// to. PLACEHOLDER until legal finalises the policy — bump this string when the
-// real policy is published, and every subsequent consent write records the new
-// version. Existing rows keep the version that was current when they were made.
-export const CONSENT_POLICY_VERSION = "draft-2026-07";
+// Stamped onto every consent_log row so we can prove which privacy-policy
+// version a user agreed to. Matches the currently PUBLISHED policy version
+// (see apps/marketing/app/legal/changelog) — bump alongside future policy
+// releases. Existing rows keep the version that was current when they were
+// made; historical rows stamped "draft-2026-07" predate the finalised policy.
+export const CONSENT_POLICY_VERSION = "1.2";
 
 // Stamped onto policy_acceptances rows (privacy_policy / terms_of_service).
 // Hardcoded, deliberate values — never derive from a date or file hash. Only
