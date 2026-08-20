@@ -644,13 +644,6 @@ export function Card({ children, style, ...props }: ViewProps) {
 // emergency/routine cards; default is white with a rose focus border.
 export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; phone?: boolean; name?: boolean }>(function Input({ style, filled, phone, name, onFocus, onBlur, onChangeText, ...props }, ref) {
   const [focused, setFocused] = useState(false);
-  // Auto-grow for multiline. RN does NOT size a multiline TextInput to its
-  // content on iOS — with scrolling disabled (which these fields want, so
-  // they read as a growing box rather than a tiny scroll pane) anything past
-  // the fixed frame is simply clipped and never rendered. The height has to
-  // be driven from the measured content instead. minHeight in the style
-  // still acts as the floor, so this only ever grows the field.
-  const [contentHeight, setContentHeight] = useState(0);
   // Custom clear button, not the native clearButtonMode: UIKit reserves its
   // own inset beyond whatever paddingRight we give it, so the ✕ always sits
   // further right than the left text margin suggests it should — no amount
@@ -702,36 +695,19 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
             letterSpacing: 0, // guard against iOS placeholder letter-spacing quirk
           },
           fieldStyle,
-          // Last, so it beats any caller height — but minHeight above still
-          // wins as the floor, so the field grows and never shrinks below
-          // its intended size.
-          //
-          // Use contentSize verbatim. It ALREADY includes the field's
-          // vertical padding, so adding padding on top fed each measurement
-          // back in bigger than the last and the field grew without bound
-          // until it filled the screen.
-          props.multiline && contentHeight ? { height: contentHeight } : null,
         ]}
         placeholderTextColor={colors.textMuted}
         onFocus={(e) => { setFocused(true); onFocus?.(e); }}
         onBlur={(e) => { setFocused(false); onBlur?.(e); }}
         {...props}
-        onContentSizeChange={(e) => {
-          // Ignore sub-pixel churn: setting the height re-measures, and
-          // reacting to a fractional difference can feed itself forever.
-          const next = e.nativeEvent.contentSize.height;
-          if (props.multiline) setContentHeight((cur) => (Math.abs(next - cur) > 1 ? next : cur));
-          props.onContentSizeChange?.(e);
-        }}
-        // Scrolling stays ENABLED on multiline, which looks backwards for a
-        // field meant to grow — but it's what makes growing work. With it
-        // disabled, iOS clamps contentSize to the frame, so the measurement
-        // above just reports back the height we set: the field can never
-        // learn it needs to be taller, and adding any constant to it grows
-        // without bound. Enabled, contentSize is the true text height, the
-        // field is sized to exactly that, and so it never has anything to
-        // scroll and no scroll indicator appears.
-        scrollEnabled={props.scrollEnabled}
+        // A multiline field sizes itself to its content — but only while
+        // nothing pins its height. Earlier versions here drove the height
+        // from onContentSizeChange, and that measurement is coupled to the
+        // frame set from it, so the field could measure once on mount and
+        // then never learn it had to grow as you typed. No height is set
+        // anywhere now; RN does the sizing, which is what it does natively
+        // once scrolling is off.
+        scrollEnabled={props.multiline ? props.scrollEnabled ?? false : props.scrollEnabled}
       />
       {showClear && focused && !!props.value && (
         <TouchableOpacity
@@ -821,13 +797,12 @@ export function WeightInput({ value, onChangeText, style }: { value: string; onC
 // Multiline variant for quirks / walks / notes.
 export function Textarea({ style, filled, onFocus, onBlur, onChangeText, ...props }: TextInputProps & { filled?: boolean }) {
   const [focused, setFocused] = useState(false);
-  // Height is driven from the measured content; minHeight stays the floor.
-  // Scrolling stays enabled for this to work — see Input's note on why
-  // disabling it makes contentSize report the frame instead of the text.
-  const [contentHeight, setContentHeight] = useState(0);
   return (
     <TextInput
       multiline
+      // No height is set anywhere below — see Input's note. RN sizes a
+      // multiline field to its content only while nothing pins it.
+      scrollEnabled={false}
       textAlignVertical="top"
       autoCapitalize="sentences"
       onChangeText={sentenceCased(props.keyboardType, onChangeText)}
@@ -846,21 +821,11 @@ export function Textarea({ style, filled, onFocus, onBlur, onChangeText, ...prop
           lineHeight: 21,
         },
         style,
-        // contentSize verbatim — it already includes the vertical padding, so
-        // adding padding on top fed each measurement back in bigger than the
-        // last and grew the field without bound.
-        contentHeight ? { height: contentHeight } : null,
       ]}
       placeholderTextColor={colors.textMuted}
       onFocus={(e) => { setFocused(true); onFocus?.(e); }}
       onBlur={(e) => { setFocused(false); onBlur?.(e); }}
       {...props}
-      onContentSizeChange={(e) => {
-        // Ignore sub-pixel churn — see Input's handler.
-        const next = e.nativeEvent.contentSize.height;
-        setContentHeight((cur) => (Math.abs(next - cur) > 1 ? next : cur));
-        props.onContentSizeChange?.(e);
-      }}
     />
   );
 }
