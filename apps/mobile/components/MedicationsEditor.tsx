@@ -61,14 +61,26 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
         Add each one, and when it's given.
       </Text>
       <View style={{ gap: 12, marginTop: 4 }}>
-        {meds.map((m) => (
+        {meds.map((m, i) => (
           <View key={m.id} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 12, gap: 8 }}>
-            <View style={{ flexDirection: "row", gap: 8 }}>
-              <Input style={{ flex: 2 }} placeholder="Name (e.g. Apoquel)" value={m.name} onChangeText={(v) => updateMed(m.id, "name", v)} />
-              <Input style={{ flex: 1 }} placeholder="Dose per time — e.g. 1 tablet" value={m.dose} onChangeText={(v) => updateMed(m.id, "dose", v)} />
-              <TouchableOpacity onPress={() => removeMed(m.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ justifyContent: "center" }}>
-                <Trash size={16} color={colors.danger} />
+            {/* Card-level header, same shape as the Treats section's. Delete
+                belongs here rather than beside the dose field: it removes the
+                whole medication, not one value — and sitting inline it read
+                as part of the form and crowded the dose field. */}
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+              <Text style={{ fontSize: 10, fontFamily: "Satoshi-Medium", textTransform: "uppercase", letterSpacing: 0.6, color: colors.textMuted }}>
+                Medication {i + 1}
+              </Text>
+              <TouchableOpacity onPress={() => removeMed(m.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Trash size={15} color={colors.danger} />
               </TouchableOpacity>
+            </View>
+            <View style={{ flexDirection: "row", gap: 8 }}>
+              {/* 3:2 rather than 2:1 — with the trash icon out of this row
+                  there's more to share, and at 2:1 a dose like "1 teaspoon"
+                  was truncating. */}
+              <Input style={{ flex: 3 }} placeholder="Name (e.g. Apoquel)" value={m.name} onChangeText={(v) => updateMed(m.id, "name", v)} />
+              <Input style={{ flex: 2 }} placeholder="Dose — e.g. 1 tablet" value={m.dose} onChangeText={(v) => updateMed(m.id, "dose", v)} />
             </View>
             <View>
               <Input
@@ -118,8 +130,14 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
               )}
             </View>
             <Text style={{ color: colors.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium" }}>
-              Given — tap all that apply
+              When given
             </Text>
+            {/* Compact pills, matching the quick-add command chips. These are
+                a multi-select, not a primary action — at full plum fill and
+                button size they outweighed the medication name, which is the
+                most important thing on the card. Selected state is the rose
+                tint rather than a solid fill, which leaves plum to mean
+                "primary action" everywhere else. */}
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
               {MEAL_SLOTS.map((s) => {
                 const active = (m.withMeal ?? []).includes(s.key);
@@ -128,9 +146,14 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
                     key={s.key}
                     onPress={() => setMedMeal(m.id, s.key)}
                     activeOpacity={0.85}
-                    style={{ paddingHorizontal: 12, height: 32, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: active ? colors.cardDark : colors.secondary, borderWidth: 1, borderColor: active ? colors.cardDark : colors.border }}
+                    style={{
+                      paddingHorizontal: 12, height: 28, borderRadius: 14,
+                      alignItems: "center", justifyContent: "center",
+                      backgroundColor: active ? "rgba(184,58,82,0.10)" : "#FFFFFF",
+                      borderWidth: 1, borderColor: active ? colors.primary : colors.border,
+                    }}
                   >
-                    <Text style={{ color: active ? colors.cardDarkText : colors.textDark, fontSize: 12, fontFamily: "Satoshi-Medium" }}>{s.label}</Text>
+                    <Text style={{ color: active ? colors.primary : colors.textMuted, fontSize: 12, fontFamily: active ? "Satoshi-Bold" : "Satoshi-Medium" }}>{s.label}</Text>
                   </TouchableOpacity>
                 );
               })}
