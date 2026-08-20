@@ -512,9 +512,6 @@ export function TimeInput({ value, onChangeText, style, placeholder, defaultPeri
           placeholder={placeholder ?? "7:30"}
           keyboardType="number-pad"
           maxLength={5}
-          // iOS shows a native ✕ while editing — the number pad has no return
-          // key, so without it there's no obvious way to empty a time again.
-          clearButtonMode="while-editing"
           style={style}
         />
       </View>
