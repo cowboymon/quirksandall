@@ -1,5 +1,5 @@
-import { useCallback, useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Share, TextInput, Platform, ActivityIndicator } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Animated, View, Text, ScrollView, TouchableOpacity, Share, TextInput, Platform, ActivityIndicator } from "react-native";
 import { AirplaneTilt, Bell, CaretDown, CaretRight, CaretUp, Check, Eye, Key, LinkSimple, LockSimple, PencilSimpleLine, Plus, ShareFat, Trash, WarningCircle, X } from "../components/icons";
 import { AppAlert } from "../stores/appAlert";
 import { router, useFocusEffect } from "expo-router";
@@ -106,6 +106,16 @@ export default function Dashboard() {
   // whose profile this is — the pinned bar picks the name up, the same way
   // an iOS nav bar takes over a large title once it scrolls out.
   const [scrolledPastSwitcher, setScrolledPastSwitcher] = useState(false);
+  // Fade + small rise on the name, so it settles into the bar rather than
+  // popping at the scroll threshold.
+  const nameAnim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(nameAnim, {
+      toValue: scrolledPastSwitcher ? 1 : 0,
+      duration: 180,
+      useNativeDriver: true,
+    }).start();
+  }, [scrolledPastSwitcher]);
 
   // Reload every time the dashboard regains focus (e.g. returning from an edit
   // screen) so counts/status reflect the latest saves — not just on pet switch.
@@ -406,13 +416,19 @@ export default function Dashboard() {
       <Eyebrow>Dashboard</Eyebrow>
       {/* Centered over the row, not in flex flow, so it can't shove the
           label or avatar around when it appears. */}
-      {scrolledPastSwitcher && (
-        <View pointerEvents="none" style={{ position: "absolute", left: 0, right: 0, top: 56, bottom: 12, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Bold" }} numberOfLines={1}>
-            {pet.name}
-          </Text>
-        </View>
-      )}
+      <Animated.View
+        pointerEvents="none"
+        style={{
+          position: "absolute", left: 0, right: 0, top: 56, bottom: 12,
+          alignItems: "center", justifyContent: "center",
+          opacity: nameAnim,
+          transform: [{ translateY: nameAnim.interpolate({ inputRange: [0, 1], outputRange: [6, 0] }) }],
+        }}
+      >
+        <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Bold" }} numberOfLines={1}>
+          {pet.name}
+        </Text>
+      </Animated.View>
       <TouchableOpacity
         onPress={() => router.push("/account")}
         style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: colors.cardDark, alignItems: "center", justifyContent: "center" }}
