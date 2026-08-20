@@ -30,18 +30,22 @@ export async function POST(req: NextRequest) {
 
   const { data: link } = await supabase
     .from("share_links")
-    .select("id, pin_hash, revoked, pet_id")
+    .select("id, pin_hash, revoked, expires_at, pet_id, pets!inner(status)")
     .eq("token", token)
     .single();
 
-  // Any of: revoked link, cleared PIN, changed PIN, or an expired 30-day window
-  // → drop the stale cookie and fall back to the PIN gate.
+  // Any of: revoked link, expired link, archived pet, cleared PIN, changed
+  // PIN, or an expired 30-day window → drop the stale cookie and fall back
+  // to the PIN gate. Expiry/archived matter here just as much as revoked:
+  // the persisted-unlock cookie must not outlive the link it unlocked.
   const clear = () => {
     const r = NextResponse.json({ success: false });
     r.cookies.set({ name: unlockCookieName(token), value: "", path: "/", maxAge: 0 });
     return r;
   };
-  if (!link || link.revoked || !link.pin_hash) return clear();
+  const expired = !!link?.expires_at && new Date(link.expires_at) < new Date();
+  const archived = (link as any)?.pets?.status === "archived";
+  if (!link || link.revoked || expired || archived || !link.pin_hash) return clear();
   if (!verifyUnlock(token, link.pin_hash, cookie)) return clear();
 
   const contacts = await fetchEmergencyContacts(supabase, link.pet_id);

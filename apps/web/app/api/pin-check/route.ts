@@ -13,6 +13,12 @@ export const runtime = "nodejs";
 // default everywhere else unless explicitly overridden here.
 const MAX_ATTEMPTS = rateLimitEnv("RATE_LIMIT_PIN_CHECK_MAX", PIN_MAX_ATTEMPTS);
 const WINDOW_MINUTES = rateLimitEnv("RATE_LIMIT_PIN_CHECK_WINDOW_MINUTES", PIN_WINDOW_MINUTES);
+// Per-link ceiling across ALL IPs in the same window — the backstop that
+// x-forwarded-for rotation can't dodge. Without it, an attacker rotating
+// spoofed XFF values gets a fresh per-IP allowance each time and can walk
+// the whole 4-digit keyspace. Sized for several legitimate sitters fumbling
+// at once, far below a viable brute-force rate.
+const MAX_ATTEMPTS_PER_LINK = rateLimitEnv("RATE_LIMIT_PIN_CHECK_LINK_MAX", 60);
 
 export async function POST(req: NextRequest) {
   // Client created per-request so builds don't require env vars at import time
@@ -29,30 +35,44 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false }, { status: 400 });
   }
 
-  // Resolve link
+  // Resolve link — with expiry and the pet's archived state, matching the
+  // recipient page's own gate. Without these, an ex-sitter who knew the PIN
+  // could keep pulling the PIN-gated contacts through this endpoint forever
+  // after the link expired or the pet was archived.
   const { data: link } = await supabase
     .from("share_links")
-    .select("id, pin_hash, revoked, pet_id")
+    .select("id, pin_hash, revoked, expires_at, pet_id, pets!inner(status)")
     .eq("token", token)
     .single();
 
   // Same shape (200, success:false) as a wrong PIN below — a 404 here would
   // let an attacker distinguish "no such link" from "link exists, wrong PIN"
-  // and enumerate valid share tokens.
-  if (!link || link.revoked) {
+  // and enumerate valid share tokens. Expired/archived deliberately share it
+  // too, for the same reason.
+  const expired = !!link?.expires_at && new Date(link.expires_at) < new Date();
+  const archived = (link as any)?.pets?.status === "archived";
+  if (!link || link.revoked || expired || archived) {
     return NextResponse.json({ success: false });
   }
 
-  // Rate limit check: count recent attempts for this link+ip in the window
+  // Rate limit check: per-link+ip for normal use, plus a per-link total
+  // across all IPs so XFF rotation can't reset the allowance.
   const windowStart = new Date(Date.now() - WINDOW_MINUTES * 60 * 1000).toISOString();
-  const { count } = await supabase
-    .from("pin_attempts")
-    .select("id", { count: "exact", head: true })
-    .eq("link_id", link.id)
-    .eq("ip", ip)
-    .gte("attempted_at", windowStart);
+  const [{ count }, { count: linkCount }] = await Promise.all([
+    supabase
+      .from("pin_attempts")
+      .select("id", { count: "exact", head: true })
+      .eq("link_id", link.id)
+      .eq("ip", ip)
+      .gte("attempted_at", windowStart),
+    supabase
+      .from("pin_attempts")
+      .select("id", { count: "exact", head: true })
+      .eq("link_id", link.id)
+      .gte("attempted_at", windowStart),
+  ]);
 
-  if ((count ?? 0) >= MAX_ATTEMPTS) {
+  if ((count ?? 0) >= MAX_ATTEMPTS || (linkCount ?? 0) >= MAX_ATTEMPTS_PER_LINK) {
     // 429 here doesn't reveal link existence/PIN correctness — those stay on
     // the shared 200/{success:false} shape above and below — it only says
     // "this specific link+IP pair is rate limited right now", which is safe

@@ -22,6 +22,11 @@ const MAX_LOOKFOR_LEN = 400;
 // Resend bill.
 const MAX_PER_WINDOW = rateLimitEnv("RATE_LIMIT_REPORT_MISSING_MAX", 5);
 const WINDOW_SECONDS = rateLimitEnv("RATE_LIMIT_REPORT_MISSING_WINDOW_SECONDS", 30 * 60);
+// Per-token-only daily ceiling, independent of IP — the backstop that
+// x-forwarded-for rotation can't dodge. Generous enough for a real crisis
+// (several genuinely-worried sitters re-alerting through the day), tight
+// enough that the owner can't be email-bombed.
+const MAX_PER_TOKEN_PER_DAY = rateLimitEnv("RATE_LIMIT_REPORT_MISSING_TOKEN_DAILY_MAX", 10);
 
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
@@ -208,9 +213,18 @@ export async function POST(req: Request) {
     // this — recording on every attempt meant a run of failed sends (e.g. a
     // misconfigured sender domain) burned the sitter's quota on nothing,
     // leaving them rate-limited with no email ever having gone out.
+    //
+    // Two layers: the per-token+IP window (normal use), plus a per-token-only
+    // daily cap that IP rotation can't dodge — x-forwarded-for is
+    // client-influenceable on some hosts, and without this an attacker
+    // rotating it could spam the owner with unlimited "pet missing" alerts.
     const rateLimitKey = `${token}:${clientIp(req)}`;
-    const allowed = await peekRateLimit(supabase, "report_missing", rateLimitKey, MAX_PER_WINDOW, WINDOW_SECONDS);
-    if (!allowed) return Response.json({ ok: false, error: "rate_limited" }, { status: 429 });
+    const tokenDayKey = `${token}:day`;
+    const [allowed, tokenAllowed] = await Promise.all([
+      peekRateLimit(supabase, "report_missing", rateLimitKey, MAX_PER_WINDOW, WINDOW_SECONDS),
+      peekRateLimit(supabase, "report_missing", tokenDayKey, MAX_PER_TOKEN_PER_DAY, 24 * 60 * 60),
+    ]);
+    if (!allowed || !tokenAllowed) return Response.json({ ok: false, error: "rate_limited" }, { status: 429 });
 
     const { data: link } = await supabase
       .from("share_links")
@@ -243,7 +257,10 @@ export async function POST(req: Request) {
     });
     if (!sent) return Response.json({ ok: false, error: "server_error" }, { status: 500 });
 
-    await recordRateLimitHit(supabase, "report_missing", rateLimitKey);
+    await Promise.all([
+      recordRateLimitHit(supabase, "report_missing", rateLimitKey),
+      recordRateLimitHit(supabase, "report_missing", tokenDayKey),
+    ]);
     return Response.json({ ok: true });
   } catch (err) {
     console.error("report-missing failed", err);
