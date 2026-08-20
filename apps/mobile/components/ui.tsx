@@ -704,25 +704,23 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
           fieldStyle,
           // Last, so it beats any caller height — but minHeight above still
           // wins as the floor, so the field grows and never shrinks below
-          // its intended size. contentSize measures the TEXT only, so the
-          // field's own vertical padding (defaults below, caller overrides
-          // from fieldStyle) has to be added back — without it every grown
-          // field came up short by its padding and clipped its last line.
-          props.multiline && contentHeight
-            ? {
-                height:
-                  contentHeight +
-                  (fieldStyle.paddingTop ?? fieldStyle.paddingVertical ?? 12) +
-                  (fieldStyle.paddingBottom ?? fieldStyle.paddingVertical ?? 12),
-              }
-            : null,
+          // its intended size.
+          //
+          // Use contentSize verbatim. It ALREADY includes the field's
+          // vertical padding, so adding padding on top fed each measurement
+          // back in bigger than the last and the field grew without bound
+          // until it filled the screen.
+          props.multiline && contentHeight ? { height: contentHeight } : null,
         ]}
         placeholderTextColor={colors.textMuted}
         onFocus={(e) => { setFocused(true); onFocus?.(e); }}
         onBlur={(e) => { setFocused(false); onBlur?.(e); }}
         {...props}
         onContentSizeChange={(e) => {
-          if (props.multiline) setContentHeight(e.nativeEvent.contentSize.height);
+          // Ignore sub-pixel churn: setting the height re-measures, and
+          // reacting to a fractional difference can feed itself forever.
+          const next = e.nativeEvent.contentSize.height;
+          if (props.multiline) setContentHeight((cur) => (Math.abs(next - cur) > 1 ? next : cur));
           props.onContentSizeChange?.(e);
         }}
         // After the spread so it's a real default, not something the spread
@@ -851,24 +849,19 @@ export function Textarea({ style, filled, onFocus, onBlur, onChangeText, ...prop
           lineHeight: 21,
         },
         style,
-        // contentSize measures the text only — add the vertical padding back
-        // (12 default each side, or whatever the caller overrode) so the
-        // grown field doesn't clip its last line by the padding amount.
-        contentHeight
-          ? {
-              height:
-                contentHeight +
-                ((StyleSheet.flatten(style) as any)?.paddingTop ?? (StyleSheet.flatten(style) as any)?.paddingVertical ?? 12) +
-                ((StyleSheet.flatten(style) as any)?.paddingBottom ?? (StyleSheet.flatten(style) as any)?.paddingVertical ?? 12),
-            }
-          : null,
+        // contentSize verbatim — it already includes the vertical padding, so
+        // adding padding on top fed each measurement back in bigger than the
+        // last and grew the field without bound.
+        contentHeight ? { height: contentHeight } : null,
       ]}
       placeholderTextColor={colors.textMuted}
       onFocus={(e) => { setFocused(true); onFocus?.(e); }}
       onBlur={(e) => { setFocused(false); onBlur?.(e); }}
       {...props}
       onContentSizeChange={(e) => {
-        setContentHeight(e.nativeEvent.contentSize.height);
+        // Ignore sub-pixel churn — see Input's handler.
+        const next = e.nativeEvent.contentSize.height;
+        setContentHeight((cur) => (Math.abs(next - cur) > 1 ? next : cur));
         props.onContentSizeChange?.(e);
       }}
     />
