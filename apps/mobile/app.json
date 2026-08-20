@@ -19,7 +19,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.itshypothetical.quirksandall",
-      "buildNumber": "38",
+      "buildNumber": "39",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Choose a photo of your pet, or a document like a vaccination record.",
         "NSCameraUsageDescription": "Take a photo of your pet, or a document like a vaccination record.",
