@@ -384,7 +384,7 @@ export default function EditRoutine() {
       {/* Conditions — name + what it means for the sitter, same split as
           Commands, rather than one free-text line. */}
       <Card style={{ marginBottom: 12 }}>
-        <Eyebrow>Medical conditions</Eyebrow>
+        <Eyebrow ochre>Medical conditions</Eyebrow>
         <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4 }}>
           Add each one, and what it means for the sitter.
         </Text>
@@ -440,7 +440,7 @@ export default function EditRoutine() {
           than a single comma-run-together paragraph. */}
       <Card style={{ marginBottom: 12 }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <Eyebrow>Allergies</Eyebrow>
+          <Eyebrow ochre>Allergies</Eyebrow>
         </View>
         <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4 }}>
           Add each one — food, environmental, medication.
