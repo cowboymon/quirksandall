@@ -262,7 +262,7 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
             accessibilityLabel="Clear"
             style={{ position: "absolute", right: 10, top: 0, bottom: 0, justifyContent: "center" }}
           >
-            <XCircle size={17} color="#C7C7CC" weight="fill" />
+            <XCircle size={17} color={colors.dashedBorder} weight="fill" />
           </TouchableOpacity>
         )}
         <Animated.View style={{ position: "absolute", right: 10, top: 0, bottom: 0, justifyContent: "center", opacity: chromeOpacity }} pointerEvents="none">
@@ -380,18 +380,12 @@ export function DateInput({
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 accessibilityLabel="Clear date"
               >
-                {/* Styled to match iOS's own clearButtonMode ✕, which the text
-                    fields use — a light filled circle rather than a heavy one.
-                    It can't BE that button: this field is a picker button with
-                    no focus state, so a native clear has nothing to attach to
-                    and this has to persist rather than appear while editing.
-                    Matching the weight keeps the two reading as one
-                    affordance despite that. */}
-                {/* #C7C7CC — iOS's actual system-gray clear-button fill, not
-                    our rose-tinted dashedBorder — this is meant to read as
-                    the same native affordance every other field's built-in
-                    clearButtonMode shows, not a branded one-off. */}
-                <XCircle size={17} color="#C7C7CC" weight="fill" />
+                {/* Same brand-pink clear ✕ as LabeledInput/Input's custom
+                    clear buttons — this field is a picker button with no
+                    focus state, so it persists rather than appearing only
+                    while editing, but matches their color/weight so all
+                    three read as one affordance. */}
+                <XCircle size={17} color={colors.dashedBorder} weight="fill" />
               </TouchableOpacity>
             ) : null}
             {/* Kept even when a value is set, so the "this opens a picker"
@@ -660,7 +654,7 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
           accessibilityLabel="Clear"
           style={{ position: "absolute", right: 12, top: 0, bottom: 0, justifyContent: "center" }}
         >
-          <XCircle size={17} color="#C7C7CC" weight="fill" />
+          <XCircle size={17} color={colors.dashedBorder} weight="fill" />
         </TouchableOpacity>
       )}
     </View>
