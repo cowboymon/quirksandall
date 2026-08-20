@@ -3,8 +3,7 @@
 // medications as one free-text blob while editing had this structured form,
 // so anything entered at onboarding lost its dose/timing once you went to
 // edit it).
-import { useRef, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { Input, Eyebrow, Card } from "./ui";
 import { Trash } from "./icons";
 import { colors } from "@quirksandall/shared";
@@ -24,18 +23,6 @@ export function newMedication(): EditableMedication {
 }
 
 export default function MedicationsEditor({ meds, onChange }: { meds: EditableMedication[]; onChange: (meds: EditableMedication[]) => void }) {
-  // Which notes field is being edited. Notes grow with their content while
-  // focused (so you can see what you're typing) but sit at a fixed height
-  // when not, so a list of medications reads as an even stack of cards
-  // rather than a ragged one. Clipping an unfocused note is fine here —
-  // this is the edit screen, and tapping in reveals the rest; the
-  // sitter-facing view never truncates.
-  const [editingNotes, setEditingNotes] = useState<string | null>(null);
-  const notesRefs = useRef<Record<string, TextInput | null>>({});
-  // Collapsed height fits exactly the two lines the overlay renders:
-  // paddingTop 10 + 2 × lineHeight 20 + paddingBottom 12.
-  const NOTES_COLLAPSED_HEIGHT = 62;
-  const NOTES_LINE_HEIGHT = 20;
   const addMed = () => onChange([...meds, newMedication()]);
   const updateMed = (id: string, field: "name" | "dose" | "notes", val: string) =>
     onChange(meds.map((m) => (m.id === id ? { ...m, [field]: val } : m)));
@@ -85,53 +72,17 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
                 didn't fit at any split that still left the name readable. */}
             <Input placeholder="Name (e.g. Apoquel)" value={m.name} onChangeText={(v) => updateMed(m.id, "name", v)} />
             <Input placeholder="Dose — e.g. 1 tablet" value={m.dose} onChangeText={(v) => updateMed(m.id, "dose", v)} />
-            <View>
-              <Input
-                ref={(r) => { notesRefs.current[m.id] = r; }}
-                placeholder="Cut into smaller pieces — she won't take it whole."
-                value={m.notes}
-                onChangeText={(v) => updateMed(m.id, "notes", v)}
-                multiline
-                onFocus={() => setEditingNotes(m.id)}
-                onBlur={() => setEditingNotes((cur) => (cur === m.id ? null : cur))}
-                // No lineHeight here, deliberately: on iOS a multiline
-                // TextInput with an explicit lineHeight renders its text and
-                // caret offset outside the field's own bounds, so the field
-                // looks empty and untypable. It's safe on the overlay Text
-                // below, which is what actually needs a predictable
-                // two-line height.
-                style={
-                  editingNotes === m.id
-                    ? { minHeight: NOTES_COLLAPSED_HEIGHT, paddingTop: 10, textAlignVertical: "top" }
-                    : { height: NOTES_COLLAPSED_HEIGHT, paddingTop: 10, textAlignVertical: "top" }
-                }
-              />
-              {/* A multiline TextInput can't ellipsize — at a fixed height it
-                  just slices the last visible line in half. So while this
-                  note isn't being edited, a Text with real "…" truncation
-                  covers the field. The input stays mounted underneath, so
-                  tapping through focuses it directly (no remount, no lost
-                  caret) and the overlay disappears on focus. */}
-              {editingNotes !== m.id && !!m.notes && (
-                <TouchableOpacity
-                  activeOpacity={1}
-                  onPress={() => notesRefs.current[m.id]?.focus()}
-                  style={{
-                    position: "absolute", top: 1, left: 1, right: 1, bottom: 1,
-                    borderRadius: 9, backgroundColor: "#FFFFFF",
-                    paddingHorizontal: 16, paddingTop: 10,
-                  }}
-                >
-                  <Text
-                    numberOfLines={2}
-                    ellipsizeMode="tail"
-                    style={{ fontSize: 15, fontFamily: "Satoshi", color: colors.textDark, letterSpacing: 0, lineHeight: NOTES_LINE_HEIGHT }}
-                  >
-                    {m.notes}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
+            {/* Grows with its content. A fixed height needs truncation to
+                look right, and a multiline TextInput can't ellipsize — the
+                Text-overlay workaround for that was more machinery than the
+                tidiness was worth. */}
+            <Input
+              placeholder="Cut into smaller pieces — she won't take it whole."
+              value={m.notes}
+              onChangeText={(v) => updateMed(m.id, "notes", v)}
+              multiline
+              style={{ minHeight: 44, paddingTop: 10, textAlignVertical: "top" }}
+            />
             <Text style={{ color: colors.textMuted, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium" }}>
               When given
             </Text>
