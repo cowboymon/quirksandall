@@ -217,7 +217,12 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
                     outputRange: [locked ? colors.secondary : colors.background, UNLOCK_PULSE_PEAK_COLOR],
                   }),
               paddingHorizontal: 12,
-              paddingRight: chromeOpacity.interpolate({ inputRange: [0, 1], outputRange: [12, 32] }),
+              // 18 rather than 12 when unlocked — iOS's native clear button
+              // reserves its own inset beyond whatever padding we give it,
+              // so a symmetric 12/12 still read as less margin on the right
+              // than the left. Nudged right-only so the text's left start
+              // stays put.
+              paddingRight: chromeOpacity.interpolate({ inputRange: [0, 1], outputRange: [18, 32] }),
               paddingVertical: 8,
               fontSize: 14, letterSpacing: 0, fontFamily: "Satoshi", color: locked ? colors.textMuted : colors.textDark,
             },
@@ -612,7 +617,12 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
           borderWidth: 1,
           borderColor: focused ? colors.primary : colors.border,
           backgroundColor: filled ? colors.secondary : "#FFFFFF",
-          paddingHorizontal: 16,
+          paddingLeft: 16,
+          // iOS's native clear button reserves its own inset beyond
+          // whatever padding we give it, so a symmetric 16/16 still reads
+          // as less margin on the right than the left. Nudged right-only
+          // so the text's left start stays put.
+          paddingRight: 22,
           paddingVertical: 12,
           fontSize: 15,
           fontFamily: "Satoshi",
