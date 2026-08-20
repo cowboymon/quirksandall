@@ -430,10 +430,13 @@ export default function EditRoutine() {
             </View>
           ))}
           <View style={{ height: 1, backgroundColor: colors.border, marginHorizontal: -16 }} />
-          <TouchableOpacity onPress={() => setConditions((prev) => [...prev, { name: "", meaning: "" }])} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}>
-            <Text style={{ fontSize: 12, color: colors.primary, fontFamily: "Satoshi-Medium" }}>+ Add another condition</Text>
-          </TouchableOpacity>
         </View>
+        {/* Outside the gap container, same as Medications' add link — inside
+            it the container's 20px entry gap landed between the closing rule
+            and the link, twice the intended spacing. */}
+        <TouchableOpacity onPress={() => setConditions((prev) => [...prev, { name: "", meaning: "" }])} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }} style={{ marginTop: 12 }}>
+          <Text style={{ fontSize: 12, color: colors.primary, fontFamily: "Satoshi-Medium" }}>+ Add another condition</Text>
+        </TouchableOpacity>
       </Card>
 
       {/* Allergies — always visible, free. One line per allergy, rather
