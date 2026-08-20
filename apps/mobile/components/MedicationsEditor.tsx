@@ -43,7 +43,7 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
 
   return (
     <Card>
-      <Eyebrow>Medications</Eyebrow>
+      <Eyebrow ochre>Medications</Eyebrow>
       <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4, marginBottom: 4 }}>
         Add each one, and when it's given.
       </Text>

@@ -336,7 +336,7 @@ export default function Step4() {
               had no onboarding input at all; only editable later from the
               dashboard's Edit → Routine & Medical screen. */}
           <View>
-            <Eyebrow>Medical conditions</Eyebrow>
+            <Eyebrow ochre>Medical conditions</Eyebrow>
             <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 2, marginBottom: 2 }}>
               Add each one, and what it means for the sitter.
             </Text>
@@ -385,7 +385,7 @@ export default function Step4() {
           </View>
 
           <View>
-            <Eyebrow>Allergies</Eyebrow>
+            <Eyebrow ochre>Allergies</Eyebrow>
             {/* One line per allergy — not a single field with everything
                 run together. */}
             <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 2, marginBottom: 2 }}>

@@ -668,8 +668,12 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
   const flat = StyleSheet.flatten(style) ?? {};
   const { flex, flexGrow, flexShrink, flexBasis, alignSelf, width, maxWidth, minWidth, margin, marginTop, marginBottom, marginLeft, marginRight, marginHorizontal, marginVertical, ...fieldStyle } = flat as any;
   const wrapperStyle = { flex, flexGrow, flexShrink, flexBasis, alignSelf, width, maxWidth, minWidth, margin, marginTop, marginBottom, marginLeft, marginRight, marginHorizontal, marginVertical };
-  // Ghost-measured height for multiline — see the note at the ghost below.
-  const [ghostHeight, setGhostHeight] = useState(0);
+  // Multiline auto-grow: height follows the text's real contentSize, with
+  // scrolling left ON. That last part is load-bearing twice over: with
+  // scrolling disabled, iOS clamps contentSize to the frame (the source of
+  // both the frozen fields and the runaway), and leaving it on means a
+  // height that ever lags renders as a scroll — never as hidden text.
+  const [contentHeight, setContentHeight] = useState(0);
   const baseField = {
     minHeight: 46,
     borderRadius: radius.input,
@@ -688,33 +692,6 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
   } as const;
   return (
     <View style={wrapperStyle}>
-      {/* Auto-grow, ghost-measure version. The input's own layout can't be
-          trusted for this on the current RN: it sizes once on mount and
-          never re-measures on text change (contentSize clamps to the frame,
-          intrinsic sizing goes stale, and an absolute-fill input didn't
-          re-wrap into a grown box either). What HAS worked all along:
-          Text re-lays-out on every change, and an explicit numeric height
-          on the input is always applied. So an invisible, absolutely
-          positioned Text mirrors the value at the field's own width and
-          reports its height via onLayout, and the input — a normal flow
-          child, exactly as it was when rendering/wrapping was known-good —
-          gets that height set explicitly. The NBSP keeps a trailing empty
-          line counted; the extra paddingRight makes the ghost wrap a hair
-          earlier than the input, so any wrap mismatch errs taller
-          (clipping is the failure that matters). Placeholder fallback so
-          an empty field fits its own helper text. */}
-      {props.multiline && (
-        <Text
-          onLayout={(e) => {
-            const h = Math.ceil(e.nativeEvent.layout.height);
-            setGhostHeight((cur) => (Math.abs(h - cur) > 1 ? h : cur));
-          }}
-          style={[baseField, fieldStyle, { position: "absolute", top: 0, left: 0, right: 0, opacity: 0, minHeight: 0, paddingRight: ((fieldStyle as any).paddingRight ?? 16) + 10 }]}
-          pointerEvents="none"
-        >
-          {((typeof props.value === "string" && props.value) || props.placeholder || "") + "\u00A0"}
-        </Text>
-      )}
       <TextInput
         ref={ref}
         // Sentence-case the first char programmatically so it works regardless of
@@ -725,13 +702,17 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
         style={[
           baseField,
           fieldStyle,
-          props.multiline && ghostHeight ? { height: Math.max(ghostHeight, (fieldStyle as any).minHeight ?? 46) } : null,
+          props.multiline && contentHeight ? { height: Math.max(contentHeight, (fieldStyle as any).minHeight ?? 46) } : null,
         ]}
         placeholderTextColor={colors.textMuted}
         onFocus={(e) => { setFocused(true); onFocus?.(e); }}
         onBlur={(e) => { setFocused(false); onBlur?.(e); }}
         {...props}
-        scrollEnabled={props.multiline ? props.scrollEnabled ?? false : props.scrollEnabled}
+        onContentSizeChange={(e) => {
+          const h = Math.ceil(e.nativeEvent.contentSize.height);
+          if (props.multiline) setContentHeight((cur) => (Math.abs(h - cur) > 1 ? h : cur));
+          props.onContentSizeChange?.(e);
+        }}
       />
       {showClear && focused && !!props.value && (
         <TouchableOpacity
@@ -821,14 +802,14 @@ export function WeightInput({ value, onChangeText, style }: { value: string; onC
 // Multiline variant for quirks / walks / notes.
 export function Textarea({ style, filled, onFocus, onBlur, onChangeText, ...props }: TextInputProps & { filled?: boolean }) {
   const [focused, setFocused] = useState(false);
-  // Same ghost-text auto-grow as Input's multiline path — see the note
+  // Same measured auto-grow as Input's multiline path — see the note
   // there. Layout props from the caller go on the wrapper, box/text props
-  // on both the ghost and the field, exactly as Input splits them.
+  // on the field, exactly as Input splits them.
   const flat = StyleSheet.flatten(style) ?? {};
   const { flex, flexGrow, flexShrink, flexBasis, alignSelf, width, maxWidth, minWidth, margin, marginTop, marginBottom, marginLeft, marginRight, marginHorizontal, marginVertical, ...fieldStyle } = flat as any;
   const wrapperStyle = { flex, flexGrow, flexShrink, flexBasis, alignSelf, width, maxWidth, minWidth, margin, marginTop, marginBottom, marginLeft, marginRight, marginHorizontal, marginVertical };
-  // Ghost-measured height — see Input's note.
-  const [ghostHeight, setGhostHeight] = useState(0);
+  // Same measured auto-grow as Input — see the note there.
+  const [contentHeight, setContentHeight] = useState(0);
   const baseField = {
     minHeight: 68,
     borderRadius: radius.input,
@@ -844,29 +825,21 @@ export function Textarea({ style, filled, onFocus, onBlur, onChangeText, ...prop
   };
   return (
     <View style={wrapperStyle}>
-      {/* Absolute invisible ghost measures; the input stays a normal flow
-          child with an explicit height — see Input's note. */}
-      <Text
-        onLayout={(e) => {
-          const h = Math.ceil(e.nativeEvent.layout.height);
-          setGhostHeight((cur) => (Math.abs(h - cur) > 1 ? h : cur));
-        }}
-        style={[baseField, fieldStyle, { position: "absolute", top: 0, left: 0, right: 0, opacity: 0, minHeight: 0, paddingRight: ((fieldStyle as any).paddingRight ?? (fieldStyle as any).paddingHorizontal ?? 16) + 10 }]}
-        pointerEvents="none"
-      >
-        {((typeof props.value === "string" && props.value) || props.placeholder || "") + "\u00A0"}
-      </Text>
       <TextInput
         multiline
-        scrollEnabled={false}
         textAlignVertical="top"
         autoCapitalize="sentences"
         onChangeText={sentenceCased(props.keyboardType, onChangeText)}
-        style={[baseField, fieldStyle, ghostHeight ? { height: Math.max(ghostHeight, (fieldStyle as any).minHeight ?? 68) } : null]}
+        style={[baseField, fieldStyle, contentHeight ? { height: Math.max(contentHeight, (fieldStyle as any).minHeight ?? 68) } : null]}
         placeholderTextColor={colors.textMuted}
         onFocus={(e) => { setFocused(true); onFocus?.(e); }}
         onBlur={(e) => { setFocused(false); onBlur?.(e); }}
         {...props}
+        onContentSizeChange={(e) => {
+          const h = Math.ceil(e.nativeEvent.contentSize.height);
+          setContentHeight((cur) => (Math.abs(h - cur) > 1 ? h : cur));
+          props.onContentSizeChange?.(e);
+        }}
       />
     </View>
   );
