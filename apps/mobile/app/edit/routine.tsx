@@ -349,6 +349,8 @@ export default function EditRoutine() {
           placeholder="e.g. Every 4–6 hours, and after meals"
           value={toileting}
           onChangeText={(v) => setToileting(capitalizeFirst(v))}
+          multiline
+          style={{ minHeight: 72, paddingTop: 10, textAlignVertical: "top" }}
         />
       </Card>
 

@@ -615,6 +615,13 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
   // button sits exactly where we put it instead. Same visibility rule as
   // native "while-editing": shown only when focused and non-empty.
   const clearHandler = phone && onChangeText ? (t: string) => onChangeText(formatPhone(t)) : name ? wordCased(onChangeText) : sentenceCased(props.keyboardType, onChangeText);
+  // Multiline fields never get the clear button — vertically centering it
+  // across a tall box floats it mid-paragraph instead of pinned to one
+  // corner, and reserving right-padding on every wrapped line (not just the
+  // first) eats into the text width for no reason. iOS's native
+  // clearButtonMode correctly no-op'd on multiline for the same reason; this
+  // custom replacement has to opt out the same way.
+  const showClear = !props.multiline;
   return (
     <View>
       <TextInput
@@ -632,8 +639,9 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
             borderColor: focused ? colors.primary : colors.border,
             backgroundColor: filled ? colors.secondary : "#FFFFFF",
             paddingLeft: 16,
-            // Room for the custom clear button below.
-            paddingRight: 36,
+            // Room for the custom clear button below — multiline fields
+            // don't show it, so they keep the plain 16 on both sides.
+            paddingRight: showClear ? 36 : 16,
             paddingVertical: 12,
             fontSize: 15,
             fontFamily: "Satoshi",
@@ -647,7 +655,7 @@ export const Input = forwardRef<TextInput, TextInputProps & { filled?: boolean; 
         onBlur={(e) => { setFocused(false); onBlur?.(e); }}
         {...props}
       />
-      {focused && !!props.value && (
+      {showClear && focused && !!props.value && (
         <TouchableOpacity
           onPress={() => clearHandler?.("")}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
