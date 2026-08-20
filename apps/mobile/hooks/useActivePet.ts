@@ -37,22 +37,27 @@ export function useActivePet() {
       const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) { setError("Not logged in"); setLoading(false); return; }
 
-      let query = supabase.from("pets").select("*").eq("owner_id", user.id).eq("status", "active");
-
-      // Use stored selection if available, otherwise fall back to first pet
+      // Resolve the stored selection; if it no longer maps to an active pet
+      // (stale selection, deleted/archived pet, or a leftover id from before
+      // a pet swap), fall back to the earliest active pet instead of erroring
+      // out — matches dashboard.tsx's own fallback, so a stale id doesn't
+      // leave this screen (and every other edit screen using this hook)
+      // rendering blank with no explanation.
+      let data: ActivePet | null = null;
       if (storedPetId) {
-        query = query.eq("id", storedPetId);
-      } else {
-        query = query.order("created_at").limit(1);
+        const res = await supabase.from("pets").select("*").eq("owner_id", user.id).eq("status", "active").eq("id", storedPetId).maybeSingle();
+        data = res.data;
+      }
+      if (!data) {
+        const res = await supabase.from("pets").select("*").eq("owner_id", user.id).eq("status", "active").order("created_at").limit(1).maybeSingle();
+        data = res.data;
       }
 
-      const { data, error: e } = await query.single();
-
-      if (e || !data) { setError(e?.message ?? "No pet found"); setLoading(false); return; }
+      if (!data) { setError("No pet found"); setLoading(false); return; }
       setPet(data);
       setPetIdLocal(data.id);
       setCachedPet(data); // keep the shared cache fresh for the next screen
-      if (!storedPetId) setPetId(data.id); // persist first-pet selection
+      if (data.id !== storedPetId) setPetId(data.id); // persist the resolved selection
       setLoading(false);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
