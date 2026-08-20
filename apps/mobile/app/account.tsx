@@ -214,11 +214,11 @@ export default function Account() {
     >
       <View style={{ gap: 16 }}>
         <View>
-          <Eyebrow>Your name</Eyebrow>
+          <Eyebrow>Your name *</Eyebrow>
           <Input name style={{ marginTop: 4 }} placeholder="e.g. Jamie Nguyen" value={name} onChangeText={setName} />
         </View>
         <View>
-          <Eyebrow>Mobile number</Eyebrow>
+          <Eyebrow>Mobile number *</Eyebrow>
           <Input style={{ marginTop: 4 }} placeholder="e.g. 0412 345 678" phone keyboardType="phone-pad" value={phone} onChangeText={setPhone} />
         </View>
         <View>
