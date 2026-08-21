@@ -446,7 +446,7 @@ export default function Preview() {
                         style) since these are "avoid this" flags. */}
                     <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
                       {d.allergies.map((a, i) => (
-                        <View key={i} style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 17, backgroundColor: "rgba(154,80,80,0.08)", borderWidth: 1, borderColor: "rgba(154,80,80,0.3)" }}>
+                        <View key={i} style={{ flexShrink: 1, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 17, backgroundColor: "rgba(154,80,80,0.08)", borderWidth: 1, borderColor: "rgba(154,80,80,0.3)" }}>
                           <Text style={{ color: colors.danger, fontSize: 13, fontFamily: "Satoshi-Bold" }}>{a}</Text>
                         </View>
                       ))}
