@@ -413,7 +413,12 @@ export default function Dashboard() {
         put while the page scrolls; the account avatar is the only way off
         this screen, so it shouldn't scroll out of reach. */}
     <View style={{ backgroundColor: colors.background, paddingHorizontal: 24, paddingTop: 56, paddingBottom: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-      <Eyebrow>Dashboard</Eyebrow>
+      {/* Fixed-height wrapper matching the avatar, so the label is
+          dead-centre against the circle regardless of the text's own line
+          metrics — it was sitting in line with the circle's top. */}
+      <View style={{ height: 34, justifyContent: "center" }}>
+        <Eyebrow>Dashboard</Eyebrow>
+      </View>
       {/* Centered over the row, not in flex flow, so it can't shove the
           label or avatar around when it appears. */}
       <Animated.View
