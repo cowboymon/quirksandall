@@ -381,10 +381,14 @@ export default function Step4() {
                   </View>
                 );
               })}
-              <TouchableOpacity onPress={() => setPet({ conditions: [...(pet.conditions ?? [{ name: "", meaning: "" }]), { name: "", meaning: "" }] })} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}>
-                <Text style={{ fontSize: 12, color: colors.primary, fontFamily: "Satoshi-Medium" }}>+ Add another condition</Text>
-              </TouchableOpacity>
+              {/* Closing rule + link outside the gap container, matching the
+                  edit screen (#344) — inside it the 20px entry gap doubled
+                  the spacing above the link. */}
+              <View style={{ height: 1, backgroundColor: colors.border, marginHorizontal: -16 }} />
             </View>
+            <TouchableOpacity onPress={() => setPet({ conditions: [...(pet.conditions ?? [{ name: "", meaning: "" }]), { name: "", meaning: "" }] })} hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }} style={{ marginTop: 12 }}>
+              <Text style={{ fontSize: 12, color: colors.primary, fontFamily: "Satoshi-Medium" }}>+ Add another condition</Text>
+            </TouchableOpacity>
           </Card>
 
           <Card>
