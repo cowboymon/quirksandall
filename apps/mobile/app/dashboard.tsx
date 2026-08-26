@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Animated, View, Text, ScrollView, TouchableOpacity, Share, TextInput, Platform, ActivityIndicator } from "react-native";
 import { AirplaneTilt, Bell, CaretDown, CaretRight, CaretUp, Check, Eye, Key, LinkSimple, LockSimple, PencilSimpleLine, Plus, ShareFat, Trash, WarningCircle, X } from "../components/icons";
 import { AppAlert } from "../stores/appAlert";
+import { recordShareAndMaybeAskForReview } from "../lib/reviewPrompt";
 import { router, useFocusEffect } from "expo-router";
 import * as Clipboard from "expo-clipboard";
 import { supabase } from "../lib/supabase";
@@ -253,13 +254,17 @@ export default function Dashboard() {
         // passing both `message` and `url` makes iOS show the link twice (#41),
         // so this trades the rich preview for context, which is the better deal
         // on the one send where context is missing.
-        await Share.share({ message: firstShareMessage(data?.pet.name ?? "", url, pinSet) });
+        const res = await Share.share({ message: firstShareMessage(data?.pet.name ?? "", url, pinSet) });
         await markLinkShared(link.id);
+        if (res.action === Share.sharedAction) recordShareAndMaybeAskForReview();
       } else {
         // Repeat sends go bare — the sitter already knows. Pass ONE
         // representation (#41); iOS prefers a real `url` for the rich preview,
         // Android only reads `message`.
-        await Share.share(Platform.OS === "ios" ? { url } : { message: url });
+        const res = await Share.share(Platform.OS === "ios" ? { url } : { message: url });
+        // Ask for a rating only off a genuinely completed send — a dismissed
+        // sheet is not a value moment.
+        if (res.action === Share.sharedAction) recordShareAndMaybeAskForReview();
       }
 
       setCopiedId(link.id);
