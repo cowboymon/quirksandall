@@ -144,8 +144,8 @@ export default function AuthScreen() {
         </Text>
         <Text className="text-text-muted text-sm mb-10 leading-relaxed">
           {stage === "email"
-            ? "Enter your email to sign in or create an account."
-            : `Enter the 6-digit code we sent to ${email}.`}
+            ? "Enter your email address — we'll send a 6-digit code to sign in or create your account. No password needed."
+            : `We've emailed a 6-digit code to ${email}. Enter it below to continue — check spam if it hasn't arrived in a minute.`}
         </Text>
 
         {stage === "email" ? (
