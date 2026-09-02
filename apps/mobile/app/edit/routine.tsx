@@ -110,6 +110,15 @@ export default function EditRoutine() {
   const [allergies, setAllergies] = useState<string[]>([""]);
   const [conditions, setConditions] = useState<Condition[]>([{ name: "", meaning: "" }]);
   const [meds, setMeds] = useState<EditableMedication[]>([]);
+  // Same pattern as treats above — see the Return-key handling below for why
+  // this is driven from onChangeText rather than onSubmitEditing.
+  const allergyRefs = useRef<Array<TextInput | null>>([]);
+  const focusNextAllergyIndex = useRef<number | null>(null);
+  useEffect(() => {
+    if (focusNextAllergyIndex.current == null) return;
+    allergyRefs.current[focusNextAllergyIndex.current]?.focus();
+    focusNextAllergyIndex.current = null;
+  }, [allergies.length]);
 
   const [isPaid, setIsPaid] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -470,11 +479,31 @@ export default function EditRoutine() {
               {/* multiline so a longer entry grows the field to fit instead
                   of scrolling out of view; starts single-line height. */}
               <Input
+                ref={(r) => { allergyRefs.current[i] = r; }}
                 style={{ ...fieldFill, flex: 1 }}
                 placeholder="Chicken-based kibble causes skin itching"
                 value={a}
-                onChangeText={(v) => setAllergies((prev) => prev.map((x, j) => (j === i ? v : x)))}
+                // A multiline field never fires onSubmitEditing — Return
+                // just inserts "\n" into the text — so Return-to-commit has
+                // to be caught here instead: strip the newline, and if
+                // there's something left to commit, add a fresh row and
+                // hand focus straight to it, same as "+ Add another
+                // allergy" does.
+                onChangeText={(v) => {
+                  if (v.includes("\n")) {
+                    const committed = v.replace(/\n/g, "");
+                    setAllergies((prev) => {
+                      const next = prev.map((x, j) => (j === i ? committed : x));
+                      if (!committed.trim()) return next; // blank Return: just drop the newline
+                      focusNextAllergyIndex.current = next.length;
+                      return [...next, ""];
+                    });
+                    return;
+                  }
+                  setAllergies((prev) => prev.map((x, j) => (j === i ? v : x)));
+                }}
                 multiline
+                returnKeyType="done"
               />
               {/* Always shown — same fix as Conditions: hidden at one entry
                   there was no way to delete the last allergy. */}

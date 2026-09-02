@@ -77,6 +77,15 @@ export default function Step4() {
   // above it.
   const treatTypeRefs = useRef<Array<TextInput | null>>([]);
   const focusNextTreatIndex = useRef<number | null>(null);
+  // Same pattern for allergies — see the Return-key handling below for why
+  // this is driven from onChangeText rather than onSubmitEditing.
+  const allergyRefs = useRef<Array<TextInput | null>>([]);
+  const focusNextAllergyIndex = useRef<number | null>(null);
+  useEffect(() => {
+    if (focusNextAllergyIndex.current == null) return;
+    allergyRefs.current[focusNextAllergyIndex.current]?.focus();
+    focusNextAllergyIndex.current = null;
+  }, [pet.allergies?.length]);
   useEffect(() => {
     if (focusNextTreatIndex.current == null) return;
     treatTypeRefs.current[focusNextTreatIndex.current]?.focus();
@@ -406,11 +415,28 @@ export default function Step4() {
                     {/* multiline so a longer entry grows the field to fit
                         instead of scrolling out of view. */}
                     <Input
+                      ref={(r) => { allergyRefs.current[i] = r; }}
                       style={{ ...fieldFill, flex: 1 }}
                       placeholder="Food, environmental, medication…"
                       value={a}
-                      onChangeText={(v) => setPet({ allergies: list.map((x, j) => (j === i ? v : x)) })}
+                      // A multiline field never fires onSubmitEditing —
+                      // Return just inserts "\n" — so Return-to-commit is
+                      // caught here: strip the newline, and if there's
+                      // something left to commit, add a fresh row and hand
+                      // focus straight to it.
+                      onChangeText={(v) => {
+                        if (v.includes("\n")) {
+                          const committed = v.replace(/\n/g, "");
+                          const next = list.map((x, j) => (j === i ? committed : x));
+                          if (!committed.trim()) { setPet({ allergies: next }); return; }
+                          focusNextAllergyIndex.current = next.length;
+                          setPet({ allergies: [...next, ""] });
+                          return;
+                        }
+                        setPet({ allergies: list.map((x, j) => (j === i ? v : x)) });
+                      }}
                       multiline
+                      returnKeyType="done"
                     />
                     {/* Always shown — same fix as Conditions. */}
                     <TouchableOpacity
