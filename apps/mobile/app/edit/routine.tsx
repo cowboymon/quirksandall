@@ -9,7 +9,7 @@ import { useUnsavedChanges } from "../../hooks/useUnsavedChanges";
 import EditShell from "../../components/EditShell";
 import { Input, Eyebrow, Card, InlineNote, TimeInput, FieldTier, Select, fieldFill } from "../../components/ui";
 import { Trash } from "../../components/icons";
-import MedicationsEditor, { medsToRows, rowsToMeds, type EditableMedication } from "../../components/MedicationsEditor";
+import MedicationsEditor, { medsToRows, rowsToMeds, newMedication, type EditableMedication } from "../../components/MedicationsEditor";
 import { colors, capitalizeFirst, isUnlocked, treatEntries } from "@quirksandall/shared";
 import type { TreatEntry, Condition } from "@quirksandall/shared";
 import { usePrices } from "../../hooks/usePrices";
@@ -114,7 +114,12 @@ export default function EditRoutine() {
   // Commands, rather than one free-text line.
   const [allergies, setAllergies] = useState<string[]>([""]);
   const [conditions, setConditions] = useState<Condition[]>([{ name: "", meaning: "" }]);
-  const [meds, setMeds] = useState<EditableMedication[]>([]);
+  // Seeded with one blank row, matching Treats/Conditions/Allergies —
+  // Medications was the only section in this card that rendered nothing at
+  // all until the "+ Add a medication" link was noticed and tapped, which
+  // read as unfinished rather than as an empty state. Blank rows are
+  // filtered out on save (medsToRows), so this costs nothing if unused.
+  const [meds, setMeds] = useState<EditableMedication[]>([newMedication()]);
   // Same pattern as treats above — see the Return-key handling below for why
   // this is driven from onChangeText rather than onSubmitEditing.
   const allergyRefs = useRef<Array<TextInput | null>>([]);
@@ -186,7 +191,8 @@ export default function EditRoutine() {
             ? rawConditions.map((c) => (typeof c === "string" ? { name: c, meaning: "" } : { name: c.name ?? "", meaning: c.meaning ?? "" }))
             : [{ name: "", meaning: "" }]
         );
-        setMeds(rowsToMeds(medical.medications ?? []));
+        const rows = rowsToMeds(medical.medications ?? []);
+        setMeds(rows.length ? rows : [newMedication()]);
       }
       setHydrated(true);
     })();

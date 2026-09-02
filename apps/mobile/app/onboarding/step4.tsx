@@ -7,7 +7,7 @@ import { Headline, Textarea, Input, InlineNote, PrimaryButton, SkipButton, Eyebr
 import { Trash } from "../../components/icons";
 import OnboardingShell from "../../components/OnboardingShell";
 import { Underlined } from "../../components/Underlined";
-import MedicationsEditor, { medsToRows } from "../../components/MedicationsEditor";
+import MedicationsEditor, { medsToRows, newMedication } from "../../components/MedicationsEditor";
 import { useOnboardingStore } from "../../stores/onboarding";
 import { useActivePetStore } from "../../stores/activePet";
 import { supabase } from "../../lib/supabase";
@@ -306,7 +306,11 @@ export default function Step4() {
               still holds Allergies, which isn't feeding-related.
               MedicationsEditor carries its own "Medications" heading, so
               it doesn't rely on Medical's title for context. */}
-          <MedicationsEditor meds={pet.medications ?? []} onChange={(meds) => setPet({ medications: meds })} />
+          {/* Seeded with one blank row when nothing's saved yet, matching
+              Conditions/Allergies just above — see edit/routine.tsx's note
+              on why Medications shouldn't be the one section that starts
+              empty. */}
+          <MedicationsEditor meds={pet.medications?.length ? pet.medications : [newMedication()]} onChange={(meds) => setPet({ medications: meds })} />
 
           {/* Daily Routine — groups walks/sleep/bathroom/toileting/left
               alone, mirroring the same heading on the recipient link. This
