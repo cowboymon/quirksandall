@@ -36,7 +36,7 @@ type DashboardData = {
 
 const REVIEW_INTERVAL_MS = 21 * 24 * 60 * 60 * 1000; // 21 days
 // Past this many links the panel starts dominating the dashboard.
-const LINKS_COLLAPSED_COUNT = 4;
+const LINKS_COLLAPSED_COUNT = 3;
 // Free tier: one shareable link, plus one more you can create so the "share
 // several links" feature is visibly there rather than hidden until payment —
 // same reasoning as leaving the "+ New link" affordance itself always
