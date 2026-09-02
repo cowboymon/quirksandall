@@ -96,6 +96,11 @@ export const COLUMNS: RoadmapColumn[] = [
         title: "Pet insurance, if you want it",
         desc: "Optional, opt-in offers from partners. Never your data without asking.",
       },
+      {
+        id: "household",
+        title: "Invite someone into your household",
+        desc: "A partner or family member gets their own sign-in to the same pets — no sharing your login.",
+      },
     ],
   },
 ];
