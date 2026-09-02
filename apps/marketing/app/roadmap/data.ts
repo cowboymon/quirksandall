@@ -20,7 +20,7 @@ export const SHIPPED: RoadmapItem[] = [
   {
     id: "shipped-profile",
     title: "A shareable pet profile",
-    desc: "One link with everything a stand-in needs — food, meds, vet, quirks and all.",
+    desc: "One link with everything a sitter needs — food, meds, vet, quirks and all.",
   },
   {
     id: "shipped-meds",
@@ -34,13 +34,13 @@ export const SHIPPED: RoadmapItem[] = [
   },
   {
     id: "shipped-standin",
-    title: "Access for your stand-in",
+    title: "Access for your sitter",
     desc: "Share just what they need, for as long as they need it.",
   },
   {
     id: "shipped-standin-poster",
-    title: "Your stand-in can raise the alarm too",
-    desc: "Right from the link you shared — they don't need to track you down first to get a poster out.",
+    title: "Your sitter can put out a missing-pet poster too",
+    desc: "Right from the link you shared — they don't need to track you down first to get one out.",
   },
   {
     id: "shipped-documents",
@@ -71,7 +71,7 @@ export const COLUMNS: RoadmapColumn[] = [
     items: [
       {
         id: "checkins",
-        title: "Stand-in check-ins",
+        title: "Sitter check-ins",
         desc: "Let whoever's watching tick off the walk, the feed, the meds — so you can see it's done.",
       },
     ],
@@ -108,12 +108,12 @@ export const COLUMNS: RoadmapColumn[] = [
       },
       {
         id: "command-notes",
-        title: "Stand-in notes on how commands held up",
+        title: "Sitter notes on how commands held up",
         desc: "Let whoever's watching mark how solid a command actually was during the stay — so its strength reflects real life, not just how it goes at home.",
       },
       {
         id: "note-back",
-        title: "A note back from the stand-in",
+        title: "A note back from the sitter",
         desc: "“She was a bit off her food today” — straight to you.",
       },
       {
