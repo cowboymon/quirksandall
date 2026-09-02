@@ -210,7 +210,7 @@ const homeLd = {
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-dvh flex-col">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(homeLd).replace(/</g, "\\u003c") }}
