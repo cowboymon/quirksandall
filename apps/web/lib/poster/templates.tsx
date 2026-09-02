@@ -398,9 +398,15 @@ export function StoryTileTemplate(d: PosterData) {
           is missing
         </span>
         {sub ? (
-          <span style={{ color: "rgba(248,236,238,0.45)", fontSize: 11 * scale, lineHeight: 1.4, marginTop: 7 * scale }}>
-            {sub}
-          </span>
+          <>
+            {/* Rose rule — separates the headline from the breed/markings
+                line, which otherwise sat directly under it with nothing to
+                mark where one ends and the other begins. */}
+            <div style={{ display: "flex", width: 40 * scale, height: 3 * scale, backgroundColor: ROSE, marginTop: 10 * scale, marginBottom: 9 * scale }} />
+            <span style={{ color: "rgba(248,236,238,0.45)", fontSize: 11 * scale, lineHeight: 1.4 }}>
+              {sub}
+            </span>
+          </>
         ) : null}
       </div>
 
