@@ -398,15 +398,17 @@ export function StoryTileTemplate(d: PosterData) {
           is missing
         </span>
         {sub ? (
-          <>
+          // A real div, not a fragment — Satori flattens fragments into the
+          // parent's flow and laid the rule and text out side by side.
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
             {/* Rose rule — separates the headline from the breed/markings
                 line, which otherwise sat directly under it with nothing to
                 mark where one ends and the other begins. */}
             <div style={{ display: "flex", width: 40 * scale, height: 3 * scale, backgroundColor: ROSE, marginTop: 10 * scale, marginBottom: 9 * scale }} />
-            <span style={{ color: "rgba(248,236,238,0.45)", fontSize: 11 * scale, lineHeight: 1.4 }}>
+            <span style={{ color: "rgba(248,236,238,0.45)", fontSize: 11 * scale, lineHeight: 1.4, textAlign: "center" }}>
               {sub}
             </span>
-          </>
+          </div>
         ) : null}
       </div>
 
