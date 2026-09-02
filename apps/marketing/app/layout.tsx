@@ -79,6 +79,9 @@ const orgLd = {
       description: site.description,
       inLanguage: "en-AU",
       publisher: { "@id": `${site.url}/#org` },
+      // The brand's own social profiles — helps search engines associate the
+      // Instagram/TikTok accounts with the Quirks & All entity.
+      sameAs: [site.instagramUrl, site.tiktokUrl],
     },
   ],
 };
