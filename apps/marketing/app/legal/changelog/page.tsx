@@ -118,7 +118,7 @@ const ENTRIES: ChangelogEntry[] = [
 
 export default function LegalChangelogPage() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-dvh flex-col">
       <Header />
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-14 sm:py-20">
