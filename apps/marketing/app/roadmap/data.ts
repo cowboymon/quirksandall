@@ -37,6 +37,11 @@ export const SHIPPED: RoadmapItem[] = [
     title: "Access for your stand-in",
     desc: "Share just what they need, for as long as they need it.",
   },
+  {
+    id: "shipped-standin-poster",
+    title: "Your stand-in can raise the alarm too",
+    desc: "Right from the link you shared — they don't need to track you down first to get a poster out.",
+  },
 ];
 
 export const COLUMNS: RoadmapColumn[] = [
