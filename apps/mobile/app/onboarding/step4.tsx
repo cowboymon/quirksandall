@@ -29,6 +29,10 @@ const mealInput = {
   fontSize: 14,
   fontFamily: "Satoshi",
   color: colors.textDark,
+  // These fields are multiline (so a long entry can wrap), but iOS always
+  // top-aligns a multiline TextInput's content regardless of the box's own
+  // height — see edit/routine.tsx's mealInput for the full note.
+  textAlignVertical: "center",
 } as const;
 
 // Mirrors RoutineMeal in app/edit/routine.tsx — keep the two in step.

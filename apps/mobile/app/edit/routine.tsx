@@ -18,6 +18,11 @@ const mealInput = {
   minHeight: 38, borderRadius: 8, borderWidth: 1, borderColor: colors.border,
   backgroundColor: colors.background, paddingHorizontal: 12, paddingVertical: 8,
   fontSize: 14, fontFamily: "Satoshi", color: colors.textDark,
+  // These fields are multiline (so a long entry can wrap), but iOS always
+  // top-aligns a multiline TextInput's content regardless of the box's own
+  // height — with one line of text in a box tall enough for more, the
+  // leftover space just sits unclaimed below it instead of splitting evenly.
+  textAlignVertical: "center",
 } as const;
 
 function RoutineMeal({ label, time, amount, onTime, onAmount, divider, defaultPeriod, skipped, onToggleSkip, quickFill, onQuickFill }: {
