@@ -42,6 +42,26 @@ export const SHIPPED: RoadmapItem[] = [
     title: "Your stand-in can raise the alarm too",
     desc: "Right from the link you shared — they don't need to track you down first to get a poster out.",
   },
+  {
+    id: "shipped-documents",
+    title: "A vault for the paperwork",
+    desc: "Vaccination certificates, insurance and worming records — stored privately, ready when you need them.",
+  },
+  {
+    id: "shipped-pin-contacts",
+    title: "Emergency contacts behind your own PIN",
+    desc: "Vet, insurer and backup contacts stay locked to you — set a PIN and only you can get in.",
+  },
+  {
+    id: "shipped-commands",
+    title: "Commands and quirks, spelled out",
+    desc: "The word, what it means, the reward, and how solid it really is — plus the quirks worth knowing about.",
+  },
+  {
+    id: "shipped-stay-length",
+    title: "Tell them how long the stay is",
+    desc: "Pick a length or set the dates — whoever opens the link sees exactly how long they're needed for.",
+  },
 ];
 
 export const COLUMNS: RoadmapColumn[] = [
