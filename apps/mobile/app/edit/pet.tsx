@@ -196,8 +196,12 @@ export default function EditPet() {
       const { error } = await supabase
         .from("pets")
         .update({
-          name,
-          breed: breed || null,
+          // Trimmed at save, not just on blur — a trailing space typed last
+          // and never followed by another keystroke would otherwise reach
+          // the DB untouched (Olive vs. "Olive " sort/compare/match
+          // differently everywhere downstream).
+          name: name.trim(),
+          breed: breed.trim() || null,
           // NOT NULL column — fall back to the stored value if left unset,
           // rather than silently forcing a species the owner didn't pick.
           species: species || pet?.species || "dog",
@@ -206,8 +210,8 @@ export default function EditPet() {
           dob_is_estimated: dobIsEstimated,
           sex: sex || null,
           weight: weight || null,
-          color_markings: colorMarkings || null,
-          microchip_number: microchip || null,
+          color_markings: colorMarkings.trim() || null,
+          microchip_number: microchip.trim() || null,
           description_for_id: descriptionForId || null,
           photo_url: finalPhotoUrl,
         })

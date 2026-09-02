@@ -117,9 +117,12 @@ export default function Step4() {
       const { data: newPet } = await supabase
         .from("pets")
         .insert({
-          owner_id: user.id, name: pet.name, breed: pet.breed, species: pet.species || "dog",
+          // Trimmed at save — a trailing space typed last and never
+          // followed by another keystroke would otherwise reach the DB
+          // untouched.
+          owner_id: user.id, name: (pet.name ?? "").trim(), breed: pet.breed?.trim(), species: pet.species || "dog",
           dob: displayDateToISO(pet.dob) ?? new Date().toISOString().slice(0, 10), dob_is_estimated: pet.dobIsEstimated ?? false,
-          sex: pet.sex, weight: pet.weight, color_markings: pet.colorMarkings, microchip_number: pet.microchipNumber, photo_url: null,
+          sex: pet.sex, weight: pet.weight, color_markings: pet.colorMarkings?.trim(), microchip_number: pet.microchipNumber?.trim(), photo_url: null,
         })
         .select("id").single();
       if (!newPet) throw new Error("Failed to create pet");
@@ -131,8 +134,8 @@ export default function Step4() {
       }
 
       const backups = [];
-      if (pet.backupName) backups.push({ name: pet.backupName, relationship: pet.backupRelationship, phone: pet.backupPhone, consent_to_share: pet.backupConsent ?? false, is_decision_contact: pet.backupIsDecisionContact ?? false });
-      if (pet.backup2Name) backups.push({ name: pet.backup2Name, relationship: pet.backup2Relationship ?? "", phone: pet.backup2Phone, consent_to_share: pet.backup2Consent ?? false, is_decision_contact: pet.backup2IsDecisionContact ?? false });
+      if (pet.backupName) backups.push({ name: pet.backupName.trim(), relationship: pet.backupRelationship?.trim() ?? "", phone: pet.backupPhone, consent_to_share: pet.backupConsent ?? false, is_decision_contact: pet.backupIsDecisionContact ?? false });
+      if (pet.backup2Name) backups.push({ name: pet.backup2Name.trim(), relationship: pet.backup2Relationship?.trim() ?? "", phone: pet.backup2Phone, consent_to_share: pet.backup2Consent ?? false, is_decision_contact: pet.backup2IsDecisionContact ?? false });
       // Priority follows entry order among only the contacts actually marked
       // as a decision contact (1 = call first).
       let priority = 1;
@@ -145,9 +148,9 @@ export default function Step4() {
       await Promise.all([
         supabase.from("pet_vet_info").insert({
           pet_id: newPet.id,
-          primary_vet: { contact_name: pet.vetContactName, clinic: pet.vetClinic, address: pet.vetAddress, phone: pet.vetPhone },
+          primary_vet: { contact_name: pet.vetContactName?.trim(), clinic: pet.vetClinic, address: pet.vetAddress, phone: pet.vetPhone },
           emergency_vet: { clinic: pet.emergVetClinic, address: pet.emergVetAddress, phone: pet.emergVetPhone },
-          insurance: { provider: pet.insuranceProvider, policy_number: pet.insurancePolicy },
+          insurance: { provider: pet.insuranceProvider?.trim(), policy_number: pet.insurancePolicy?.trim() },
         }),
         backups.length ? supabase.from("owners").update({ backup_contacts: backups }).eq("id", user.id) : Promise.resolve(),
         supabase.from("pet_behavior").insert({

@@ -339,7 +339,18 @@ export function DateInput({
   const notBeforeISO = displayDateToISO(notBefore);
   // Open on the field's own value, else on the floor, else today.
   const seedISO = parsed ?? notBeforeISO;
-  const seed = useMemo(() => (seedISO ? new Date(`${seedISO}T00:00:00`) : new Date()), [seedISO]);
+  // Memoised on [seedISO, showPicker] rather than [seedISO] alone: stable
+  // while the sheet is open (still avoids the re-seed infinite loop the
+  // original memo was written to prevent — see below), but refreshed the
+  // NEXT time it opens rather than cached forever. [seedISO] alone froze
+  // an empty field's "today" fallback at whatever `new Date()` returned the
+  // first time this component ever rendered — for the field's whole
+  // lifetime, every later open replayed that one stale moment. On React
+  // Native/Hermes that first read can even be a garbage pre-clock-sync
+  // value (a documented class of bug), which is exactly what looked like
+  // "defaults to 1970": not this field's date, just how old the frozen
+  // moment happened to be.
+  const seed = useMemo(() => (seedISO ? new Date(`${seedISO}T00:00:00`) : new Date()), [seedISO, showPicker]);
 
   // Shared with the form gating Save (see dateFieldError in
   // @quirksandall/shared) — when only this component knew, an invalid date

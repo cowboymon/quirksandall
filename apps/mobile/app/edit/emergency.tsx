@@ -125,9 +125,11 @@ export default function EditEmergency() {
       const { data: { session } } = await supabase.auth.getSession();
       const user = session?.user;
       if (!user) throw new Error("Not logged in");
+      // Trimmed at save — a trailing space typed last and never followed by
+      // another keystroke would otherwise reach the DB untouched.
       const backups = [
-        { name: backupName, relationship: backupRel, phone: backupPhone, consent_to_share: backupConsent, is_decision_contact: backupIsDecisionContact },
-        ...(backup2Name || backup2Phone ? [{ name: backup2Name, relationship: backup2Rel, phone: backup2Phone, consent_to_share: backup2Consent, is_decision_contact: backup2IsDecisionContact }] : []),
+        { name: backupName.trim(), relationship: backupRel.trim(), phone: backupPhone, consent_to_share: backupConsent, is_decision_contact: backupIsDecisionContact },
+        ...(backup2Name || backup2Phone ? [{ name: backup2Name.trim(), relationship: backup2Rel.trim(), phone: backup2Phone, consent_to_share: backup2Consent, is_decision_contact: backup2IsDecisionContact }] : []),
       ];
       // Priority follows entry order among only the contacts actually marked
       // as a decision contact (1 = call first).
@@ -138,9 +140,9 @@ export default function EditEmergency() {
       const [{ error: vetError }, { error: ownerError }] = await Promise.all([
         supabase.from("pet_vet_info").upsert({
           pet_id: petId,
-          primary_vet: { contact_name: vetContactName, clinic: vetClinic, address: vetAddress, phone: vetPhone },
+          primary_vet: { contact_name: vetContactName.trim(), clinic: vetClinic, address: vetAddress, phone: vetPhone },
           emergency_vet: { clinic: emergClinic, address: emergAddress, phone: emergPhone },
-          insurance: { provider: insuranceProvider, policy_number: insurancePolicy },
+          insurance: { provider: insuranceProvider.trim(), policy_number: insurancePolicy.trim() },
         }, { onConflict: "pet_id" }),
         supabase.from("owners").update({ backup_contacts: backups }).eq("id", user.id),
       ]);
