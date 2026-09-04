@@ -1,4 +1,4 @@
-// Branded lead-in to the OS media permission prompts. The native dialog
+// Branded lead-in to the OS camera permission prompt. The native dialog
 // itself can't be restyled (the OS owns it for privacy reasons), so the
 // branded moment happens just before it: an in-app explainer in the app's own
 // alert, then the system prompt. Shown only while permission is still
@@ -29,17 +29,11 @@ function settingsNudge(what: string) {
   );
 }
 
-export async function ensurePhotoPermission(reason: string): Promise<boolean> {
-  const current = await ImagePicker.getMediaLibraryPermissionsAsync();
-  if (current.granted) return true;
-  if (!current.canAskAgain) {
-    settingsNudge("Photo");
-    return false;
-  }
-  if (!(await explain("Your photos", reason))) return false;
-  const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  return granted;
-}
+// No photo-library counterpart: on iOS 14+ launchImageLibraryAsync opens
+// PHPicker, which runs out-of-process and hands back only the photos the
+// user picks — no permission needed, and none is requested. Gating it behind
+// requestMediaLibraryPermissionsAsync asked for the whole library the app
+// never reads, which App Review rejected under 5.1.1.
 
 export async function ensureCameraPermission(reason: string): Promise<boolean> {
   const current = await ImagePicker.getCameraPermissionsAsync();
