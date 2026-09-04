@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Linking } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Linking, Platform } from "react-native";
 import { Check } from "../components/icons";
 import { router } from "expo-router";
 import { type Plan } from "../lib/purchases";
@@ -16,6 +16,10 @@ const FEATURES = [
   { label: "A link for every sitter", sub: "Share several at once — a separate live link per sitter or kennel, each revocable on its own" },
   { label: "Unlimited pets", sub: "Add as many as you need" },
 ];
+
+// Name the store the reader is actually in, not both — "App Store / Google
+// Play" on an iPhone reads like a template nobody finished.
+const STORE_NAME = Platform.OS === "ios" ? "App Store" : "Google Play";
 
 export default function Upgrade() {
   useRequireAuth();
@@ -232,8 +236,8 @@ export default function Upgrade() {
                 cancellation. */}
             <Text style={{ color: colors.textMuted, fontSize: 10, fontFamily: "Satoshi-Light", textAlign: "center", lineHeight: 15 }}>
               {plan === "annual"
-                ? `Renews automatically at ${prices.annual} a year until cancelled — manage or cancel any time in your App Store / Google Play account settings. `
-                : "One payment, charged to your App Store / Google Play account. "}
+                ? `Renews automatically at ${prices.annual} a year until cancelled — manage or cancel any time in your ${STORE_NAME} account settings. `
+                : `One payment, charged to your ${STORE_NAME} account. `}
               Unlocks account-wide — every pet you add, covered.
             </Text>
             <View style={{ flexDirection: "row", gap: 16 }}>
