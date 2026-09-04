@@ -131,7 +131,7 @@ export default function Documents() {
   };
 
   const takePhoto = async (kind?: string) => {
-    const ok = await ensureCameraPermission("Photograph a document — a vaccination card, a vet letter — straight into the vault.");
+    const ok = await ensureCameraPermission();
     if (!ok) return;
     const res = await ImagePicker.launchCameraAsync({ quality: 0.8 });
     if (res.canceled || !res.assets?.[0]) return;
