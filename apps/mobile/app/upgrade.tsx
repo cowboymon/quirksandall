@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Linking, Platform } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Linking } from "react-native";
 import { Check } from "../components/icons";
 import { router } from "expo-router";
 import { type Plan } from "../lib/purchases";
@@ -17,9 +17,13 @@ const FEATURES = [
   { label: "Unlimited pets", sub: "Add as many as you need" },
 ];
 
-// Name the store the reader is actually in, not both — "App Store / Google
-// Play" on an iPhone reads like a template nobody finished.
-const STORE_NAME = Platform.OS === "ios" ? "App Store" : "Google Play";
+// Apple rejected build 40 under 2.3.10 for naming Google Play in the binary,
+// and asked for the reference removed rather than hidden — a platform ternary
+// still ships the other platform's string inside the bundle. eas.json builds
+// and submits iOS only, so there is no Android binary this would be wrong in.
+// Restore the ternary here (and in account.tsx's manageSubscription) the day
+// an Android build profile lands.
+const STORE_NAME = "App Store";
 
 export default function Upgrade() {
   useRequireAuth();
