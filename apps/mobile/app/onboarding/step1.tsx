@@ -4,7 +4,6 @@ import { useState, useRef } from "react";
 import { View, Text, TouchableOpacity, Image, type TextInput } from "react-native";
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { ensurePhotoPermission } from "../../lib/photoPermission";
 import { Headline, Input, Select, DateInput, WeightInput, PrimaryButton, Eyebrow } from "../../components/ui";
 import OnboardingShell from "../../components/OnboardingShell";
 import { RollingAnimal } from "../../components/Underlined";
@@ -24,10 +23,6 @@ export default function Step1() {
   const chipRef = useRef<TextInput>(null);
 
   const pickPhoto = async () => {
-    const ok = await ensurePhotoPermission(
-      "Pick a photo of your pet for their profile. We only ever see the photos you choose."
-    );
-    if (!ok) return;
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,

@@ -17,7 +17,6 @@ import { Eyebrow, Input, DateInput } from "../components/ui";
 import { useActivePetStore } from "../stores/activePet";
 import { colors, computeAge, formatWeight, isoToDisplayDate, displayDateToISO, capitalizeFirst } from "@quirksandall/shared";
 import { useRequireAuth } from "../hooks/useRequireAuth";
-import { ensurePhotoPermission } from "../lib/photoPermission";
 import { Skeleton } from "../components/Skeleton";
 import { SmoothImage } from "../components/SmoothImage";
 
@@ -163,10 +162,6 @@ export default function MissingPoster() {
   };
 
   const pickPhotoFor = async (key: string) => {
-    const ok = await ensurePhotoPermission(
-      "Pick a clear, recent photo for the poster. We only ever see the photos you choose."
-    );
-    if (!ok) return;
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
