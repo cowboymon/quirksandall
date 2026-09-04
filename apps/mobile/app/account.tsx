@@ -179,10 +179,11 @@ export default function Account() {
   // auto-renewing IAP on the user's behalf. This is just a convenience
   // deep link so they don't have to go hunting for it in Settings.
   const manageSubscription = () => {
-    const url = Platform.OS === "ios"
-      ? "https://apps.apple.com/account/subscriptions"
-      : "https://play.google.com/store/account/subscriptions";
-    Linking.openURL(url).catch(() => AppAlert.alert("Couldn't open that", `Manage your subscription in your ${Platform.OS === "ios" ? "iPhone's Settings app" : "Google Play Store app"}.`));
+    // iOS-only URL and copy on purpose — see the note on STORE_NAME in
+    // upgrade.tsx. Apple's 2.3.10 rejection asked for Google Play references
+    // gone from the binary, not merely branched around at runtime.
+    const url = "https://apps.apple.com/account/subscriptions";
+    Linking.openURL(url).catch(() => AppAlert.alert("Couldn't open that", "Manage your subscription in your iPhone's Settings app."));
   };
 
   // Feature request (#97, resolves the open question in #95) — the roadmap now
