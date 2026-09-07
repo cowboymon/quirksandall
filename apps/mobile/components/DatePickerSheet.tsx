@@ -8,7 +8,7 @@
 import { useEffect, useState } from "react";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Modal, Platform, Text, TouchableOpacity, View } from "react-native";
-import { colors } from "@quirksandall/shared";
+import { colors, STAY_START_GRACE_DAYS } from "@quirksandall/shared";
 
 const SHEET_H_PADDING = 18;
 
@@ -21,7 +21,7 @@ export default function DatePickerSheet({
 }: {
   visible: boolean;
   value: Date;
-  range: "birthday" | "past" | "future";
+  range: "birthday" | "past" | "future" | "stayStart";
   onConfirm: (d: Date) => void;
   onCancel: () => void;
 }) {
@@ -34,7 +34,12 @@ export default function DatePickerSheet({
   // anyway: "no future" is "not after today", not "not after this millisecond".
   const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
   const endOfToday = new Date(); endOfToday.setHours(23, 59, 59, 999);
-  const bounds = range === "future" ? { minimumDate: startOfToday } : { maximumDate: endOfToday };
+  // A stay may have started up to a week ago; everything else is one-sided.
+  const staysFloor = new Date(startOfToday.getTime() - STAY_START_GRACE_DAYS * 86400000);
+  const bounds =
+    range === "future" ? { minimumDate: startOfToday }
+    : range === "stayStart" ? { minimumDate: staysFloor }
+    : { maximumDate: endOfToday };
   // Birthdays keep the wheel (spinning the year column back beats paging
   // months); other ranges get the calendar grid. See IOSSheet for why the
   // calendar is never given `bounds`.

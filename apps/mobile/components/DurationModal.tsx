@@ -43,7 +43,7 @@ export default function DurationModal({ visible, petName, initialPreset, initial
   // invalid — a warning the user can save straight past isn't a validation,
   // it's decoration.
   const invalid =
-    !!dateFieldError(startDate, "future") || !!dateFieldError(date, "future", startDate);
+    !!dateFieldError(startDate, "stayStart") || !!dateFieldError(date, "future", startDate);
 
   const save = () => {
     if (invalid) return;
@@ -100,7 +100,11 @@ export default function DurationModal({ visible, petName, initialPreset, initial
           <Text style={{ color: colors.textMuted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium", marginTop: 20, marginBottom: 6 }}>
             From
           </Text>
-          <DateInput value={startDate} onChangeText={setStartDate} range="future" placeholder="dd/mm/yyyy" pickerOnly />
+          {/* stayStart, not future: the link often goes out once the sitter
+              has already arrived, so "from" needs to be able to say Thursday.
+              "Until" stays future — a stay that already ended is nothing to
+              share — and keeps notBefore so it can't precede the start. */}
+          <DateInput value={startDate} onChangeText={setStartDate} range="stayStart" placeholder="dd/mm/yyyy" pickerOnly />
 
           <Text style={{ color: colors.textMuted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Satoshi-Medium", marginTop: 14, marginBottom: 6 }}>
             Until

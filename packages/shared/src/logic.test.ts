@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   acceptanceMethod,
   dateFieldError,
+  STAY_START_GRACE_DAYS,
   missingPolicyAcceptances,
   needsPolicyAcceptance,
   stayPhrase,
@@ -205,6 +206,24 @@ describe("dateFieldError", () => {
   it("ignores an absent or half-typed notBefore", () => {
     expect(dateFieldError(dmy(3), "future", "")).toBeNull();
     expect(dateFieldError(dmy(3), "future", "12/0")).toBeNull();
+  });
+
+  // A stay's start is a fact, not a schedule — the link often goes out once
+  // the sitter is already there. The floor stops a mis-tap claiming 2019.
+  it("lets a stay start in the recent past, but not beyond the grace window", () => {
+    expect(dateFieldError(dmy(-1), "stayStart")).toBeNull();
+    expect(dateFieldError(dmy(-STAY_START_GRACE_DAYS), "stayStart")).toBeNull(); // the floor itself
+    expect(dateFieldError(dmy(-STAY_START_GRACE_DAYS - 1), "stayStart")).toBe("Can't start more than a week ago");
+    expect(dateFieldError(dmy(-60), "stayStart")).toBe("Can't start more than a week ago");
+  });
+
+  it("still accepts today and the future for a stay start", () => {
+    expect(dateFieldError(dmy(0), "stayStart")).toBeNull();
+    expect(dateFieldError(dmy(30), "stayStart")).toBeNull();
+  });
+
+  it("keeps the end date barred from the past even when the start is behind us", () => {
+    expect(dateFieldError(dmy(-2), "future", dmy(-3))).toBe("That date has already passed");
   });
 });
 

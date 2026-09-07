@@ -289,7 +289,9 @@ export const LabeledInput = forwardRef<TextInput, TextInputProps & { label: stri
 //   "birthday" — wheel, no future. Spinning the year column back beats
 //                paging a calendar month by month.
 //   "past"     — calendar grid, no future. Recent dates, e.g. "last seen".
-//   "future"   — calendar grid, no past. Stay start/end dates.
+//   "future"   — calendar grid, no past. A stay's end date.
+//   "stayStart" — calendar grid, no past beyond a week. A stay's start date,
+//                which may already have happened (see dateFieldError).
 // The calendar is deliberately given no NATIVE bounds (that combination
 // aborts the app — see DatePickerSheet), so for those two ranges the window
 // is enforced by `dateError` below and nothing else.
@@ -308,7 +310,7 @@ export function DateInput({
   ...props
 }: TextInputProps & {
   onChangeText: (v: string) => void;
-  range?: "birthday" | "past" | "future";
+  range?: "birthday" | "past" | "future" | "stayStart";
   pickerOnly?: boolean;
   // DD/MM/YYYY floor for this field, on top of whatever `range` allows. Used
   // for an end date that can't precede its start date: an empty field opens
