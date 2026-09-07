@@ -216,6 +216,11 @@ export function canSeeMedical(purchaseStatus: "free" | "paid"): boolean {
   return purchaseStatus === "paid";
 }
 
+/** How far back a stay's start date may be set. A stay already under way is
+ * ordinary — you remember the link on day three — but an unbounded past turns
+ * a mis-tap into "staying 2,400 days". */
+export const STAY_START_GRACE_DAYS = 7;
+
 /** Validate a DD/MM/YYYY date field. Returns the message to show under the
  * field, or null when it's fine (including while it's still half-typed).
  *
@@ -226,12 +231,19 @@ export function canSeeMedical(purchaseStatus: "free" | "paid"): boolean {
  *
  *   range     "birthday" | "past" — no future dates
  *             "future"            — no past dates
+ *             "stayStart"         — no past beyond STAY_START_GRACE_DAYS. A
+ *                                   stay's start is a fact, not a schedule:
+ *                                   an owner who only sends the link once the
+ *                                   sitter has arrived needs to say the stay
+ *                                   began on Thursday. The floor keeps a
+ *                                   mis-tap from claiming a stay that started
+ *                                   in 2019.
  *   notBefore extra floor (DD/MM/YYYY), e.g. an end date that can't precede
  *             its start date.
  */
 export function dateFieldError(
   value?: string | null,
-  range: "birthday" | "past" | "future" = "past",
+  range: "birthday" | "past" | "future" | "stayStart" = "past",
   notBefore?: string | null,
   now: Date = new Date(),
 ): string | null {
@@ -239,9 +251,15 @@ export function dateFieldError(
   if (s.length !== 10) return null; // still being entered — don't nag
   const parsed = displayDateToISO(s);
   if (!parsed) return "That date doesn't exist — check the day and month";
-  const todayISO = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  // Each date resolved against its OWN offset, so a window spanning a DST
+  // change doesn't land a day out.
+  const localISO = (d: Date) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  const todayISO = localISO(now);
   if ((range === "birthday" || range === "past") && parsed > todayISO) return "That's in the future";
   if (range === "future" && parsed < todayISO) return "That date has already passed";
+  if (range === "stayStart" && parsed < localISO(new Date(now.getTime() - STAY_START_GRACE_DAYS * 86400000))) {
+    return "Can't start more than a week ago";
+  }
   const floor = displayDateToISO(notBefore);
   if (floor && parsed < floor) return "Can't be before the start date";
   return null;
