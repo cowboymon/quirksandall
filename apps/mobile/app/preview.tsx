@@ -72,15 +72,31 @@ export default function Preview() {
       const { data: { session } } = await supabase.auth.getSession(); const user = session?.user ?? null;
       if (!user) { router.replace("/auth"); return; }
 
-      let q = supabase.from("pets")
-        .select("id, name, breed, dob, dob_is_estimated, sex, weight, color_markings, microchip_number, photo_url, updated_at")
-        .eq("owner_id", user.id).eq("status", "active");
-      q = selectedPetId ? q.eq("id", selectedPetId) : q.order("created_at").limit(1);
-      const { data: pet, error: petError } = await q.single();
+      // Resolve the pet the way the dashboard and useActivePet already do: a
+      // stored selection that no longer maps to an active pet — deleted,
+      // archived, or left over from a pet swap — falls back to the earliest
+      // active one. This screen was the last that didn't, and it used
+      // .single(), which turns "no rows" into an error. So a stale id showed
+      // "Couldn't load preview — check your connection" on a dashboard that
+      // was rendering that same pet perfectly well, since its own fallback
+      // had quietly papered over the stale id.
+      const petColumns = "id, name, breed, dob, dob_is_estimated, sex, weight, color_markings, microchip_number, photo_url, updated_at";
+      const activePets = () =>
+        supabase.from("pets").select(petColumns).eq("owner_id", user.id).eq("status", "active");
+      const firstActive = () => activePets().order("created_at").limit(1).maybeSingle();
+
+      let res = await (selectedPetId ? activePets().eq("id", selectedPetId) : activePets().order("created_at").limit(1)).maybeSingle();
+      if (!res.data && selectedPetId) res = await firstActive();
+      const pet = res.data;
+      const petError = res.error;
+
       if (!pet) {
         setLoading(false);
         AppAlert.alert(
           "Couldn't load preview",
+          // Only blame the connection when there was an actual query error —
+          // having no pet at all is a different thing and used to be reported
+          // as a network problem.
           petError ? "Check your connection and try again." : "No active pet found.",
           [{ text: "OK", onPress: () => router.back() }]
         );
