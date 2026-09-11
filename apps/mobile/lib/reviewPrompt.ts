@@ -14,15 +14,26 @@
 //    abused into a nag.
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Loaded on demand rather than imported at module scope. expo-store-review is
-// not bundled in Expo Go, and there the import throws on evaluation — before
-// the try/catch below exists to swallow it, and early enough to take the
-// dashboard down with it, since that is what imports this file. A missing
-// native module should be one more reason we quietly don't ask, which is
-// exactly what the rest of this module already does for every other failure.
+import Constants, { ExecutionEnvironment } from "expo-constants";
+
+// expo-store-review isn't bundled in Expo Go, so asking for it there fails.
+// Two things have to be true to keep that quiet:
+//
+//  • Load on demand, not at module scope — a top-level import throws while the
+//    module is being evaluated, which takes the dashboard down with it, since
+//    that is what imports this file.
+//  • Don't attempt the require in Expo Go at all. Wrapping it in try/catch
+//    isn't enough: expo-modules-core reports a missing native module to LogBox
+//    before it throws, so the catch swallows the error but a red box still
+//    lands on every share.
+//
+// In a real build this is a plain require and behaves as it always did.
+const IN_EXPO_GO = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+
 type StoreReviewModule = typeof import("expo-store-review");
 
 function loadStoreReview(): StoreReviewModule | null {
+  if (IN_EXPO_GO) return null;
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     return require("expo-store-review") as StoreReviewModule;
