@@ -595,7 +595,13 @@ export function PrimaryButton({
       onPress={onPress}
       disabled={disabled}
       style={{
-        height: 46,
+        // minHeight, not height: the label scales with the reader's Dynamic
+        // Type setting, and a fixed box clips it at the accessibility sizes.
+        // At the default size the padded content is shorter than the floor,
+        // so this renders at exactly 46 as before.
+        minHeight: 46,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
         borderRadius: radius.button,
         backgroundColor: colors.button,
         alignItems: "center",
@@ -617,7 +623,9 @@ export function SkipButton({ label, onPress, disabled }: { label: string; onPres
       onPress={onPress}
       disabled={disabled}
       style={{
-        height: 40,
+        minHeight: 40,
+        paddingVertical: 10,
+        paddingHorizontal: 16,
         borderRadius: radius.button,
         borderWidth: 1,
         borderColor: colors.dashedBorder,
@@ -919,7 +927,7 @@ export function InlineNote({
         {cta && onCta && (
           <TouchableOpacity
             onPress={onCta}
-            style={{ marginTop: 12, height: 32, alignSelf: "flex-start", paddingHorizontal: 16, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.15)", alignItems: "center", justifyContent: "center" }}
+            style={{ marginTop: 12, minHeight: 32, paddingVertical: 8, alignSelf: "flex-start", paddingHorizontal: 16, borderRadius: 8, backgroundColor: "rgba(248,236,238,0.15)", alignItems: "center", justifyContent: "center" }}
           >
             <Text style={{ color: "#F8ECEE", fontSize: 12, fontFamily: "Satoshi-Medium" }}>{cta} →</Text>
           </TouchableOpacity>

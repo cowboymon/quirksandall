@@ -108,7 +108,7 @@ export default function MedicationsEditor({ meds, onChange }: { meds: EditableMe
                     onPress={() => setMedMeal(m.id, s.key)}
                     activeOpacity={0.85}
                     style={{
-                      paddingHorizontal: 12, height: 28, borderRadius: 14,
+                      paddingHorizontal: 12, minHeight: 28, paddingVertical: 5, borderRadius: 14,
                       alignItems: "center", justifyContent: "center",
                       backgroundColor: active ? "rgba(184,58,82,0.10)" : "#FFFFFF",
                       borderWidth: 1, borderColor: active ? colors.primary : colors.border,

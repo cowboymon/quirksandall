@@ -85,7 +85,7 @@ export default function DurationModal({ visible, petName, initialPreset, initial
                   onPress={() => pickPreset(p.key)}
                   activeOpacity={0.85}
                   style={{
-                    paddingHorizontal: 14, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center",
+                    paddingHorizontal: 14, minHeight: 40, paddingVertical: 10, borderRadius: 10, alignItems: "center", justifyContent: "center",
                     backgroundColor: active ? colors.cardDark : colors.secondary,
                     borderWidth: 1, borderColor: active ? colors.cardDark : colors.border,
                   }}
@@ -123,14 +123,14 @@ export default function DurationModal({ visible, petName, initialPreset, initial
             <TouchableOpacity
               onPress={() => { onSave(null, null, null); }}
               activeOpacity={0.85}
-              style={{ flex: 1, height: 46, borderRadius: 11, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}
+              style={{ flex: 1, minHeight: 46, paddingVertical: 12, borderRadius: 11, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}
             >
               <Text style={{ color: colors.textMuted, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Clear all</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={onClose}
               activeOpacity={0.85}
-              style={{ flex: 1, height: 46, borderRadius: 11, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}
+              style={{ flex: 1, minHeight: 46, paddingVertical: 12, borderRadius: 11, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}
             >
               <Text style={{ color: colors.textDark, fontSize: 14, fontFamily: "Satoshi-Medium" }}>Cancel</Text>
             </TouchableOpacity>
@@ -138,7 +138,7 @@ export default function DurationModal({ visible, petName, initialPreset, initial
               onPress={save}
               disabled={invalid}
               activeOpacity={0.85}
-              style={{ flex: 1, height: 46, borderRadius: 11, backgroundColor: colors.cardDark, alignItems: "center", justifyContent: "center", opacity: invalid ? 0.4 : 1 }}
+              style={{ flex: 1, minHeight: 46, paddingVertical: 12, borderRadius: 11, backgroundColor: colors.cardDark, alignItems: "center", justifyContent: "center", opacity: invalid ? 0.4 : 1 }}
             >
               <Text style={{ color: "#F8ECEE", fontSize: 14, fontFamily: "Satoshi-Bold" }}>Save</Text>
             </TouchableOpacity>
