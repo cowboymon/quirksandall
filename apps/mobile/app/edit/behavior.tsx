@@ -199,7 +199,7 @@ export default function EditBehavior() {
                   key={sug.word}
                   onPress={() => quickAdd(sug.word, sug.meaning)}
                   activeOpacity={0.85}
-                  style={{ paddingHorizontal: 14, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center", backgroundColor: colors.secondary, borderWidth: 1, borderColor: colors.border }}
+                  style={{ paddingHorizontal: 14, minHeight: 34, paddingVertical: 7, borderRadius: 17, alignItems: "center", justifyContent: "center", backgroundColor: colors.secondary, borderWidth: 1, borderColor: colors.border }}
                 >
                   <Text style={{ color: colors.textDark, fontSize: 12, fontFamily: "Satoshi-Medium" }}>+ {sug.word}</Text>
                 </TouchableOpacity>
@@ -211,7 +211,7 @@ export default function EditBehavior() {
               <TouchableOpacity
                 onPress={addCommand}
                 activeOpacity={0.85}
-                style={{ paddingHorizontal: 14, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center", backgroundColor: "transparent", borderWidth: 1.5, borderColor: colors.dashedBorder, borderStyle: "dashed" }}
+                style={{ paddingHorizontal: 14, minHeight: 34, paddingVertical: 7, borderRadius: 17, alignItems: "center", justifyContent: "center", backgroundColor: "transparent", borderWidth: 1.5, borderColor: colors.dashedBorder, borderStyle: "dashed" }}
               >
                 <Text style={{ color: colors.textMuted, fontSize: 12, fontFamily: "Satoshi-Medium" }}>+ Add a word</Text>
               </TouchableOpacity>
@@ -353,7 +353,7 @@ export default function EditBehavior() {
                         onPress={() => setStrength(cmd.id, s.key)}
                         activeOpacity={0.85}
                         style={{
-                          paddingHorizontal: 12, height: 28, borderRadius: 14,
+                          paddingHorizontal: 12, minHeight: 28, paddingVertical: 5, borderRadius: 14,
                           alignItems: "center", justifyContent: "center",
                           backgroundColor: active ? "rgba(184,58,82,0.10)" : "#FFFFFF",
                           borderWidth: 1, borderColor: active ? colors.primary : colors.border,
