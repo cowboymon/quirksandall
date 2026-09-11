@@ -13,7 +13,23 @@
 //    actually show it, there's nothing to dismiss twice, and it can't be
 //    abused into a nag.
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as StoreReview from "expo-store-review";
+
+// Loaded on demand rather than imported at module scope. expo-store-review is
+// not bundled in Expo Go, and there the import throws on evaluation — before
+// the try/catch below exists to swallow it, and early enough to take the
+// dashboard down with it, since that is what imports this file. A missing
+// native module should be one more reason we quietly don't ask, which is
+// exactly what the rest of this module already does for every other failure.
+type StoreReviewModule = typeof import("expo-store-review");
+
+function loadStoreReview(): StoreReviewModule | null {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return require("expo-store-review") as StoreReviewModule;
+  } catch {
+    return null;
+  }
+}
 
 const SHARE_COUNT_KEY = "review.shareCount";
 const LAST_ASK_KEY = "review.lastAskAt";
@@ -30,6 +46,8 @@ export async function recordShareAndMaybeAskForReview(): Promise<void> {
     const lastAsk = parseInt((await AsyncStorage.getItem(LAST_ASK_KEY)) ?? "0", 10);
     if (lastAsk && Date.now() - lastAsk < MIN_DAYS_BETWEEN_ASKS * 86400000) return;
 
+    const StoreReview = loadStoreReview();
+    if (!StoreReview) return;
     if (!(await StoreReview.isAvailableAsync())) return;
 
     // Stamp BEFORE requesting — if the request throws we'd rather skip a
