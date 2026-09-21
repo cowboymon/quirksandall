@@ -42,7 +42,7 @@ export default function SupportPage() {
           </div>
 
           <div className="mt-10 border-t border-border/70 pt-8">
-            <h2 className="eyebrow text-primary">Before you write</h2>
+            <h2 className="eyebrow text-primary">Before you send us a love (or hate) letter</h2>
             <ul className="mt-4 flex flex-col gap-2 text-sm leading-relaxed text-text-muted">
               <li>
                 Quick questions may already be answered in our{" "}
