@@ -2,7 +2,7 @@
 
 Technically, Olive's mine. Practically, she's also my sister's, and also my partner's — ask any of the three of us who actually owns her and you'll get three different, very confident answers.
 
-When my sister and I got Olive as adults, we figured we knew what we were doing. We'd grown up with the same dog. How different could it be?
+When my sister and I got Olive as adults, we figured we knew what we were doing. We'd grown up with Harry, our family dog. How different could it be?
 
 Turns out our parents were doing considerably more heavy lifting than we noticed. Being the one responsible for a dog is not the same skill as living in a house where someone else is.
 
