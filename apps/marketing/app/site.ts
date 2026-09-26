@@ -9,7 +9,7 @@ import { PRICING } from "@quirksandall/shared";
 // first, Google later. Flipping these two URLs is the whole go-live change:
 // the store badges, the "Get Notified → Download" CTAs, and the review store
 // links all react to them. No other edit required.
-const APP_STORE_URL: string = "#";
+const APP_STORE_URL: string = "https://apps.apple.com/au/app/quirks-all/id6793478723";
 const PLAY_STORE_URL: string = "#";
 const APP_STORE_LIVE = APP_STORE_URL !== "#" && APP_STORE_URL.length > 1;
 const PLAY_STORE_LIVE = PLAY_STORE_URL !== "#" && PLAY_STORE_URL.length > 1;
